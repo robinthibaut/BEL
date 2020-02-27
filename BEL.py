@@ -29,6 +29,10 @@ cwd = os.getcwd()
 # This sets the main directory.
 res_dir = jp(cwd, 'results')
 
+# for root, dirs, files in os.walk(res_dir, topdown=False):
+#     for name in files:
+#         print(root)
+
 xlim = 1500
 ylim = 1000
 grf = 1  # Cell dimension (1m)
@@ -96,7 +100,7 @@ h_pc_training = h_pc_scores[:n_training]  # Selects curves until desired sample 
 
 h_pc_prediction = h_pc_scores[n_training:][sample_n]  # The rests is considered as field data
 
-h_true = h[n_training:][sample_n]   # True prediction
+h_true = h[n_training:][sample_n]  # True prediction
 
 hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
 
@@ -247,10 +251,10 @@ h_posts \
 # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
 # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std deviation
 # and add the y_mean
-h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T)*cca.y_std_ + cca.y_mean_
+h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
 h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
-np.array_equal(h_pca_reverse , h_pca_reverse_test)
+np.array_equal(h_pca_reverse, h_pca_reverse_test)
 # Generate forecast in the initial dimension.
 # We use the initial decomposition to build the forecast.
 # Inverse transform the values with the PCA operator and rescale the h output.

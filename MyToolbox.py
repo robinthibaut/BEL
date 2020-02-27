@@ -1,4 +1,4 @@
-import os
+import os, shutil
 
 import flopy
 import numpy as np
@@ -6,7 +6,6 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-
 
 cols = ['b', 'g', 'r', 'c', 'm']  # Color list
 
@@ -93,7 +92,8 @@ def load_flow_model(nam_file, exe_name='', model_ws=''):
     return flow_loader(f=nam_file, exe_name=exe_name, model_ws=model_ws)
 
 
-def load_transport_model(nam_file, modflowmodel, exe_name='', model_ws='', ftl_file='mt3d_link.ftl', version='mt3d-usgs'):
+def load_transport_model(nam_file, modflowmodel, exe_name='', model_ws='', ftl_file='mt3d_link.ftl',
+                         version='mt3d-usgs'):
     transport_loader = flopy.mt3d.Mt3dms.load
     transport_reloaded = transport_loader(f=nam_file, version=version, modflowmodel=modflowmodel,
                                           exe_name=exe_name, model_ws=model_ws)
@@ -166,14 +166,17 @@ class MyWorkshop:
         hk_files = []
         # r=root, d=directories, f = files
         roots = []
-        for r, d, f in os.walk(self.res_dir):
-            if 'bkt.npy' and 'sd.npy' and 'hk0.npy' in f:
+        for r, d, f in os.walk(self.res_dir, topdown=False):
+            if 'bkt.npy' in f and 'sd.npy' in f and 'hk0.npy' in f:
                 bkt_files.append(os.path.join(r, 'bkt.npy'))
                 sd_files.append(os.path.join(r, 'sd.npy'))
                 hk_files.append(os.path.join(r, 'hk0.npy'))
                 roots.append(r)
             else:
-                pass
+                try:
+                    shutil.rmtree(r)
+                except TypeError:
+                    pass
 
         # Load and filter results
         tpt = list(map(np.load, bkt_files))
@@ -252,4 +255,3 @@ class MyWorkshop:
             # plt.savefig(jp(res_dir, 'signed_distance_{}.png'.format(i)), dpi=150, bbox_inches='tight')
             plt.show()
             plt.close()
-
