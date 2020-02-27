@@ -73,7 +73,7 @@ n_wel = len(tc[0])  # Number of injecting wels
 
 # %% PCA
 
-n_training = 250  # number of synthetic data that will be used for constructing our prediction model
+n_training = 280  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training - 1
 sample_n = 0
 
@@ -253,8 +253,8 @@ h_posts \
 # and add the y_mean
 h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
-h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
-np.array_equal(h_pca_reverse, h_pca_reverse_test)
+# h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
+# np.array_equal(h_pca_reverse, h_pca_reverse_test)
 # Generate forecast in the initial dimension.
 # We use the initial decomposition to build the forecast.
 # Inverse transform the values with the PCA operator and rescale the h output.

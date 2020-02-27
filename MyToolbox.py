@@ -174,7 +174,8 @@ class MyWorkshop:
                 roots.append(r)
             else:
                 try:
-                    shutil.rmtree(r)
+                    if r != self.res_dir:
+                        shutil.rmtree(r)
                 except TypeError:
                     pass
 
