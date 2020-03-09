@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
 import matplotlib.gridspec as gridspec
+from scipy.spatial import distance_matrix
+import joblib
 
 from MyToolbox import MyWorkshop
 
@@ -47,7 +49,8 @@ AW.grf = grf
 # tpt = transport curves, tc = normalized and interpolated transport curves (1000 time steps on 200 days)
 # sd = signed distance matrices, hk = hydraulic conductivity matrices
 
-tc0, h, hk = AW.load_data()  # TODO: add pre-processing script
+tc0, h, hk = AW.load_data()  # TODO: add pre-processing script, with Pipeline
+# Preprocess d
 f1d = []  # List of interpolating functions for each curve
 for t in tc0:
     fs = [interp1d(c[:, 0], c[:, 1], fill_value='extrapolate') for c in t]
@@ -68,12 +71,48 @@ tc = np.array(tc)
 #         plt.plot(t)
 #     plt.show()
 
+# Preprocess h
+# Let's first try to divide it using cells of side length = 5m
+
+
+def blockshaped(arr, nrows, ncols):
+    """
+    Return an array of shape (n, nrows, ncols) where
+    n * nrows * ncols = arr.size
+
+    If arr is a 2D array, the returned array should look like n subblocks with
+    each subblock preserving the "physical" layout of arr.
+    """
+    h, w = arr.shape
+    assert h % nrows == 0, "{} rows is not evenly divisble by {}".format(h, nrows)
+    assert w % ncols == 0, "{} cols is not evenly divisble by {}".format(w, ncols)
+    return (arr.reshape(h//nrows, nrows, -1, ncols)
+               .swapaxes(1,2)
+               .reshape(-1, nrows, ncols))
+
+nrow = 1000
+ncol = 1500
+sc = 5
+un = int(nrow/sc)
+uc = int(ncol/sc)
+# h_u = np.zeros((h.shape[0], un, uc))
+#
+# for i in range(h.shape[0]):
+#     sim = h[i]
+#     sub = blockshaped(sim, sc, sc)
+#     h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
+
+# np.save(jp(cwd, 'temp', 'h_u'), h_u)
+h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+h0 = h.copy()
+h = h_u.copy()
+
 n_sim = len(h)  # Number of simulations
 n_wel = len(tc[0])  # Number of injecting wels
 
 # %% PCA
 
-n_training = 280  # number of synthetic data that will be used for constructing our prediction model
+n_training = 800  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training - 1
 sample_n = 0
 
@@ -81,16 +120,20 @@ sample_n = 0
 # Flattened, normalized, breakthrough curves
 d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_sim, n_time_steps * n_wel)
 
-d_pca_operator = PCA(.999)  # The PCA is performed on all data (synthetic + 'observed')
+# d_pca_operator = PCA(.999)  # The PCA is performed on all data (synthetic + 'observed')
 
-d_pc_scores = d_pca_operator.fit_transform(d_original)  # Principal components
+# d_pc_scores = d_pca_operator.fit_transform(d_original)  # Principal components
+# np.save(jp(cwd, 'temp', 'd_pc_scores'), d_pc_scores)
+d_pc_scores = np.load(jp(cwd, 'temp', 'd_pc_scores'))
+# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))
+d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
 
 d_pc_training = d_pc_scores[:n_training]  # Selects curves until desired sample number
 
 d_pc_prediction = d_pc_scores[n_training:][sample_n]  # The rests is considered as field data
 
 #  PCA on signed distance
-h_pca_operator = PCA(.97)  # TODO: Explain everything, keep all scores
+h_pca_operator = PCA(.99)  # Try: Explain everything, keep all scores
 
 h_original = h.reshape((n_sim, h.shape[1] * h.shape[2]))  # Not normalized
 
@@ -121,7 +164,8 @@ hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the obse
 
 # %% CCA
 
-n_comp_cca = 11  # Increasing this parameter will produce 'over-fitting effects'
+n_comp_cca = 20
+# Increasing this parameter will produce 'over-fitting effects'
 # To obtain same results as Thomas, I need to not scale the data.
 # However, after some tweaks, the code now works with the default settings.
 cca = CCA(n_components=n_comp_cca, scale=True)  # By default, it scales the data
@@ -232,7 +276,7 @@ h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2
 
 # %% Sample the posterior
 
-n_posts = 300  # Number of estimates sampled from the distribution.
+n_posts = 1000  # Number of estimates sampled from the distribution.
 # np.random.seed(88888888)
 # Draw n_posts random samples from the multivariate normal distribution :
 h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
@@ -270,7 +314,9 @@ h_true_pred = h_pca_operator.inverse_transform(h_pc_true_pred)
 h_true_pred = h_true_pred.reshape((len(h_true_pred), h.shape[1], h.shape[2]))  # Reshape results
 
 # Plot results
-
+xlim = 1500
+ylim = 1000
+grf = 5
 X, Y = np.meshgrid(np.linspace(0, xlim, int(xlim / grf)), np.linspace(0, ylim, int(ylim / grf)))
 Z = np.copy(h_true)
 plt.subplots()
@@ -282,7 +328,7 @@ plt.contour(X, Y, Z, [0], colors='red')
 # Plot true h predicted
 plt.contour(X, Y, h_true_pred[0], [0], colors='yellow')
 # Plot hk
-plt.imshow(hk_true[0], origin='lower', extent=(0, 1500, 0, 1000),
+plt.imshow(hk_true[0], origin='lower', extent=(0, xlim, 0, ylim),
            norm=LogNorm(vmin=np.min(hk_true[0]), vmax=np.max(hk_true[0])),
            cmap='coolwarm', alpha=0.7)
 plt.colorbar()
