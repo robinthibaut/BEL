@@ -1,10 +1,9 @@
-import os, shutil
+import os
+import shutil
 
 import flopy
-import numpy as np
-from scipy.interpolate import interp1d
-from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import LogNorm
 
 cols = ['b', 'g', 'r', 'c', 'm']  # Color list
@@ -85,6 +84,22 @@ def refine_axis(widths, r_pt, ext, cnd, d_dim, a_lim):
         x0[where_right] = x0[where_right] + dar / lwr
 
     return x0  # Flip to correspond to flopy expectations
+
+
+def blockshaped(arr, nrows, ncols):
+    """
+    Return an array of shape (n, nrows, ncols) where
+    n * nrows * ncols = arr.size
+
+    If arr is a 2D array, the returned array should look like n subblocks with
+    each subblock preserving the "physical" layout of arr.
+    """
+    h, w = arr.shape
+    assert h % nrows == 0, "{} rows is not evenly divisble by {}".format(h, nrows)
+    assert w % ncols == 0, "{} cols is not evenly divisble by {}".format(w, ncols)
+    return (arr.reshape(h//nrows, nrows, -1, ncols)
+               .swapaxes(1, 2)
+               .reshape(-1, nrows, ncols))
 
 
 def load_flow_model(nam_file, exe_name='', model_ws=''):
