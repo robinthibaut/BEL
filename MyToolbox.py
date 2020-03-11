@@ -296,6 +296,43 @@ class Plot:
         plt.tight_layout()
         plt.show()
 
+    @staticmethod
+    def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
+        plt.grid(alpha=0.2)
+        if not n_comp:
+            n_comp = pca.n_components_
+        plt.xticks(np.arange(n_comp), fontsize=xfs)
+        plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]),
+                 '-o', linewidth=.5, markersize=1.5, alpha=.8)
+        plt.xlabel('Number of components')
+        plt.ylabel('Explained variance')
+        if fig_file:
+            plt.savefig(fig_file, dpi=300)
+        if show:
+            plt.show()
+            plt.close()
+
+    @staticmethod
+    def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
+        # Scores plot
+        plt.grid(alpha=0.2)
+        ut = n_comp
+        plt.xticks(np.arange(ut), fontsize=8)
+        plt.plot(training[:ut], 'wo', markersize=1, alpha=0.6)
+        for sample_n in range(len(prediction)):
+            pc_obs = prediction[sample_n]
+            plt.plot(pc_obs[:ut],
+                     'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+                     label=str(sample_n))
+        plt.tick_params(labelsize=6)
+        plt.legend(fontsize=3)
+
+        if fig_file:
+            plt.savefig(fig_file, dpi=300)
+        if show:
+            plt.show()
+            plt.close()
+
     def whp(self, h, sc, wdir, fig_file=None, show=False):
         # Plot results
         grf = sc

@@ -81,75 +81,44 @@ n_obs = n_sim - n_training
 # PCA on transport curves
 # Flattened, normalized, breakthrough curves
 d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_sim, -1)
-d_training = d_original[]
+d_training = d_original[:n_training]
+d_prediction = d_original[n_training:]
 
-d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
-d_pca_operator.fit(d_original)  # Principal components
-joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
+# d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
+# d_pca_operator.fit(d_training)  # Principal components
+# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
 d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
 
-d_pc_scores = d_pca_operator.transform(d_original)  # Principal components
-d_pc_training = d_pc_scores[:n_training]  # Selects curves until desired sample number
+d_pc_training = d_pca_operator.transform(d_training)  # Principal components
+d_pc_prediction = d_pca_operator.transform(d_prediction)
 
 #  PCA on signed distance
-h_original = h.reshape((n_sim, h.shape[1] * h.shape[2]))  # Not normalized
+h_original = h.reshape(n_sim, -1)  # Not normalized
+h_training = h_original[:n_training]
+h_prediction = h_original[n_training:]
 
-h_pca_operator = PCA(.99)  # Try: Explain everything, keep all scores
-h_pca_operator.fit(h_original)  # Principal components
-joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
+# h_pca_operator = PCA()  # Try: Explain everything, keep all scores
+# h_pca_operator.fit(h_training)  # Principal components
+# joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
 h_pca_operator = joblib.load(jp(cwd, 'temp', 'h_pca_operator.pkl'))
 
-h_pc_scores = h_pca_operator.transform(h_original)  # Principal components
-h_pc_training = h_pc_scores[:n_training]  # Selects curves until desired sample number
+h_pc_training = h_pca_operator.transform(h_training)  # Principal components
+h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until desired sample number
 
-# Plots
-# plt.grid(alpha=0.2)
-# plt.xticks(np.arange(1, d_pca_operator.n_components_ + 1), fontsize=2)
-# plt.plot(np.arange(1, d_pca_operator.n_components_ + 1), np.cumsum(d_pca_operator.explained_variance_ratio_),
-#          '-o', linewidth=.5, markersize=1.5, alpha=.8)
-# plt.xlabel('Number of components')
-# plt.ylabel('Explained variance')
-# plt.savefig(jp(cwd, 'figures', 'PCA', 'd_exvar.png'), dpi=300)
-# plt.close()
-#
-# plt.grid(alpha=0.2)
-# plt.xticks(np.arange(1, h_pca_operator.n_components_ + 1), fontsize=8)
-# plt.plot(np.arange(1, h_pca_operator.n_components_ + 1), np.cumsum(h_pca_operator.explained_variance_ratio_),
-#          '-o', linewidth=.5, markersize=1.5, alpha=.8)
-# plt.xlabel('Number of components')
-# plt.ylabel('Explained variance')
-# plt.savefig(jp(cwd, 'figures', 'PCA', 'h_exvar.png'), dpi=300)
-# plt.close()
+# Explained variance plots
+# jp(cwd, 'figures', 'PCA', 'd_exvar.png')
+mp.explained_variance(d_pca_operator, n_comp=20, show=True)
 
-# Scores plot
-# plt.grid(alpha=0.2)
-# ut = 30
-# plt.xticks(np.arange(ut), fontsize=8)
-# plt.plot(d_pc_scores[:ut], 'wo', markersize=1, alpha=0.6)
-# for sample_n in range(n_obs):
-#     d_pc_prediction = d_pc_scores[n_training:][sample_n]
-#     plt.plot(d_pc_prediction[:ut],
-#              'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-#              label=str(sample_n))
-# plt.tick_params(labelsize=6)
-# plt.legend(fontsize=3)
-# plt.savefig(jp(cwd, 'figures', 'PCA', 'd_scores.png'), dpi=300)
-# plt.close()
+# jp(cwd, 'figures', 'PCA', 'h_exvar.png')
+mp.explained_variance(h_pca_operator, n_comp=20, show=True)
 
-plt.grid(alpha=0.2)
-ut = 23
-plt.xticks(np.arange(ut), fontsize=8)
-plt.plot(h_pc_scores[:ut, :], 'wo', markersize=1, alpha=0.6)
-for sample_n in range(n_obs):
-    h_pc_prediction = h_pc_scores[n_training:][sample_n]
-    plt.plot(h_pc_prediction[:ut],
-             'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-             label=str(sample_n))
-plt.tick_params(labelsize=6)
-plt.legend(fontsize=3)
-plt.savefig(jp(cwd, 'figures', 'PCA', 'h_scores.png'), dpi=300)
-plt.close()
+# Scores plots
 
+# jp(cwd, 'figures', 'PCA', 'd_scores.png')
+mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20)
+
+# jp(cwd, 'figures', 'PCA', 'h_scores.png')
+mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20)
 
 # %% CCA
 
@@ -192,8 +161,8 @@ cca_coefficient = np.corrcoef(d_cca_training, h_cca_training).diagonal(offset=cc
 
 # Pick an observation
 for sample_n in range(n_obs):
-    d_pc_prediction = d_pc_scores[n_training:][sample_n]  # The rests is considered as field data
-    h_pc_prediction = h_pc_scores[n_training:][sample_n]  # The rests is considered as field data
+    d_pc_obs = d_pc_prediction[sample_n]  # The rests is considered as field data
+    h_pc_obs = h_pc_prediction[sample_n]  # The rests is considered as field data
     h_true = h[n_training:][sample_n]  # True prediction
     hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
 
@@ -267,7 +236,7 @@ for sample_n in range(n_obs):
 
     # %% Sample the posterior
 
-    n_posts = 5000  # Number of estimates sampled from the distribution.
+    n_posts = 500  # Number of estimates sampled from the distribution.
     # Draw n_posts random samples from the multivariate normal distribution :
     h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
                                                      cov=h_posterior_covariance,
