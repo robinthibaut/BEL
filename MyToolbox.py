@@ -275,11 +275,11 @@ class Plot:
             plt.close()
 
     def whp_prediction(self, forecasts, h_true, h_pred, wdir, fig_file=None, show=False):
-        self.whp(forecasts, wdir)
+        self.whp(h=forecasts, wdir=wdir)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
         # Plot true h predicted
-        plt.contour(self.x, self.y, h_pred[0], [0], colors='cyan', linewidths=1, alpha=.9)
+        plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
             plt.close()

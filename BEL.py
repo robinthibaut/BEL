@@ -22,7 +22,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.gridspec as gridspec
 plt.style.use('dark_background')
 
-
 from MyToolbox import FileOps, DataOps, MeshOps, Plot
 
 mp = Plot()
@@ -38,7 +37,7 @@ res_dir = jp(cwd, 'results')
 # tpt = transport curves, tc = normalized and interpolated transport curves (1000 time steps on 200 days)
 # sd = signed distance matrices, hk = hydraulic conductivity matrices
 
-tc0, h, hk = FileOps.load_data(res_dir=res_dir)  # TODO: add pre-processing script, with Pipeline
+tc0, h, hk = FileOps.load_data(res_dir=res_dir)
 
 # Preprocess d
 tc = do.d_process(tc0=tc0)
@@ -65,7 +64,7 @@ h0 = h.copy()
 h = h_u.copy()
 
 # Plot all WHPP
-mp.whp(h, sc, jp(cwd, 'grid'), show=True)
+# mp.whp(h, sc, jp(cwd, 'grid'), show=True)
 
 # %%  PCA
 
@@ -243,88 +242,39 @@ for sample_n in range(n_obs):
     # h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
     # np.array_equal(h_pca_reverse, h_pca_reverse_test)
 
+    def pc_random():
+        r_rows = np.random.choice(h_pc_training0.shape[0], n_posts, replace=False)
+        score_selection = h_pc_training0[r_rows, n_h_pc_comp:]
+        test = [np.random.choice(score_selection[:, i], replace=False) for i in range(score_selection.shape[1])]
+        return np.array(test)
+
+
+    # TODO: Add here the rest of the PCA components from h
+    rnpc = np.array([pc_random() for i in range(n_posts)])
+    h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
+
     # Generate forecast in the initial dimension.
     # We use the initial decomposition to build the forecast.
     # Inverse transform the values with the PCA operator and rescale the h output.
 
     forecast_posterior = \
-        (np.dot(h_pca_reverse, h_pca_operator.components_[:n_h_pc_comp, :]) +
+        (np.dot(h_pca_reverse, h_pca_operator.components_[:h_pca_reverse.shape[1], :]) +
          h_pca_operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
 
     # forecast_posterior \
     #     = h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
 
     # Predicting the SD based for a certain number of 'observations'
-
+    # TODO: Add here the rest of the PCA components from h
     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
+    rnpc = pc_random()
+    h_pc_true_pred = np.concatenate((h_pc_true_pred[0], rnpc)).reshape(1, -1)
 
     # Going back to the original SD dimension
-    # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)
-    # TODO: Add here the rest of the PCA components
-    h_pred = np.dot(h_pc_true_pred, h_pca_operator.components_[:n_h_pc_comp, :]) + h_pca_operator.mean_
+    # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)  # old
+    h_pred = np.dot(h_pc_true_pred, h_pca_operator.components_[:h_pc_true_pred.shape[1], :]) + h_pca_operator.mean_
     h_pred = h_pred.reshape(h.shape[1], h.shape[2])  # Reshape results
 
     # Plot results
     ff = jp(cwd, 'figures', 'Predictions', '{}prediction.png'.format(sample_n))
-    mp.whp_prediction(sc, forecast_posterior, h_true, h_pred, wdir=jp(cwd, 'grid'), fig_file=ff)
-
-    # grf = 5
-    # X, Y = np.meshgrid(np.linspace(0, xlim, int(xlim / grf)), np.linspace(0, ylim, int(ylim / grf)))
-    # Z = np.copy(h_true)
-    # plt.subplots()
-    # plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
-    # # Plot n sampled forecasts
-    # for z in forecast_posterior:
-    #     plt.contour(X, Y, z, [0], colors='white', alpha=0.1)
-    # # Plot true h
-    # plt.contour(X, Y, Z, [0], colors='red', linewidths=1, alpha=.9)
-    # # Plot true h predicted
-    # plt.contour(X, Y, h_true_pred[0], [0], colors='cyan', linewidths=1, alpha=.9)
-    # # Plot hk
-    # # plt.imshow(hk_true[0], origin='lower', extent=(0, xlim, 0, ylim),
-    # #            norm=LogNorm(vmin=np.min(hk_true[0]), vmax=np.max(hk_true[0])),
-    # #            cmap='coolwarm', alpha=0.7)
-    # # plt.colorbar()
-    # # Plot wells
-    # pwl = np.load((jp(cwd, 'grid', 'pw.npy')), allow_pickle=True)[:, :2]
-    # plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-    # iwl = np.load((jp(cwd, 'grid', 'iw.npy')), allow_pickle=True)[:, :2]
-    # for i in range(len(iwl)):
-    #     plt.plot(iwl[i][0], iwl[i][1],
-    #              'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-    #              label='iw{}'.format(i))
-    # plt.tick_params(labelsize=5)
-    # plt.legend(fontsize=7, loc=2)
-    # plt.xlim(750, 1200)
-    # plt.ylim(300, 700)
-    # plt.savefig(jp(cwd, 'figures', 'Predictions', '{}prediction.png'.format(sample_n)), bbox_inches='tight', dpi=300)
-    # plt.show()
-
-
-# palette = ['tab:{}'.format(c) for c in
-#            ['blue', 'orange', 'green', 'red', 'purple', 'brown', 'pink', 'olive', 'cyan']]
-# np.random.shuffle(palette)
-# h_obs = h[n_training:]  # True predictions
-# grf = 5
-# X, Y = np.meshgrid(np.linspace(0, xlim, int(xlim / grf)), np.linspace(0, ylim, int(ylim / grf)))
-# Z = np.copy(h_obs)
-# plt.subplots()
-# plt.grid(color='w', linestyle='-', linewidth=1, alpha=0.2)
-# for sd in h[:n_training]:
-#     plt.contour(X, Y, sd, [0], colors='white', linewidths=.5, alpha=.2)
-# for z in range(n_obs):
-#     plt.contour(X, Y, h_obs[z], [0], colors=palette[z], linewidths=.8, alpha=1)
-# # plt.legend()
-# pwl = np.load((jp(cwd, 'grid', 'pw.npy')), allow_pickle=True)[:, :2]
-# plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-# iwl = np.load((jp(cwd, 'grid', 'iw.npy')), allow_pickle=True)[:, :2]
-# for i in range(len(iwl)):
-#     plt.plot(iwl[i][0], iwl[i][1],
-#              'o', markersize=5, markeredgecolor='k', markeredgewidth=.5,
-#              label='iw{}'.format(i))
-# plt.tick_params(labelsize=8)
-# plt.legend(fontsize=7, loc=2)
-# plt.xlim(750, 1200)
-# plt.ylim(300, 700)
-# plt.savefig(jp(cwd, 'figures', 'Predictions', 'observations.png'), bbox_inches='tight', dpi=300)
-# plt.show()
+    mp.whp_prediction(forecast_posterior, h_true, h_pred, wdir=jp(cwd, 'grid'), fig_file=ff)
