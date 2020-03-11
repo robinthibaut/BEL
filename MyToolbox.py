@@ -8,8 +8,6 @@ import numpy as np
 from matplotlib.colors import LogNorm
 from scipy.interpolate import interp1d
 
-cols = ['b', 'g', 'r', 'c', 'm']  # Color list
-
 
 class FileOps:
 
@@ -217,10 +215,15 @@ class DataOps:
 class Plot:
 
     def __init__(self):
-        self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
-        np.random.shuffle(cols)
+
         self.xlim = 1500
         self.ylim = 1000
+        self.grf = 5
+        self.x, self.y = np.meshgrid(
+            np.linspace(0, self.xlim, int(self.xlim / self.grf)), np.linspace(0, self.ylim, int(self.ylim / self.grf)))
+
+        self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
+        np.random.shuffle(self.cols)
 
     def curves(self, tc, n_wel, sdir=None, show=False):
         for i in range(len(tc)):
@@ -230,9 +233,10 @@ class Plot:
         plt.tick_params(labelsize=5)
         if sdir:
             plt.savefig(jp(sdir, 'curves.png'), dpi=300)
+            plt.close()
         if show:
             plt.show()
-        plt.close()
+            plt.close()
 
     def curves_i(self, tc, n_wel, sdir=None, show=False):
         for t in range(n_wel):
@@ -242,8 +246,45 @@ class Plot:
             plt.tick_params(labelsize=5)
             if sdir:
                 plt.savefig(jp(sdir, 'curves_{}.png'.format(t)), dpi=300)
+                plt.close()
             if show:
                 plt.show()
+                plt.close()
+
+    def whp(self, h, wdir, fig_file=None, show=False):
+        # Plot results
+        for z in h:
+            plt.contour(self.x, self.y, z, [0], colors='white', linewidths=.5, alpha=0.4)
+        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
+        # Plot wells
+        pwl = np.load((jp(wdir, 'pw.npy')), allow_pickle=True)[:, :2]
+        plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
+        iwl = np.load((jp(wdir, 'iw.npy')), allow_pickle=True)[:, :2]
+        for i in range(len(iwl)):
+            plt.plot(iwl[i][0], iwl[i][1], 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+                     label='iw{}'.format(i))
+        plt.legend(fontsize=8)
+        plt.xlim(750, 1200)
+        plt.ylim(300, 700)
+        plt.tick_params(labelsize=5)
+        if fig_file:
+            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.close()
+        if show:
+            plt.show()
+            plt.close()
+
+    def whp_prediction(self, forecasts, h_true, h_pred, wdir, fig_file=None, show=False):
+        self.whp(forecasts, wdir)
+        # Plot true h
+        plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
+        # Plot true h predicted
+        plt.contour(self.x, self.y, h_pred[0], [0], colors='cyan', linewidths=1, alpha=.9)
+        if fig_file:
+            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.close()
+        if show:
+            plt.show()
             plt.close()
 
     @staticmethod
@@ -252,26 +293,7 @@ class Plot:
         plt.xlabel('Number of components')
         plt.ylabel('Explained variance')
         plt.show()
-
-    @staticmethod
-    def all_curves_plot(curves):
-        for j in range(len(curves[0])):
-            plt.plot(curves[0][j][:, 0], curves[0][j][:, 1], cols[j], label='c{}'.format(j + 1), alpha=0.5)
-        plt.legend()
-        for w in range(1, len(curves)):
-            for j in range(len(curves[0])):
-                plt.plot(curves[w][j][:, 0], curves[w][j][:, 1], cols[j], label='c{}'.format(j + 1), alpha=0.5)
-        plt.show()
         plt.close()
-
-    @staticmethod
-    def individual_curves_plot(curves):
-        for i in range(len(curves[0])):
-            for j in range(len(curves)):
-                plt.plot(curves[j][i][:, 0], curves[j][i][:, 1], cols[i], label='c{}'.format(i + 1), alpha=0.5)
-            plt.legend()
-            plt.show()
-            plt.close()
 
     @staticmethod
     def cca_plot(cca_coef, cc, sdc, obs_n, j, x_c_pred, y_c_true):
@@ -295,6 +317,7 @@ class Plot:
             axs.flat[i].set_title(str(np.round(coeffs[i], 3)))
         plt.tight_layout()
         plt.show()
+        plt.close()
 
     @staticmethod
     def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
@@ -308,6 +331,7 @@ class Plot:
         plt.ylabel('Explained variance')
         if fig_file:
             plt.savefig(fig_file, dpi=300)
+            plt.close()
         if show:
             plt.show()
             plt.close()
@@ -329,33 +353,41 @@ class Plot:
 
         if fig_file:
             plt.savefig(fig_file, dpi=300)
+            plt.close()
         if show:
             plt.show()
             plt.close()
 
-    def whp(self, h, sc, wdir, fig_file=None, show=False):
-        # Plot results
-        grf = sc
-        X, Y = np.meshgrid(
-            np.linspace(0, self.xlim, int(self.xlim / grf)), np.linspace(0, self.ylim, int(self.ylim / grf)))
-        for z in h:
-            plt.contour(X, Y, z, [0], colors='white', linewidths=.5, alpha=0.4)
-        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
-        # Plot wells
-        pwl = np.load((jp(wdir, 'pw.npy')), allow_pickle=True)[:, :2]
-        plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-        iwl = np.load((jp(wdir, 'iw.npy')), allow_pickle=True)[:, :2]
-        for i in range(len(iwl)):
-            plt.plot(iwl[i][0], iwl[i][1], 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                     label='iw{}'.format(i))
-        plt.legend(fontsize=8)
-        plt.xlim(750, 1200)
-        plt.ylim(300, 700)
-        plt.tick_params(labelsize=5)
-        if fig_file:
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
-        if show:
-            plt.show()
+    @staticmethod
+    def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+
+        cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)
+        # CCA plots for each observation:
+
+        for i in range(cca.n_components):
+            comp_n = i
+            plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
+            for sample_n in range(len(d_pc_prediction)):
+                d_obs = d_pc_prediction[sample_n]
+                h_obs = h_pc_prediction[sample_n]
+                d_cca_prediction, h_cca_prediction = cca.transform(d_obs.reshape(1, -1),
+                                                                   h_obs.reshape(1, -1))
+                d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+
+                plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+                         'o', markersize=4.5, alpha=.7,
+                         label='{}'.format(sample_n))
+
+            plt.grid('w', linewidth=.3, alpha=.4)
+            plt.tick_params(labelsize=8)
+            plt.title(round(cca_coefficient[i], 4))
+            plt.legend(fontsize=5)
+            if sdir:
+                plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
+                plt.close()
+            if show:
+                plt.show()
+                plt.close()
 
 # class MyWorkshop:
 #

@@ -46,8 +46,8 @@ tc = do.d_process(tc0=tc0)
 n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
-mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
-mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
+# mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
+# mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
 # Let's first try to divide it using cells of side length = 5m
@@ -107,25 +107,42 @@ h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until
 
 # Explained variance plots
 # jp(cwd, 'figures', 'PCA', 'd_exvar.png')
-mp.explained_variance(d_pca_operator, n_comp=20, show=True)
+# mp.explained_variance(d_pca_operator, n_comp=95, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
 
 # jp(cwd, 'figures', 'PCA', 'h_exvar.png')
-mp.explained_variance(h_pca_operator, n_comp=20, show=True)
+# mp.explained_variance(h_pca_operator, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
 
 # Scores plots
 
 # jp(cwd, 'figures', 'PCA', 'd_scores.png')
-mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20)
+# mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
 
 # jp(cwd, 'figures', 'PCA', 'h_scores.png')
-mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20)
+# mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
+
+n_d_pc_comp = 95
+n_h_pc_comp = 20
+
+d_pc_training0 = d_pc_training.copy()
+h_pc_training0 = h_pc_training.copy()
+# d_pc_training, h_pc_training = d_pc_training0.copy(), h_pc_training0.copy()
+
+d_pc_training = d_pc_training[:, :n_d_pc_comp]
+h_pc_training = h_pc_training[:, :n_h_pc_comp]
+
+d_pc_prediction0 = d_pc_prediction.copy()
+h_pc_prediction0 = h_pc_prediction.copy()
+# d_pc_training, h_pc_training = d_pc_training0.copy(), h_pc_training0.copy()
+
+d_pc_prediction = d_pc_prediction[:, :n_d_pc_comp]
+h_pc_prediction = h_pc_prediction[:, :n_h_pc_comp]
 
 # %% CCA
 
-n_comp_cca = d_pc_training.shape[1]
-cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*1.5))  # By default, it scales the data
-cca.fit(d_pc_training, h_pc_training)
-joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
+# n_comp_cca = 20
+# cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*1.5))  # By default, it scales the data
+# cca.fit(d_pc_training, h_pc_training)
+# joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
 cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
 
 # Returns x_scores, y_scores after fitting inputs.
@@ -136,28 +153,7 @@ d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
 
 # Correlation coefficients
-cca_coefficient = np.corrcoef(d_cca_training, h_cca_training).diagonal(offset=cca.n_components)
-
-# CCA plots for each observation:
-# for i in range(23):
-#     comp_n = i
-#     plt.plot(d_cca_training[comp_n], h_cca_training[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
-#     for sample_n in range(n_obs):
-#         d_pc_prediction = d_pc_scores[n_training:][sample_n]
-#         h_pc_prediction = h_pc_scores[n_training:][sample_n]
-#         d_cca_prediction, h_cca_prediction = cca.transform(d_pc_prediction.reshape(1, -1),
-#                                                            h_pc_prediction.reshape(1, -1))
-#         d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
-#
-#         plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-#                  'o', markersize=4.5, alpha=.7,
-#                  label='{}'.format(sample_n))
-#     plt.grid('w', linewidth=.3, alpha=.4)
-#     plt.tick_params(labelsize=8)
-#     plt.title(round(cca_coefficient[i], 4))
-#     plt.legend(fontsize=5)
-#     plt.savefig(jp(cwd, 'figures', 'CCA', 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
-#     plt.close()
+mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
 
 # Pick an observation
 for sample_n in range(n_obs):
@@ -167,7 +163,7 @@ for sample_n in range(n_obs):
     hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
 
     # Project observed data into canonical space.
-    d_cca_prediction, h_cca_prediction = cca.transform(d_pc_prediction.reshape(1, -1), h_pc_prediction.reshape(1, -1))
+    d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
     d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
     # Ensure Gaussian distribution in h_cca
@@ -179,20 +175,9 @@ for sample_n in range(n_obs):
     h_cca_training_gaussian \
         = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
-    # CCA plot first component
-    # comp_n = 0
-    # plt.hist(h_cca_training[comp_n], alpha=.5)
-    # plt.hist(h_cca_training_gaussian[comp_n], alpha=.5)
-    # plt.show()
-
     # Apply the transformation on the prediction as well.
     h_cca_prediction_gaussian \
         = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
-
-    # CCA plot first component
-    # plt.plot(d_cca_training[comp_n], h_cca_training_gaussian[comp_n], 'ro')
-    # plt.plot(d_cca_prediction[comp_n], h_cca_prediction_gaussian[comp_n], 'ko')
-    # plt.show()
 
     # %% Predictions
 
@@ -262,48 +247,58 @@ for sample_n in range(n_obs):
     # We use the initial decomposition to build the forecast.
     # Inverse transform the values with the PCA operator and rescale the h output.
 
-    forecast_posterior \
-        = h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
+    forecast_posterior = \
+        (np.dot(h_pca_reverse, h_pca_operator.components_[:n_h_pc_comp, :]) +
+         h_pca_operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
+
+    # forecast_posterior \
+    #     = h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
 
     # Predicting the SD based for a certain number of 'observations'
-    h_pc_true_pred = cca.predict(d_pc_prediction.reshape(1, -1))
+
+    h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
 
     # Going back to the original SD dimension
-    h_true_pred = h_pca_operator.inverse_transform(h_pc_true_pred)
-    h_true_pred = h_true_pred.reshape((len(h_true_pred), h.shape[1], h.shape[2]))  # Reshape results
+    # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)
+    # TODO: Add here the rest of the PCA components
+    h_pred = np.dot(h_pc_true_pred, h_pca_operator.components_[:n_h_pc_comp, :]) + h_pca_operator.mean_
+    h_pred = h_pred.reshape(h.shape[1], h.shape[2])  # Reshape results
 
     # Plot results
-    grf = 5
-    X, Y = np.meshgrid(np.linspace(0, xlim, int(xlim / grf)), np.linspace(0, ylim, int(ylim / grf)))
-    Z = np.copy(h_true)
-    plt.subplots()
-    plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
-    # Plot n sampled forecasts
-    for z in forecast_posterior:
-        plt.contour(X, Y, z, [0], colors='white', alpha=0.1)
-    # Plot true h
-    plt.contour(X, Y, Z, [0], colors='red', linewidths=1, alpha=.9)
-    # Plot true h predicted
-    plt.contour(X, Y, h_true_pred[0], [0], colors='cyan', linewidths=1, alpha=.9)
-    # Plot hk
-    # plt.imshow(hk_true[0], origin='lower', extent=(0, xlim, 0, ylim),
-    #            norm=LogNorm(vmin=np.min(hk_true[0]), vmax=np.max(hk_true[0])),
-    #            cmap='coolwarm', alpha=0.7)
-    # plt.colorbar()
-    # Plot wells
-    pwl = np.load((jp(cwd, 'grid', 'pw.npy')), allow_pickle=True)[:, :2]
-    plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-    iwl = np.load((jp(cwd, 'grid', 'iw.npy')), allow_pickle=True)[:, :2]
-    for i in range(len(iwl)):
-        plt.plot(iwl[i][0], iwl[i][1],
-                 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                 label='iw{}'.format(i))
-    plt.tick_params(labelsize=5)
-    plt.legend(fontsize=7, loc=2)
-    plt.xlim(750, 1200)
-    plt.ylim(300, 700)
-    plt.savefig(jp(cwd, 'figures', 'Predictions', '{}prediction.png'.format(sample_n)), bbox_inches='tight', dpi=300)
-    plt.show()
+    ff = jp(cwd, 'figures', 'Predictions', '{}prediction.png'.format(sample_n))
+    mp.whp_prediction(sc, forecast_posterior, h_true, h_pred, wdir=jp(cwd, 'grid'), fig_file=ff)
+
+    # grf = 5
+    # X, Y = np.meshgrid(np.linspace(0, xlim, int(xlim / grf)), np.linspace(0, ylim, int(ylim / grf)))
+    # Z = np.copy(h_true)
+    # plt.subplots()
+    # plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
+    # # Plot n sampled forecasts
+    # for z in forecast_posterior:
+    #     plt.contour(X, Y, z, [0], colors='white', alpha=0.1)
+    # # Plot true h
+    # plt.contour(X, Y, Z, [0], colors='red', linewidths=1, alpha=.9)
+    # # Plot true h predicted
+    # plt.contour(X, Y, h_true_pred[0], [0], colors='cyan', linewidths=1, alpha=.9)
+    # # Plot hk
+    # # plt.imshow(hk_true[0], origin='lower', extent=(0, xlim, 0, ylim),
+    # #            norm=LogNorm(vmin=np.min(hk_true[0]), vmax=np.max(hk_true[0])),
+    # #            cmap='coolwarm', alpha=0.7)
+    # # plt.colorbar()
+    # # Plot wells
+    # pwl = np.load((jp(cwd, 'grid', 'pw.npy')), allow_pickle=True)[:, :2]
+    # plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
+    # iwl = np.load((jp(cwd, 'grid', 'iw.npy')), allow_pickle=True)[:, :2]
+    # for i in range(len(iwl)):
+    #     plt.plot(iwl[i][0], iwl[i][1],
+    #              'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+    #              label='iw{}'.format(i))
+    # plt.tick_params(labelsize=5)
+    # plt.legend(fontsize=7, loc=2)
+    # plt.xlim(750, 1200)
+    # plt.ylim(300, 700)
+    # plt.savefig(jp(cwd, 'figures', 'Predictions', '{}prediction.png'.format(sample_n)), bbox_inches='tight', dpi=300)
+    # plt.show()
 
 
 # palette = ['tab:{}'.format(c) for c in
