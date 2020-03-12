@@ -1,11 +1,12 @@
 import os
 from os.path import join as jp
+from datetime import date
+
+import numpy as np
+from scipy.spatial import distance_matrix
 
 import flopy
 import flopy.utils.binaryfile as bf
-import numpy as np
-from scipy.spatial import distance_matrix
-from datetime import date
 
 import mySgems
 from mySgems import MySgems

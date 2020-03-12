@@ -15,7 +15,7 @@ class FileOps:
         pass
 
     @staticmethod
-    def load_data(res_dir):
+    def load_data(res_dir, n=0):
         bkt_files = []
         sd_files = []
         hk_files = []
@@ -33,6 +33,12 @@ class FileOps:
                         shutil.rmtree(r)
                 except TypeError:
                     pass
+        if n:
+            folders = np.random.choice(np.arange(len(roots)), n)
+            bkt_files = np.array(bkt_files)[folders]
+            sd_files = np.array(sd_files)[folders]
+            hk_files = np.array(hk_files)[folders]
+            roots = np.array(roots)[folders]
 
         # Load and filter results
         tpt = list(map(np.load, bkt_files))
@@ -178,7 +184,7 @@ class MeshOps:
                 .reshape(-1, nrows, ncols))
 
     def h_sub(self, h, un, uc, sc):
-        h_u = np.zeros((h.shape[0], un, uc, sc))
+        h_u = np.zeros((h.shape[0], un, uc))
         for i in range(h.shape[0]):
             sim = h[i]
             sub = self.blockshaped(sim, sc, sc)

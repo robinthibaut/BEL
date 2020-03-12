@@ -7,11 +7,12 @@ import numpy as np
 import uuid
 from multiprocessing import Process
 
-from MyToolbox import dirmaker, load_flow_model, load_transport_model
+from MyToolbox import FileOps
 from Flow import my_flow
 from Transport import my_transport
 from Backtracking import my_backtracking
 from SignedDistance import signed_distance
+
 
 # Directories
 cwd = os.getcwd()
@@ -82,7 +83,7 @@ def main():
     res_dir = uuid.uuid4().hex
     results_dir = jp(cwd, 'results', res_dir)
     # Generates the result directory
-    dirmaker(results_dir)
+    FileOps.dirmaker(results_dir)
     np.save(jp(cwd, 'grid', 'iw'), wells_data)  # Saves injection wells stress period data
     np.save(jp(results_dir, 'iw'), wells_data)  # Saves injection wells stress period data
     np.save(jp(cwd, 'grid', 'pw'), pumping_well)  #
