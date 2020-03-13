@@ -16,6 +16,7 @@ class FileOps:
 
     @staticmethod
     def load_data(res_dir, n=0):
+        # TODO: Split this function to generalize and load one feature at a time
         bkt_files = []
         sd_files = []
         hk_files = []
@@ -394,109 +395,3 @@ class Plot:
             if show:
                 plt.show()
                 plt.close()
-
-# class MyWorkshop:
-#
-#     def __init__(self):
-#         self.xlim = 1500
-#         self.ylim = 1000
-#         self.grf = 1
-#         self.ntstp = 1000
-#         self.res_dir = ''
-#
-#     def load_data(self):
-#         bkt_files = []
-#         sd_files = []
-#         hk_files = []
-#         # r=root, d=directories, f = files
-#         roots = []
-#         for r, d, f in os.walk(self.res_dir, topdown=False):
-#             if 'bkt.npy' in f and 'sd.npy' in f and 'hk0.npy' in f:
-#                 bkt_files.append(os.path.join(r, 'bkt.npy'))
-#                 sd_files.append(os.path.join(r, 'sd.npy'))
-#                 hk_files.append(os.path.join(r, 'hk0.npy'))
-#                 roots.append(r)
-#             else:
-#                 try:
-#                     if r != self.res_dir:
-#                         shutil.rmtree(r)
-#                 except TypeError:
-#                     pass
-#
-#         # Load and filter results
-#         tpt = list(map(np.load, bkt_files))
-#         # FIXME: the way transport arrays are saved
-#         # n_wells = 50
-#         # tpt = [np.split(t, n_wells) for t in tpt]
-#
-#         rm = []
-#         for i in range(len(tpt)):
-#             for j in range(len(tpt[i])):
-#                 if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
-#                     rm.append(i)
-#                     break
-#         for index in sorted(rm, reverse=True):
-#             del bkt_files[index]
-#             del sd_files[index]
-#             del hk_files[index]
-#             del roots[index]
-#
-#         tpt = list(map(np.load, bkt_files))  # Re-load transport curves
-#         # tpt = [np.split(t, n_wells) for t in tpt]
-#
-#         # ny = []  # Smoothed curves
-#         # tstp = []  # Time steps, which are different for each simulation
-#         #
-#         # for c in tpt:  # First, smoothing of the curves with Savgol filter
-#         #     for ob in c:
-#         #         tstp.append(c[0][:, 0])
-#         #         v = ob[:, 1]
-#         #         ny.append(np.array(savgol_filter(v, 51, 3)))  # smoothed res
-#         #
-#         # flat_ny = [item for sublist in ny for item in sublist]
-#         # max_v = max(flat_ny)  # Max and min value to normalize
-#         # min_v = min(flat_ny)
-#         #
-#         # f1d = []  # List of interpolating functions for each curve
-#         # for i in range(len(ny)):
-#         #     o_s = (ny[i] - min_v) / (max_v - min_v)
-#         #     f1d.append(interp1d(tstp[i], o_s, fill_value='extrapolate'))
-#         #
-#         # # ntstp = 1000  # Arbitrary number of time steps to create the final transport array
-#         # ls = np.linspace(0, 200, num=self.ntstp)  # From 0 to 200 days with 1000 steps
-#         #
-#         # tc = []
-#         # [tc.append(f1d[i](ls)) for i in range(len(f1d))]
-#         # tc = np.array(tc)
-#         # tc = tc.reshape((len(tpt), len(tpt[0]), self.ntstp))
-#
-#         sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
-#         hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
-#
-#         # return tpt, tc, max_v, min_v, sd, hk
-#         return tpt, sd, hk
-#
-#     def protection_zone_plot(self, pz):
-#         """Displays every protection zones (0 contour line) contained in the pz array"""
-#         X_pz, Y_pz = np.meshgrid(np.linspace(0, self.xlim, int(self.xlim / self.grf)),
-#                                  np.linspace(0, self.ylim, int(self.ylim / self.grf)))
-#         for s in range(len(pz)):
-#             plt.contour(X_pz, Y_pz, pz[s], [0], colors='blue', alpha=0.5)
-#         # plt.imshow(Z, origin='lower',
-#         #            cmap='coolwarm', alpha=0.5)
-#         # plt.colorbar()
-#         # plt.xlim(600, 1200)
-#         # plt.ylim(200, 800)
-#         # plt.savefig(jp(cwd, 'signed_distance_c.png'), dpi=300, bbox_inches='tight')
-#         plt.show()
-#
-#     def hydraulic_conductivity_plot(self, hka):
-#         for k in range(len(hka)):
-#             # t = [0.01, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0]
-#             hkp = plt.imshow(hka[k][0], extent=(0, self.xlim, 0, self.ylim), cmap='coolwarm',
-#                              norm=LogNorm(vmin=hka[k][0].min(), vmax=hka[k][0].max()))
-#             plt.colorbar()
-#             # contours = plt.contour(X, Y, sd[i], [0], colors='black', alpha=0.7)
-#             # plt.savefig(jp(res_dir, 'signed_distance_{}.png'.format(i)), dpi=150, bbox_inches='tight')
-#             plt.show()
-#             plt.close()

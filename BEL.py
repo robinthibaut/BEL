@@ -7,19 +7,11 @@ import joblib
 import numpy as np
 from numpy.matlib import repmat
 
-from scipy.interpolate import interp1d
-from scipy.io import loadmat
-from scipy.spatial import distance_matrix
-
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PowerTransformer
-from sklearn.preprocessing import StandardScaler
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.gridspec as gridspec
 plt.style.use('dark_background')
 
 from MyToolbox import FileOps, DataOps, MeshOps, Plot
@@ -37,7 +29,7 @@ res_dir = jp(cwd, 'results')
 # tpt = transport curves, tc = normalized and interpolated transport curves (1000 time steps on 200 days)
 # sd = signed distance matrices, hk = hydraulic conductivity matrices
 
-tc0, h, hk = FileOps.load_data(res_dir=res_dir, n=500)
+tc0, h, hk = FileOps.load_data(res_dir=res_dir, n=0)
 
 # Preprocess d
 tc = do.d_process(tc0=tc0)
@@ -46,20 +38,20 @@ n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
 # mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
-mp.curves_i(tc=tc, n_wel=n_wel, show=True)
+# mp.curves_i(tc=tc, n_wel=n_wel, show=True)
 # mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
 # Let's first try to divide it using cells of side length = 5m
 # Geometry
-xlim, ylim = 1500, 1000
-grf = 1  # Cell dimension (1m)
-nrow, ncol = ylim // grf, xlim // grf
-sc = 5
-un, uc = int(nrow / sc), int(ncol / sc)
+# xlim, ylim = 1500, 1000
+# grf = 1  # Cell dimension (1m)
+# nrow, ncol = ylim // grf, xlim // grf
+# sc = 5
+# un, uc = int(nrow / sc), int(ncol / sc)
 
-h_u = mo.h_sub(h, un, uc, sc)
-np.save(jp(cwd, 'temp', 'h_u'), h_u)  # Load transformed SD matrix
+# h_u = mo.h_sub(h, un, uc, sc)
+# np.save(jp(cwd, 'temp', 'h_u'), h_u)  # Load transformed SD matrix
 h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
 h0 = h.copy()
 h = h_u.copy()
@@ -71,7 +63,7 @@ h = h_u.copy()
 
 n_sim = len(h)  # Number of simulations
 
-n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
+n_training = int(n_sim * .98)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training
 
 # PCA on transport curves
@@ -80,9 +72,9 @@ d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_si
 d_training = d_original[:n_training]
 d_prediction = d_original[n_training:]
 
-d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
-d_pca_operator.fit(d_training)  # Principal components
-joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
+# d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
+# d_pca_operator.fit(d_training)  # Principal components
+# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
 d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
 
 d_pc_training = d_pca_operator.transform(d_training)  # Principal components
@@ -93,9 +85,9 @@ h_original = h.reshape(n_sim, -1)  # Not normalized
 h_training = h_original[:n_training]
 h_prediction = h_original[n_training:]
 
-h_pca_operator = PCA()  # Try: Explain everything, keep all scores
-h_pca_operator.fit(h_training)  # Principal components
-joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
+# h_pca_operator = PCA()  # Try: Explain everything, keep all scores
+# h_pca_operator.fit(h_training)  # Principal components
+# joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
 h_pca_operator = joblib.load(jp(cwd, 'temp', 'h_pca_operator.pkl'))
 
 h_pc_training = h_pca_operator.transform(h_training)  # Principal components
@@ -104,11 +96,11 @@ h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until
 # Explained variance plots
 # jp(cwd, 'figures', 'PCA', 'd_exvar.png')
 # mp.explained_variance(d_pca_operator, n_comp=95, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
-mp.explained_variance(d_pca_operator, n_comp=95, show=True)
+# mp.explained_variance(d_pca_operator, n_comp=95, show=True)
 
 # jp(cwd, 'figures', 'PCA', 'h_exvar.png')
 # mp.explained_variance(h_pca_operator, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
-mp.explained_variance(h_pca_operator, n_comp=20, show=True)
+# mp.explained_variance(h_pca_operator, n_comp=20, show=True)
 
 # Scores plots
 
@@ -118,7 +110,7 @@ mp.explained_variance(h_pca_operator, n_comp=20, show=True)
 # jp(cwd, 'figures', 'PCA', 'h_scores.png')
 # mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
-n_d_pc_comp = 400
+n_d_pc_comp = 300
 n_h_pc_comp = 300
 
 d_pc_training0 = d_pc_training.copy()
@@ -137,8 +129,8 @@ h_pc_prediction = h_pc_prediction[:, :n_h_pc_comp]
 
 # %% CCA
 
-n_comp_cca = 200
-cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*1.5))  # By default, it scales the data
+n_comp_cca = 300
+cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
 cca.fit(d_pc_training, h_pc_training)
 joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
 cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
@@ -262,8 +254,8 @@ for sample_n in range(n_obs):
         (np.dot(h_pca_reverse, h_pca_operator.components_[:h_pca_reverse.shape[1], :]) +
          h_pca_operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
 
-    # forecast_posterior \
-    #     = h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
+    # forecast_posterior = \
+    #      h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))  # old
 
     # Predicting the SD based for a certain number of 'observations'
     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
@@ -275,6 +267,7 @@ for sample_n in range(n_obs):
     # Going back to the original SD dimension
     # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)  # old
     h_pred = np.dot(h_pc_true_pred, h_pca_operator.components_[:h_pc_true_pred.shape[1], :]) + h_pca_operator.mean_
+
     h_pred = h_pred.reshape(h.shape[1], h.shape[2])  # Reshape results
 
     # Plot results
