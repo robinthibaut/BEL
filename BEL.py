@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 plt.style.use('dark_background')
 
 from MyToolbox import FileOps, DataOps, MeshOps, Plot
+from Tarantola import posterior
 
 mp = Plot()
 do = DataOps()
@@ -72,9 +73,9 @@ d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_si
 d_training = d_original[:n_training]
 d_prediction = d_original[n_training:]
 
-# d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
-# d_pca_operator.fit(d_training)  # Principal components
-# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
+d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
+d_pca_operator.fit(d_training)  # Principal components
+joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
 d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
 
 d_pc_training = d_pca_operator.transform(d_training)  # Principal components
@@ -85,9 +86,9 @@ h_original = h.reshape(n_sim, -1)  # Not normalized
 h_training = h_original[:n_training]
 h_prediction = h_original[n_training:]
 
-# h_pca_operator = PCA()  # Try: Explain everything, keep all scores
-# h_pca_operator.fit(h_training)  # Principal components
-# joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
+h_pca_operator = PCA()  # Try: Explain everything, keep all scores
+h_pca_operator.fit(h_training)  # Principal components
+joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
 h_pca_operator = joblib.load(jp(cwd, 'temp', 'h_pca_operator.pkl'))
 
 h_pc_training = h_pca_operator.transform(h_training)  # Principal components
@@ -110,7 +111,7 @@ h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until
 # jp(cwd, 'figures', 'PCA', 'h_scores.png')
 # mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
-n_d_pc_comp = 300
+n_d_pc_comp = 500
 n_h_pc_comp = 300
 
 d_pc_training0 = d_pc_training.copy()
@@ -129,7 +130,7 @@ h_pc_prediction = h_pc_prediction[:, :n_h_pc_comp]
 
 # %% CCA
 
-n_comp_cca = 300
+n_comp_cca = 100
 cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
 cca.fit(d_pc_training, h_pc_training)
 joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
@@ -143,10 +144,10 @@ d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
 
 # Correlation coefficients
-mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
+# mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
 
 # Pick an observation
-for sample_n in range(n_obs):
+for sample_n in range(1):
     d_pc_obs = d_pc_prediction[sample_n]  # The rests is considered as field data
     h_pc_obs = h_pc_prediction[sample_n]  # The rests is considered as field data
     h_true = h[n_training:][sample_n]  # True prediction
@@ -169,45 +170,11 @@ for sample_n in range(n_obs):
     h_cca_prediction_gaussian \
         = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
-    # %% Predictions
-
-    # Evaluate the covariance in h
-    h_cov_operator = np.cov(h_cca_training_gaussian.T, rowvar=False)  # same
-
-    # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-    x_dim = np.size(d_pc_training, axis=1)  # Number of PCA components for the curves
-    noise = .01
-    d_cov_operator = np.eye(x_dim) * noise  # I matrix.
-    d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations  # same
-
-    # Linear modeling d to h
-    g = np.linalg.lstsq(h_cca_training_gaussian.T, d_cca_training.T, rcond=None)[0].T  # Transpose to get same as Thomas
-    g = np.where(np.abs(g) < 1e-12, 0, g)
-
-    # Modeling error due to deviations from theory
-    d_ls_predicted = g @ h_cca_training_gaussian  # same
-    d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=1).reshape(-1, 1)  # same
-    d_modeling_error = d_cca_training - d_ls_predicted - repmat(d_modeling_mean_error, 1,
-                                                                np.size(d_cca_training, axis=1))  # same
-    # Information about the covariance of the posterior distribution.
-    d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # same
-
-    # Computation of the posterior mean
-    h_mean = np.row_stack(np.mean(h_cca_training_gaussian, axis=1))  # same
-    h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
-
-    h_mean_posterior = h_mean \
-                       + h_cov_operator @ g.T \
-                       @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                       @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # same
-
-    # h posterior covariance
-    h_posterior_covariance = h_cov_operator \
-                             - (h_cov_operator @ g.T) \
-                             @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                             @ g @ h_cov_operator
-
-    h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # same
+    h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
+                                                         d_cca_training,
+                                                         d_pc_training,
+                                                         d_rotations,
+                                                         d_cca_prediction)
 
     # %% Sample the posterior
 
