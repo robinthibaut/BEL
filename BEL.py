@@ -12,7 +12,7 @@ from sklearn.preprocessing import PowerTransformer
 
 import matplotlib.pyplot as plt
 
-from MyToolbox import FileOps, DataOps, MeshOps, Plot
+from MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps
 from Tarantola import posterior
 
 plt.style.use('dark_background')
@@ -21,15 +21,13 @@ mp = Plot()
 do = DataOps()
 mo = MeshOps()
 
+
 # Directories
 cwd = os.getcwd()
 # This sets the main directory.
 res_dir = jp(cwd, 'results')
 
-# tpt = transport curves, tc = normalized and interpolated transport curves (1000 time steps on 200 days)
-# sd = signed distance matrices, hk = hydraulic conductivity matrices
-
-tc0, h, hk = FileOps.load_data(res_dir=res_dir, n=0)
+tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
 
 # Preprocess d
 tc = do.d_process(tc0=tc0)
@@ -37,146 +35,55 @@ n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
 # mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
-# mp.curves_i(tc=tc, n_wel=n_wel, show=True)
 # mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
-# Let's first try to divide it using cells of side length = 5m
-# Geometry
-xlim, ylim = 1500, 1000
-grf = 1  # Cell dimension (1m)
-nrow, ncol = ylim // grf, xlim // grf
-sc = 5
-un, uc = int(nrow / sc), int(ncol / sc)
-
-# h_u = mo.h_sub(h, un, uc, sc)
-# np.save(jp(cwd, 'temp', 'h_u'), h_u)  # Load transformed SD matrix
+# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
 h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
-h0 = h.copy()
 h = h_u.copy()
 
 # Plot all WHPP
-# mp.whp(h, jp(cwd, 'grid'), fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
+# mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
 
 # %%  PCA
 
-
-def n_pca_components(pca_o, perc):
-    """
-    Given an explained variance persentage, returns the number of components necessary to obtain that level.
-    """
-    evr = np.cumsum(pca_o.explained_variance_ratio_)
-    nc = len(np.where(evr <= perc)[0])
-
-    return nc
-
-
-def perc_pca_components(pca_o, n_c):
-
-    evr = np.cumsum(pca_o.explained_variance_ratio_)
-
-    return evr[n_c-1]
-
-
+# Choose size of training and prediction set
 n_sim = len(h)  # Number of simulations
-
 n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training
 
 # PCA on transport curves
-# Flattened, normalized, breakthrough curves
-d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_sim, -1)
-d_training = d_original[:n_training]
-d_prediction = d_original[n_training:]
+d_pco = PCAOps(name='d', raw_data=tc)
+d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
+d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=True)
 
-# d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
-# d_pca_operator.fit(d_training)  # Principal components
-# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
-d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
+# PCA on signed distance
+h_pco = PCAOps(name='h', raw_data=h)
+h_training, h_prediction = h_pco.pca_tp(n_training)
+h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=True)
 
-d_pc_training = d_pca_operator.transform(d_training)  # Principal components
-d_pc_prediction = d_pca_operator.transform(d_prediction)
-
-#  PCA on signed distance
-h_original = h.reshape(n_sim, -1)  # Not normalized
-h_training = h_original[:n_training]
-h_prediction = h_original[n_training:]
-
-# h_pca_operator = PCA()  # Try: Explain everything, keep all scores
-# h_pca_operator.fit(h_training)  # Principal components
-# joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
-h_pca_operator = joblib.load(jp(cwd, 'temp', 'h_pca_operator.pkl'))
-
-h_pc_training = h_pca_operator.transform(h_training)  # Principal components
-h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until desired sample number
 
 # Explained variance plots
-jp(cwd, 'figures', 'PCA', 'd_exvar.png')
-mp.explained_variance(d_pca_operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
-# mp.explained_variance(d_pca_operator, n_comp=95, show=True)
-
-jp(cwd, 'figures', 'PCA', 'h_exvar.png')
-mp.explained_variance(h_pca_operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
-# mp.explained_variance(h_pca_operator, n_comp=20, show=True)
+mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
+mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
 
 # Scores plots
 
-# jp(cwd, 'figures', 'PCA', 'd_scores.png')
 mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
-
-# jp(cwd, 'figures', 'PCA', 'h_scores.png')
 mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
-p_cut_d = .999
-p_cut_h = .98
+# Compares true value with inverse transformation from PCA
+mp.d_pca_inverse_plot(d_training, 0, d_pco.operator, 50)
+mp.h_pca_inverse_plot(h_training, 0, h_pco.operator, 30)
 
-print(n_pca_components(d_pca_operator, p_cut_d))
-print(n_pca_components(h_pca_operator, p_cut_h))
-
-
-def d_pca_inverse_plot(v, e, pca_o, vn):
-    v_pc = pca_o.transform(v)
-    v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-    plt.plot(v_pred)
-    plt.plot(v[e])
-    plt.show()
-
-
-def h_pca_inverse_plot(v, e, pca_o, vn):
-    v_pc = pca_o.transform(v)
-    v_pred = (np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_)
-    mp.whp(v_pred.reshape(1, h.shape[1], h.shape[2]), jp(cwd, 'grid'), show=False)
-    mp.whp(h_training[e].reshape(1, h.shape[1], h.shape[2]), jp(cwd, 'grid'), show=True)
-
-
-d_pca_inverse_plot(d_training, 0, d_pca_operator, 50)
-h_pca_inverse_plot(h_training, 0, h_pca_operator, 30)
-
-print(perc_pca_components(d_pca_operator, 50))
-print(perc_pca_components(h_pca_operator, 30))
-
-# pcd = PCA(n_components=10)
-# dd = pcd.fit_transform(d_training)
-# dpd = pcd.inverse_transform(dd[0])
-# plt.plot(dpd)
-# plt.show()
+print(d_pco.perc_pca_components(50))
+print(h_pco.perc_pca_components(30))
 
 n_d_pc_comp = 50
 n_h_pc_comp = 30
 
-d_pc_training0 = d_pc_training.copy()
-h_pc_training0 = h_pc_training.copy()
-# d_pc_training, h_pc_training = d_pc_training0.copy(), h_pc_training0.copy()
-
-d_pc_training = d_pc_training[:, :n_d_pc_comp]
-h_pc_training = h_pc_training[:, :n_h_pc_comp]
-
-d_pc_prediction0 = d_pc_prediction.copy()
-h_pc_prediction0 = h_pc_prediction.copy()
-# d_pc_prediction, h_pc_prediction = d_pc_prediction0.copy(), h_pc_prediction0.copy()
-
-d_pc_prediction = d_pc_prediction[:, :n_d_pc_comp]
-h_pc_prediction = h_pc_prediction[:, :n_h_pc_comp]
+d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
+h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
 # %% CCA
 
@@ -201,7 +108,7 @@ for sample_n in range(n_obs):
     d_pc_obs = d_pc_prediction[sample_n]  # The rests is considered as field data
     h_pc_obs = h_pc_prediction[sample_n]  # The rests is considered as field data
     h_true = h[n_training:][sample_n]  # True prediction
-    hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
+    # hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
 
     # Project observed data into canonical space.
     d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
@@ -251,28 +158,19 @@ for sample_n in range(n_obs):
     # h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
     # np.array_equal(h_pca_reverse, h_pca_reverse_test)
 
-    def pc_random():
-        """
-        Randomly selects PC components from the original matrix
-        """
-        r_rows = np.random.choice(h_pc_training0.shape[0], n_posts)
-        score_selection = h_pc_training0[r_rows, n_h_pc_comp:]
-        test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
-        return np.array(test)
-
     add_comp = 0
 
     if add_comp:
-        rnpc = np.array([pc_random() for i in range(n_posts)])
+        rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])
         h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
 
     # Generate forecast in the initial dimension.
-    # We use the initial decomposition to build the forecast.
-    # Inverse transform the values with the PCA operator and rescale the h output.
 
-    forecast_posterior = \
-        (np.dot(h_pca_reverse, h_pca_operator.components_[:h_pca_reverse.shape[1], :]) +
-         h_pca_operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
+    # forecast_posterior = \
+    #     (np.dot(h_pca_reverse, h_pco.operator.components_[:h_pca_reverse.shape[1], :]) +
+    #      h_pco.operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
+    #
+    forecast_posterior = h_pco.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
 
     # forecast_posterior = \
     #      h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))  # old
@@ -280,16 +178,13 @@ for sample_n in range(n_obs):
     # Predicting the SD based for a certain number of 'observations'
     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
 
-    # if add_comp:
-    #     rnpc = pc_random()
-    #     h_pc_true_pred = np.concatenate((h_pc_true_pred[0], rnpc)).reshape(1, -1)
-
     # Going back to the original SD dimension
     # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)  # old
-    h_pred = np.dot(h_pc_true_pred, h_pca_operator.components_[:h_pc_true_pred.shape[1], :]) + h_pca_operator.mean_
-
-    h_pred = h_pred.reshape(h.shape[1], h.shape[2])  # Reshape results
+    h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
 
     # Plot results
     ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
-    mp.whp_prediction(forecast_posterior, h_true, h_pred, wdir=jp(cwd, 'grid'), fig_file=ff)
+    mp.whp_prediction(forecasts=forecast_posterior,
+                      h_true=h_true,
+                      h_pred=h_pred,
+                      fig_file=ff)

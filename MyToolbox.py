@@ -2,11 +2,14 @@ import os
 from os.path import join as jp
 import shutil
 
+import joblib
+
 import flopy
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 
+from sklearn.decomposition import PCA
 
 class FileOps:
 
@@ -14,7 +17,7 @@ class FileOps:
         pass
 
     @staticmethod
-    def load_data(res_dir, n=0):
+    def load_data(res_dir, n=0, data_flag=False):
         # TODO: Split this function to generalize and load one feature at a time
         bkt_files = []
         sd_files = []
@@ -56,10 +59,12 @@ class FileOps:
             del roots[index]
 
         tpt = list(map(np.load, bkt_files))  # Re-load transport curves
-        sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
-        hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
-
-        return tpt, sd, hk
+        # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
+        if not data_flag:
+            sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
+            return tpt, sd
+        else:
+            return tpt
 
     @staticmethod
     def datread(file=None, header=0):
@@ -217,6 +222,107 @@ class DataOps:
 
         return tc
 
+    @staticmethod
+    def h_process(h, sc=5, wdir=''):
+        xlim, ylim = 1500, 1000
+        grf = 1  # Cell dimension (1m)
+        nrow, ncol = ylim // grf, xlim // grf
+        un, uc = int(nrow / sc), int(ncol / sc)
+        h_u = MeshOps.h_sub(h, un, uc, sc)
+        np.save(jp(wdir, 'h_u'), h_u)  # Load transformed SD matrix
+
+
+class PCAOps:
+
+    def __init__(self, name, raw_data):
+        self.name = name
+        self.raw_data = raw_data  # raw data
+        self.n_training = None
+        self.operator = None
+        self.ncomp = None
+        self.d0 = None  # Original data
+        self.dt = None  # Training set - physical space
+        self.dp = None  # Prediction set - physical space
+        self.dtp = None  # Training set - PCA space
+        self.dpp = None  # Predictionset - PCA space
+
+    def pca_tp(self, n_training):
+        self.n_training = n_training
+        d_original = np.array([item for sublist in self.raw_data for item in sublist]).reshape(len(self.raw_data), -1)
+        self.d0 = d_original
+        d_t = d_original[:self.n_training]
+        self.dt = d_t
+        d_p = d_original[self.n_training:]
+        self.dp = d_p
+
+        return d_t, d_p
+
+    def pca_transformation(self, load=False):
+        if not load:
+            pca_operator = PCA()
+            self.operator = pca_operator
+            pca_operator.fit(self.dt)  # Principal components
+            joblib.dump(pca_operator, jp(os.getcwd(), 'temp', '{}_pca_operator.pkl'.format(self.name)))
+        else:
+            pca_operator = joblib.load(jp(os.getcwd(), 'temp', '{}_pca_operator.pkl'.format(self.name)))
+            self.operator = pca_operator
+
+        pc_training = pca_operator.transform(self.dt)  # Principal components
+        self.dtp = pc_training
+        pc_prediction = pca_operator.transform(self.dp)
+        self.dpp = pc_prediction
+
+        return pc_training, pc_prediction
+
+    def n_pca_components(self, perc):
+        """
+        Given an explained variance percentage, returns the number of components necessary to obtain that level.
+        """
+        evr = np.cumsum(self.operator.explained_variance_ratio_)
+        nc = len(np.where(evr <= perc)[0])
+
+        return nc
+
+    def perc_pca_components(self, n_c):
+        """
+        Returns the explained variance percentage given a number of components
+        """
+        evr = np.cumsum(self.operator.explained_variance_ratio_)
+
+        return evr[n_c - 1]
+
+    def pca_refresh(self, n_comp):
+
+        self.ncomp = n_comp
+
+        pc_training = self.dtp.copy()
+        pc_training = pc_training[:, :n_comp]
+
+        pc_prediction = self.dpp.copy()
+        pc_prediction = pc_prediction[:, :n_comp]
+
+        return pc_training, pc_prediction
+
+    def pc_random(self, n_posts):
+        """
+        Randomly selects PC components from the original matrix
+        """
+        r_rows = np.random.choice(self.dtp.shape[0], n_posts)
+        score_selection = self.dtp[r_rows, self.ncomp:]
+        test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
+
+        return np.array(test)
+
+    def inverse_transform(self, pc_to_invert):
+
+        inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
+
+        return inv
+
+class CCAOps:
+
+
+
 
 class Plot:
 
@@ -225,9 +331,11 @@ class Plot:
         self.xlim = 1500
         self.ylim = 1000
         self.grf = 5
+        self.nrow = self.ylim // self.grf
+        self.ncol = self.xlim // self.grf
         self.x, self.y = np.meshgrid(
             np.linspace(0, self.xlim, int(self.xlim / self.grf)), np.linspace(0, self.ylim, int(self.ylim / self.grf)))
-
+        self.wdir = jp(os.getcwd(), 'grid')
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)
 
@@ -257,15 +365,15 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def whp(self, h, wdir, alpha=0.4, fig_file=None, show=False):
+    def whp(self, h, alpha=0.4, lw=.5, colors='white', fig_file=None, show=False):
         # Plot results
-        for z in h:
-            plt.contour(self.x, self.y, z, [0], colors='white', linewidths=.5, alpha=alpha)
-        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=alpha)
+        for z in h:  # h is the n square WHPA matrix
+            plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
+        plt.grid(color='c', linestyle='-', linewidth=lw, alpha=.2)
         # Plot wells
-        pwl = np.load((jp(wdir, 'pw.npy')), allow_pickle=True)[:, :2]
+        pwl = np.load((jp(self.wdir, 'pw.npy')), allow_pickle=True)[:, :2]
         plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-        iwl = np.load((jp(wdir, 'iw.npy')), allow_pickle=True)[:, :2]
+        iwl = np.load((jp(self.wdir, 'iw.npy')), allow_pickle=True)[:, :2]
         for i in range(len(iwl)):
             plt.plot(iwl[i][0], iwl[i][1], 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
                      label='iw{}'.format(i))
@@ -280,8 +388,8 @@ class Plot:
             plt.show()
             plt.close()
 
-    def whp_prediction(self, forecasts, h_true, h_pred, wdir, fig_file=None, show=False):
-        self.whp(h=forecasts, wdir=wdir)
+    def whp_prediction(self, forecasts, h_true, h_pred, fig_file=None, show=False):
+        self.whp(h=forecasts)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
         # Plot true h predicted
@@ -292,6 +400,20 @@ class Plot:
         if show:
             plt.show()
             plt.close()
+
+    def h_pca_inverse_plot(self, v, e, pca_o, vn):
+        v_pc = pca_o.transform(v)
+        v_pred = (np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_)
+        self.whp(v_pred.reshape(1, self.nrow, self.ncol), colors='cyan', alpha=.8, lw=1, show=False)
+        self.whp(v[e].reshape(1, self.nrow, self.ncol), colors='red', alpha=1, lw=1, show=True)
+
+    @staticmethod
+    def d_pca_inverse_plot(v, e, pca_o, vn):
+        v_pc = pca_o.transform(v)
+        v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+        plt.plot(v_pred)
+        plt.plot(v[e])
+        plt.show()
 
     @staticmethod
     def evr_plot(pca):
