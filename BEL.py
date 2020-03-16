@@ -66,9 +66,16 @@ def n_pca_components(pca_o, perc):
     Given an explained variance persentage, returns the number of components necessary to obtain that level.
     """
     evr = np.cumsum(pca_o.explained_variance_ratio_)
-    nc = len(np.where(evr <= perc)[0]) - 1
+    nc = len(np.where(evr <= perc)[0])
 
     return nc
+
+
+def perc_pca_components(pca_o, n_c):
+
+    evr = np.cumsum(pca_o.explained_variance_ratio_)
+
+    return evr[n_c-1]
 
 
 n_sim = len(h)  # Number of simulations
@@ -115,19 +122,47 @@ mp.explained_variance(h_pca_operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PC
 # Scores plots
 
 # jp(cwd, 'figures', 'PCA', 'd_scores.png')
-# mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
+mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
 
 # jp(cwd, 'figures', 'PCA', 'h_scores.png')
-# mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
+mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
-p_cut_d = .99
+p_cut_d = .999
 p_cut_h = .98
 
 print(n_pca_components(d_pca_operator, p_cut_d))
 print(n_pca_components(h_pca_operator, p_cut_h))
 
-n_d_pc_comp = n_pca_components(d_pca_operator, p_cut_d)
-n_h_pc_comp = n_pca_components(h_pca_operator, p_cut_h)
+
+def d_pca_inverse_plot(v, e, pca_o, vn):
+    v_pc = pca_o.transform(v)
+    v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+    plt.plot(v_pred)
+    plt.plot(v[e])
+    plt.show()
+
+
+def h_pca_inverse_plot(v, e, pca_o, vn):
+    v_pc = pca_o.transform(v)
+    v_pred = (np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_)
+    mp.whp(v_pred.reshape(1, h.shape[1], h.shape[2]), jp(cwd, 'grid'), show=False)
+    mp.whp(h_training[e].reshape(1, h.shape[1], h.shape[2]), jp(cwd, 'grid'), show=True)
+
+
+d_pca_inverse_plot(d_training, 0, d_pca_operator, 50)
+h_pca_inverse_plot(h_training, 0, h_pca_operator, 30)
+
+print(perc_pca_components(d_pca_operator, 50))
+print(perc_pca_components(h_pca_operator, 30))
+
+# pcd = PCA(n_components=10)
+# dd = pcd.fit_transform(d_training)
+# dpd = pcd.inverse_transform(dd[0])
+# plt.plot(dpd)
+# plt.show()
+
+n_d_pc_comp = 50
+n_h_pc_comp = 30
 
 d_pc_training0 = d_pc_training.copy()
 h_pc_training0 = h_pc_training.copy()
@@ -217,6 +252,9 @@ for sample_n in range(n_obs):
     # np.array_equal(h_pca_reverse, h_pca_reverse_test)
 
     def pc_random():
+        """
+        Randomly selects PC components from the original matrix
+        """
         r_rows = np.random.choice(h_pc_training0.shape[0], n_posts)
         score_selection = h_pc_training0[r_rows, n_h_pc_comp:]
         test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
@@ -242,9 +280,9 @@ for sample_n in range(n_obs):
     # Predicting the SD based for a certain number of 'observations'
     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
 
-    if add_comp:
-        rnpc = pc_random()
-        h_pc_true_pred = np.concatenate((h_pc_true_pred[0], rnpc)).reshape(1, -1)
+    # if add_comp:
+    #     rnpc = pc_random()
+    #     h_pc_true_pred = np.concatenate((h_pc_true_pred[0], rnpc)).reshape(1, -1)
 
     # Going back to the original SD dimension
     # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)  # old

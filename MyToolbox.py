@@ -5,7 +5,6 @@ import shutil
 import flopy
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LogNorm
 from scipy.interpolate import interp1d
 
 
@@ -258,11 +257,11 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def whp(self, h, wdir, fig_file=None, show=False):
+    def whp(self, h, wdir, alpha=0.4, fig_file=None, show=False):
         # Plot results
         for z in h:
-            plt.contour(self.x, self.y, z, [0], colors='white', linewidths=.5, alpha=0.4)
-        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=0.4)
+            plt.contour(self.x, self.y, z, [0], colors='white', linewidths=.5, alpha=alpha)
+        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=alpha)
         # Plot wells
         pwl = np.load((jp(wdir, 'pw.npy')), allow_pickle=True)[:, :2]
         plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
@@ -349,10 +348,10 @@ class Plot:
         plt.grid(alpha=0.2)
         ut = n_comp
         plt.xticks(np.arange(ut), fontsize=8)
-        plt.plot(training[:ut], 'wo', markersize=1, alpha=0.6)
+        plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.6)
         for sample_n in range(len(prediction)):
             pc_obs = prediction[sample_n]
-            plt.plot(pc_obs[:ut],
+            plt.plot(pc_obs.T[:ut],
                      'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                      label=str(sample_n))
         plt.tick_params(labelsize=6)
