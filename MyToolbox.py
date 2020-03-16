@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 
 from sklearn.decomposition import PCA
 
+
 class FileOps:
 
     def __init__(self):
@@ -228,7 +229,7 @@ class DataOps:
         grf = 1  # Cell dimension (1m)
         nrow, ncol = ylim // grf, xlim // grf
         un, uc = int(nrow / sc), int(ncol / sc)
-        h_u = MeshOps.h_sub(h, un, uc, sc)
+        h_u = MeshOps.h_sub(h=h, un=un, uc=uc, sc=sc)
         np.save(jp(wdir, 'h_u'), h_u)  # Load transformed SD matrix
 
 
@@ -319,9 +320,11 @@ class PCAOps:
 
         return inv
 
+
 class CCAOps:
 
-
+    def __init__(self):
+        pass
 
 
 class Plot:

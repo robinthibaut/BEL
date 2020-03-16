@@ -21,12 +21,11 @@ mp = Plot()
 do = DataOps()
 mo = MeshOps()
 
-
 # Directories
 cwd = os.getcwd()
-# This sets the main directory.
 res_dir = jp(cwd, 'results')
 
+# Load data
 tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
 
 # Preprocess d
@@ -34,8 +33,8 @@ tc = do.d_process(tc0=tc0)
 n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
-# mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
-# mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
+mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
+mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
 # do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
@@ -68,30 +67,37 @@ mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PC
 mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
 
 # Scores plots
-
 mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
 mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
 # Compares true value with inverse transformation from PCA
-mp.d_pca_inverse_plot(d_training, 0, d_pco.operator, 50)
-mp.h_pca_inverse_plot(h_training, 0, h_pco.operator, 30)
+ndo = 50
+nho = 30
+n_compare = 0
 
-print(d_pco.perc_pca_components(50))
-print(h_pco.perc_pca_components(30))
+mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
+mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
 
-n_d_pc_comp = 50
-n_h_pc_comp = 30
+print(d_pco.perc_pca_components(ndo))
+print(h_pco.perc_pca_components(nho))
+
+n_d_pc_comp = ndo
+n_h_pc_comp = nho
 
 d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
 # %% CCA
 
-n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)
-cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
-cca.fit(d_pc_training, h_pc_training)
-joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
-cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
+load_cca = False
+
+if not load_cca:
+    n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
+    cca.fit(d_pc_training, h_pc_training)
+    joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
+else:
+    cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
 
 # Returns x_scores, y_scores after fitting inputs.
 d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
@@ -108,7 +114,6 @@ for sample_n in range(n_obs):
     d_pc_obs = d_pc_prediction[sample_n]  # The rests is considered as field data
     h_pc_obs = h_pc_prediction[sample_n]  # The rests is considered as field data
     h_true = h[n_training:][sample_n]  # True prediction
-    # hk_true = hk[n_training:][sample_n]  # Hydraulic conductivity field for the observed data
 
     # Project observed data into canonical space.
     d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
@@ -122,11 +127,11 @@ for sample_n in range(n_obs):
     # Transform the original distribution.
     h_cca_training_gaussian \
         = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
-
     # Apply the transformation on the prediction as well.
     h_cca_prediction_gaussian \
         = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
+    # Estimate the posterior mean and covariance (Tarantola)
     h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
                                                          d_cca_training,
                                                          d_pc_training,
@@ -155,8 +160,6 @@ for sample_n in range(n_obs):
     # and add the y_mean
     # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
     h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
-    # h_pca_reverse_test = cca.inverse_transform(Y=h_posts.T)
-    # np.array_equal(h_pca_reverse, h_pca_reverse_test)
 
     add_comp = 0
 
@@ -165,21 +168,12 @@ for sample_n in range(n_obs):
         h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
 
     # Generate forecast in the initial dimension.
-
-    # forecast_posterior = \
-    #     (np.dot(h_pca_reverse, h_pco.operator.components_[:h_pca_reverse.shape[1], :]) +
-    #      h_pco.operator.mean_).reshape((n_posts, h.shape[1], h.shape[2]))
-    #
     forecast_posterior = h_pco.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
-
-    # forecast_posterior = \
-    #      h_pca_operator.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))  # old
 
     # Predicting the SD based for a certain number of 'observations'
     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
 
     # Going back to the original SD dimension
-    # h_pred = h_pca_operator.inverse_transform(h_pc_true_pred)  # old
     h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
 
     # Plot results
