@@ -4,6 +4,8 @@ from numpy.matlib import repmat
 
 def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
 
+    # TODO: add dimension check
+
     n_training = d_cca_training.shape[1]
     # Evaluate the covariance in h
     h_cov_operator = np.cov(h_cca_training_gaussian.T, rowvar=False)  # same
@@ -24,7 +26,6 @@ def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotation
     d_modeling_error = d_cca_training - d_ls_predicted - repmat(d_modeling_mean_error, 1,
                                                                 np.size(d_cca_training, axis=1))  # same
     # Information about the covariance of the posterior distribution.
-    # TODO: Check if it is really n_training
     d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # same
 
     # Computation of the posterior mean

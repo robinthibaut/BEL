@@ -5,8 +5,6 @@ from os.path import isfile
 import numpy as np
 import flopy
 
-from MyToolbox import datread
-
 
 def my_transport(modflowmodel, exe_name):
 

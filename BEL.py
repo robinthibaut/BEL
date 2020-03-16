@@ -5,17 +5,17 @@ from os.path import join as jp
 import joblib
 
 import numpy as np
-from numpy.matlib import repmat
 
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PowerTransformer
 
 import matplotlib.pyplot as plt
-plt.style.use('dark_background')
 
 from MyToolbox import FileOps, DataOps, MeshOps, Plot
 from Tarantola import posterior
+
+plt.style.use('dark_background')
 
 mp = Plot()
 do = DataOps()
@@ -26,7 +26,6 @@ cwd = os.getcwd()
 # This sets the main directory.
 res_dir = jp(cwd, 'results')
 
-# tpt, tc0, max_v, min_v, h, hk = AW.load_data()  # Function to load all saved data in binary format
 # tpt = transport curves, tc = normalized and interpolated transport curves (1000 time steps on 200 days)
 # sd = signed distance matrices, hk = hydraulic conductivity matrices
 
@@ -34,7 +33,6 @@ tc0, h, hk = FileOps.load_data(res_dir=res_dir, n=0)
 
 # Preprocess d
 tc = do.d_process(tc0=tc0)
-
 n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
@@ -45,11 +43,11 @@ n_wel = len(tc[0])  # Number of injecting wels
 # Preprocess h
 # Let's first try to divide it using cells of side length = 5m
 # Geometry
-# xlim, ylim = 1500, 1000
-# grf = 1  # Cell dimension (1m)
-# nrow, ncol = ylim // grf, xlim // grf
-# sc = 5
-# un, uc = int(nrow / sc), int(ncol / sc)
+xlim, ylim = 1500, 1000
+grf = 1  # Cell dimension (1m)
+nrow, ncol = ylim // grf, xlim // grf
+sc = 5
+un, uc = int(nrow / sc), int(ncol / sc)
 
 # h_u = mo.h_sub(h, un, uc, sc)
 # np.save(jp(cwd, 'temp', 'h_u'), h_u)  # Load transformed SD matrix
@@ -58,13 +56,24 @@ h0 = h.copy()
 h = h_u.copy()
 
 # Plot all WHPP
-# mp.whp(h, sc, jp(cwd, 'grid'), show=True)
+# mp.whp(h, jp(cwd, 'grid'), fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
 
 # %%  PCA
 
+
+def n_pca_components(pca_o, perc):
+    """
+    Given an explained variance persentage, returns the number of components necessary to obtain that level.
+    """
+    evr = np.cumsum(pca_o.explained_variance_ratio_)
+    nc = len(np.where(evr <= perc)[0]) - 1
+
+    return nc
+
+
 n_sim = len(h)  # Number of simulations
 
-n_training = int(n_sim * .98)  # number of synthetic data that will be used for constructing our prediction model
+n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training
 
 # PCA on transport curves
@@ -73,9 +82,9 @@ d_original = np.array([item for sublist in tc for item in sublist]).reshape(n_si
 d_training = d_original[:n_training]
 d_prediction = d_original[n_training:]
 
-d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
-d_pca_operator.fit(d_training)  # Principal components
-joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
+# d_pca_operator = PCA()  # The PCA is performed on all data (synthetic + 'observed')
+# d_pca_operator.fit(d_training)  # Principal components
+# joblib.dump(d_pca_operator, jp(cwd, 'temp', 'd_pca_operator.pkl'))  # Save the fitted PCA operator
 d_pca_operator = joblib.load(jp(cwd, 'temp', 'd_pca_operator.pkl'))
 
 d_pc_training = d_pca_operator.transform(d_training)  # Principal components
@@ -86,21 +95,21 @@ h_original = h.reshape(n_sim, -1)  # Not normalized
 h_training = h_original[:n_training]
 h_prediction = h_original[n_training:]
 
-h_pca_operator = PCA()  # Try: Explain everything, keep all scores
-h_pca_operator.fit(h_training)  # Principal components
-joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
+# h_pca_operator = PCA()  # Try: Explain everything, keep all scores
+# h_pca_operator.fit(h_training)  # Principal components
+# joblib.dump(h_pca_operator, jp(cwd, 'temp', 'h_pca_operator.pkl'))  # Save the fitted PCA operator
 h_pca_operator = joblib.load(jp(cwd, 'temp', 'h_pca_operator.pkl'))
 
 h_pc_training = h_pca_operator.transform(h_training)  # Principal components
 h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until desired sample number
 
 # Explained variance plots
-# jp(cwd, 'figures', 'PCA', 'd_exvar.png')
-# mp.explained_variance(d_pca_operator, n_comp=95, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
+jp(cwd, 'figures', 'PCA', 'd_exvar.png')
+mp.explained_variance(d_pca_operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
 # mp.explained_variance(d_pca_operator, n_comp=95, show=True)
 
-# jp(cwd, 'figures', 'PCA', 'h_exvar.png')
-# mp.explained_variance(h_pca_operator, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
+jp(cwd, 'figures', 'PCA', 'h_exvar.png')
+mp.explained_variance(h_pca_operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
 # mp.explained_variance(h_pca_operator, n_comp=20, show=True)
 
 # Scores plots
@@ -111,8 +120,14 @@ h_pc_prediction = h_pca_operator.transform(h_prediction)  # Selects curves until
 # jp(cwd, 'figures', 'PCA', 'h_scores.png')
 # mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
-n_d_pc_comp = 500
-n_h_pc_comp = 300
+p_cut_d = .99
+p_cut_h = .98
+
+print(n_pca_components(d_pca_operator, p_cut_d))
+print(n_pca_components(h_pca_operator, p_cut_h))
+
+n_d_pc_comp = n_pca_components(d_pca_operator, p_cut_d)
+n_h_pc_comp = n_pca_components(h_pca_operator, p_cut_h)
 
 d_pc_training0 = d_pc_training.copy()
 h_pc_training0 = h_pc_training.copy()
@@ -130,7 +145,7 @@ h_pc_prediction = h_pc_prediction[:, :n_h_pc_comp]
 
 # %% CCA
 
-n_comp_cca = 100
+n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)
 cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
 cca.fit(d_pc_training, h_pc_training)
 joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
@@ -144,10 +159,10 @@ d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
 
 # Correlation coefficients
-# mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
+mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
 
 # Pick an observation
-for sample_n in range(1):
+for sample_n in range(n_obs):
     d_pc_obs = d_pc_prediction[sample_n]  # The rests is considered as field data
     h_pc_obs = h_pc_prediction[sample_n]  # The rests is considered as field data
     h_true = h[n_training:][sample_n]  # True prediction
@@ -238,5 +253,5 @@ for sample_n in range(1):
     h_pred = h_pred.reshape(h.shape[1], h.shape[2])  # Reshape results
 
     # Plot results
-    ff = jp(cwd, 'figures', 'Predictions', '{}prediction{}test.png'.format(sample_n, add_comp))
+    ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
     mp.whp_prediction(forecast_posterior, h_true, h_pred, wdir=jp(cwd, 'grid'), fig_file=ff)

@@ -10,7 +10,7 @@ import flopy.utils.binaryfile as bf
 
 import mySgems
 from mySgems import MySgems
-from MyToolbox import refine_axis
+from MyToolbox import MeshOps
 
 
 def my_flow(exe_name, model_ws, wells):
@@ -92,9 +92,10 @@ def my_flow(exe_name, model_ws, wells):
     delr = np.ones(nrow) * dy  # Size of each cell in y-dimension
 
     # Refinement:
+    r_a = MeshOps.refine_axis
     for p in r_params:
-        delc = refine_axis(delc, pt[0], p[1], p[0], dx, x_lim)
-        delr = refine_axis(delr, pt[1], p[1], p[0], dy, y_lim)
+        delc = r_a(delc, pt[0], p[1], p[0], dx, x_lim)
+        delr = r_a(delr, pt[1], p[1], p[0], dy, y_lim)
 
     ncol = len(delc)
     nrow = len(delr)
