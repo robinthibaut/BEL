@@ -202,7 +202,7 @@ class MeshOps:
 class DataOps:
 
     def __init__(self):
-        pass
+        self.mo = MeshOps()
 
     @staticmethod
     def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
@@ -223,13 +223,12 @@ class DataOps:
 
         return tc
 
-    @staticmethod
-    def h_process(h, sc=5, wdir=''):
+    def h_process(self, h, sc=5, wdir=''):
         xlim, ylim = 1500, 1000
         grf = 1  # Cell dimension (1m)
         nrow, ncol = ylim // grf, xlim // grf
         un, uc = int(nrow / sc), int(ncol / sc)
-        h_u = MeshOps.h_sub(h=h, un=un, uc=uc, sc=sc)
+        h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
         np.save(jp(wdir, 'h_u'), h_u)  # Load transformed SD matrix
 
 

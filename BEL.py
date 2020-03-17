@@ -26,7 +26,11 @@ cwd = os.getcwd()
 res_dir = jp(cwd, 'results')
 
 # Load data
-tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
+flag = False
+if flag:
+    tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
+else:
+    tc0, h = FileOps.load_data(res_dir=res_dir, n=0)
 
 # Preprocess d
 tc = do.d_process(tc0=tc0)
@@ -37,7 +41,7 @@ mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
-# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
 h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
 h = h_u.copy()
 

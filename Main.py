@@ -112,7 +112,7 @@ def main():
 
 if __name__ == "__main__":
     jobs = []
-    n_series = 25
+    n_series = 100
     n_jobs = 4
     for j in range(n_series):
         for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
