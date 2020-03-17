@@ -26,7 +26,7 @@ cwd = os.getcwd()
 res_dir = jp(cwd, 'results')
 
 # Load data
-flag = False
+flag = True
 if flag:
     tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
 else:
@@ -41,12 +41,12 @@ mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h
-do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
 h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
 h = h_u.copy()
 
 # Plot all WHPP
-# mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
+mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
 
 # %%  PCA
 
@@ -54,16 +54,16 @@ h = h_u.copy()
 n_sim = len(h)  # Number of simulations
 n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training
-
+load = True  # Whether to load already dumped PCA operator
 # PCA on transport curves
 d_pco = PCAOps(name='d', raw_data=tc)
 d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
-d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=True)
+d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
 
 # PCA on signed distance
 h_pco = PCAOps(name='h', raw_data=h)
 h_training, h_prediction = h_pco.pca_tp(n_training)
-h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=True)
+h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
 
 # Explained variance plots
@@ -75,10 +75,9 @@ mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figur
 mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
 
 # Compares true value with inverse transformation from PCA
-ndo = 50
-nho = 30
+ndo = 70
+nho = 35
 n_compare = 0
-
 mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
 mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
 
@@ -165,7 +164,7 @@ for sample_n in range(n_obs):
     # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
     h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
-    add_comp = 0
+    add_comp = 1
 
     if add_comp:
         rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])

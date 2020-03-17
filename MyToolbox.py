@@ -413,8 +413,8 @@ class Plot:
     def d_pca_inverse_plot(v, e, pca_o, vn):
         v_pc = pca_o.transform(v)
         v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-        plt.plot(v_pred)
-        plt.plot(v[e])
+        plt.plot(v[e], 'r', alpha=.8)
+        plt.plot(v_pred, 'c', alpha=.8)
         plt.show()
 
     @staticmethod
