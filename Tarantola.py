@@ -3,6 +3,15 @@ from numpy.matlib import repmat
 
 
 def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
+    """
+    Estimating posterior uncertainties.
+    @param h_cca_training_gaussian:
+    @param d_cca_training:
+    @param d_pc_training:
+    @param d_rotations:
+    @param d_cca_prediction:
+    @return: h_mean_posterior, h_posterior_covariance
+    """
 
     # TODO: add dimension check
 

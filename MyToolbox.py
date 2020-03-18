@@ -19,35 +19,46 @@ class FileOps:
 
     @staticmethod
     def load_data(res_dir, n=0, data_flag=False):
+        """
+
+        @param res_dir: main directory containing results sub-directories
+        @param n: if != 0, will randomly select n sub-folders from res_dir
+        @param data_flag: if True, only loads data and not the target
+        @return: tp, sd
+        """
         # TODO: Split this function to generalize and load one feature at a time
-        bkt_files = []
-        sd_files = []
-        hk_files = []
+
+        bkt_files = []  # Breakthrough curves files
+        sd_files = []  # Signed-distance files
+        hk_files = []  # Hydraulic conductivity files
         # r=root, d=directories, f = files
         roots = []
         for r, d, f in os.walk(res_dir, topdown=False):
+            # Adds the data files to the lists, which will be loaded later
             if 'bkt.npy' in f and 'sd.npy' in f and 'hk0.npy' in f:
                 bkt_files.append(os.path.join(r, 'bkt.npy'))
                 sd_files.append(os.path.join(r, 'sd.npy'))
                 hk_files.append(os.path.join(r, 'hk0.npy'))
                 roots.append(r)
-            else:
+            else:  # If one of the files is missing, deletes the sub-folder
                 try:
-                    if r != res_dir:
+                    if r != res_dir:  # Make sure to not delete the main results directory !
                         shutil.rmtree(r)
                 except TypeError:
                     pass
         if n:
-            folders = np.random.choice(np.arange(len(roots)), n)
+            folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
             bkt_files = np.array(bkt_files)[folders]
             sd_files = np.array(sd_files)[folders]
             hk_files = np.array(hk_files)[folders]
             roots = np.array(roots)[folders]
 
         # Load and filter results
+        # We first load the breakthrough curves and check for errors.
+        # If one of the concentration is > 1, it means the simulation is unrealistic and we remove it from the dataset.
         tpt = list(map(np.load, bkt_files))
         # FIXME: the way transport arrays are saved
-        rm = []
+        rm = []  # Will contain indices to remove
         for i in range(len(tpt)):
             for j in range(len(tpt[i])):
                 if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
@@ -206,6 +217,15 @@ class DataOps:
 
     @staticmethod
     def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
+        """
+        The breakthough curves do not share the same time steps.
+        We need to save the data array in a consistent shape, thus interpolates and sub-divides each simulation
+        curves into n time steps.
+        @param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
+        @param n_time_steps: desired number of time step, will be the new dimension in shape[1].
+        @param t_max: Time corresponding to the end of the simulation.
+        @return: Data array with shape (n_sim, n_time_steps, n_wells)
+        """
         # Preprocess d
         f1d = []  # List of interpolating functions for each curve
         for t in tc0:
@@ -224,22 +244,31 @@ class DataOps:
         return tc
 
     def h_process(self, h, sc=5, wdir=''):
-        xlim, ylim = 1500, 1000
-        grf = 1  # Cell dimension (1m)
-        nrow, ncol = ylim // grf, xlim // grf
+        """
+        Process signed distance array.
+        @param h: Signed distance array
+        @param sc: New cell dimension in x and y direction (original is 1)
+        @param wdir: Folder to save the new array into
+        """
+        nrow, ncol = self.mo.nrow, self.mo.ncol  # Get the info from the MeshOps class
         un, uc = int(nrow / sc), int(ncol / sc)
         h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
-        np.save(jp(wdir, 'h_u'), h_u)  # Load transformed SD matrix
+        np.save(jp(wdir, 'h_u'), h_u)  # Save transformed SD matrix
 
 
 class PCAOps:
 
     def __init__(self, name, raw_data):
+        """
+
+        @param name: name of the paramater on which to perform operations
+        @param raw_data: original dataset
+        """
         self.name = name
         self.raw_data = raw_data  # raw data
-        self.n_training = None
-        self.operator = None
-        self.ncomp = None
+        self.n_training = None  # Number of training data
+        self.operator = None  # PCA operator
+        self.ncomp = None  # Number of components
         self.d0 = None  # Original data
         self.dt = None  # Training set - physical space
         self.dp = None  # Prediction set - physical space
@@ -247,9 +276,16 @@ class PCAOps:
         self.dpp = None  # Predictionset - PCA space
 
     def pca_tp(self, n_training):
+        """
+        Given an arbitrary size of training data, splits the original array accordingly
+        @param n_training:
+        @return: training, test
+        """
         self.n_training = n_training
+        # Flattens the array
         d_original = np.array([item for sublist in self.raw_data for item in sublist]).reshape(len(self.raw_data), -1)
         self.d0 = d_original
+        # Splits into training and test according to chosen n_training.
         d_t = d_original[:self.n_training]
         self.dt = d_t
         d_p = d_original[self.n_training:]
@@ -258,6 +294,13 @@ class PCAOps:
         return d_t, d_p
 
     def pca_transformation(self, load=False):
+        """
+        Instantiate the PCA object and transforms both training and test data.
+        Depending on the value of the load parameter, it will create a new one or load a previously computed one,
+        stored in the 'temp' folder.
+        @param load:
+        @return: PC training, PC test
+        """
         if not load:
             pca_operator = PCA()
             self.operator = pca_operator
@@ -285,36 +328,48 @@ class PCAOps:
 
     def perc_pca_components(self, n_c):
         """
-        Returns the explained variance percentage given a number of components
+        Returns the explained variance percentage given a number of components n_c
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
 
         return evr[n_c - 1]
 
     def pca_refresh(self, n_comp):
+        """
+        Given a number of components to keep, returns the PC array with the corresponding shape.
+        @param n_comp:
+        @return:
+        """
 
-        self.ncomp = n_comp
+        self.ncomp = n_comp  # Assign the number of components in the class for later use
 
-        pc_training = self.dtp.copy()
-        pc_training = pc_training[:, :n_comp]
+        pc_training = self.dtp.copy()  # Reloads the original training components
+        pc_training = pc_training[:, :n_comp]  # Cut
 
-        pc_prediction = self.dpp.copy()
-        pc_prediction = pc_prediction[:, :n_comp]
+        pc_prediction = self.dpp.copy()  # Reloads the original test components
+        pc_prediction = pc_prediction[:, :n_comp]  # Cut
 
         return pc_training, pc_prediction
 
     def pc_random(self, n_posts):
         """
-        Randomly selects PC components from the original matrix
+        Randomly selects PC components from the original training matrix dtp
         """
-        r_rows = np.random.choice(self.dtp.shape[0], n_posts)
-        score_selection = self.dtp[r_rows, self.ncomp:]
+        r_rows = np.random.choice(self.dtp.shape[0], n_posts)  # Seletcs n_posts rows from the dtp array
+        score_selection = self.dtp[r_rows, self.ncomp:]  # Extracts those rows, from the number of components used until
+        # the end of the array.
+
+        # For each column of shape n_sim-ncomp, selects a random PC component to add.
         test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
 
         return np.array(test)
 
     def inverse_transform(self, pc_to_invert):
-
+        """
+        Inverse transform PC
+        @param pc_to_invert: PC array
+        @return:
+        """
         inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
 
         return inv
@@ -342,6 +397,13 @@ class Plot:
         np.random.shuffle(self.cols)
 
     def curves(self, tc, n_wel, sdir=None, show=False):
+        """
+        Shows every breakthrough curve stacked on a plot.
+        @param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+        @param n_wel: Number of observation points
+        @param sdir: Directory in which to save figure
+        @param show: Whether to show or not
+        """
         for i in range(len(tc)):
             for t in range(n_wel):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
@@ -355,6 +417,14 @@ class Plot:
             plt.close()
 
     def curves_i(self, tc, n_wel, sdir=None, show=False):
+        """
+        Shows every breakthrough individually for each observation point.
+        Will produce n_well figures of n_sim curves each.
+        @param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+        @param n_wel: Number of observation points
+        @param sdir: Directory in which to save figure
+        @param show: Whether to show or not
+        """
         for t in range(n_wel):
             for i in range(len(tc)):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
@@ -368,6 +438,19 @@ class Plot:
                 plt.close()
 
     def whp(self, h, alpha=0.4, lw=.5, colors='white', fig_file=None, show=False):
+        """
+        Produces the WHPA plot, that is the zero-contour of the signed distance array.
+        It assumes that well information can be loaded from pw.npy and iw.npy.
+        I should change this.
+        @param h:
+        @param alpha:
+        @param lw:
+        @param colors:
+        @param fig_file:
+        @param show:
+        @return:
+        """
+        # TODO: Add more options to customize the plot.
         # Plot results
         for z in h:  # h is the n square WHPA matrix
             plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
@@ -404,6 +487,14 @@ class Plot:
             plt.close()
 
     def h_pca_inverse_plot(self, v, e, pca_o, vn):
+        """
+        Plot used to compare the reproduction of the original physical space after PCA transformation
+        @param v: Original, untransformed signed distance array
+        @param e: Sample number on which the test is performed
+        @param pca_o: signed distance PCA operator
+        @param vn: Number of components to inverse-transform.
+        @return:
+        """
         v_pc = pca_o.transform(v)
         v_pred = (np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_)
         self.whp(v_pred.reshape(1, self.nrow, self.ncol), colors='cyan', alpha=.8, lw=1, show=False)
@@ -411,6 +502,14 @@ class Plot:
 
     @staticmethod
     def d_pca_inverse_plot(v, e, pca_o, vn):
+        """
+        Plot used to compare the reproduction of the original physical space after PCA transformation
+        @param v: Original, untransformed data array
+        @param e: Sample number on which the test is performed
+        @param pca_o: data PCA operator
+        @param vn: Number of components to inverse-transform the data
+        @return:
+        """
         v_pc = pca_o.transform(v)
         v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
         plt.plot(v[e], 'r', alpha=.8)
@@ -418,39 +517,16 @@ class Plot:
         plt.show()
 
     @staticmethod
-    def evr_plot(pca):
-        plt.plot(np.arange(1, pca.n_components_ + 1), np.cumsum(pca.explained_variance_ratio_))
-        plt.xlabel('Number of components')
-        plt.ylabel('Explained variance')
-        plt.show()
-        plt.close()
-
-    @staticmethod
-    def cca_plot(cca_coef, cc, sdc, obs_n, j, x_c_pred, y_c_true):
-        plt.plot(cc[:, j], sdc[:, j], 'ro')
-        plt.axvline(x_c_pred[obs_n, j])
-        plt.plot(x_c_pred[obs_n, j], y_c_true[obs_n, j], 'go')
-        plt.xlabel('$d_{}$'.format(j))
-        plt.ylabel('$h_{}$'.format(j))
-        plt.title('corr = {}'.format(round(cca_coef[j], 3)))
-
-    @staticmethod
-    def cca_plots(coeffs, d_cca_t, h_cca_t, d_cca_p, h_cca_p):
-        n_comp = len(coeffs)
-        fig, axs = plt.subplots(nrows=n_comp % (3 % n_comp) + 1,
-                                ncols=3 % n_comp + 1,
-                                figsize=(9, 6),
-                                subplot_kw={'xticks': [], 'yticks': []})
-        for i in range(n_comp):
-            axs.flat[i].plot(d_cca_t[i], h_cca_t[i], 'ro')
-            axs.flat[i].plot(d_cca_p[i], h_cca_p[i], 'ko')
-            axs.flat[i].set_title(str(np.round(coeffs[i], 3)))
-        plt.tight_layout()
-        plt.show()
-        plt.close()
-
-    @staticmethod
     def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
+        """
+        PCA explained variance plot
+        @param pca: PCA operator
+        @param n_comp: Number of components to display
+        @param xfs: X-axis fontsize
+        @param fig_file:
+        @param show:
+        @return:
+        """
         plt.grid(alpha=0.2)
         if not n_comp:
             n_comp = pca.n_components_
@@ -468,6 +544,15 @@ class Plot:
 
     @staticmethod
     def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
+        """
+        PCA scores plot, displays scores of observations above those of training.
+        @param training: Training scores
+        @param prediction: Test scores
+        @param n_comp: How many componnents to show
+        @param fig_file:
+        @param show:
+        @return:
+        """
         # Scores plot
         plt.grid(alpha=0.2)
         ut = n_comp
@@ -490,14 +575,26 @@ class Plot:
 
     @staticmethod
     def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+        """
+        CCA plots.
+        Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
+        @param cca: CCA operator
+        @param d: d CCA scores
+        @param h: h CCA scores
+        @param d_pc_prediction: d test PC scores
+        @param h_pc_prediction: h test PC scores
+        @param sdir:
+        @param show:
+        @return:
+        """
 
-        cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)
+        cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)  # Gets correlation coefficient
+
         # CCA plots for each observation:
-
         for i in range(cca.n_components):
             comp_n = i
             plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
-            for sample_n in range(len(d_pc_prediction)):
+            for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
                 d_obs = d_pc_prediction[sample_n]
                 h_obs = h_pc_prediction[sample_n]
                 d_cca_prediction, h_cca_prediction = cca.transform(d_obs.reshape(1, -1),
