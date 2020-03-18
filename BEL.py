@@ -42,12 +42,12 @@ mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
 # both directions.
-# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+h_u = np.load(jp(cwd, 'temp', 'h_u.npz'))
 h = h_u.copy()
 
 # Plot all WHPP
-mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
+mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
 
 # %%  PCA
 
@@ -56,7 +56,7 @@ n_sim = len(h)  # Number of simulations
 n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training  # Number of 'observations' on which the predictions will be made.
 
-load = True  # Whether to load already dumped PCA operator
+load = False  # Whether to load already dumped PCA operator
 
 # PCA on transport curves
 d_pco = PCAOps(name='d', raw_data=tc)
@@ -172,7 +172,7 @@ for sample_n in range(n_obs):
     # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
     h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
-    add_comp = 1  # Whether to add or not the rest of PC components
+    add_comp = 0  # Whether to add or not the rest of PC components
 
     if add_comp:
         rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])
@@ -188,8 +188,11 @@ for sample_n in range(n_obs):
     h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
 
     # Plot results
-    ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
-    mp.whp_prediction(forecasts=forecast_posterior,
-                      h_true=h_true,
-                      h_pred=h_pred,
-                      fig_file=ff)
+    # ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
+    # mp.whp_prediction(forecasts=forecast_posterior,
+    #                   h_true=h_true,
+    #                   h_pred=h_pred,
+    #                   fig_file=ff)
+
+    forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npz'.format(sample_n))
+    np.savez_compressed(forecast_file, forecast_posterior)

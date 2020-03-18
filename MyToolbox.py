@@ -36,9 +36,9 @@ class FileOps:
         for r, d, f in os.walk(res_dir, topdown=False):
             # Adds the data files to the lists, which will be loaded later
             if 'bkt.npy' in f and 'sd.npy' in f and 'hk0.npy' in f:
-                bkt_files.append(os.path.join(r, 'bkt.npy'))
-                sd_files.append(os.path.join(r, 'sd.npy'))
-                hk_files.append(os.path.join(r, 'hk0.npy'))
+                bkt_files.append(jp(r, 'bkt.npy'))
+                sd_files.append(jp(r, 'sd.npy'))
+                hk_files.append(jp(r, 'hk0.npy'))
                 roots.append(r)
             else:  # If one of the files is missing, deletes the sub-folder
                 try:
@@ -70,6 +70,7 @@ class FileOps:
             del hk_files[index]
             del roots[index]
 
+        # Check unpacking
         tpt = list(map(np.load, bkt_files))  # Re-load transport curves
         # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
         if not data_flag:
@@ -253,7 +254,7 @@ class DataOps:
         nrow, ncol = self.mo.nrow, self.mo.ncol  # Get the info from the MeshOps class
         un, uc = int(nrow / sc), int(ncol / sc)
         h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
-        np.save(jp(wdir, 'h_u'), h_u)  # Save transformed SD matrix
+        np.savez_compressed(jp(wdir, 'h_u.npz'), h_u)  # Save transformed SD matrix
 
 
 class PCAOps:
