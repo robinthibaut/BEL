@@ -7,7 +7,6 @@ import joblib
 import numpy as np
 
 from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import PowerTransformer
 
 import matplotlib.pyplot as plt
@@ -42,8 +41,8 @@ mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
 # both directions.
-# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-h_u = np.load(jp(cwd, 'temp', 'h_u.npz'))
+do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
 h = h_u.copy()
 
 # Plot all WHPP
