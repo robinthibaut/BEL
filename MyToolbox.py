@@ -438,7 +438,16 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def whp(self, h, alpha=0.4, lw=.5, colors='white', fig_file=None, show=False):
+    def whp(self,
+            h,
+            alpha=0.4,
+            lw=.5,
+            bkg_field_array=None,
+            vmin=None,
+            vmax=None,
+            colors='white',
+            fig_file=None,
+            show=False):
         """
         Produces the WHPA plot, that is the zero-contour of the signed distance array.
         It assumes that well information can be loaded from pw.npy and iw.npy.
@@ -452,10 +461,18 @@ class Plot:
         @return:
         """
         # TODO: Add more options to customize the plot.
+        # Plot backgroung
+        if bkg_field_array is not None:
+            plt.imshow(bkg_field_array,
+                       extent=(0, self.xlim, 0, self.ylim),
+                       vmin=vmin,
+                       vmax=vmax,
+                       cmap='coolwarm')
+            plt.colorbar()
         # Plot results
         for z in h:  # h is the n square WHPA matrix
             plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
-        plt.grid(color='c', linestyle='-', linewidth=lw, alpha=.2)
+        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
         # Plot wells
         pwl = np.load((jp(self.wdir, 'pw.npy')), allow_pickle=True)[:, :2]
         plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')

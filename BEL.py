@@ -42,7 +42,7 @@ mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
 
 # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
 # both directions.
-do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+# do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
 h_u = np.load(jp(cwd, 'temp', 'h_u.npz'))
 h = h_u.copy()
 
