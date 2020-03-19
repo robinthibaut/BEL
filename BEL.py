@@ -25,7 +25,7 @@ cwd = os.getcwd()
 res_dir = jp(cwd, 'results')
 
 # Load data
-flag = True
+flag = False
 if flag:
     tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
 else:
@@ -52,7 +52,7 @@ mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
 
 # Choose size of training and prediction set
 n_sim = len(h)  # Number of simulations
-n_training = int(n_sim * .99)  # number of synthetic data that will be used for constructing our prediction model
+n_training = int(n_sim * .992)  # number of synthetic data that will be used for constructing our prediction model
 n_obs = n_sim - n_training  # Number of 'observations' on which the predictions will be made.
 
 load = False  # Whether to load already dumped PCA operator
@@ -150,7 +150,7 @@ for sample_n in range(n_obs):
 
     # %% Sample the posterior
 
-    n_posts = 500  # Number of estimates sampled from the distribution.
+    n_posts = 1000  # Number of estimates sampled from the distribution.
     # np.random.seed(42*(sample_n+1))
     # Draw n_posts random samples from the multivariate normal distribution :
     h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
@@ -187,11 +187,13 @@ for sample_n in range(n_obs):
     h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
 
     # Plot results
-    # ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
-    # mp.whp_prediction(forecasts=forecast_posterior,
-    #                   h_true=h_true,
-    #                   h_pred=h_pred,
-    #                   fig_file=ff)
+    ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
+    mp.whp_prediction(forecasts=forecast_posterior,
+                      h_true=h_true,
+                      h_pred=h_pred,
+                      fig_file=ff)
 
-    forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npz'.format(sample_n))
-    np.savez_compressed(forecast_file, forecast_posterior)
+    true_file = jp(cwd, 'temp', 'forecasts', '{}_true.npy'.format(sample_n))
+    np.save(true_file, h_true)
+    forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npy'.format(sample_n))
+    np.save(forecast_file, forecast_posterior)
