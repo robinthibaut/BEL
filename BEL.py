@@ -27,7 +27,7 @@ res_dir = jp(cwd, 'results')
 # Load data
 flag = False
 if flag:
-    tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=True)
+    tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=flag)
 else:
     tc0, h = FileOps.load_data(res_dir=res_dir, n=0)
 
@@ -46,15 +46,14 @@ h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
 h = h_u.copy()
 
 # Plot all WHPP
-mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.pdf'), show=True)
+mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
 
 # %%  PCA
 
 # Choose size of training and prediction set
 n_sim = len(h)  # Number of simulations
-n_training = int(n_sim * .992)  # number of synthetic data that will be used for constructing our prediction model
-n_obs = n_sim - n_training  # Number of 'observations' on which the predictions will be made.
-
+n_obs = 10  # Number of 'observations' on which the predictions will be made.
+n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 load = False  # Whether to load already dumped PCA operator
 
 # PCA on transport curves
@@ -79,7 +78,7 @@ mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figur
 # Compares true value with inverse transformation from PCA
 ndo = 70  # Number of components for breakthrough curves
 nho = 35  # Number of components for signed distance
-n_compare = 0  # Sample number to perform inverse tranform comparison
+n_compare = 0  # Sample number to perform inverse transform comparison
 mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
 mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
 
@@ -150,7 +149,7 @@ for sample_n in range(n_obs):
 
     # %% Sample the posterior
 
-    n_posts = 1000  # Number of estimates sampled from the distribution.
+    n_posts = 500  # Number of estimates sampled from the distribution.
     # np.random.seed(42*(sample_n+1))
     # Draw n_posts random samples from the multivariate normal distribution :
     h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
