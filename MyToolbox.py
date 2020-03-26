@@ -220,7 +220,7 @@ class DataOps:
     @staticmethod
     def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
         """
-        The breakthough curves do not share the same time steps.
+        The breakthrough curves do not share the same time steps.
         We need to save the data array in a consistent shape, thus interpolates and sub-divides each simulation
         curves into n time steps.
         @param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
@@ -576,10 +576,10 @@ class Plot:
         plt.grid(alpha=0.2)
         ut = n_comp
         plt.xticks(np.arange(ut), fontsize=8)
-        plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.6)
+        plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.2)  # Plot all training scores
         for sample_n in range(len(prediction)):
             pc_obs = prediction[sample_n]
-            plt.plot(pc_obs.T[:ut],
+            plt.plot(pc_obs.T[:ut],  # Plot observations scores
                      'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                      label=str(sample_n))
         plt.tick_params(labelsize=6)

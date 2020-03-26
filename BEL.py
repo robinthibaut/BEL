@@ -25,14 +25,16 @@ cwd = os.getcwd()
 res_dir = jp(cwd, 'results')
 
 # Load data
+n = 210
+check = False
 flag = False
 if flag:
-    tc0 = FileOps.load_data(res_dir=res_dir, n=0, data_flag=flag)
+    tc0 = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
 else:
-    tc0, h = FileOps.load_data(res_dir=res_dir, n=0)
+    tc0, h = FileOps.load_data(res_dir=res_dir, n=n, check=check)
 
 # Preprocess d in n time steps.
-tc = do.d_process(tc0=tc0)
+tc = do.d_process(tc0=tc0, n_time_steps=100)
 n_wel = len(tc[0])  # Number of injecting wels
 
 # Plot d
@@ -76,9 +78,9 @@ mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figur
 
 # Choose number of PCA components to keep.
 # Compares true value with inverse transformation from PCA
-ndo = 70  # Number of components for breakthrough curves
-nho = 35  # Number of components for signed distance
-n_compare = 0  # Sample number to perform inverse transform comparison
+ndo = 45  # Number of components for breakthrough curves
+nho = 30  # Number of components for signed distance
+n_compare = np.random.randint(n_training)  # Sample number to perform inverse transform comparison
 mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
 mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
 
