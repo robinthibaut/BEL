@@ -1,4 +1,3 @@
-# Import
 import os
 from os.path import join as jp
 import shutil
