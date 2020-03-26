@@ -226,4 +226,4 @@ if __name__ == "__main__":
     # # Set numpy seed
     # seed = np.random.randint(0, 10e8)
     # np.random.seed(seed)
-    bel(n_training=100, n_test=5)
+    bel(n_training=300, n_test=10)

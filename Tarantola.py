@@ -5,17 +5,18 @@ from numpy.matlib import repmat
 def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
     """
     Estimating posterior uncertainties.
-    @param h_cca_training_gaussian:
-    @param d_cca_training:
-    @param d_pc_training:
-    @param d_rotations:
-    @param d_cca_prediction:
+    @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussion-distributed
+    @param d_cca_training: Canonical Variate of the training data
+    @param d_pc_training: Principal Components of the training data
+    @param d_rotations: CCA rotations of the training data
+    @param d_cca_prediction: Canonical Variate of the observation
     @return: h_mean_posterior, h_posterior_covariance
     """
 
     # TODO: add dimension check
-
+    # Size of the set
     n_training = d_cca_training.shape[1]
+
     # Evaluate the covariance in h
     h_cov_operator = np.cov(h_cca_training_gaussian.T, rowvar=False)  # same
 

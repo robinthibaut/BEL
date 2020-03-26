@@ -59,10 +59,10 @@ def my_flow(exe_name, model_ws, wells):
 
     # Refinement
     # pt is the first instance of the pumping well location.
-    pw_d = np.load(jp(model_ws, 'pw.npy'), allow_pickle=True)
+    pw_d = np.load(jp(model_ws, 'pw.npy'), allow_pickle=True)  # Pumping well location
+    # Point around which refinement will occur
     pt = pw_d[0][:2]
-    # pt = [x_lim * 2 / 3, y_lim / 2]  # Point around which refinement will occur
-    # r_params = np.array([[8, 100], [6, 80], [4, 50], [3, 30], [2, 20], [1, 10]])  # [cell size, extent around pt in m]
+    # [cell size, extent around pt in m]
     r_params = np.array([[9, 150],
                          [8, 100],
                          [7, 90],
@@ -74,30 +74,29 @@ def my_flow(exe_name, model_ws, wells):
                          [2, 30],
                          [1.5, 20],
                          [1, 10]])
-    # r_params = [[10, 10]]
 
     # Saving r_params to avoid computing distance matrix each time
     flag_dis = 0  # If discretization is different
-    disf = jp(os.getcwd(), 'grid', 'dis.txt')
+    disf = jp(os.getcwd(), 'grid', 'dis.txt')  # discretization txt file
     if os.path.exists(disf):
-        r_params_loaded = np.loadtxt(disf)
-        if not np.array_equal(r_params, r_params_loaded):
-            np.savetxt(disf, r_params)
+        r_params_loaded = np.loadtxt(disf)  # loads dis info
+        if not np.array_equal(r_params, r_params_loaded):  # if new refinement parameters differ from the previous one
+            np.savetxt(disf, r_params)  # update file
         else:
-            flag_dis = 1  # If discretization is the same
+            flag_dis = 1  # If discretization is the same, use old distance matrix
     else:
         np.savetxt(disf, r_params)
 
-    delc = np.ones(ncol) * dx  # Size of each cell in x-dimension
-    delr = np.ones(nrow) * dy  # Size of each cell in y-dimension
+    delc = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
+    delr = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
 
-    # Refinement:
+    # Refinement of the mesh
     r_a = MeshOps.refine_axis
     for p in r_params:
         delc = r_a(delc, pt[0], p[1], p[0], dx, x_lim)
         delr = r_a(delr, pt[1], p[1], p[0], dy, y_lim)
 
-    ncol = len(delc)
+    ncol = len(delc)  # new number of columns
     nrow = len(delr)
 
     top = 0  # Model top (m)
@@ -115,7 +114,7 @@ def my_flow(exe_name, model_ws, wells):
 
     # %% ModflowDis
 
-    min_cell_dim = 10
+    min_cell_dim = min(dx, dy)
     nrow_d = int(y_lim / min_cell_dim)
     ncol_d = int(x_lim / min_cell_dim)
 
@@ -134,7 +133,7 @@ def my_flow(exe_name, model_ws, wells):
     ncd0 = dis_sgems.get_node_coordinates()
 
     xyz_dummy = []
-
+    # Fill array with x,y coordinates of cell centers
     for yc in ncd0[0]:
         for xc in ncd0[1]:
             xyz_dummy.append([xc, yc])
@@ -159,19 +158,18 @@ def my_flow(exe_name, model_ws, wells):
                                     rotation=0.0,
                                     start_datetime=start_datetime)
 
-    ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids.
+    ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids of dummy model
     xyz_true = []
     for yc in ncd1[0]:
         for xc in ncd1[1]:
             xyz_true.append([xc, yc])
 
     def get_node_id(dis, x, y):
+        # First get rc
         node_rc = dis.get_rc_from_node_coordinates(x, y)  # Get node number of the wel location
+        # Then extract node
         node = dis.get_node((0,) + node_rc)[0]
         return node
-
-    # (layer, y, x)
-    pumping_well_lrc = [0, pt[0], pt[1]]  # Pumping well location in model coordinates
 
     def make_well(wel_info):
         """
@@ -185,20 +183,12 @@ def my_flow(exe_name, model_ws, wells):
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
 
-    # wells_data = [[pumping_well_lrc[1], pumping_well_lrc[2], [-1000, -1000, -1000]],  # PW followed by IW
-    #               [pumping_well_lrc[1] - 50, pumping_well_lrc[2] - 0, [0, 24, 0]],
-    #               [pumping_well_lrc[1] - 0, pumping_well_lrc[2] + 40, [0, 24, 0]],
-    #               [pumping_well_lrc[1] + 35, pumping_well_lrc[2] + 0, [0, 24, 0]],
-    #               [pumping_well_lrc[1] + 0, pumping_well_lrc[2] - 50, [0, 24, 0]]]
+    pwa = pw_d  # Pumping well location
+    iwa = np.array(wells)  # wells is given as function argument
 
-    pwa = pw_d
-    iwa = np.array(wells)
+    wells_data = np.concatenate((pwa, iwa), axis=0)  # Concatenates well data (pumping, injection)
 
-    # np.savetxt(jp(model_ws, 'wells.xy'), iwa[:, :2])  # Saves injecting wells location
-
-    wells_data = np.concatenate((pwa, iwa), axis=0)
-
-    my_wells = [make_well(o) for o in wells_data]
+    my_wells = [make_well(o) for o in wells_data]  # Produce well stress period data readable by modflow
 
     spd = [mw[-1] for mw in my_wells]  # Collecting SPD for each well
     spd = np.array(spd)
@@ -212,8 +202,12 @@ def my_flow(exe_name, model_ws, wells):
     for sp in range(nper):
         wel_stress_period_data[sp] = np.array(spd)[:, sp]
 
-    # stress_period_data = {0: [[    0 ,    50 ,    80 , -2400. ]], 1: [[    0 ,    50 ,    80 , -2400. ]], 2: [[    0 ,
-    # 50 ,    80 , -2400. ]]}
+    # stress_period_data =
+    # {
+    # 0: [[    0 ,    50 ,    80 , -2400. ]],
+    # 1: [[    0 ,    50 ,    80 , -2400. ]],
+    # 2: [[    0 ,    50 ,    80 , -2400. ]]
+    # }
 
     wel = flopy.modflow.ModflowWel(model=model,
                                    stress_period_data=wel_stress_period_data)
@@ -259,8 +253,8 @@ def my_flow(exe_name, model_ws, wells):
 
     stress_period_data_oc = {}
 
-    for kper in range(nper):
-        for kstp in range(nstp[kper]):
+    for kper in range(nper):  # For each stress period
+        for kstp in range(nstp[kper]):  # For each time step per time period
             # MT3DMS needs HEAD
             # MODPATH needs BUDGET
             stress_period_data_oc[(kper, kstp)] = ['save head',
@@ -273,7 +267,7 @@ def my_flow(exe_name, model_ws, wells):
                                  compact=True)
 
     # %% ModflowLmt
-
+    # Necessary to create a xxx.ftl file to link modflow simulation to mt3dms transport simulation.
     output_file_name = 'mt3d_link.ftl'
 
     lmt = flopy.modflow.ModflowLmt(model=model,
@@ -283,15 +277,16 @@ def my_flow(exe_name, model_ws, wells):
 
     op = 'hk'  # Simulations output name
 
-    if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If reusing an older model
+    if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If re-using an older model
         valkr = np.load(jp(model_ws, '{}.npy').format(op))
     else:
         sgems = MySgems()
         nr = 1  # Number of realizations.
+        # Extracts wells nodes number in sgems grid, to fix their simulated value.
         wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
         # Hard data node
         # fixed_nodes = [[pwnode_sg, 2], [iw1node_sg, 1], [iw2node_sg, 1.5], [iw3node_sg, 0.7], [iw4node_sg, 1.2]]
-        # I now attribute a random value between 1 and 2 to the well nodes
+        # I now arbitrarily attribute a random value between 1 and 2 to the well nodes
         fixed_nodes = [[w, 1 + np.random.rand()] for w in wells_nodes_sgems]
 
         sgrid = [dis_sgems.ncol,
@@ -301,6 +296,7 @@ def my_flow(exe_name, model_ws, wells):
                  dis_sgems.delr.array[0],
                  dis_sgems.delr.array[0],
                  xo, yo, zo]  # Grid information
+
         seg = [50, 50, 50, 0, 0, 0]  # Search ellipsoid geometry
 
         sgems.sims(op_folder=model_ws.replace('\\', '//'),
@@ -332,52 +328,52 @@ def my_flow(exe_name, model_ws, wells):
                    angle_y=[0],
                    angle_z=[0])
 
-        opl = jp(model_ws, op + '.grid')  # Output file location.
+        opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
 
         hk = mySgems.so(opl)  # Grid information directly derived from the output file.
 
         k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
 
-        # k_std = np.random.uniform(0.2, 0.55)  # Hydraulic conductivity variance.
         k_std = 0.4
 
         hkp = np.copy(hk)
 
-        HK = [mySgems.o2k2(h, k_mean, k_std) for h in hkp]
+        hk_array = [mySgems.o2k2(h, k_mean, k_std) for h in hkp]
 
         # Setting the hydraulic conductivity matrix.
-        HK = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in HK]
+        hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]
 
-        HK = [np.fliplr(HK[h]) for h in range(0, nr, 1)]  # Flip to correspond to sgems grid! HK is now a list of the
+        # Flip to correspond to sgems grid ! hk_array is now a list of the
         # arrays of conductivities for each realization.
+        hk_array = [np.fliplr(hk_array[h]) for h in range(0, nr, 1)]
 
-        np.save(jp(model_ws, op + '0'), HK[0])  # Save the undiscretized H grid
+        np.save(jp(model_ws, op + '0'), hk_array[0])  # Save the un-discretized hk grid
 
-        # Flattening HK to plot it
-        fl = [item for sublist in HK[0] for item in sublist]
+        # Flattening hk_array to plot it
+        fl = [item for sublist in hk_array[0] for item in sublist]
         fl2 = [item for sublist in fl for item in sublist]
         val = []
         for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
             val.append(fl2)
-        val = [item for sublist in val for item in sublist]
+        val = [item for sublist in val for item in sublist]  # Flattening
 
         # If the sgems grid is different from the modflow grid, which might be the case since we would like to refine
         # in some ways the flow mesh, the piece of code below assigns to the flow grid the values of the hk simulations
         # based on the closest distance between cells.
-        # TODO: This can take a long time, I should compute this before launching the n simulations.
-        #  maybe export the inds array and load it.
-        inds_file = jp(os.getcwd(), 'grid', 'inds.npy')
-        if nrow_d != nrow or ncol_d != ncol:
+        inds_file = jp(os.getcwd(), 'grid', 'inds.npy')  # Index file location - relates the position of closest cells
+        # between differently discretized meshes.
+        if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
+            # the new hk array on a new grid.
             if flag_dis == 0:
-                dm = distance_matrix(xyz_true, xyz_dummy)
+                dm = distance_matrix(xyz_true, xyz_dummy)  # Compute distance matrix between refined and dummy grid.
                 inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
-                np.save(inds_file, inds)
-            else:  # Supposes the inds file exists.
+                np.save(inds_file, inds)  # Save index file to avoid re-computing
+            else:  # If the inds file exists.
                 inds = np.load(inds_file)
             valk = [val[k] for k in inds]  # Contains k values for refined grid
             valkr = np.reshape(valk, (nlay, nrow, ncol))  # Reshape in n layers x n cells in refined grid.
         else:
-            valkr = HK[0]
+            valkr = hk_array[0]
 
         np.save(jp(model_ws, op), valkr)
 
@@ -447,17 +443,15 @@ def my_flow(exe_name, model_ws, wells):
     model.run_model(silent=True,
                     pause=False,
                     report=True)
-    # if not success:
-    #     raise Exception('MODFLOW did not terminate normally.')
 
     # model.check(level=0)
 
     # %% Checking flow results
 
-    headobj = bf.HeadFile(jp(model_ws, model_name + '.hds'))  # Create the headfile and budget file objects
+    headobj = bf.HeadFile(jp(model_ws, '{}.hds'.format(model_name)))  # Create the headfile and budget file objects
     times = headobj.get_times()
 
-    head = headobj.get_data(totim=times[-1])
+    head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
     if head.max() > top + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
