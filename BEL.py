@@ -1,7 +1,9 @@
 # Import
 import os
 from os.path import join as jp
-
+import shutil
+import uuid
+import warnings
 import joblib
 
 import numpy as np
@@ -20,181 +22,204 @@ mp = Plot()
 do = DataOps()
 mo = MeshOps()
 
-# Directories
-cwd = os.getcwd()
-res_dir = jp(cwd, 'results')
 
-# Load data
-n = 210
-check = False
-flag = False
-if flag:
-    tc0 = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
-else:
-    tc0, h = FileOps.load_data(res_dir=res_dir, n=n, check=check)
+def bel(n_training, n_test):
 
-# Preprocess d in n time steps.
-tc = do.d_process(tc0=tc0, n_time_steps=100)
-n_wel = len(tc[0])  # Number of injecting wels
+    # Directories
+    new_dir = str(uuid.uuid4())  # sub-directory for figures
+    cwd = os.getcwd()
+    res_dir = jp(cwd, 'results')
+    fig_dir = jp(cwd, 'figures', new_dir)
+    fig_data_dir = jp(fig_dir, 'Data')
+    fig_pca_dir = jp(fig_dir, 'PCA')
+    fig_cca_dir = jp(fig_dir, 'CCA')
+    fig_pred_dir = jp(fig_dir, 'Predictions')
 
-# Plot d
-mp.curves(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
-mp.curves_i(tc=tc, n_wel=n_wel, sdir=jp(cwd, 'figures', 'Data'))
+    map(FileOps.dirmaker, [fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir])
 
-# Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
-# both directions.
-do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
-h = h_u.copy()
+    # Load data
+    n = n_training + n_test  # Total number of simulations to load.
+    check = False  # Flag to check for simulations
+    flag = False  # Flag to load both d and h or only d
+    if flag:
+        tc0 = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
+    else:
+        tc0, h = FileOps.load_data(res_dir=res_dir, n=n, check=check)
 
-# Plot all WHPP
-mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
+    # Preprocess d in n time steps.
+    tc = do.d_process(tc0=tc0, n_time_steps=100)
+    n_wel = len(tc[0])  # Number of injecting wels
 
-# %%  PCA
+    # Plot d
+    mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
+    mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
 
-# Choose size of training and prediction set
-n_sim = len(h)  # Number of simulations
-n_obs = 10  # Number of 'observations' on which the predictions will be made.
-n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
-load = False  # Whether to load already dumped PCA operator
+    # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
+    # both directions.
+    do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+    h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+    h = h_u.copy()
 
-# PCA on transport curves
-d_pco = PCAOps(name='d', raw_data=tc)
-d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
-d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
+    # Plot all WHPP
+    mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
 
-# PCA on signed distance
-h_pco = PCAOps(name='h', raw_data=h)
-h_training, h_prediction = h_pco.pca_tp(n_training)
-h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
+    # %%  PCA
 
-# Explained variance plots
-mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'd_exvar.png'), show=True)
-mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(cwd, 'figures', 'PCA', 'h_exvar.png'), show=True)
+    # Choose size of training and prediction set
+    n_sim = len(h)  # Number of simulations
+    n_obs = n_test  # Number of 'observations' on which the predictions will be made.
+    n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 
-# Scores plots
-mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'd_scores.png'), show=True)
-mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(cwd, 'figures', 'PCA', 'h_scores.png'), show=True)
+    if n_training != n_sim - n_obs:
+        warnings.warn("The size of training set doesn't correspond with user input")
 
-# Choose number of PCA components to keep.
-# Compares true value with inverse transformation from PCA
-ndo = 45  # Number of components for breakthrough curves
-nho = 30  # Number of components for signed distance
-n_compare = np.random.randint(n_training)  # Sample number to perform inverse transform comparison
-mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
-mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
+    load = False  # Whether to load already dumped PCA operator
 
-# Displays the explained variance percentage given the number of components
-print(d_pco.perc_pca_components(ndo))
-print(h_pco.perc_pca_components(nho))
+    # PCA on transport curves
+    d_pco = PCAOps(name='d', raw_data=tc)
+    d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
+    d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
 
-# Assign final n_comp
-n_d_pc_comp = ndo
-n_h_pc_comp = nho
+    # PCA on signed distance
+    h_pco = PCAOps(name='h', raw_data=h)
+    h_training, h_prediction = h_pco.pca_tp(n_training)
+    h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
-# Cut desired number of PC components
-d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
-h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
+    # Explained variance plots
+    mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
+    mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'PCA', 'h_exvar.png'), show=True)
 
-# %% CCA
+    # Scores plots
+    mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
+    mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
-load_cca = False
+    # Choose number of PCA components to keep.
+    # Compares true value with inverse transformation from PCA
+    ndo = 45  # Number of components for breakthrough curves
+    nho = 30  # Number of components for signed distance
 
-if not load_cca:
-    n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC components
-    # between d and h.
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
-    cca.fit(d_pc_training, h_pc_training)  # Fit
-    joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
-else:
-    cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
-    n_comp_cca = cca.n_components_
+    def pca_inverse_compare():
+        n_compare = np.random.randint(n_training)  # Sample number to perform inverse transform comparison
+        mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
+        mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
+        # Displays the explained variance percentage given the number of components
+        print(d_pco.perc_pca_components(ndo))
+        print(h_pco.perc_pca_components(nho))
 
-# Returns x_scores, y_scores after fitting inputs.
-d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
-d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+    # Assign final n_comp
+    n_d_pc_comp = ndo
+    n_h_pc_comp = nho
 
-# Get the rotation matrices
-d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
+    # Cut desired number of PC components
+    d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
+    h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
-# Correlation coefficients plots
-mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=jp(cwd, 'figures', 'CCA'))
+    # %% CCA
 
-# Pick an observation
-for sample_n in range(n_obs):
-    d_pc_obs = d_pc_prediction[sample_n]
-    h_pc_obs = h_pc_prediction[sample_n]
-    h_true = h[n_training:][sample_n]  # True prediction
+    load_cca = False
 
-    # Project observed data into canonical space.
-    d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
-    d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+    if not load_cca:
+        n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
+        # components between d and h.
+        cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
+        cca.fit(d_pc_training, h_pc_training)  # Fit
+        joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
+    else:
+        cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
+        n_comp_cca = cca.n_components_
 
-    # Ensure Gaussian distribution in h_cca
-    # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
-    yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(h_cca_training.shape[0])]
-    # Fit each PowerTransformer with each component
-    [yj[i].fit(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))]
-    # Transform the original distribution.
-    h_cca_training_gaussian \
-        = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
-    # Apply the transformation on the prediction as well.
-    h_cca_prediction_gaussian \
-        = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
+    # Returns x_scores, y_scores after fitting inputs.
+    d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
+    d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-    # Estimate the posterior mean and covariance (Tarantola)
-    h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
-                                                         d_cca_training,
-                                                         d_pc_training,
-                                                         d_rotations,
-                                                         d_cca_prediction)
+    # Get the rotation matrices
+    d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
 
-    # %% Sample the posterior
+    # Correlation coefficients plots
+    mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
-    n_posts = 500  # Number of estimates sampled from the distribution.
-    # np.random.seed(42*(sample_n+1))
-    # Draw n_posts random samples from the multivariate normal distribution :
-    h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
-                                                     cov=h_posterior_covariance,
-                                                     size=n_posts).T  # seems OK
+    # Pick an observation
+    for sample_n in range(n_obs):
+        d_pc_obs = d_pc_prediction[sample_n]
+        h_pc_obs = h_pc_prediction[sample_n]
+        h_true = h[n_training:][sample_n]  # True prediction
 
-    # This h_posts gaussian need to be inverse-transformed to the original distribution.
-    # We get the CCA scores.
-    h_posts \
-        = np.concatenate([yj[i].inverse_transform(h_posts_gaussian[i].reshape(-1, 1)) for i in range(len(yj))],
-                         axis=1).T
+        # Project observed data into canonical space.
+        d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
-    # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
-    # The value of h_pca_reverse are the score of PCA in the forecast space.
-    # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
-    # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std deviation
-    # and add the y_mean.
-    # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
-    h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
+        # Ensure Gaussian distribution in h_cca
+        # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
+        yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(h_cca_training.shape[0])]
+        # Fit each PowerTransformer with each component
+        [yj[i].fit(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))]
+        # Transform the original distribution.
+        h_cca_training_gaussian \
+            = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
+        # Apply the transformation on the prediction as well.
+        h_cca_prediction_gaussian \
+            = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
-    add_comp = 0  # Whether to add or not the rest of PC components
+        # Estimate the posterior mean and covariance (Tarantola)
+        h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
+                                                             d_cca_training,
+                                                             d_pc_training,
+                                                             d_rotations,
+                                                             d_cca_prediction)
 
-    if add_comp:
-        rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])
-        h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
+        # %% Sample the posterior
 
-    # Generate forecast in the initial dimension and reshape.
-    forecast_posterior = h_pco.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
+        n_posts = 500  # Number of estimates sampled from the distribution.
+        # np.random.seed(42*(sample_n+1))
+        # Draw n_posts random samples from the multivariate normal distribution :
+        h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
+                                                         cov=h_posterior_covariance,
+                                                         size=n_posts).T  # seems OK
 
-    # Predicting the SD based for a certain number of 'observations'
-    h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
+        # This h_posts gaussian need to be inverse-transformed to the original distribution.
+        # We get the CCA scores.
+        h_posts \
+            = np.concatenate([yj[i].inverse_transform(h_posts_gaussian[i].reshape(-1, 1)) for i in range(len(yj))],
+                             axis=1).T
 
-    # Going back to the original SD dimension and reshape.
-    h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
+        # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
+        # The value of h_pca_reverse are the score of PCA in the forecast space.
+        # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
+        # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std deviation
+        # and add the y_mean.
+        # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
+        h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
-    # Plot results
-    ff = jp(cwd, 'figures', 'Predictions', '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
-    mp.whp_prediction(forecasts=forecast_posterior,
-                      h_true=h_true,
-                      h_pred=h_pred,
-                      fig_file=ff)
+        add_comp = 0  # Whether to add or not the rest of PC components
 
-    true_file = jp(cwd, 'temp', 'forecasts', '{}_true.npy'.format(sample_n))
-    np.save(true_file, h_true)
-    forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npy'.format(sample_n))
-    np.save(forecast_file, forecast_posterior)
+        if add_comp:
+            rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])
+            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
+
+        # Generate forecast in the initial dimension and reshape.
+        forecast_posterior = h_pco.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
+
+        # Predicting the SD based for a certain number of 'observations'
+        h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
+
+        # Going back to the original SD dimension and reshape.
+        h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
+
+        # Plot results
+        ff = jp(fig_pred_dir, '{}_{}_{}.png'.format(sample_n, add_comp, n_comp_cca))
+        mp.whp_prediction(forecasts=forecast_posterior,
+                          h_true=h_true,
+                          h_pred=h_pred,
+                          fig_file=ff)
+
+        def save_forecasts():
+            true_file = jp(cwd, 'temp', 'forecasts', '{}_true.npy'.format(sample_n))
+            np.save(true_file, h_true)
+            forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npy'.format(sample_n))
+            np.save(forecast_file, forecast_posterior)
+
+    shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
+
+
+if __name__ == "__main__":
+    bel(n_training=200, n_test=10)
