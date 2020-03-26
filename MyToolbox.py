@@ -18,9 +18,10 @@ class FileOps:
         pass
 
     @staticmethod
-    def load_data(res_dir, n=0, data_flag=False):
+    def load_data(res_dir, n=0, check=True, data_flag=False):
         """
 
+        @param check: Whether to check breaktrough curves for unrealistic results or not.
         @param res_dir: main directory containing results sub-directories
         @param n: if != 0, will randomly select n sub-folders from res_dir
         @param data_flag: if True, only loads data and not the target
@@ -56,19 +57,19 @@ class FileOps:
         # Load and filter results
         # We first load the breakthrough curves and check for errors.
         # If one of the concentration is > 1, it means the simulation is unrealistic and we remove it from the dataset.
-        tpt = list(map(np.load, bkt_files))
-        # FIXME: the way transport arrays are saved
-        rm = []  # Will contain indices to remove
-        for i in range(len(tpt)):
-            for j in range(len(tpt[i])):
-                if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
-                    rm.append(i)
-                    break
-        for index in sorted(rm, reverse=True):
-            del bkt_files[index]
-            del sd_files[index]
-            del hk_files[index]
-            del roots[index]
+        if check:  # Check whether to delete for simulation issues
+            tpt = list(map(np.load, bkt_files))
+            rm = []  # Will contain indices to remove
+            for i in range(len(tpt)):
+                for j in range(len(tpt[i])):
+                    if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
+                        rm.append(i)
+                        break
+            for index in sorted(rm, reverse=True):
+                del bkt_files[index]
+                del sd_files[index]
+                del hk_files[index]
+                del roots[index]
 
         # Check unpacking
         tpt = list(map(np.load, bkt_files))  # Re-load transport curves
