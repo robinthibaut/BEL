@@ -76,9 +76,9 @@ class FileOps:
         # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
         if not data_flag:
             sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
-            return tpt, sd
+            return tpt, sd, roots
         else:
-            return tpt
+            return tpt, roots
 
     @staticmethod
     def datread(file=None, header=0):

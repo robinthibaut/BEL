@@ -29,22 +29,28 @@ def bel(n_training, n_test):
     new_dir = str(uuid.uuid4())  # sub-directory for figures
     cwd = os.getcwd()
     res_dir = jp(cwd, 'results')
+
     fig_dir = jp(cwd, 'figures', new_dir)
     fig_data_dir = jp(fig_dir, 'Data')
     fig_pca_dir = jp(fig_dir, 'PCA')
     fig_cca_dir = jp(fig_dir, 'CCA')
     fig_pred_dir = jp(fig_dir, 'Predictions')
 
-    map(FileOps.dirmaker, [fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir])
+    [FileOps.dirmaker(f) for f in [fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load data
     n = n_training + n_test  # Total number of simulations to load.
     check = False  # Flag to check for simulations
     flag = False  # Flag to load both d and h or only d
     if flag:
-        tc0 = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
+        tc0, roots = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
     else:
-        tc0, h = FileOps.load_data(res_dir=res_dir, n=n, check=check)
+        tc0, h, roots = FileOps.load_data(res_dir=res_dir, n=n, check=check)
+
+    # Save file roots
+    with open(jp(fig_dir, 'roots.dat'), 'w') as f:
+        for r in roots:
+            f.write(os.path.basename(r)+'\n')
 
     # Preprocess d in n time steps.
     tc = do.d_process(tc0=tc0, n_time_steps=100)
@@ -54,14 +60,14 @@ def bel(n_training, n_test):
     mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
     mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
 
-    # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5 cells in
-    # both directions.
+    # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5
+    # cells in both directions.
     do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
     h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
     h = h_u.copy()
 
     # Plot all WHPP
-    mp.whp(h, fig_file=jp(cwd, 'figures', 'Data', 'all_whpa.png'), show=True)
+    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # %%  PCA
 
@@ -87,7 +93,7 @@ def bel(n_training, n_test):
 
     # Explained variance plots
     mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'PCA', 'h_exvar.png'), show=True)
+    mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
 
     # Scores plots
     mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
@@ -145,8 +151,8 @@ def bel(n_training, n_test):
         h_true = h[n_training:][sample_n]  # True prediction
 
         # Project observed data into canonical space.
-        d_cca_prediction, h_cca_prediction = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
-        d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+        d_cca_prediction, _ = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        d_cca_prediction = d_cca_prediction.T
 
         # Ensure Gaussian distribution in h_cca
         # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
@@ -156,9 +162,6 @@ def bel(n_training, n_test):
         # Transform the original distribution.
         h_cca_training_gaussian \
             = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
-        # Apply the transformation on the prediction as well.
-        h_cca_prediction_gaussian \
-            = np.concatenate([yj[i].transform(h_cca_prediction[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
         # Estimate the posterior mean and covariance (Tarantola)
         h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
@@ -170,11 +173,10 @@ def bel(n_training, n_test):
         # %% Sample the posterior
 
         n_posts = 500  # Number of estimates sampled from the distribution.
-        # np.random.seed(42*(sample_n+1))
         # Draw n_posts random samples from the multivariate normal distribution :
         h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
                                                          cov=h_posterior_covariance,
-                                                         size=n_posts).T  # seems OK
+                                                         size=n_posts).T
 
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
@@ -187,7 +189,6 @@ def bel(n_training, n_test):
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std deviation
         # and add the y_mean.
-        # h_pca_reverse = np.matmul(h_posts.T, np.linalg.pinv(h_rotations))*cca.y_std_ + cca.y_mean_
         h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
 
         add_comp = 0  # Whether to add or not the rest of PC components
@@ -222,4 +223,7 @@ def bel(n_training, n_test):
 
 
 if __name__ == "__main__":
-    bel(n_training=200, n_test=10)
+    # # Set numpy seed
+    # seed = np.random.randint(0, 10e8)
+    # np.random.seed(seed)
+    bel(n_training=100, n_test=5)
