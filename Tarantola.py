@@ -5,7 +5,7 @@ from numpy.matlib import repmat
 def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
     """
     Estimating posterior uncertainties.
-    @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussion-distributed
+    @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
     @param d_cca_training: Canonical Variate of the training data
     @param d_pc_training: Principal Components of the training data
     @param d_rotations: CCA rotations of the training data

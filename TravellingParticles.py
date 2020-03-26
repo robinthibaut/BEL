@@ -5,9 +5,6 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
 
-# TODO: find the source of this code
-
-
 def datread(file=None, header=0):
     """Reads space separated dat file"""
     with open(file, 'r') as fr:
