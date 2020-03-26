@@ -62,7 +62,7 @@ def my_backtracking(flowmodel, exe_name):
     traceparticledata = None
     referencetime = None
     stoptimeoption = 'specified'
-    stoptime = 30
+    stoptime = 30  # Stop time in days
     timepointdata = None
     zonedataoption = 'off'
     zones = None
@@ -90,9 +90,9 @@ def my_backtracking(flowmodel, exe_name):
     # Run modpath
     mp.run_model(silent=True)
 
-    # Loading MODPATH results
-    # Load backward tracking path lines
+    # %% Loading MODPATH results
 
+    # Load backward tracking path lines
     # fpth = jp(model_ws, mpfname + '.mppth')
     # gp = flopy.utils.PathlineFile(fpth)
     # pwb = gp.get_destination_pathline_data(dest_cells=wn)
@@ -100,6 +100,7 @@ def my_backtracking(flowmodel, exe_name):
     # Load backward tracking endpoints
     modpath_files = jp(model_ws, mpfname + '.mpend')
     e = flopy.utils.EndpointFile(modpath_files)
+    # noinspection PyTypeChecker
     ewb = e.get_destination_endpoint_data(dest_cells=wn, source=True)
     # In my implementation I'm only interested in x y locations.
     xep = ewb.x  # Endpoints x-locations (m)
