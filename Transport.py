@@ -7,13 +7,21 @@ import flopy
 
 
 def my_transport(modflowmodel, exe_name):
+    """
+
+    @param modflowmodel: flopy modflow model object
+    @param exe_name:
+    @return:
+    """
 
     version = 'mt3d-usgs'
     namefile_ext = 'mtnam'
     ftlfilename = 'mt3d_link.ftl'
+    # Extract working directory and name from modflow object
     model_ws = modflowmodel.model_ws
     modelname = modflowmodel.name
 
+    # Initiate Mt3dms object
     mt = flopy.mt3d.Mt3dms(modflowmodel=modflowmodel,
                            ftlfilename=ftlfilename,
                            modelname=modelname,
@@ -22,11 +30,13 @@ def my_transport(modflowmodel, exe_name):
                            namefile_ext=namefile_ext,
                            exe_name=exe_name)
 
+    # Extract discretization info from modflow object
     dis = modflowmodel.dis  # DIS package
     nlay = modflowmodel.nlay
     nrow = modflowmodel.nrow
     ncol = modflowmodel.ncol
-    # yxz_grid is an array of the coordinates of each node. [[coordinates Y], [coordinates X], [coordinates Z]]
+    # yxz_grid is an array of the coordinates of each node:
+    # [[coordinates Y], [coordinates X], [coordinates Z]]
     yxz_grid = dis.get_node_coordinates()
     xy_true = []  # Convert to 2D array
     for yc in yxz_grid[0]:
@@ -34,12 +44,12 @@ def my_transport(modflowmodel, exe_name):
             xy_true.append([xc, yc])
     xy_nodes_2d = np.reshape(xy_true, (nlay*nrow*ncol, 2))  # Flattens xy to correspond to node numbering
 
-    wells_data = np.load(jp(model_ws, 'spd.npy'))
+    wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
     wells_number = wells_data.shape[0]  # Total number of wells
-    pumping_well_data = wells_data[0]  # Pumping well in last
-    pw_lrc = pumping_well_data[0][:3]
-    pw_node = int(dis.get_node(pw_lrc)[0])
-    xy_pumping_well = xy_nodes_2d[pw_node]  # X Y PW in meters from well node number
+    pumping_well_data = wells_data[0]  # Pumping well in first
+    pw_lrc = pumping_well_data[0][:3]  # PW layer row column
+    pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
+    xy_pumping_well = xy_nodes_2d[pw_node]  # Get PW x, y coordinates (meters) from well node number
 
     injection_well_data = wells_data[1:]
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
@@ -54,7 +64,6 @@ def my_transport(modflowmodel, exe_name):
 
     # I will have to define an active zone because otherwise it takes a long time.
     # Start from the coordinates of the cells and use np.where
-
     # Defining mt3d active zone - I take the maximum distance from an IW to the PW and add 20m.
     ext_a = np.abs(xy_injection_wells - xy_pumping_well).max() + 20
     # Extent in meters around the well
@@ -63,7 +72,7 @@ def my_transport(modflowmodel, exe_name):
     y_inf = xy_pumping_well[1] - ext_a
     y_sup = xy_pumping_well[1] + ext_a
 
-    cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids
+    cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
 
     icbund = np.zeros((nlay, nrow, ncol))  # zero=array with grid shape
     ind_a = np.where((cdx[:, :, :, 0] > x_inf) & (cdx[:, :, :, 0] < x_sup) &
@@ -82,12 +91,12 @@ def my_transport(modflowmodel, exe_name):
     NoWetDryPrint = False
     OmitDryBud = False
     AltWTSorb = False
-    ncomp = wells_number - 1  # The number of components = 1 / injecting well
+    ncomp = wells_number - 1  # The number of components = #injecting well
     mcomp = ncomp
     tunit = 'D'
     lunit = 'M'
     munit = 'KG'
-    prsity = lpf.sy.array
+    prsity = lpf.sy.array  # Porosity loaded from the LPF package = sy
     # icbund = 1
     sconc = 0
     # sconc2 = 0
@@ -101,7 +110,7 @@ def my_transport(modflowmodel, exe_name):
     savucn = False
     nprs = 0
     timprs = None
-    obs = [tuple(pw_lrc)]
+    obs = [tuple(pw_lrc)]  # Observation point = PW location (layer row column)
     nprobs = 1
     chkmas = True
     nprmas = 1
@@ -118,6 +127,7 @@ def my_transport(modflowmodel, exe_name):
     unitnumber = None
     filenames = None
 
+    # noinspection PyTypeChecker
     btn = flopy.mt3d.mtbtn.Mt3dBtn(model=mt,
                                    MFStyleArr=MFStyleArr,
                                    DRYCell=DRYCell,
@@ -183,6 +193,7 @@ def my_transport(modflowmodel, exe_name):
     unitnumber = None
     filenames = None
 
+    # noinspection PyTypeChecker
     adv = flopy.mt3d.Mt3dAdv(model=mt,
                              mixelm=mixelm,
                              percel=percel,
@@ -216,6 +227,7 @@ def my_transport(modflowmodel, exe_name):
     unitnumber = None
     filenames = None
 
+    # noinspection PyTypeChecker
     dsp = flopy.mt3d.Mt3dDsp(model=mt,
                              al=al,
                              trpt=trpt,
@@ -238,6 +250,7 @@ def my_transport(modflowmodel, exe_name):
     unitnumber = None
     filenames = None
 
+    # Template:
     # [(‘k’, np.int), (“i”, np.int), (“j”, np.int), (“css”, np.float32),
     # (“itype”, np.int), ((cssms(n), np.float), n=1, ncomp)]
 
@@ -248,8 +261,9 @@ def my_transport(modflowmodel, exe_name):
 
     def spd_maker(l_r_c, c):
         """
-
-        :param l_r_c: L R C of IW
+        Given the location (layer, row, column) and pumping rate for each stress period, for >= 1 wells,
+        creates a stress period data array that mt3dms needs.
+        :param l_r_c: L R C of injection well
         :param c: Array containing injected concentration for each stress period
         :return:
         """
@@ -257,19 +271,19 @@ def my_transport(modflowmodel, exe_name):
         nc = len(l_r_c)  # Number of components
         spdt = {}
 
-        for i in range(nsp):
-            spdt_i = []
-            for j in range(nc):
-                cc = np.zeros(nc)
-                cc[j] = c[j][i]
-                c0 = 0
-                if j == 0:
-                    c0 = cc[0]
-                if ncomp > 1:
+        for i in range(nsp):  # for each stress period
+            spdt_i = []  # empty spd array
+            for j in range(nc):  # for each well
+                cc = np.zeros(nc)  # (0, 0...)
+                cc[j] = c[j][i]  # each well -> pumping rate #j at stress period #i
+                c0 = 0  # concentration
+                if j == 0:  # if first well, need a dummy value
+                    c0 = cc[0]  # concentration #0 -> concentration well #0
+                if ncomp > 1:  # if more than 1 injecting wells (assuming 1 different comp per iw)
                     t = tuple(np.concatenate((np.array([l_r_c[j][0], l_r_c[j][1], l_r_c[j][2], c0, 2]), cc), axis=0))
                 else:
                     t = tuple([l_r_c[j][0], l_r_c[j][1], l_r_c[j][2], c0, 2])
-                spdt_i.append(t)
+                spdt_i.append(t)  # Each well spd gets added to the empty spd array
             spdt[i] = spdt_i
         return spdt
 
@@ -280,7 +294,7 @@ def my_transport(modflowmodel, exe_name):
 
     stress_period_data = spd_maker(iw_lrc, iw_pr)
 
-    # Template
+    # Template:
     # stress_period_data[0] = [(iw1_lrc[0], iw1_lrc[1], iw1_lrc[2], 0, 2, 0, 0, 0, 0),
     #                          (iw2_lrc[0], iw2_lrc[1], iw2_lrc[2], 0, 2, 0, 0, 0, 0),
     #                          (iw3_lrc[0], iw3_lrc[1], iw3_lrc[2], 0, 2, 0, 0, 0, 0),
@@ -300,6 +314,7 @@ def my_transport(modflowmodel, exe_name):
     # stress_period_data[1] = [(iw1[0], iw1[1], iw1[2], 1500, 2)]
     # stress_period_data[2] = [(iw1[0], iw1[1], iw1[2], 0, 2)]
 
+    # noinspection PyTypeChecker
     ssm = flopy.mt3d.Mt3dSsm(model=mt,
                              crch=crch,
                              cevt=cevt,
@@ -323,6 +338,7 @@ def my_transport(modflowmodel, exe_name):
     unitnumber = None
     filenames = None
 
+    # noinspection PyTypeChecker
     gcg = flopy.mt3d.Mt3dGcg(model=mt,
                              mxiter=mxiter,
                              iter1=iter1,
@@ -344,16 +360,17 @@ def my_transport(modflowmodel, exe_name):
                  report=True)
 
     # Export
-
     only_files = [f for f in listdir(model_ws) if isfile(jp(model_ws, f))]  # Listing all files in results folder
 
     obs_files = [jp(model_ws, x) for x in only_files if '.OBS' in x]  # Selects OBS files
 
-    # observations = np.concatenate([datread(jp(model_ws, of), header=2)[:, 1:] for of in obs_files])
     observations = [mt.load_obs(of) for of in obs_files]  # Loading observations results
     fields = observations[0].dtype.names
     hey = np.array(
-        [list(zip(observations[i][fields[1]], observations[i][fields[2]])) for i in range(len(observations))])
+        [
+            list(zip(observations[i][fields[1]], observations[i][fields[2]])) for i in range(len(observations))
+        ]
+    )
 
     np.save(jp(model_ws, 'bkt'), hey)  # saves raw curves
 
