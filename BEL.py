@@ -27,10 +27,11 @@ def bel(n_training, n_test):
 
     # Directories
     cwd = os.getcwd()
-    res_dir = jp(cwd, 'simulations')
+    res_dir = jp(cwd, 'results')
+    bel_dir = jp(cwd, 'bel')
 
     new_dir = str(uuid.uuid4())  # sub-directory for figures
-    sub_dir = jp(cwd, new_dir)
+    sub_dir = jp(bel_dir, new_dir)
     obj_dir = jp(sub_dir, 'objects')
     fig_dir = jp(sub_dir, 'figures')
     fig_data_dir = jp(fig_dir, 'Data')
@@ -148,7 +149,7 @@ def bel(n_training, n_test):
     d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
     # Get the rotation matrices
-    d_rotations, h_rotations = cca.x_rotations_, cca.y_rotations_
+    d_rotations, _ = cca.x_rotations_
 
     # Correlation coefficients plots
     mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
@@ -237,4 +238,5 @@ if __name__ == "__main__":
     # # Set numpy seed
     # seed = np.random.randint(0, 10e8)
     # np.random.seed(seed)
-    bel(n_training=300, n_test=10)
+    for i in range(5):
+        bel(n_training=300, n_test=10)
