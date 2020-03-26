@@ -128,6 +128,7 @@ class MeshOps:
 
     @staticmethod
     def refine_axis(widths, r_pt, ext, cnd, d_dim, a_lim):
+        # TODO: write better documentation for this
         x0 = widths
         x0s = np.cumsum(x0)  # Cumulative sum of the width of the cells
         pt = r_pt
@@ -156,7 +157,7 @@ class MeshOps:
             x0 = np.insert(x0, wherex[0], nwxs)  # insert new
 
             cs = np.cumsum(
-                x0)  # Cumulation of width should equal xlim, but it will not be the case, have to adapt width
+                x0)  # Cumulative width should equal xlim, but it will not be the case, have to adapt width
             difx = xlim - cs[-1]
             where_default = np.where(abs(x0 - dx) <= 5)[0]  # Location of cells whose widths will be adapted
             where_left = where_default[
@@ -191,12 +192,12 @@ class MeshOps:
         Return an array of shape (n, nrows, ncols) where
         n * nrows * ncols = arr.size
 
-        If arr is a 2D array, the returned array should look like n subblocks with
-        each subblock preserving the "physical" layout of arr.
+        If arr is a 2D array, the returned array should look like n sub-blocks with
+        each sub-block preserving the "physical" layout of arr.
         """
         h, w = arr.shape
-        assert h % nrows == 0, "{} rows is not evenly divisble by {}".format(h, nrows)
-        assert w % ncols == 0, "{} cols is not evenly divisble by {}".format(w, ncols)
+        assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
+        assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(w, ncols)
 
         return (arr.reshape(h // nrows, nrows, -1, ncols)
                 .swapaxes(1, 2)
@@ -275,7 +276,7 @@ class PCAOps:
         self.dt = None  # Training set - physical space
         self.dp = None  # Prediction set - physical space
         self.dtp = None  # Training set - PCA space
-        self.dpp = None  # Predictionset - PCA space
+        self.dpp = None  # Prediction set - PCA space
 
     def pca_tp(self, n_training):
         """
@@ -357,7 +358,7 @@ class PCAOps:
         """
         Randomly selects PC components from the original training matrix dtp
         """
-        r_rows = np.random.choice(self.dtp.shape[0], n_posts)  # Seletcs n_posts rows from the dtp array
+        r_rows = np.random.choice(self.dtp.shape[0], n_posts)  # Selects n_posts rows from the dtp array
         score_selection = self.dtp[r_rows, self.ncomp:]  # Extracts those rows, from the number of components used until
         # the end of the array.
 
@@ -462,7 +463,7 @@ class Plot:
         @return:
         """
         # TODO: Add more options to customize the plot.
-        # Plot backgroung
+        # Plot background
         if bkg_field_array is not None:
             plt.imshow(bkg_field_array,
                        extent=(0, self.xlim, 0, self.ylim),

@@ -26,22 +26,26 @@ mo = MeshOps()
 def bel(n_training, n_test):
 
     # Directories
-    new_dir = str(uuid.uuid4())  # sub-directory for figures
     cwd = os.getcwd()
-    res_dir = jp(cwd, 'results')
+    res_dir = jp(cwd, 'simulations')
 
-    fig_dir = jp(cwd, 'figures', new_dir)
+    new_dir = str(uuid.uuid4())  # sub-directory for figures
+    sub_dir = jp(cwd, new_dir)
+    obj_dir = jp(sub_dir, 'objects')
+    fig_dir = jp(sub_dir, 'figures')
     fig_data_dir = jp(fig_dir, 'Data')
     fig_pca_dir = jp(fig_dir, 'PCA')
     fig_cca_dir = jp(fig_dir, 'CCA')
     fig_pred_dir = jp(fig_dir, 'Predictions')
 
-    [FileOps.dirmaker(f) for f in [fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
+    # Creates directories
+    # TODO: create dirmaker decorator function to pass before saving objects instead of code below
+    [FileOps.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load data
     n = n_training + n_test  # Total number of simulations to load.
-    check = False  # Flag to check for simulations
-    flag = False  # Flag to load both d and h or only d
+    check = False  # Flag to check for simulations issues
+    flag = False  # Flag to load both d and h, or only d
     if flag:
         tc0, roots = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
     else:
@@ -52,9 +56,10 @@ def bel(n_training, n_test):
         for r in roots:
             f.write(os.path.basename(r)+'\n')
 
-    # Preprocess d in n time steps.
-    tc = do.d_process(tc0=tc0, n_time_steps=100)
+    # Preprocess d in an arbitrary number of time steps.
+    tc = do.d_process(tc0=tc0, n_time_steps=200)
     n_wel = len(tc[0])  # Number of injecting wels
+    np.save()
 
     # Plot d
     mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
@@ -62,9 +67,11 @@ def bel(n_training, n_test):
 
     # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5
     # cells in both directions.
-    do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-    h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
-    h = h_u.copy()
+    try:
+        do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+    except NameError:
+        h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+        h = h_u.copy()
 
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
@@ -85,11 +92,13 @@ def bel(n_training, n_test):
     d_pco = PCAOps(name='d', raw_data=tc)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
+    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h)
     h_training, h_prediction = h_pco.pca_tp(n_training)
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
+    joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
 
     # Explained variance plots
     mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
@@ -129,9 +138,9 @@ def bel(n_training, n_test):
         # components between d and h.
         cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
         cca.fit(d_pc_training, h_pc_training)  # Fit
-        joblib.dump(cca, jp(cwd, 'temp', 'cca.pkl'))  # Save the fitted CCA operator
+        joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
     else:
-        cca = joblib.load(jp(cwd, 'temp', 'cca.pkl'))
+        cca = joblib.load(jp(obj_dir, 'cca.pkl'))
         n_comp_cca = cca.n_components_
 
     # Returns x_scores, y_scores after fitting inputs.
@@ -214,10 +223,12 @@ def bel(n_training, n_test):
                           fig_file=ff)
 
         def save_forecasts():
-            true_file = jp(cwd, 'temp', 'forecasts', '{}_true.npy'.format(sample_n))
+            true_file = jp(obj_dir, '{}_true.npy'.format(sample_n))
             np.save(true_file, h_true)
-            forecast_file = jp(cwd, 'temp', 'forecasts', '{}_forecasts.npy'.format(sample_n))
+            forecast_file = jp(obj_dir, '{}_forecasts.npy'.format(sample_n))
             np.save(forecast_file, forecast_posterior)
+
+        save_forecasts()
 
     shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 
