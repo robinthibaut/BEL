@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 import seaborn as sns
 from scipy import stats
+from sklearn.neighbors import KernelDensity
 
 from diavatly import blocks_from_rc, model_map
 from MyToolbox import Plot, MeshOps
@@ -28,7 +29,7 @@ t_files = [jp(res_dir, f) for f in listdir(res_dir) if isfile(jp(res_dir, f)) an
 s = 9
 true0 = np.load(t_files[s])
 forecast0 = np.load(f_files[s])
-
+shape = np.array(true0).shape
 # %% extract 0 contours
 
 c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast0]
@@ -48,14 +49,22 @@ wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
 
 x = np.hstack([vi[:, 0] for vi in v])
 y = np.hstack([vi[:, 1] for vi in v])
-sns.kdeplot(x, y, cmap="coolwarm", shade=True, shade_lowest=False)
+sns.kdeplot(x, y, cmap="coolwarm", shade=True, shade_lowest=False, cbar=True)
+plt.contour(mp.x, mp.y, true0, [0], colors='red')
 plt.plot(wells_xy[:, 0], wells_xy[:, 1], 'co', alpha=1)
+plt.xlim(750, 1200)
+plt.ylim(300, 700)
+plt.savefig(jp(bel_dir, 'comp.pdf'))
 plt.show()
 
 # Scipy
 xykde = np.vstack([x, y]).T
 kernel = stats.gaussian_kde(xykde)
 
+# Sklearn
+kde = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(xykde)
+scores = kde.score_samples(xykde)
+z = np.full(shape,0)
 
 # %% mean approach
 super_mean = np.mean(forecast0, axis=0)
