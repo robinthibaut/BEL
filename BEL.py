@@ -4,6 +4,7 @@ import shutil
 import uuid
 import warnings
 import joblib
+from multiprocessing import Process
 
 import numpy as np
 
@@ -22,7 +23,7 @@ do = DataOps()
 mo = MeshOps()
 
 
-def bel(n_training, n_test):
+def bel(n_training=300, n_test=10):
 
     # Directories
     cwd = os.getcwd()
@@ -59,7 +60,6 @@ def bel(n_training, n_test):
     # Preprocess d in an arbitrary number of time steps.
     tc = do.d_process(tc0=tc0, n_time_steps=200)
     n_wel = len(tc[0])  # Number of injecting wels
-    np.save()
 
     # Plot d
     mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
@@ -67,11 +67,9 @@ def bel(n_training, n_test):
 
     # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5
     # cells in both directions.
-    try:
-        do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-    except NameError:
-        h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
-        h = h_u.copy()
+    do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
+    h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+    h = h_u.copy()
 
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
@@ -148,7 +146,7 @@ def bel(n_training, n_test):
     d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
     # Get the rotation matrices
-    d_rotations, _ = cca.x_rotations_
+    d_rotations = cca.x_rotations_
 
     # Correlation coefficients plots
     mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
@@ -237,5 +235,11 @@ if __name__ == "__main__":
     # # Set numpy seed
     # seed = np.random.randint(0, 10e8)
     # np.random.seed(seed)
-    for i in range(5):
-        bel(n_training=300, n_test=10)
+    jobs = []
+    n_jobs = 4
+    for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
+        process = Process(target=bel)
+        jobs.append(process)
+        process.start()
+    process.join()
+    process.close()
