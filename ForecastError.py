@@ -26,7 +26,7 @@ res_dir = jp(bel_dir, 'objects')
 f_files = [jp(res_dir, f) for f in listdir(res_dir) if isfile(jp(res_dir, f)) and 'forecasts' in f]
 t_files = [jp(res_dir, f) for f in listdir(res_dir) if isfile(jp(res_dir, f)) and 'true' in f]
 
-s = 0
+s = 2
 true0 = np.load(t_files[s])
 forecast0 = np.load(f_files[s])
 shape = np.array(true0).shape
@@ -45,9 +45,9 @@ xykde = np.vstack([x, y]).T
 
 # %% Kernel density
 
-nn = 2
-plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
-plt.show()
+# nn = 2
+# plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
+# plt.show()
 
 # Sklearn
 
@@ -67,13 +67,15 @@ xyu = xy[inside]
 
 
 kde = KernelDensity(kernel='gaussian',
-                    bandwidth=1.5).fit(xykde)
+                    bandwidth=1.6).fit(xykde)
 score = np.exp(kde.score_samples(xyu))
-z = np.full(inside.shape, 0, dtype=float)
+z = np.full(inside.shape, -1, dtype=float)
 z[inside] = score
 
 z = np.flipud(z.reshape(shape))
 plt.imshow(z,
+           vmin=0,
+           vmax=z.max(),
            extent=(xmin, xmax, ymin, ymax),
            cmap='coolwarm')
 plt.contour(mp.x, mp.y, true0, [0], colors='red')
@@ -81,49 +83,46 @@ wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
 plt.plot(wells_xy[:, 0], wells_xy[:, 1], 'ko', alpha=1)
 plt.xlim(750, 1200)
 plt.ylim(300, 700)
-plt.show()
-
-levels = np.linspace(-500, z.max(), 25)
-plt.contourf(X, Y, z, cmap='coolwarm')
+plt.savefig(jp(bel_dir, '{}comp.png'.format(s)))
 plt.show()
 
 
-# Seaborn
-
-wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
-sns.kdeplot(x, y, cmap="coolwarm", shade=True, shade_lowest=False, cbar=True)
-plt.contour(mp.x, mp.y, true0, [0], colors='red')
-plt.plot(wells_xy[:, 0], wells_xy[:, 1], 'co', alpha=1)
-plt.xlim(750, 1200)
-plt.ylim(300, 700)
-plt.savefig(jp(bel_dir, 'comp.pdf'))
-plt.show()
-
-# Scipy
-kernel = stats.gaussian_kde(xykde)
-
-# %% mean approach
-super_mean = np.mean(forecast0, axis=0)
-diff_stacked = np.subtract(true0, super_mean)
-diff_stacked = super_mean
-ll = np.expand_dims(diff_stacked, axis=0)
-
-
-mp.whp([true0, super_mean],
-       colors='black',
-       lw=1,
-       vmin=-10,
-       vmax=25,
-       bkg_field_array=super_mean,
-       show=True)
-
-
-mp.whp(np.expand_dims(true0-super_mean, axis=0),
-       colors='black',
-       lw=1,
-       bkg_field_array=true0-super_mean,
-       # vmin=-25,
-       # vmax=25,
-       show=True)
-
-
+# # Seaborn
+#
+# wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
+# sns.kdeplot(x, y, cmap="coolwarm", shade=True, shade_lowest=False, cbar=True)
+# plt.contour(mp.x, mp.y, true0, [0], colors='red')
+# plt.plot(wells_xy[:, 0], wells_xy[:, 1], 'co', alpha=1)
+# plt.xlim(750, 1200)
+# plt.ylim(300, 700)
+# plt.savefig(jp(bel_dir, 'comp.pdf'))
+# plt.show()
+#
+# # Scipy
+# kernel = stats.gaussian_kde(xykde)
+#
+# # %% mean approach
+# super_mean = np.mean(forecast0, axis=0)
+# diff_stacked = np.subtract(true0, super_mean)
+# diff_stacked = super_mean
+# ll = np.expand_dims(diff_stacked, axis=0)
+#
+#
+# mp.whp([true0, super_mean],
+#        colors='black',
+#        lw=1,
+#        vmin=-10,
+#        vmax=25,
+#        bkg_field_array=super_mean,
+#        show=True)
+#
+#
+# mp.whp(np.expand_dims(true0-super_mean, axis=0),
+#        colors='black',
+#        lw=1,
+#        bkg_field_array=true0-super_mean,
+#        # vmin=-25,
+#        # vmax=25,
+#        show=True)
+#
+#
