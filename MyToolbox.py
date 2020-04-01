@@ -295,7 +295,7 @@ class PCAOps:
         self.raw_data = raw_data  # raw data
         self.n_training = None  # Number of training data
         self.operator = None  # PCA operator
-        self.ncomp = None  # Number of components
+        self.ncomp = len(self.raw_data)  # Number of components
         self.d0 = None  # Original data
         self.dt = None  # Training set - physical space
         self.dp = None  # Prediction set - physical space
@@ -415,7 +415,12 @@ class PosteriorOps:
         self.posterior_covariance = 0
         self.ops = DataOps()
 
-    def posterior(self, h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
+    def posterior(self,
+                  h_cca_training_gaussian,
+                  d_cca_training,
+                  d_pc_training,
+                  d_rotations,
+                  d_cca_prediction):
         """
         Estimating posterior uncertainties.
         @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
@@ -474,17 +479,34 @@ class PosteriorOps:
 
         return h_mean_posterior.T[0], h_posterior_covariance
 
-    def random_sample(self,
-                      h_cca_training,
-                      d_cca_training,
-                      d_pc_training,
-                      d_rotations,
-                      d_cca_prediction,
-                      cca_obj, pca_obj, n_posts=1, add_comp=0):
+    # def random_sample(self,
+    #                   h_cca_training,
+    #                   d_cca_training,
+    #                   d_pc_training,
+    #                   d_rotations,
+    #                   d_cca_prediction,
+    #                   cca_obj, pca_obj, n_posts=1, add_comp=0):
+    def random_sample(self, sample_n, pca_d, pca_h, cca_obj, n_posts=1, add_comp=0):
+
+        # Cut desired number of PC components
+        d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
+        h_pc_training, h_pc_prediction = pca_h.pca_refresh(pca_h.ncomp)
+
+        d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
+        h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
+
+        d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
+        d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
         # Ensure Gaussian distribution in h_cca
-        # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
         h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
+
+        # Get the rotation matrices
+        d_rotations = cca_obj.x_rotations_
+
+        # Project observed data into canonical space.
+        d_cca_prediction, _ = cca_obj.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        d_cca_prediction = d_cca_prediction.T
 
         # Estimate the posterior mean and covariance (Tarantola)
         h_mean_posterior, h_posterior_covariance = self.posterior(h_cca_training_gaussian,
@@ -492,7 +514,7 @@ class PosteriorOps:
                                                                   d_pc_training,
                                                                   d_rotations,
                                                                   d_cca_prediction)
-        shp = pca_obj.raw_data.shape  # Original shape
+        shp = pca_h.raw_data.shape  # Original shape
         # n_posts = 500  # Number of estimates sampled from the distribution.
         # Draw n_posts random samples from the multivariate normal distribution :
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
@@ -510,10 +532,10 @@ class PosteriorOps:
 
         # Whether to add or not the rest of PC components
         if add_comp:
-            rnpc = np.array([pca_obj.pc_random(n_posts) for i in range(n_posts)])
+            rnpc = np.array([pca_h.pc_random(n_posts) for i in range(n_posts)])
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
         # Generate forecast in the initial dimension and reshape.
-        forecast_ = pca_obj.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+        forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
 
         return forecast_
 

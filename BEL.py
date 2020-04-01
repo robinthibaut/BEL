@@ -23,7 +23,7 @@ mo = MeshOps()
 po = PosteriorOps()
 
 
-def bel(n_training=300, n_test=10):
+def bel(n_training=300, n_test=2):
     # Directories
     cwd = os.getcwd()
     res_dir = jp(cwd, 'results')
@@ -153,56 +153,19 @@ def bel(n_training=300, n_test=10):
     # Pick an observation
     for sample_n in range(n_obs):
         d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
-        h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
+        # h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
         h_true = h[n_training:][sample_n]  # True prediction
-
-        # Project observed data into canonical space.
-        d_cca_prediction, _ = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
-        d_cca_prediction = d_cca_prediction.T
+        # # Project observed data into canonical space.
+        # d_cca_prediction, _ = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        # d_cca_prediction = d_cca_prediction.T
 
         # %% Sample the posterior
 
-        # def random_sample(n_posts=500):
-        #     # Ensure Gaussian distribution in h_cca # Each vector for each cca components will be transformed
-        #     # one-by-one by a different operator, stored in yj.
-        #     h_cca_training_gaussian = do.gaussian_distribution(h_cca_training)
-        #
-        #     # Estimate the posterior mean and covariance (Tarantola)
-        #     h_mean_posterior, h_posterior_covariance = po.posterior(h_cca_training_gaussian,
-        #                                                             d_cca_training,
-        #                                                             d_pc_training,
-        #                                                             d_rotations,
-        #                                                             d_cca_prediction)
-        #     # n_posts = 500  # Number of estimates sampled from the distribution.
-        #     # Draw n_posts random samples from the multivariate normal distribution :
-        #     h_posts_gaussian = np.random.multivariate_normal(mean=h_mean_posterior.T[0],
-        #                                                      cov=h_posterior_covariance,
-        #                                                      size=n_posts).T
-        #     # This h_posts gaussian need to be inverse-transformed to the original distribution.
-        #     # We get the CCA scores.
-        #     h_posts = do.gaussian_inverse(h_posts_gaussian)
-        #     # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
-        #     # The value of h_pca_reverse are the score of PCA in the forecast space.
-        #     # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
-        #     # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
-        #     # and add the y_mean.
-        #     h_pca_reverse = np.matmul(h_posts.T, cca.y_loadings_.T) * cca.y_std_ + cca.y_mean_
-        #
-        #     add_comp = 0  # Whether to add or not the rest of PC components
-        #     if add_comp:
-        #         rnpc = np.array([h_pco.pc_random(n_posts) for i in range(n_posts)])
-        #         h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
-        #     # Generate forecast in the initial dimension and reshape.
-        #     forecast_ = h_pco.inverse_transform(h_pca_reverse).reshape((n_posts, h.shape[1], h.shape[2]))
-        #
-        #     return forecast_
-
-        forecast_posterior = po.random_sample(h_cca_training,
-                                              d_cca_training,
-                                              d_pc_training,
-                                              d_rotations,
-                                              d_cca_prediction,
-                                              cca, h_pco, n_posts=300, add_comp=0)
+        forecast_posterior = po.random_sample(sample_n=sample_n,
+                                              pca_d=d_pco,
+                                              pca_h=h_pco,
+                                              cca_obj=cca,
+                                              n_posts=500, add_comp=0)
 
         # Predicting the SD based for a certain number of 'observations'
         h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
@@ -222,7 +185,7 @@ def bel(n_training=300, n_test=10):
             forecast_file = jp(obj_dir, '{}_forecasts.npy'.format(sample_n))
             np.save(forecast_file, forecast_posterior)
 
-        save_forecasts()
+        # save_forecasts()
 
     shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 
