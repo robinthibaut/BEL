@@ -9,7 +9,6 @@ from multiprocessing import Process
 import numpy as np
 
 from sklearn.cross_decomposition import CCA
-from sklearn.preprocessing import PowerTransformer
 
 import matplotlib.pyplot as plt
 

@@ -53,11 +53,10 @@ mp.whp_prediction(forecasts=forecast_posterior,
                   h_pred=h_pred,
                   fig_file=ff)
 # %% extract 0 contours
+
 c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast_posterior]
 plt.close()
 v = np.array([c0.allsegs[0][0] for c0 in c0s])
-# ps = [c0.collections[0].get_paths()[0] for c0 in c0s]
-# v = [p.vertices for p in ps]
 
 x = np.hstack([vi[:, 0] for vi in v])
 y = np.hstack([vi[:, 1] for vi in v])
@@ -71,15 +70,15 @@ xykde = np.vstack([x, y]).T
 # plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
 # plt.show()
 
-# Sklearn
-
+# Grid geometry
 xmin = 0
 xmax = 1500
 ymin = 0
 ymax = 1000
 # Create a structured grid to estimate kernel density
-xgrid = np.arange(xmin, xmax, 5)
-ygrid = np.arange(ymin, ymax, 5)
+cell_dim = 5
+xgrid = np.arange(xmin, xmax, cell_dim)
+ygrid = np.arange(ymin, ymax, cell_dim)
 X, Y = np.meshgrid(xgrid, ygrid)
 # x, y coordinates of the grid cells vertices
 xy = np.vstack([X.ravel(), Y.ravel()]).T
@@ -90,14 +89,18 @@ r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
 inside = r < radius
 xyu = xy[inside]  # Create mask
 
+# Perform KDE
 bw = 1.618
 kde = KernelDensity(kernel='gaussian',  # Fit kernel density
                     bandwidth=bw).fit(xykde)
 score = np.exp(kde.score_samples(xyu))  # Sample at the desired grid cells
 
 
-def score_norm(sc):
-    sc -= sc.min()  # Normalize
+def score_norm(sc, max_score=None):
+    """
+    Normalizes the KDE scores.
+    """
+    sc -= sc.min()
     sc /= sc.max()
 
     sc += 1
@@ -109,6 +112,7 @@ def score_norm(sc):
     return sc
 
 
+# Normalize
 score = score_norm(score)
 
 # Assign the computed scores to the grid
@@ -116,6 +120,7 @@ z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
 z[inside] = score
 z = np.flipud(z.reshape(shape[1], shape[2]))  # Flip to correspond
 
+# Plot KDE
 mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        alpha=1,
        lw=1,
