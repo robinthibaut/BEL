@@ -1,0 +1,8 @@
+ortools
+scikit-fmm
+scikit-learn
+flopy
+matplotlib
+scipy
+numpy
+joblib

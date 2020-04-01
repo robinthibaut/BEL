@@ -4,12 +4,12 @@ import shutil
 
 import joblib
 
-import flopy
-import matplotlib.pyplot as plt
 import numpy as np
 from numpy.matlib import repmat
 from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
 
+import flopy
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PowerTransformer
 
@@ -479,15 +479,7 @@ class PosteriorOps:
 
         return h_mean_posterior.T[0], h_posterior_covariance
 
-    # def random_sample(self,
-    #                   h_cca_training,
-    #                   d_cca_training,
-    #                   d_pc_training,
-    #                   d_rotations,
-    #                   d_cca_prediction,
-    #                   cca_obj, pca_obj, n_posts=1, add_comp=0):
     def random_sample(self, sample_n, pca_d, pca_h, cca_obj, n_posts=1, add_comp=0):
-
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
         h_pc_training, h_pc_prediction = pca_h.pca_refresh(pca_h.ncomp)
