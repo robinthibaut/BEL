@@ -603,6 +603,7 @@ class Plot:
             bkg_field_array=None,
             vmin=None,
             vmax=None,
+            cmap='coolwarm',
             colors='white',
             fig_file=None,
             show=False):
@@ -610,10 +611,14 @@ class Plot:
         Produces the WHPA plot, that is the zero-contour of the signed distance array.
         It assumes that well information can be loaded from pw.npy and iw.npy.
         I should change this.
-        @param h:
-        @param alpha:
-        @param lw:
-        @param colors:
+        @param cmap: colormap for the background array
+        @param vmax: max value to plot for the background array
+        @param vmin: max value to plot for the background array
+        @param bkg_field_array: 2D array whose values will be plotted on the grid
+        @param h: Array containing grids of values whose 0 contour will be computed and plotted
+        @param alpha: opacity of the 0 contour lines
+        @param lw: Line width
+        @param colors: Line color
         @param fig_file:
         @param show:
         @return:
@@ -625,7 +630,7 @@ class Plot:
                        extent=(0, self.xlim, 0, self.ylim),
                        vmin=vmin,
                        vmax=vmax,
-                       cmap='coolwarm')
+                       cmap=cmap)
             plt.colorbar()
         # Plot results
         for z in h:  # h is the n square WHPA matrix
@@ -639,7 +644,7 @@ class Plot:
             plt.plot(iwl[i][0], iwl[i][1], 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
                      label='iw{}'.format(i))
         plt.legend(fontsize=8)
-        plt.xlim(750, 1200)
+        plt.xlim(800, 1150)
         plt.ylim(300, 700)
         plt.tick_params(labelsize=5)
         if fig_file:

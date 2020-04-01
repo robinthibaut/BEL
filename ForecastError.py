@@ -35,19 +35,19 @@ forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
                                       pca_h=h_pco,
                                       cca_obj=cca,
-                                      n_posts=3000, add_comp=0)
+                                      n_posts=500, add_comp=0)
 # Get the true array of the prediction
-d_pc_obs = h_pco.dpp[sample_n]
-h_true_obs = h_pco.dp[sample_n]
+d_pc_obs = d_pco.dpp[sample_n]
 shape = h_pco.raw_data.shape
+h_true_obs = h_pco.dp[sample_n].reshape(shape[1], shape[2])
 
 # Predicting the SD based for a certain number of 'observations'
-h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
+h_pc_true_pred = cca.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))
 # Going back to the original SD dimension and reshape.
 h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(shape[1], shape[2])
 
 # Plot results
-ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca.ncomp))
+ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca.n_components))
 mp.whp_prediction(forecasts=forecast_posterior,
                   h_true=h_true_obs,
                   h_pred=h_pred,
@@ -84,9 +84,9 @@ X, Y = np.meshgrid(xgrid, ygrid)
 # x, y coordinates of the grid cells vertices
 xy = np.vstack([X.ravel(), Y.ravel()]).T
 
-# Define a disk within which the KDE will be perdormed
+# Define a disk within which the KDE will be performed
 x0, y0, radius = 1000, 500, 200
-r = np.sqrt((xy[:, 0] - x0)**2 + (xy[:, 1] - y0)**2)
+r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
 inside = r < radius
 xyu = xy[inside]  # Create mask
 
@@ -95,31 +95,34 @@ kde = KernelDensity(kernel='gaussian',  # Fit kernel density
                     bandwidth=bw).fit(xykde)
 score = np.exp(kde.score_samples(xyu))  # Sample at the desired grid cells
 
-score -= score.min()  # Normalize
-score /= score.max()
 
-score += 1
-score = score**-1
-score -= score.min()
-score /= score.max()
+def score_norm(sc):
+    sc -= sc.min()  # Normalize
+    sc /= sc.max()
 
-# Assign the computed scores to the gric
-z = np.full(inside.shape, 1, dtype=float)  # Create array fileld with 1
+    sc += 1
+    sc = sc ** -1
+
+    sc -= sc.min()
+    sc /= sc.max()
+
+    return sc
+
+
+score = score_norm(score)
+
+# Assign the computed scores to the grid
+z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
 z[inside] = score
 z = np.flipud(z.reshape(shape[1], shape[2]))  # Flip to correspond
 
-plt.imshow(z,
-           vmin=0,
-           vmax=1,
-           extent=(xmin, xmax, ymin, ymax),
-           cmap='RdGy')
-plt.colorbar()
-plt.contour(mp.x, mp.y, h_true_obs.reshape(shape[1], shape[2]), [0], colors='red')
-wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
-plt.plot(1000, 500, 'wo', alpha=.7)
-plt.plot(wells_xy[:, 0], wells_xy[:, 1], 'co', alpha=.7, markersize=7, markeredgecolor='w', markeredgewidth=.5)
-plt.grid(color='w', linestyle='-', linewidth=.5, alpha=.2)
-plt.xlim(800, 1200)
-plt.ylim(300, 700)
-plt.savefig(jp(bel_dir, '{}comp.png'.format(sample_n)), dpi=300)
-plt.show()
+mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
+       alpha=1,
+       lw=1,
+       bkg_field_array=z,
+       vmin=None,
+       vmax=None,
+       cmap='RdGy',
+       colors='red',
+       fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
+       show=True)
