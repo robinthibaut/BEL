@@ -13,6 +13,7 @@ from scipy.interpolate import interp1d
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PowerTransformer
 
+
 class FileOps:
 
     def __init__(self):
@@ -410,10 +411,11 @@ class CCAOps:
 class PosteriorOps:
 
     def __init__(self):
-        pass
+        self.posterior_mean = 0
+        self.posterior_covariance = 0
+        self.ops = DataOps()
 
-    @staticmethod
-    def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
+    def posterior(self, h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
         """
         Estimating posterior uncertainties.
         @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
@@ -467,7 +469,53 @@ class PosteriorOps:
 
         h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # same
 
-        return h_mean_posterior, h_posterior_covariance
+        self.posterior_mean = h_mean_posterior.T[0]
+        self.posterior_covariance = h_posterior_covariance
+
+        return h_mean_posterior.T[0], h_posterior_covariance
+
+    def random_sample(self,
+                      h_cca_training,
+                      d_cca_training,
+                      d_pc_training,
+                      d_rotations,
+                      d_cca_prediction,
+                      cca_obj, pca_obj, n_posts=1, add_comp=0):
+
+        # Ensure Gaussian distribution in h_cca
+        # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
+        h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
+
+        # Estimate the posterior mean and covariance (Tarantola)
+        h_mean_posterior, h_posterior_covariance = self.posterior(h_cca_training_gaussian,
+                                                                  d_cca_training,
+                                                                  d_pc_training,
+                                                                  d_rotations,
+                                                                  d_cca_prediction)
+        shp = pca_obj.raw_data.shape  # Original shape
+        # n_posts = 500  # Number of estimates sampled from the distribution.
+        # Draw n_posts random samples from the multivariate normal distribution :
+        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
+                                                         cov=self.posterior_covariance,
+                                                         size=n_posts).T
+        # This h_posts gaussian need to be inverse-transformed to the original distribution.
+        # We get the CCA scores.
+        h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
+        # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
+        # The value of h_pca_reverse are the score of PCA in the forecast space.
+        # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
+        # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
+        # and add the y_mean.
+        h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+
+        # Whether to add or not the rest of PC components
+        if add_comp:
+            rnpc = np.array([pca_obj.pc_random(n_posts) for i in range(n_posts)])
+            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
+        # Generate forecast in the initial dimension and reshape.
+        forecast_ = pca_obj.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+
+        return forecast_
 
 
 class Plot:
