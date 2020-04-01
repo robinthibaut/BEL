@@ -23,7 +23,7 @@ mo = MeshOps()
 po = PosteriorOps()
 
 
-def bel(n_training=300, n_test=2):
+def bel(n_training=100, n_test=2):
     # Directories
     cwd = os.getcwd()
     res_dir = jp(cwd, 'results')
@@ -89,13 +89,11 @@ def bel(n_training=300, n_test=2):
     d_pco = PCAOps(name='d', raw_data=tc)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
-    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h)
     h_training, h_prediction = h_pco.pca_tp(n_training)
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
-    joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
 
     # Explained variance plots
     mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
@@ -126,6 +124,9 @@ def bel(n_training=300, n_test=2):
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
     h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
+    # Save the d and h PC objects.
+    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
+    joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
     # %% CCA
 
     load_cca = False
@@ -144,29 +145,19 @@ def bel(n_training=300, n_test=2):
     d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
     d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-    # Get the rotation matrices
-    d_rotations = cca.x_rotations_
-
     # Correlation coefficients plots
     mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
     # Pick an observation
     for sample_n in range(n_obs):
         d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
-        # h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
         h_true = h[n_training:][sample_n]  # True prediction
-        # # Project observed data into canonical space.
-        # d_cca_prediction, _ = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
-        # d_cca_prediction = d_cca_prediction.T
-
         # %% Sample the posterior
-
         forecast_posterior = po.random_sample(sample_n=sample_n,
                                               pca_d=d_pco,
                                               pca_h=h_pco,
                                               cca_obj=cca,
                                               n_posts=500, add_comp=0)
-
         # Predicting the SD based for a certain number of 'observations'
         h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
         # Going back to the original SD dimension and reshape.
@@ -191,9 +182,6 @@ def bel(n_training=300, n_test=2):
 
 
 if __name__ == "__main__":
-    # # Set numpy seed
-    # seed = np.random.randint(0, 10e8)
-    # np.random.seed(seed)
     bel()
     # jobs = []
     # n_jobs = 4

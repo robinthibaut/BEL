@@ -295,7 +295,7 @@ class PCAOps:
         self.raw_data = raw_data  # raw data
         self.n_training = None  # Number of training data
         self.operator = None  # PCA operator
-        self.ncomp = len(self.raw_data)  # Number of components
+        self.ncomp = None  # Number of components
         self.d0 = None  # Original data
         self.dt = None  # Training set - physical space
         self.dp = None  # Prediction set - physical space
