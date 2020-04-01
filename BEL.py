@@ -169,7 +169,7 @@ def bel(n_training=300, n_test=10):
         # h_cca_training_gaussian \
         #     = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
 
-        h_cca_training_gaussian = do.gaussian_distribution_transform(h_cca_training)
+        h_cca_training_gaussian = do.gaussian_distribution(h_cca_training)
 
         # Estimate the posterior mean and covariance (Tarantola)
         h_mean_posterior, h_posterior_covariance = po.posterior(h_cca_training_gaussian,
@@ -188,9 +188,10 @@ def bel(n_training=300, n_test=10):
 
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
-        h_posts \
-            = np.concatenate([yj[i].inverse_transform(h_posts_gaussian[i].reshape(-1, 1)) for i in range(len(yj))],
-                             axis=1).T
+        # h_posts \
+        #     = np.concatenate([yj[i].inverse_transform(h_posts_gaussian[i].reshape(-1, 1)) for i in range(len(yj))],
+        #                      axis=1).T
+        h_posts = do.gaussian_inverse(h_posts_gaussian)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -236,11 +237,12 @@ if __name__ == "__main__":
     # # Set numpy seed
     # seed = np.random.randint(0, 10e8)
     # np.random.seed(seed)
-    jobs = []
-    n_jobs = 4
-    for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-        process = Process(target=bel)
-        jobs.append(process)
-        process.start()
-    process.join()
-    process.close()
+    bel()
+    # jobs = []
+    # n_jobs = 4
+    # for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
+    #     process = Process(target=bel)
+    #     jobs.append(process)
+    #     process.start()
+    # process.join()
+    # process.close()

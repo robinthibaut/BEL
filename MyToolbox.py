@@ -260,11 +260,11 @@ class DataOps:
         h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
         np.save(jp(wdir, 'h_u.npy'), h_u)  # Save transformed SD matrix
 
-    def gaussian_distribution_transform(self, original_array, name='gd'):
+    def gaussian_distribution(self, original_array, name='gd'):
         # Ensure Gaussian distribution in original_array Each vector for each original_array components will be
         # transformed one-by-one by a different operator, stored in yj.
         yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(original_array.shape[0])]
-        self.gaussian_transformers[name] = yj
+        self.gaussian_transformers[name] = yj  # Adds the gaussian distribution tranformers object to the dictionary
         # Fit each PowerTransformer with each component
         [yj[i].fit(original_array[i].reshape(-1, 1)) for i in range(len(yj))]
         # Transform the original distribution.
@@ -273,6 +273,13 @@ class DataOps:
 
         return original_array_gaussian
 
+    def gaussian_inverse(self, original_array, name='gd'):
+        yj = self.gaussian_transformers[name]
+        back2 \
+            = np.concatenate([yj[i].inverse_transform(original_array[i].reshape(-1, 1)) for i in range(len(yj))],
+                             axis=1).T
+
+        return back2
 
 
 class PCAOps:
