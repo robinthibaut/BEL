@@ -13,18 +13,17 @@ from sklearn.preprocessing import PowerTransformer
 
 import matplotlib.pyplot as plt
 
-from MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps
-from Tarantola import posterior
+from MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
 
 plt.style.use('dark_background')
 
 mp = Plot()
 do = DataOps()
 mo = MeshOps()
+po = PosteriorOps()
 
 
 def bel(n_training=300, n_test=10):
-
     # Directories
     cwd = os.getcwd()
     res_dir = jp(cwd, 'results')
@@ -55,7 +54,7 @@ def bel(n_training=300, n_test=10):
     # Save file roots
     with open(jp(fig_dir, 'roots.dat'), 'w') as f:
         for r in roots:
-            f.write(os.path.basename(r)+'\n')
+            f.write(os.path.basename(r) + '\n')
 
     # Preprocess d in an arbitrary number of time steps.
     tc = do.d_process(tc0=tc0, n_time_steps=200)
@@ -119,7 +118,7 @@ def bel(n_training=300, n_test=10):
         print(d_pco.perc_pca_components(ndo))
         print(h_pco.perc_pca_components(nho))
 
-    # Assign final n_comp
+    # Assign final n_comp for PCA
     n_d_pc_comp = ndo
     n_h_pc_comp = nho
 
@@ -134,7 +133,7 @@ def bel(n_training=300, n_test=10):
     if not load_cca:
         n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
         # components between d and h.
-        cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500*2))  # By default, it scales the data
+        cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2))  # By default, it scales the data
         cca.fit(d_pc_training, h_pc_training)  # Fit
         joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
     else:
@@ -153,29 +152,31 @@ def bel(n_training=300, n_test=10):
 
     # Pick an observation
     for sample_n in range(n_obs):
-        d_pc_obs = d_pc_prediction[sample_n]
-        h_pc_obs = h_pc_prediction[sample_n]
+        d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
+        h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
         h_true = h[n_training:][sample_n]  # True prediction
 
         # Project observed data into canonical space.
         d_cca_prediction, _ = cca.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
         d_cca_prediction = d_cca_prediction.T
 
-        # Ensure Gaussian distribution in h_cca
-        # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
-        yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(h_cca_training.shape[0])]
-        # Fit each PowerTransformer with each component
-        [yj[i].fit(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))]
-        # Transform the original distribution.
-        h_cca_training_gaussian \
-            = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
+        # # Ensure Gaussian distribution in h_cca
+        # # Each vector for each cca components will be transformed one-by-one by a different operator, stored in yj.
+        # yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(h_cca_training.shape[0])]
+        # # Fit each PowerTransformer with each component
+        # [yj[i].fit(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))]
+        # # Transform the original distribution.
+        # h_cca_training_gaussian \
+        #     = np.concatenate([yj[i].transform(h_cca_training[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
+
+        h_cca_training_gaussian = do.gaussian_distribution_transform(h_cca_training)
 
         # Estimate the posterior mean and covariance (Tarantola)
-        h_mean_posterior, h_posterior_covariance = posterior(h_cca_training_gaussian,
-                                                             d_cca_training,
-                                                             d_pc_training,
-                                                             d_rotations,
-                                                             d_cca_prediction)
+        h_mean_posterior, h_posterior_covariance = po.posterior(h_cca_training_gaussian,
+                                                                d_cca_training,
+                                                                d_pc_training,
+                                                                d_rotations,
+                                                                d_cca_prediction)
 
         # %% Sample the posterior
 

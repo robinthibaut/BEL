@@ -7,10 +7,11 @@ import joblib
 import flopy
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.matlib import repmat
 from scipy.interpolate import interp1d
 
 from sklearn.decomposition import PCA
-
+from sklearn.preprocessing import PowerTransformer
 
 class FileOps:
 
@@ -217,6 +218,7 @@ class DataOps:
 
     def __init__(self):
         self.mo = MeshOps()
+        self.gaussian_transformers = {}
 
     @staticmethod
     def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
@@ -257,6 +259,20 @@ class DataOps:
         un, uc = int(nrow / sc), int(ncol / sc)
         h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
         np.save(jp(wdir, 'h_u.npy'), h_u)  # Save transformed SD matrix
+
+    def gaussian_distribution_transform(self, original_array, name='gd'):
+        # Ensure Gaussian distribution in original_array Each vector for each original_array components will be
+        # transformed one-by-one by a different operator, stored in yj.
+        yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(original_array.shape[0])]
+        self.gaussian_transformers[name] = yj
+        # Fit each PowerTransformer with each component
+        [yj[i].fit(original_array[i].reshape(-1, 1)) for i in range(len(yj))]
+        # Transform the original distribution.
+        original_array_gaussian \
+            = np.concatenate([yj[i].transform(original_array[i].reshape(-1, 1)) for i in range(len(yj))], axis=1).T
+
+        return original_array_gaussian
+
 
 
 class PCAOps:
@@ -382,6 +398,69 @@ class CCAOps:
 
     def __init__(self):
         pass
+
+
+class PosteriorOps:
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def posterior(h_cca_training_gaussian, d_cca_training, d_pc_training, d_rotations, d_cca_prediction):
+        """
+        Estimating posterior uncertainties.
+        @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
+        @param d_cca_training: Canonical Variate of the training data
+        @param d_pc_training: Principal Components of the training data
+        @param d_rotations: CCA rotations of the training data
+        @param d_cca_prediction: Canonical Variate of the observation
+        @return: h_mean_posterior, h_posterior_covariance
+        """
+
+        # TODO: add dimension check
+        # Size of the set
+        n_training = d_cca_training.shape[1]
+
+        # Evaluate the covariance in h
+        h_cov_operator = np.cov(h_cca_training_gaussian.T, rowvar=False)  # same
+
+        # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+        x_dim = np.size(d_pc_training, axis=1)  # Number of PCA components for the curves
+        noise = .01
+        d_cov_operator = np.eye(x_dim) * noise  # I matrix.
+        d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations  # same
+
+        # Linear modeling d to h
+        g = np.linalg.lstsq(h_cca_training_gaussian.T, d_cca_training.T, rcond=None)[
+            0].T  # Transpose to get same as Thomas
+        g = np.where(np.abs(g) < 1e-12, 0, g)
+
+        # Modeling error due to deviations from theory
+        d_ls_predicted = g @ h_cca_training_gaussian  # same
+        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=1).reshape(-1, 1)  # same
+        d_modeling_error = d_cca_training - d_ls_predicted - repmat(d_modeling_mean_error, 1,
+                                                                    np.size(d_cca_training, axis=1))  # same
+        # Information about the covariance of the posterior distribution.
+        d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # same
+
+        # Computation of the posterior mean
+        h_mean = np.row_stack(np.mean(h_cca_training_gaussian, axis=1))  # same
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
+
+        h_mean_posterior = h_mean \
+                           + h_cov_operator @ g.T \
+                           @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+                           @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # same
+
+        # h posterior covariance
+        h_posterior_covariance = h_cov_operator \
+                                 - (h_cov_operator @ g.T) \
+                                 @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+                                 @ g @ h_cov_operator
+
+        h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # same
+
+        return h_mean_posterior, h_posterior_covariance
 
 
 class Plot:
