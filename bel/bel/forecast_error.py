@@ -1,11 +1,9 @@
 import os
 from os.path import join as jp
 
-import numpy as np
-import matplotlib.pyplot as plt
-
 import joblib
-
+import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.neighbors import KernelDensity
 
 from bel.tools.toolbox import Plot, MeshOps, PosteriorOps

@@ -1,8 +1,8 @@
 import os
 from os.path import join as jp
 
-import matplotlib.pyplot as plt
 import flopy
+import matplotlib.pyplot as plt
 
 from bel.tools.toolbox import datread, load_flow_model, load_transport_model
 

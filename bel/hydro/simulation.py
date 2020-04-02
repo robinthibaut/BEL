@@ -1,17 +1,15 @@
 import os
-from os.path import join as jp
 import shutil
+import uuid
+from os.path import join as jp
 
 import numpy as np
-import uuid
-from multiprocessing import Process
 
-from bel.tools.toolbox import FileOps
+from bel.hydro.backtracking.backtracking import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
-from bel.hydro.backtracking.backtracking import backtrack
 from bel.hydro.whpa.signed_distance import SD
-
+from bel.tools.toolbox import FileOps
 
 # Directories
 cwd = os.getcwd()

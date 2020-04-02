@@ -1,9 +1,9 @@
-from os.path import join as jp
 from os import listdir
 from os.path import isfile
+from os.path import join as jp
 
-import numpy as np
 import flopy
+import numpy as np
 
 
 def transport(modflowmodel, exe_name):

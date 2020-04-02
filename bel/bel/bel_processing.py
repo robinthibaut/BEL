@@ -1,15 +1,13 @@
 import os
-from os.path import join as jp
 import shutil
 import uuid
 import warnings
+from os.path import join as jp
+
 import joblib
-
-import numpy as np
-
-from sklearn.cross_decomposition import CCA
-
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.cross_decomposition import CCA
 
 from bel.tools.toolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
 
