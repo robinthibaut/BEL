@@ -9,7 +9,7 @@ from bel.hydro.backtracking.backtracking import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.signed_distance import SD
-from bel.tools.toolbox import FileOps
+from bel.toolbox.tools import FileOps
 
 # Directories
 cwd = os.getcwd()

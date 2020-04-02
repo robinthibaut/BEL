@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 from bel.hydro.sgems.sgems import SGEMS
-from bel.tools.toolbox import MeshOps
+from bel.toolbox.tools import MeshOps
 
 
 def flow(exe_name, model_ws, wells):

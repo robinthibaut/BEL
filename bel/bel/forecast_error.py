@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.neighbors import KernelDensity
 
-from bel.tools.toolbox import Plot, MeshOps, PosteriorOps
+from bel.toolbox.tools import Plot, MeshOps, PosteriorOps
 
 plt.style.use('dark_background')
 

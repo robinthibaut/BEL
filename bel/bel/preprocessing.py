@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
-from bel.tools.toolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.toolbox.tools import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
 
 plt.style.use('dark_background')
 
