@@ -1,0 +1,8 @@
+*.png
+*.bat
+*.exe
+/bel/bel_forecasts
+/bel/hydro/exe/
+/bel/hydro/results/
+/bel/hydro/grid/
+/bel/doc/
