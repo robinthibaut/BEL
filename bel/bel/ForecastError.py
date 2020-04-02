@@ -8,7 +8,7 @@ import joblib
 
 from sklearn.neighbors import KernelDensity
 
-from MyToolbox import Plot, MeshOps, PosteriorOps
+from bel.tools.MyToolbox import Plot, MeshOps, PosteriorOps
 
 plt.style.use('dark_background')
 
@@ -19,7 +19,7 @@ po = PosteriorOps()
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp(cwd, 'grid')
-bel_dir = jp(cwd, 'bel', 'efe5b47a-a476-402a-909f-32d09a64aa33')
+bel_dir = jp(cwd, 'bel_forecasts', 'efe5b47a-a476-402a-909f-32d09a64aa33')
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
@@ -30,11 +30,12 @@ cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Random sample from the posterior
 sample_n = 0
+n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
                                       pca_h=h_pco,
                                       cca_obj=cca,
-                                      n_posts=500, add_comp=0)
+                                      n_posts=n_posts, add_comp=0)
 # Get the true array of the prediction
 d_pc_obs = d_pco.dpp[sample_n]
 shape = h_pco.raw_data.shape

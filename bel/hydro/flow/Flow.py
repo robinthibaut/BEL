@@ -1,16 +1,14 @@
 import os
-from os.path import join as jp
 from datetime import date
-
-import numpy as np
-from scipy.spatial import distance_matrix
+from os.path import join as jp
 
 import flopy
 import flopy.utils.binaryfile as bf
+import numpy as np
+from scipy.spatial import distance_matrix
 
-import mySgems
-from mySgems import MySgems
-from MyToolbox import MeshOps
+from bel.hydro.sgems.mySgems import MySgems
+from bel.tools.MyToolbox import MeshOps
 
 
 def my_flow(exe_name, model_ws, wells):
@@ -330,7 +328,7 @@ def my_flow(exe_name, model_ws, wells):
 
         opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
 
-        hk = mySgems.so(opl)  # Grid information directly derived from the output file.
+        hk = MySgems.so(opl)  # Grid information directly derived from the output file.
 
         k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
 
@@ -338,7 +336,7 @@ def my_flow(exe_name, model_ws, wells):
 
         hkp = np.copy(hk)
 
-        hk_array = [mySgems.o2k2(h, k_mean, k_std) for h in hkp]
+        hk_array = [MySgems.o2k2(h, k_mean, k_std) for h in hkp]
 
         # Setting the hydraulic conductivity matrix.
         hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]

@@ -4,7 +4,7 @@ import numpy as np
 import skfmm
 from matplotlib.patches import Polygon
 
-from TravellingParticles import tsp
+from bel.hydro.whpa.TravellingParticles import tsp
 
 
 def signed_distance(pz, results_dir=''):

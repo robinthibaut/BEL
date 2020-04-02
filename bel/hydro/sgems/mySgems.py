@@ -9,6 +9,7 @@ import subprocess
 
 import numpy as np
 
+
 # TODO: Separate this script in 2: the first part will be a function, given a python script as argument, will run sgems
 #       The other part will be used to specifically write python code for my simulations. Push all to Github
 # from subprocess import Popen
@@ -17,48 +18,6 @@ def path_leaf(path):
     """Extracts file name from a path name"""
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
-
-
-def so(filename):
-    """
-    This code transforms the SGems simulations output into a python readable and exploitable format,
-    given the sgems output file as argument
-    """
-
-    datac = open(filename, 'r').readlines()
-    # Extraction of the grid size from the first lines of the output
-    nsimu = int(datac[1])
-    dims = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", datac[0])
-    ncol = int(dims[0])
-    nrow = int(dims[1])
-    nlay = int(dims[2])
-    # Each simulation result is separated
-    head = nsimu + 2
-    datac = datac[head:]
-    data = [line.split(' ')[:-1] for line in datac if len(line) > 1]
-    data = np.array(data, dtype=np.float)
-    sims = [data[:, i] for i in range(0, nsimu, 1)]
-
-    # return nrow, ncol, nlay, sims
-    return sims
-
-
-def o2k2(f, kmean, kstd):
-    """
-    Transforms the values of the sgems simulations into meaningful data
-    """
-
-    # fn = (f - min(f))
-    #
-    # fnm = fn/max(fn)  # Normalization from 0 to 1
-
-    # fnm += -0.5
-    #
-    # fnm *= 2
-
-    ff = f * kstd + kmean
-
-    return 10 ** ff
 
 
 def joinlist(j, mylist):
@@ -78,7 +37,49 @@ class MySgems:
         # The idea here is to initiate a list that will contain the simulations parameters. I will save it in a text
         # file in dedicated simulations folders for example. I don't know if this 'self' method is optimal yet.
 
-    ########################################################################################################################
+    @staticmethod
+    def so(filename):
+        """
+        This code transforms the SGems simulations output into a python readable and exploitable format,
+        given the sgems output file as argument
+        """
+
+        datac = open(filename, 'r').readlines()
+        # Extraction of the grid size from the first lines of the output
+        nsimu = int(datac[1])
+        dims = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", datac[0])
+        ncol = int(dims[0])
+        nrow = int(dims[1])
+        nlay = int(dims[2])
+        # Each simulation result is separated
+        head = nsimu + 2
+        datac = datac[head:]
+        data = [line.split(' ')[:-1] for line in datac if len(line) > 1]
+        data = np.array(data, dtype=np.float)
+        sims = [data[:, i] for i in range(0, nsimu, 1)]
+
+        # return nrow, ncol, nlay, sims
+        return sims
+
+    @staticmethod
+    def o2k2(f, kmean, kstd):
+        """
+        Transforms the values of the sgems simulations into meaningful data
+        """
+
+        # fn = (f - min(f))
+        #
+        # fnm = fn/max(fn)  # Normalization from 0 to 1
+
+        # fnm += -0.5
+        #
+        # fnm *= 2
+
+        ff = f * kstd + kmean
+
+        return 10 ** ff
+
+    ####################################################################################################################
 
     def sims(self,
              # core_path='',

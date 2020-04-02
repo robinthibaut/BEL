@@ -4,7 +4,6 @@ import shutil
 import uuid
 import warnings
 import joblib
-from multiprocessing import Process
 
 import numpy as np
 
@@ -12,7 +11,7 @@ from sklearn.cross_decomposition import CCA
 
 import matplotlib.pyplot as plt
 
-from MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.tools.MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
 
 plt.style.use('dark_background')
 
@@ -26,7 +25,7 @@ def bel(n_training=100, n_test=2):
     # Directories
     cwd = os.getcwd()
     res_dir = jp(cwd, 'results')
-    bel_dir = jp(cwd, 'bel')
+    bel_dir = jp(cwd, 'bel_forecasts')
 
     new_dir = str(uuid.uuid4())  # sub-directory for figures
     sub_dir = jp(bel_dir, new_dir)
@@ -185,7 +184,7 @@ if __name__ == "__main__":
     # jobs = []
     # n_jobs = 4
     # for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-    #     process = Process(target=bel)
+    #     process = Process(target=bel_forecasts)
     #     jobs.append(process)
     #     process.start()
     # process.join()

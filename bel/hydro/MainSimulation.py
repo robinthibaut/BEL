@@ -1,4 +1,3 @@
-# %% Import
 import os
 from os.path import join as jp
 import shutil
@@ -7,11 +6,11 @@ import numpy as np
 import uuid
 from multiprocessing import Process
 
-from MyToolbox import FileOps
-from Flow import my_flow
-from Transport import my_transport
-from Backtracking import my_backtracking
-from SignedDistance import signed_distance
+from bel.tools.MyToolbox import FileOps
+from bel.hydro.flow.Flow import my_flow
+from bel.hydro.transport.Transport import my_transport
+from bel.hydro.backtracking.Backtracking import my_backtracking
+from bel.hydro.whpa.SignedDistance import signed_distance
 
 
 # Directories
