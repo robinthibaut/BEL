@@ -4,10 +4,10 @@ import numpy as np
 import skfmm
 from matplotlib.patches import Polygon
 
-from bel.hydro.whpa.TravellingParticles import tsp
+from bel.hydro.whpa.travelling_particles import tsp
 
 
-def signed_distance(pz, results_dir=''):
+def SD(pz, results_dir=''):
     # pz =  x-y coordinates endpoints particles
     delineation = tsp(pz)  # indices of the vertices of the final protection zone using TSP algorithm
     pzs = pz[delineation]  # x-y coordinates protection zone

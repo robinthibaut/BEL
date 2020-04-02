@@ -29,10 +29,10 @@ def joinlist(j, mylist):
     return gp
 
 
-class MySgems:
+class SGEMS:
 
     def __init__(self):
-        self.simparams = []
+        self.sim_params = []
         self.seed = 0
         # The idea here is to initiate a list that will contain the simulations parameters. I will save it in a text
         # file in dedicated simulations folders for example. I don't know if this 'self' method is optimal yet.
@@ -58,11 +58,11 @@ class MySgems:
         data = np.array(data, dtype=np.float)
         sims = [data[:, i] for i in range(0, nsimu, 1)]
 
-        # return nrow, ncol, nlay, sims
+        # return nrow, ncol, nlay, gaussian_simulation
         return sims
 
     @staticmethod
-    def o2k2(f, kmean, kstd):
+    def transform(f, k_mean, k_std):
         """
         Transforms the values of the sgems simulations into meaningful data
         """
@@ -75,42 +75,40 @@ class MySgems:
         #
         # fnm *= 2
 
-        ff = f * kstd + kmean
+        ff = f * k_std + k_mean
 
         return 10 ** ff
 
-    ####################################################################################################################
-
-    def sims(self,
-             # core_path='',
-             op_folder='',
-             simulation_name='simulation',
-             output='hydrk',
-             grid=[50, 50, 1, 1, 1, 1, 0, 0, 0],
-             fixed_nodes=[],
-             algo='sgsim',
-             number_realizations=1,
-             seed=np.random.randint(10000000),
-             kriging_type='Simple Kriging (SK)',
-             trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
-             local_mean=0,
-             hard_data_grid='',
-             hard_data_property='',
-             assign_hard_data=0,
-             max_conditioning_data=20,
-             search_ellipsoid_geometry=[15, 15, 7.5, 0.398941, 0, 0],
-             target_histogram_flag=0,
-             target_histogram=[0, 0, 0, 0],  # min, max, mean, std
-             variogram_nugget=0,
-             variogram_number_stuctures=1,
-             variogram_structures_contribution=[1],
-             variogram_type=['Spherical'],
-             range_max=[50],
-             range_med=[40],
-             range_min=[20],
-             angle_x=[0],
-             angle_y=[0],
-             angle_z=[0]):
+    def gaussian_simulation(self,
+                            # core_path='',
+                            op_folder='',
+                            simulation_name='simulation',
+                            output='hydrk',
+                            grid=[50, 50, 1, 1, 1, 1, 0, 0, 0],
+                            fixed_nodes=[],
+                            algo='sgsim',
+                            number_realizations=1,
+                            seed=np.random.randint(10000000),
+                            kriging_type='Simple Kriging (SK)',
+                            trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            local_mean=0,
+                            hard_data_grid='',
+                            hard_data_property='',
+                            assign_hard_data=0,
+                            max_conditioning_data=20,
+                            search_ellipsoid_geometry=[15, 15, 7.5, 0.398941, 0, 0],
+                            target_histogram_flag=0,
+                            target_histogram=[0, 0, 0, 0],  # min, max, mean, std
+                            variogram_nugget=0,
+                            variogram_number_stuctures=1,
+                            variogram_structures_contribution=[1],
+                            variogram_type=['Spherical'],
+                            range_max=[50],
+                            range_med=[40],
+                            range_min=[20],
+                            angle_x=[0],
+                            angle_y=[0],
+                            angle_z=[0]):
 
         """
 
@@ -135,65 +133,65 @@ class MySgems:
 
         # Number of cells
         ncells = [grid[0] * grid[1] * grid[2], 'NCELLS']
-        self.simparams.append(ncells)
+        self.sim_params.append(ncells)
 
         # Fixed nodes
         fnodes = [fixed_nodes, 'FNODES']
-        self.simparams.append(fnodes)
+        self.sim_params.append(fnodes)
 
         # OP FOLDER
         opf = [op_folder, 'OPFOLDER']
-        self.simparams.append(opf)
+        self.sim_params.append(opf)
 
         # SIMULATION NAME
         value = [simulation_name, 'NAME']  # Name of the simulation grid.
-        self.simparams.append(value)
+        self.sim_params.append(value)
 
         # ALGORITHM
         algo = [algo, 'ALGO']  # Which algorithm.
-        self.simparams.append(algo)
+        self.sim_params.append(algo)
 
         # SIMULATION OUTPUT
         pp = [output, 'OUTPUT']  # Prefix for the simulation output.The suffix __real# is added for each realization.
-        self.simparams.append(pp)
+        self.sim_params.append(pp)
 
         # HARD DATA GRID
         hd = [hard_data_grid, 'HDG']  # [Hard Data.grid] Name of the grid containing the conditioning data.
         # If no grid is selected, the realizations are unconditional.
-        self.simparams.append(hd)
+        self.sim_params.append(hd)
 
         # HARD DATA PROPERTY
         hdpp = [hard_data_property, 'HGPP']  # [Hard Data.property] Property for the conditioning data.
         # Only required if a grid has been selected in Hard Data | Object [Hard Data.grid].
-        self.simparams.append(hdpp)
+        self.sim_params.append(hdpp)
 
         # ASSIGN HARD DATA
         ahd = [assign_hard_data, 'AHDV']  # Assign hard data to simulation grid [Assign Hard Data] If selected, the
         # hard data are relocated to the simulation grid. The program does not proceed
         # if the assignment fails. This option significantly increases execution speed.
-        self.simparams.append(ahd)
+        self.sim_params.append(ahd)
 
         # MAX CONDITIONING DATA
         mcd = [max_conditioning_data, 'DATACON']  # Maximum number of data to be retained in the search neighborhood.
-        self.simparams.append(mcd)
+        self.sim_params.append(mcd)
 
         # SEARCH ELLIPSOID GEOMETRY
         segp = search_ellipsoid_geometry
         segp = joinlist(' ', segp)
         seg = [segp, 'SEARCHELLIPSOID']  # Parametrization of the search ellipsoid.
-        self.simparams.append(seg)
+        self.sim_params.append(seg)
 
         # TARGET HISTOGRAM
 
         minth = target_histogram[0]
         thmin = [minth - 0.1, 'MINTH']
-        self.simparams.append(thmin)
+        self.sim_params.append(thmin)
         maxth = target_histogram[1]
         thmax = [maxth + 0.1, 'MAXTH']
-        self.simparams.append(thmax)
+        self.sim_params.append(thmax)
         thfile = target_histogram[-1]
         fileth = [thfile, 'THFILE']
-        self.simparams.append(fileth)
+        self.sim_params.append(fileth)
 
         # meanth = target_histogram[2]
         # stdth = target_histogram[3]
@@ -211,9 +209,9 @@ class MySgems:
         flag = [target_histogram_flag, 'THF']  # Use Target Histogram [Use Target Histogram] Flag to use the normal
         # score transform. If used, the data are normal score transformed prior to
         # simulation and the simulated field is transformed back to the original space.
-        self.simparams.append(flag)
+        self.sim_params.append(flag)
         th = [target_histogram, 'TARGETHISTO']
-        self.simparams.append(th)
+        self.sim_params.append(th)
 
         # If used, the data are normal score transformed prior
         # to simulation and the simulated field is transformed back to the original
@@ -224,23 +222,23 @@ class MySgems:
         varparams = []
         # Parametrization of the normal score variogram.
         ng = [variogram_nugget, 'NUGGET']  # Value for the nugget effect.
-        self.simparams.append(ng)
+        self.sim_params.append(ng)
         sc = [variogram_number_stuctures, 'NSTRUCT']  # Number of nested structures, excluding the nugget effect.
-        self.simparams.append(sc)
+        self.sim_params.append(sc)
         ct = [variogram_structures_contribution, 'STRUCTCONT']  # Sill for the current structure.
-        self.simparams.append(ct)
+        self.sim_params.append(ct)
         varparams.append(ct)
         vt = [variogram_type, 'TYPEVG']
         # Type of variogram for the selected structure (spherical, exponential or Gaussian).
-        self.simparams.append(vt)
+        self.sim_params.append(vt)
         varparams.append(vt)
         # Anisotropy
         rmax = [range_max, 'RMAX']
         rmed = [range_med, 'RMED']
         rmin = [range_min, 'RMIN']
-        self.simparams.append(rmax)
-        self.simparams.append(rmed)
-        self.simparams.append(rmin)
+        self.sim_params.append(rmax)
+        self.sim_params.append(rmed)
+        self.sim_params.append(rmin)
         varparams.append(rmax)
         varparams.append(rmed)
         varparams.append(rmin)
@@ -249,9 +247,9 @@ class MySgems:
         az = [angle_z, 'ANGLEZ']
         # Maximum, medium and minimum ranges and rotation angles.
         # In 2D, the dip and rake rotations should be 0 and the minimum range must be less than the medium range.
-        self.simparams.append(ax)
-        self.simparams.append(ay)
-        self.simparams.append(az)
+        self.sim_params.append(ax)
+        self.sim_params.append(ay)
+        self.sim_params.append(az)
         varparams.append(ax)
         varparams.append(ay)
         varparams.append(az)
@@ -276,37 +274,37 @@ class MySgems:
 
         # REALIZATIONS
         nr = [number_realizations, 'REALIZATIONS']  # Number of simulations to generate.
-        self.simparams.append(nr)
+        self.sim_params.append(nr)
 
         # GRID DIMENSIONS
         # [nx, ny, nz, dx, dy, dz, xo, yo, zo]
         grid = [joinlist('::', grid), 'GRID']
-        self.simparams.append(grid)
+        self.sim_params.append(grid)
 
         # KRIGING
         ktype = [kriging_type, 'KRIGING']  # Select the type of kriging system to be solved
         # at each node along the random path. The simple kriging (SK) mean is set to
         # zero, as befits a stationary standard Gaussian model.
-        self.simparams.append(ktype)
+        self.sim_params.append(ktype)
         # SEED
         sv = [seed, 'SEED']  # Seed for the random number generator (preferably a large odd integer).
-        self.simparams.append(sv)
+        self.sim_params.append(sv)
         self.seed = seed
         # TREND
         tv = [trend, 'TREND']  # Trend value
-        self.simparams.append(tv)
+        self.sim_params.append(tv)
         # LOCAL MEAN
         lmpv = [local_mean, 'LMPV']
-        self.simparams.append(lmpv)
+        self.sim_params.append(lmpv)
 
         # OUTPUT FILES LIST
         opl = ['::'.join([pp[0] + '__real' + str(i) for i in range(0, nr[0], 1)]), 'OUTLIST']
         # self.simparams.append(opl)
 
-        prms = [[' '.join([str(self.simparams[i][1]), str(self.simparams[i][0]), '\n'])
-                 for i in range(0, len(self.simparams), 1)], 'PARAMS']
+        prms = [[' '.join([str(self.sim_params[i][1]), str(self.sim_params[i][0]), '\n'])
+                 for i in range(0, len(self.sim_params), 1)], 'PARAMS']
 
-        self.simparams.append(prms)
+        self.sim_params.append(prms)
 
         # Template within which the simulation parameters will get implemented.
         # I implemented a code within this template to create a 'params' file which will contain the information
@@ -344,8 +342,8 @@ for line in PARAMS:\n\
 mfile.close()\n\
 """
 
-        for i in range(0, len(self.simparams), 1):  # Replaces the parameters
-            template = template.replace(self.simparams[i][1], str(self.simparams[i][0]))
+        for i in range(0, len(self.sim_params), 1):  # Replaces the parameters
+            template = template.replace(self.sim_params[i][1], str(self.sim_params[i][0]))
 
         # I want to save the simparams list in the output file so I excluded from it the 'output' and the long
         # 'variogram' arguments.
@@ -364,13 +362,11 @@ mfile.close()\n\
         # os.chdir(core_path)  # Change this
         # os.system('RunSgems.bat')  # This opens a bat file I created to run SGems.
 
-    ########################################################################################################################
-
-    def snesim(self,
+    def SNESIM(self,
                tifile='ti1channel - Copy.grid',
                core_path='',
                op_folder='',
-               simulation_name='snesim',
+               simulation_name='SNESIM',
                output='hk',
                grid=[250, 250, 1, 5, 5, 5, 0, 0, 0],
                algo='snesim_std',
@@ -601,5 +597,3 @@ mfile.close()\n\
         sgf.close()
         os.chdir(core_path)
         os.system('RunSgems.bat')  # This opens a bat file I created to run SGems.
-
-########################################################################################################################

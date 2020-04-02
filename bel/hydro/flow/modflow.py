@@ -7,11 +7,11 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-from bel.hydro.sgems.mySgems import MySgems
-from bel.tools.MyToolbox import MeshOps
+from bel.hydro.sgems.sgems import SGEMS
+from bel.tools.toolbox import MeshOps
 
 
-def my_flow(exe_name, model_ws, wells):
+def flow(exe_name, model_ws, wells):
     # %% Model name
     model_name = 'whpa'
 
@@ -278,7 +278,7 @@ def my_flow(exe_name, model_ws, wells):
     if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If re-using an older model
         valkr = np.load(jp(model_ws, '{}.npy').format(op))
     else:
-        sgems = MySgems()
+        sgems = SGEMS()
         nr = 1  # Number of realizations.
         # Extracts wells nodes number in sgems grid, to fix their simulated value.
         wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
@@ -297,38 +297,38 @@ def my_flow(exe_name, model_ws, wells):
 
         seg = [50, 50, 50, 0, 0, 0]  # Search ellipsoid geometry
 
-        sgems.sims(op_folder=model_ws.replace('\\', '//'),
-                   simulation_name='hk',
-                   output=op,
-                   grid=sgrid,
-                   fixed_nodes=fixed_nodes,
-                   algo='sgsim',
-                   number_realizations=nr,
-                   seed=np.random.randint(1000000),
-                   kriging_type='Simple Kriging (SK)',
-                   trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   local_mean=0,
-                   hard_data_grid='hd',
-                   hard_data_property='hard',
-                   assign_hard_data=1,
-                   max_conditioning_data=15,
-                   search_ellipsoid_geometry=seg,
-                   target_histogram_flag=0,
-                   target_histogram=[0, 0, 0, 0],
-                   variogram_nugget=0,
-                   variogram_number_stuctures=1,
-                   variogram_structures_contribution=[1],
-                   variogram_type=['Spherical'],
-                   range_max=[100],
-                   range_med=[50],
-                   range_min=[25],
-                   angle_x=[0],
-                   angle_y=[0],
-                   angle_z=[0])
+        sgems.gaussian_simulation(op_folder=model_ws.replace('\\', '//'),
+                                  simulation_name='hk',
+                                  output=op,
+                                  grid=sgrid,
+                                  fixed_nodes=fixed_nodes,
+                                  algo='sgsim',
+                                  number_realizations=nr,
+                                  seed=np.random.randint(1000000),
+                                  kriging_type='Simple Kriging (SK)',
+                                  trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                  local_mean=0,
+                                  hard_data_grid='hd',
+                                  hard_data_property='hard',
+                                  assign_hard_data=1,
+                                  max_conditioning_data=15,
+                                  search_ellipsoid_geometry=seg,
+                                  target_histogram_flag=0,
+                                  target_histogram=[0, 0, 0, 0],
+                                  variogram_nugget=0,
+                                  variogram_number_stuctures=1,
+                                  variogram_structures_contribution=[1],
+                                  variogram_type=['Spherical'],
+                                  range_max=[100],
+                                  range_med=[50],
+                                  range_min=[25],
+                                  angle_x=[0],
+                                  angle_y=[0],
+                                  angle_z=[0])
 
         opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
 
-        hk = MySgems.so(opl)  # Grid information directly derived from the output file.
+        hk = SGEMS.so(opl)  # Grid information directly derived from the output file.
 
         k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
 
@@ -336,7 +336,7 @@ def my_flow(exe_name, model_ws, wells):
 
         hkp = np.copy(hk)
 
-        hk_array = [MySgems.o2k2(h, k_mean, k_std) for h in hkp]
+        hk_array = [SGEMS.transform(h, k_mean, k_std) for h in hkp]
 
         # Setting the hydraulic conductivity matrix.
         hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]

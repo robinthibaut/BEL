@@ -6,11 +6,11 @@ import numpy as np
 import uuid
 from multiprocessing import Process
 
-from bel.tools.MyToolbox import FileOps
-from bel.hydro.flow.Flow import my_flow
-from bel.hydro.transport.Transport import my_transport
-from bel.hydro.backtracking.Backtracking import my_backtracking
-from bel.hydro.whpa.SignedDistance import signed_distance
+from bel.tools.toolbox import FileOps
+from bel.hydro.flow.modflow import flow
+from bel.hydro.transport.mt3d import transport
+from bel.hydro.backtracking.backtracking import backtrack
+from bel.hydro.whpa.signed_distance import SD
 
 
 # Directories
@@ -51,18 +51,6 @@ def gen_rand_well(radius, x0, y0):
 
     return [x, y]
 
-# # radius of the circle
-# circle_r = 100
-# # center of the circle (x, y)
-# circle_x = 980
-# circle_y = 500
-# ww = [gen_rand_well(circle_r, circle_x, circle_y) for i in range(50)]
-# ww = np.array(ww)
-# np.save(jp(cwd, 'grid', 'iw'), ww)
-# import matplotlib.pyplot as plt
-# # plt.plot(ww[:,0], ww[:,1], 'ko')
-# # plt.show()
-# # plt.close()
 
 pumping_well = np.array([[1000, 500, [-1000, -1000, -1000]]])
 pwxy = pumping_well[0, :2]
@@ -88,13 +76,13 @@ def main():
     np.save(jp(cwd, 'grid', 'pw'), pumping_well)  #
     np.save(jp(results_dir, 'pw'), pumping_well)  # Saves pumping well stress period data
     # Run Flow
-    flow_model = my_flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
+    flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
-    transport_model = my_transport(modflowmodel=flow_model, exe_name=exe_name_mt)
+    transport_model = transport(modflowmodel=flow_model, exe_name=exe_name_mt)
     # Run Modpath
-    end_points = my_backtracking(flow_model, exe_name_mp)
+    end_points = backtrack(flow_model, exe_name_mp)
     # Compute signed distance
-    signed_distance(end_points, results_dir=results_dir)
+    SD(end_points, results_dir=results_dir)
 
     # Deletes everything except final results
     for the_file in os.listdir(results_dir):
@@ -110,13 +98,14 @@ def main():
 
 
 if __name__ == "__main__":
-    jobs = []
-    n_series = 250
-    n_jobs = 4
-    for j in range(n_series):
-        for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-            process = Process(target=main)
-            jobs.append(process)
-            process.start()
-        process.join()
-        process.close()
+    main()
+    # jobs = []
+    # n_series = 250
+    # n_jobs = 4
+    # for j in range(n_series):
+    #     for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
+    #         process = Process(target=main)
+    #         jobs.append(process)
+    #         process.start()
+    #     process.join()
+    #     process.close()

@@ -6,7 +6,7 @@ import numpy as np
 import flopy
 
 
-def my_transport(modflowmodel, exe_name):
+def transport(modflowmodel, exe_name):
     """
 
     @param modflowmodel: flopy modflow model object

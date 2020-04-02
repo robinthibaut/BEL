@@ -11,7 +11,7 @@ from sklearn.cross_decomposition import CCA
 
 import matplotlib.pyplot as plt
 
-from bel.tools.MyToolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.tools.toolbox import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
 
 plt.style.use('dark_background')
 
@@ -24,12 +24,14 @@ po = PosteriorOps()
 def bel(n_training=100, n_test=2):
     # Directories
     cwd = os.getcwd()
-    res_dir = jp(cwd, 'results')
+    res_dir = jp('..', 'hydro', 'results')
     bel_dir = jp(cwd, 'bel_forecasts')
 
     new_dir = str(uuid.uuid4())  # sub-directory for figures
     sub_dir = jp(bel_dir, new_dir)
+
     obj_dir = jp(sub_dir, 'objects')
+
     fig_dir = jp(sub_dir, 'figures')
     fig_data_dir = jp(fig_dir, 'Data')
     fig_pca_dir = jp(fig_dir, 'PCA')

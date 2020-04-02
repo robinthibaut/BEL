@@ -4,7 +4,7 @@ import flopy
 import numpy as np
 
 
-def my_backtracking(flowmodel, exe_name):
+def backtrack(flowmodel, exe_name):
     model_name = flowmodel.name
     # MODPATH
     mpfname = model_name + '_mp'

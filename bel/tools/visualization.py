@@ -4,7 +4,7 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import flopy
 
-from bel.tools.MyToolbox import datread, load_flow_model, load_transport_model
+from bel.tools.toolbox import datread, load_flow_model, load_transport_model
 
 rn = '2b3e08a97e774b62889d12c6358999ba'
 results_dir = jp(os.getcwd(), 'results', rn)

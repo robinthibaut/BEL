@@ -8,7 +8,7 @@ import joblib
 
 from sklearn.neighbors import KernelDensity
 
-from bel.tools.MyToolbox import Plot, MeshOps, PosteriorOps
+from bel.tools.toolbox import Plot, MeshOps, PosteriorOps
 
 plt.style.use('dark_background')
 
