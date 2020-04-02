@@ -541,7 +541,7 @@ class Plot:
         self.ncol = self.xlim // self.grf
         self.x, self.y = np.meshgrid(
             np.linspace(0, self.xlim, int(self.xlim / self.grf)), np.linspace(0, self.ylim, int(self.ylim / self.grf)))
-        self.wdir = jp(os.getcwd(), 'grid')
+        self.wdir = jp('..', 'hydro', 'grid')
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)
 

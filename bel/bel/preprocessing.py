@@ -19,7 +19,7 @@ mo = MeshOps()
 po = PosteriorOps()
 
 
-def bel(n_training=100, n_test=2):
+def bel(n_training=300, n_test=10):
     # Directories
     cwd = os.getcwd()
     res_dir = jp('..', 'hydro', 'results')
