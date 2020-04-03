@@ -5,15 +5,15 @@ from os.path import join as jp
 
 import numpy as np
 
-from bel.hydro.backtracking.backtracking import backtrack
+from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.signed_distance import SD
 from bel.toolbox.tools import FileOps
 
 # Directories
-cwd = os.getcwd()
-exe_loc = jp(cwd, 'exe')
+mod_dir = os.getcwd() # Module directory
+exe_loc = jp(mod_dir, 'exe')  # EXE directory
 # EXE files directory.
 exe_name_mf = jp(exe_loc, 'mf2005.exe')
 exe_name_mt = jp(exe_loc, 'mt3d.exe')
@@ -66,17 +66,17 @@ wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
 def main():
     # Main results directory.
     res_dir = uuid.uuid4().hex
-    results_dir = jp(cwd, 'results', res_dir)
+    results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
     FileOps.dirmaker(results_dir)
-    np.save(jp(cwd, 'grid', 'iw'), wells_data)  # Saves injection wells stress period data
+    np.save(jp(mod_dir, 'grid', 'iw'), wells_data)  # Saves injection wells stress period data
     np.save(jp(results_dir, 'iw'), wells_data)  # Saves injection wells stress period data
-    np.save(jp(cwd, 'grid', 'pw'), pumping_well)  #
+    np.save(jp(mod_dir, 'grid', 'pw'), pumping_well)  #
     np.save(jp(results_dir, 'pw'), pumping_well)  # Saves pumping well stress period data
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
-    transport_model = transport(modflowmodel=flow_model, exe_name=exe_name_mt)
+    transport(modflowmodel=flow_model, exe_name=exe_name_mt)
     # Run Modpath
     end_points = backtrack(flow_model, exe_name_mp)
     # Compute signed distance

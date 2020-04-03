@@ -14,7 +14,7 @@ from bel.toolbox.tools import MeshOps
 def flow(exe_name, model_ws, wells):
     # %% Model name
     model_name = 'whpa'
-
+    grid_dir = jp(os.getcwd(), 'grid')  # Directory containing grid information
     # %% Modflow
     model = flopy.modflow.Modflow(modelname=model_name,
                                   namefile_ext='nam',
@@ -29,7 +29,7 @@ def flow(exe_name, model_ws, wells):
 
     itmuni = 4  # Time units = days
     nper = 3  # Number of stress periods
-    perlen = [1, 1 / 12, 100]  # Period lengths
+    perlen = [1, 1 / 12, 100]  # Period lengths in days
     nstp = [1, 300, 100]  # Number of time steps per time period
     tsmult = [1, 1, 1.1]  # Time multiplier for each period
     steady = [True, False, False]  # State flags for each period
@@ -75,7 +75,7 @@ def flow(exe_name, model_ws, wells):
 
     # Saving r_params to avoid computing distance matrix each time
     flag_dis = 0  # If discretization is different
-    disf = jp(os.getcwd(), 'grid', 'dis.txt')  # discretization txt file
+    disf = jp(grid_dir, 'dis.txt')  # discretization txt file
     if os.path.exists(disf):
         r_params_loaded = np.loadtxt(disf)  # loads dis info
         if not np.array_equal(r_params, r_params_loaded):  # if new refinement parameters differ from the previous one
@@ -358,7 +358,7 @@ def flow(exe_name, model_ws, wells):
         # If the sgems grid is different from the modflow grid, which might be the case since we would like to refine
         # in some ways the flow mesh, the piece of code below assigns to the flow grid the values of the hk simulations
         # based on the closest distance between cells.
-        inds_file = jp(os.getcwd(), 'grid', 'inds.npy')  # Index file location - relates the position of closest cells
+        inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
         # between differently discretized meshes.
         if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
             # the new hk array on a new grid.
