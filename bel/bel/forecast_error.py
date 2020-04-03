@@ -17,7 +17,7 @@ po = PosteriorOps()
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('..', 'hydro', 'grid')
-bel_dir = jp(cwd, 'bel_forecasts', 'efe5b47a-a476-402a-909f-32d09a64aa33')
+bel_dir = jp(cwd, 'bel_forecasts', '370f6fac-27c4-4277-a114-5c1d70a5bdb2')
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
@@ -27,7 +27,7 @@ f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca'
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Random sample from the posterior
-sample_n = 0
+sample_n = 4
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,

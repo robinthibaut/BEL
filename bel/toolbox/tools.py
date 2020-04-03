@@ -283,13 +283,13 @@ class DataOps:
 
 class PCAOps:
 
-    def __init__(self, name, raw_data):
+    def __init__(self, name, raw_data, directory='temp'):
         """
 
         @param name: name of the parameter on which to perform operations
         @param raw_data: original dataset
         """
-        self.directory = ''
+        self.directory = directory
         self.name = name
         self.raw_data = raw_data  # raw data
         self.n_training = None  # Number of training data
@@ -332,9 +332,9 @@ class PCAOps:
             pca_operator = PCA()
             self.operator = pca_operator
             pca_operator.fit(self.dt)  # Principal components
-            joblib.dump(pca_operator, jp(os.getcwd(), 'temp', '{}_pca_operator.pkl'.format(self.name)))
+            joblib.dump(pca_operator, jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
         else:
-            pca_operator = joblib.load(jp(os.getcwd(), 'temp', '{}_pca_operator.pkl'.format(self.name)))
+            pca_operator = joblib.load(jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
             self.operator = pca_operator
 
         pc_training = pca_operator.transform(self.dt)  # Principal components

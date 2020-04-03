@@ -87,12 +87,12 @@ def bel(n_training=300, n_test=5):
     load = False  # Whether to load already dumped PCA operator
 
     # PCA on transport curves
-    d_pco = PCAOps(name='d', raw_data=tc)
+    d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
 
     # PCA on signed distance
-    h_pco = PCAOps(name='h', raw_data=h)
+    h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
     h_training, h_prediction = h_pco.pca_tp(n_training)
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
