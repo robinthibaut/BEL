@@ -26,7 +26,7 @@ def bel(n_training=100, n_test=5):
 
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
-    bel_dir = jp('..', 'forecasts')
+    bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
 
     new_dir = str(uuid.uuid4())  # sub-directory for forecasts
 
@@ -76,7 +76,6 @@ def bel(n_training=100, n_test=5):
         warnings.warn("The size of training set doesn't correspond with user input")
 
     load = False  # Whether to load already dumped PCA operator
-
     # PCA on transport curves
     d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
