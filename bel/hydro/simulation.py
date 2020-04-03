@@ -12,7 +12,7 @@ from bel.hydro.whpa.travelling_particles import tsp
 from bel.toolbox.tools import FileOps
 
 # Directories
-mod_dir = os.getcwd() # Module directory
+mod_dir = os.getcwd()  # Module directory
 exe_loc = jp(mod_dir, 'exe')  # EXE directory
 # EXE files directory.
 exe_name_mf = jp(exe_loc, 'mf2005.exe')
