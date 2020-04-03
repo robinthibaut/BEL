@@ -4,8 +4,6 @@ import numpy as np
 import skfmm  # Library to compute the signed distance
 from matplotlib.patches import Polygon
 
-from bel.hydro.whpa.travelling_particles import tsp
-
 
 def SD(pzs,
        grf=1,
