@@ -2,7 +2,7 @@
 # Here we produce sgism for the hydraulic conductivity.
 # Idea = make Class file containing methods for the simulations and Flopy
 
-import ntpath
+import ntpath  # Path for Windows
 import os
 import re
 import subprocess
@@ -67,14 +67,6 @@ class SGEMS:
         Transforms the values of the sgems simulations into meaningful data
         """
 
-        # fn = (f - min(f))
-        #
-        # fnm = fn/max(fn)  # Normalization from 0 to 1
-
-        # fnm += -0.5
-        #
-        # fnm *= 2
-
         ff = f * k_std + k_mean
 
         return 10 ** ff
@@ -120,11 +112,13 @@ class SGEMS:
         file_name = os.path.join(op_folder, 'simusgems.py')
         sgf = open(file_name, 'w')
 
+        # Create script file
         run_script = os.path.join(op_folder, 'sgems.script')
         rscpt = open(run_script, 'w')
         rscpt.write(' '.join(['RunScript', file_name]))
         rscpt.close()
 
+        # Create BAT file
         batch = os.path.join(op_folder, 'RunSgems.bat')
         bat = open(batch, 'w')
         bat.write(' '.join(['cd', op_folder, '\n']))
@@ -148,7 +142,7 @@ class SGEMS:
         self.sim_params.append(value)
 
         # ALGORITHM
-        algo = [algo, 'ALGO']  # Which algorithm.
+        algo = [algo, 'ALGO']  # Which simulation algorithm.
         self.sim_params.append(algo)
 
         # SIMULATION OUTPUT
@@ -357,10 +351,8 @@ mfile.close()\n\
 
         # shutil.copyfile(file_name, jp(op_folder, path_leaf(file_name)))
 
-        subprocess.call([batch])
+        subprocess.call([batch])  # Opens the BAT file
 
-        # os.chdir(core_path)  # Change this
-        # os.system('RunSgems.bat')  # This opens a bat file I created to run SGems.
 
     def SNESIM(self,
                tifile='ti1channel - Copy.grid',

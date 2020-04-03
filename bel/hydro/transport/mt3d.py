@@ -378,7 +378,7 @@ def transport(modflowmodel, exe_name):
 
 
 def transport_export(model_ws, transport_model_name):
-    # %% Checking transport results
+    # Checking transport results
 
     #  Loading observations files.
 
