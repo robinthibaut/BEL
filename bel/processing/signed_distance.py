@@ -7,11 +7,15 @@ from matplotlib.patches import Polygon
 from bel.hydro.whpa.travelling_particles import tsp
 
 
-def SD(pz, results_dir=''):
+def SD(pzs,
+       grf=1,
+       x_lim=1500,
+       y_lim=1000,
+       results_dir=None):
     # pz =  x-y coordinates endpoints particles
-    delineation = tsp(pz)  # indices of the vertices of the final protection zone using TSP algorithm
-    pzs = pz[delineation]  # x-y coordinates protection zone
-    np.save(jp(results_dir, 'pz'), pzs)
+    # delineation = tsp(pz)  # indices of the vertices of the final protection zone using TSP algorithm
+    # pzs = pz[delineation]  # x-y coordinates protection zone
+    # np.save(jp(results_dir, 'pz'), pzs)
 
     # Points locations density
     # from scipy.stats import gaussian_kde
@@ -28,9 +32,6 @@ def SD(pz, results_dir=''):
 
     poly = Polygon(pzs, True)
 
-    grf = 1  # Cell size
-    x_lim = 1500
-    y_lim = 1000
     nrow = int(y_lim / grf)
     ncol = int(x_lim / grf)
     phi = np.ones((nrow, ncol)) * -1
@@ -43,5 +44,8 @@ def SD(pz, results_dir=''):
     phi = phi.reshape((nrow, ncol))
 
     sd = skfmm.distance(phi, dx=grf)  # Signed distance computation
-    np.save(jp(results_dir, 'sd'), sd)  # Save the array
+    if results_dir:
+        np.save(jp(results_dir, 'sd'), sd)  # Save the array
+
+    return sd
 

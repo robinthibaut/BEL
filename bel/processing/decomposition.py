@@ -10,6 +10,7 @@ import numpy as np
 from sklearn.cross_decomposition import CCA
 
 from bel.toolbox.tools import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.processing.signed_distance import SD
 
 plt.style.use('dark_background')
 
@@ -19,13 +20,13 @@ mo = MeshOps()
 po = PosteriorOps()
 
 
-def bel(n_training=300, n_test=5):
+def bel(n_training=100, n_test=5):
     # Directories
     cwd = os.getcwd()
 
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
-    bel_dir = jp(cwd, 'bel_forecasts')
+    bel_dir = jp('..', 'forecasts')
 
     new_dir = str(uuid.uuid4())  # sub-directory for forecasts
 
@@ -43,19 +44,18 @@ def bel(n_training=300, n_test=5):
     # TODO: create dirmaker decorator function to pass before saving objects instead of code below
     [FileOps.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    # Load data
     n = n_training + n_test  # Total number of simulations to load.
     check = False  # Flag to check for simulations issues
-    flag = False  # Flag to load both d and h, or only d
-    if flag:
-        tc0, roots = FileOps.load_data(res_dir=res_dir, n=n, check=check, data_flag=flag)
-    else:
-        tc0, h, roots = FileOps.load_data(res_dir=res_dir, n=n, check=check)
-
+    tc0, pzs, roots = FileOps.load_res(res_dir=res_dir, n=n, check=check)
     # Save file roots
-    with open(jp(fig_dir, 'roots.dat'), 'w') as f:
+    with open(jp(obj_dir, 'roots.dat'), 'w') as f:
         for r in roots:
             f.write(os.path.basename(r) + '\n')
+
+    # Compute signed distance on pzs
+    h = np.array([SD(pp, grf=5) for pp in pzs])
+    # Plot all WHPP
+    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # Preprocess d in an arbitrary number of time steps.
     tc = do.d_process(tc0=tc0, n_time_steps=200)
@@ -64,15 +64,6 @@ def bel(n_training=300, n_test=5):
     # Plot d
     mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
     mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
-
-    # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5
-    # cells in both directions.
-    do.h_process(h, sc=5, wdir=obj_dir)
-    h_u = np.load(jp(obj_dir, 'h_u.npy'))
-    h = h_u.copy()
-
-    # Plot all WHPP
-    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # %%  PCA
 
@@ -187,7 +178,7 @@ if __name__ == "__main__":
     # jobs = []
     # n_jobs = 4
     # for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-    #     process = Process(target=bel_forecasts)
+    #     process = Process(target=forecasts)
     #     jobs.append(process)
     #     process.start()
     # process.join()

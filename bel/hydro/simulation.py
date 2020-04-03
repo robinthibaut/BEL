@@ -8,7 +8,7 @@ import numpy as np
 from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
-from bel.hydro.whpa.signed_distance import SD
+from bel.hydro.whpa.travelling_particles import tsp
 from bel.toolbox.tools import FileOps
 
 # Directories
@@ -79,8 +79,10 @@ def main():
     transport(modflowmodel=flow_model, exe_name=exe_name_mt)
     # Run Modpath
     end_points = backtrack(flow_model, exe_name_mp)
-    # Compute signed distance
-    SD(end_points, results_dir=results_dir)
+    # Compute particle delineation to compute signed distance later on
+    delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
+    pzs = end_points[delineation]  # x-y coordinates protection zone
+    np.save(jp(results_dir, 'pz'), pzs)
 
     # Deletes everything except final results
     for the_file in os.listdir(results_dir):

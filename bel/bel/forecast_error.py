@@ -17,7 +17,7 @@ po = PosteriorOps()
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('..', 'hydro', 'grid')
-bel_dir = jp(cwd, 'bel_forecasts', '370f6fac-27c4-4277-a114-5c1d70a5bdb2')
+bel_dir = jp(cwd, 'forecasts', '370f6fac-27c4-4277-a114-5c1d70a5bdb2')
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
