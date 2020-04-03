@@ -1,7 +1,7 @@
 from os.path import join as jp
 
 import numpy as np
-import skfmm
+import skfmm  # Library to compute the signed distance
 from matplotlib.patches import Polygon
 
 from bel.hydro.whpa.travelling_particles import tsp
@@ -43,5 +43,5 @@ def SD(pz, results_dir=''):
     phi = phi.reshape((nrow, ncol))
 
     sd = skfmm.distance(phi, dx=grf)  # Signed distance computation
-    np.save(jp(results_dir, 'sd'), sd)
+    np.save(jp(results_dir, 'sd'), sd)  # Save the array
 

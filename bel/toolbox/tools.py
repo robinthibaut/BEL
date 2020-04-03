@@ -263,7 +263,7 @@ class DataOps:
         # Ensure Gaussian distribution in original_array Each vector for each original_array components will be
         # transformed one-by-one by a different operator, stored in yj.
         yj = [PowerTransformer(method='yeo-johnson', standardize=True) for c in range(original_array.shape[0])]
-        self.gaussian_transformers[name] = yj  # Adds the gaussian distribution tranformers object to the dictionary
+        self.gaussian_transformers[name] = yj  # Adds the gaussian distribution transformers object to the dictionary
         # Fit each PowerTransformer with each component
         [yj[i].fit(original_array[i].reshape(-1, 1)) for i in range(len(yj))]
         # Transform the original distribution.
@@ -286,9 +286,10 @@ class PCAOps:
     def __init__(self, name, raw_data):
         """
 
-        @param name: name of the paramater on which to perform operations
+        @param name: name of the parameter on which to perform operations
         @param raw_data: original dataset
         """
+        self.directory = ''
         self.name = name
         self.raw_data = raw_data  # raw data
         self.n_training = None  # Number of training data
@@ -326,6 +327,7 @@ class PCAOps:
         @param load:
         @return: PC training, PC test
         """
+        # TODO: Change here
         if not load:
             pca_operator = PCA()
             self.operator = pca_operator

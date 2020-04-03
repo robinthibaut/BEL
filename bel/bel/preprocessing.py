@@ -19,13 +19,16 @@ mo = MeshOps()
 po = PosteriorOps()
 
 
-def bel(n_training=300, n_test=10):
+def bel(n_training=300, n_test=5):
     # Directories
     cwd = os.getcwd()
-    res_dir = jp('..', 'hydro', 'results')
+
+    res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
+
     bel_dir = jp(cwd, 'bel_forecasts')
 
-    new_dir = str(uuid.uuid4())  # sub-directory for figures
+    new_dir = str(uuid.uuid4())  # sub-directory for forecasts
+
     sub_dir = jp(bel_dir, new_dir)
 
     obj_dir = jp(sub_dir, 'objects')
@@ -64,8 +67,8 @@ def bel(n_training=300, n_test=10):
 
     # Preprocess h - the signed distance array comes with 1m cell dimension, we average the value by averaging 5
     # cells in both directions.
-    do.h_process(h, sc=5, wdir=jp(cwd, 'temp'))
-    h_u = np.load(jp(cwd, 'temp', 'h_u.npy'))
+    do.h_process(h, sc=5, wdir=obj_dir)
+    h_u = np.load(jp(obj_dir, 'h_u.npy'))
     h = h_u.copy()
 
     # Plot all WHPP
