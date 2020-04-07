@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.cross_decomposition import CCA
 
 from bel.toolbox.tools import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
-from bel.processing.signed_distance import SD
+from bel.processing.signed_distance import SignedDistance
 
 plt.style.use('dark_background')
 
@@ -18,12 +18,11 @@ mp = Plot()
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
+sd = SignedDistance(grf=5)
 
 
 def bel(n_training=100, n_test=5):
     # Directories
-    cwd = os.getcwd()
-
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
@@ -53,7 +52,7 @@ def bel(n_training=100, n_test=5):
             f.write(os.path.basename(r) + '\n')
 
     # Compute signed distance on pzs
-    h = np.array([SD(pp, grf=5) for pp in pzs])
+    h = np.array([sd.function(pp) for pp in pzs])
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
@@ -149,9 +148,9 @@ def bel(n_training=100, n_test=5):
                                               pca_h=h_pco,
                                               cca_obj=cca,
                                               n_posts=500, add_comp=0)
-        # Predicting the SD based for a certain number of 'observations'
+        # Predicting the function based for a certain number of 'observations'
         h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
-        # Going back to the original SD dimension and reshape.
+        # Going back to the original function dimension and reshape.
         h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
 
         # Plot results

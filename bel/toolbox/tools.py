@@ -317,7 +317,7 @@ class DataOps:
         nrow, ncol = self.mo.nrow, self.mo.ncol  # Get the info from the MeshOps class
         un, uc = int(nrow / sc), int(ncol / sc)
         h_u = self.mo.h_sub(h=h, un=un, uc=uc, sc=sc)
-        np.save(jp(wdir, 'h_u.npy'), h_u)  # Save transformed SD matrix
+        np.save(jp(wdir, 'h_u.npy'), h_u)  # Save transformed function matrix
 
     def gaussian_distribution(self, original_array, name='gd'):
         # Ensure Gaussian distribution in original_array Each vector for each original_array components will be

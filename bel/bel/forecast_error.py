@@ -39,9 +39,9 @@ d_pc_obs = d_pco.dpp[sample_n]
 shape = h_pco.raw_data.shape
 h_true_obs = h_pco.dp[sample_n].reshape(shape[1], shape[2])
 
-# Predicting the SD based for a certain number of 'observations'
+# Predicting the function based for a certain number of 'observations'
 h_pc_true_pred = cca.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))
-# Going back to the original SD dimension and reshape.
+# Going back to the original function dimension and reshape.
 h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(shape[1], shape[2])
 
 # Plot results
