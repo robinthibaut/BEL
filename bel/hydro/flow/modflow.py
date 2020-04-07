@@ -455,6 +455,6 @@ def flow(exe_name, model_ws, wells):
     if head.max() > top + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
         # that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         # TODO: optimize this
-        exit()
+        model = None
 
     return model

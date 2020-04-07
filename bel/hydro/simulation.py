@@ -77,26 +77,29 @@ def main(res_dir=None):
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
-    transport(modflowmodel=flow_model, exe_name=exe_name_mt)
-    # Run Modpath
-    end_points = backtrack(flow_model, exe_name_mp)
-    # Compute particle delineation to compute signed distance later on
-    delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
-    pzs = end_points[delineation]  # x-y coordinates protection zone
-    np.save(jp(results_dir, 'pz'), pzs)
+    if flow_model:
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt)
+        # Run Modpath
+        end_points = backtrack(flow_model, exe_name_mp)
+        # Compute particle delineation to compute signed distance later on
+        delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
+        pzs = end_points[delineation]  # x-y coordinates protection zone
+        np.save(jp(results_dir, 'pz'), pzs)
 
-    # Deletes everything except final results
-    if not res_dir:
-        for the_file in os.listdir(results_dir):
-            if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
-                file_path = os.path.join(results_dir, the_file)
-                try:
-                    if os.path.isfile(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    print(e)
+        # Deletes everything except final results
+        if not res_dir:
+            for the_file in os.listdir(results_dir):
+                if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
+                    file_path = os.path.join(results_dir, the_file)
+                    try:
+                        if os.path.isfile(file_path):
+                            os.unlink(file_path)
+                        elif os.path.isdir(file_path):
+                            shutil.rmtree(file_path)
+                    except Exception as e:
+                        print(e)
+    else:
+        shutil.rmtree(results_dir)
 
 
 if __name__ == "__main__":
