@@ -31,7 +31,7 @@ blocks3d = blocks.reshape(-1, 3)
 # Load hk array
 hk = np.load(jp(results_dir, 'hk.npy')).reshape(-1)
 cells = [("quad", np.array([list(np.arange(i*4, i*4+4))])) for i in range(len(blocks))]
-mesh = meshio.Mesh(blocks3d, cells)
+
 meshio.write_points_cells(
     "foo.vtk",
     blocks3d,
@@ -45,4 +45,24 @@ meshio.write_points_cells(
 diavatly.model_map(blocks2d, hk, log=1)
 plt.show()
 
-#  Now let's try in 3D
+# Now let's try in 3D
+
+btest = np.array([[ 0.        ,  0.        ,  0.        ],
+                 [ 0.        , 10.01430035,  0.        ],
+                 [10.00226021, 10.01430035,  0.        ],
+                 [10.00226021,  0.        ,  0.        ],
+                  [ 0.        ,  0.        ,  -10        ],
+                 [ 0.        , 10.01430035,  -10        ],
+                 [10.00226021, 10.01430035,  -10        ],
+                 [10.00226021,  0.        ,  -10        ]])
+
+cells = [("hexahedron", np.array([[4, 5, 6, 7, 0, 1, 2, 3]]))]
+meshio.write_points_cells(
+    "foo3d.vtk",
+    btest,
+    cells,
+    # Optionally provide extra data on points, cells, etc.
+    # point_data=point_data,
+    cell_data={'hk': np.array([1])},
+    # field_data=field_data
+    )
