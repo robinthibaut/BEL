@@ -24,7 +24,6 @@ class FileOps:
         @param check: Whether to check breaktrough curves for unrealistic results or not.
         @param res_dir: main directory containing results sub-directories
         @param n: if != 0, will randomly select n sub-folders from res_dir
-        @param data_flag: if True, only loads data and not the target
         @return: tp, sd
         """
         # TODO: Split this function to generalize and load one feature at a time

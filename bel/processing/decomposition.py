@@ -86,8 +86,8 @@ def bel(n_training=100, n_test=5):
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
     # Explained variance plots
-    mp.explained_variance(d_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    mp.explained_variance(h_pco.operator, n_comp=50, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+    mp.explained_variance(d_pco.operator, n_comp=20, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
+    mp.explained_variance(h_pco.operator, n_comp=20, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
 
     # Scores plots
     mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
@@ -143,11 +143,13 @@ def bel(n_training=100, n_test=5):
         d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
         h_true = h[n_training:][sample_n]  # True prediction
         # %% Sample the posterior
+        n_posts = 500
+        add_comp = 0
         forecast_posterior = po.random_sample(sample_n=sample_n,
                                               pca_d=d_pco,
                                               pca_h=h_pco,
                                               cca_obj=cca,
-                                              n_posts=500, add_comp=0)
+                                              n_posts=n_posts, add_comp=add_comp)
         # Predicting the function based for a certain number of 'observations'
         h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
         # Going back to the original function dimension and reshape.
