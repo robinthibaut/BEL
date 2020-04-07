@@ -21,7 +21,7 @@ po = PosteriorOps()
 sd = SignedDistance(grf=5)
 
 
-def bel(n_training=100, n_test=5):
+def bel(n_training=300, n_test=5):
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 

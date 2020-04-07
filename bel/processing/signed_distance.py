@@ -33,7 +33,9 @@ class SignedDistance:
         poly = Polygon(pzs, True)  # Creates a Polygon abject out of the polygon vertices in pzs
         ind = np.nonzero(poly.contains_points(self.xys))[0]  # Checks which points are enclosed by polygon.
         phi = np.ones((self.nrow, self.ncol))*outside  # SD - create matrix of -1
+        phi = phi.reshape((self.nrow * self.ncol))
         phi[ind] = inside  # Points inside the WHPA are assigned a value of 1, and 0 for those outside
+        phi = phi.reshape((self.nrow, self.ncol))
         return phi
 
     def function(self, pzs):
