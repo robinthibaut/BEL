@@ -9,7 +9,7 @@ from bel.toolbox.tools import FileOps
 ops = FileOps()
 
 rn = 'illustration'
-results_dir = jp(os.getcwd(), 'results', rn)
+results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
@@ -21,7 +21,7 @@ fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(1, 1, 1, aspect='equal')
 mapview = flopy.plot.PlotMapView(model=flow_model, extent=(900, 1100, 400, 600))
 ibound = mapview.plot_ibound()
-# linecollection = mapview.plot_grid()
+linecollection = mapview.plot_grid()
 wel = mapview.plot_bc("WEL")
 plt.show()
 
