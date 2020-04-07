@@ -4,15 +4,17 @@ from os.path import join as jp
 import flopy
 import matplotlib.pyplot as plt
 
-from bel.toolbox.tools import datread, load_flow_model, load_transport_model
+from bel.toolbox.tools import FileOps
 
-rn = '2b3e08a97e774b62889d12c6358999ba'
+ops = FileOps()
+
+rn = 'illustration'
 results_dir = jp(os.getcwd(), 'results', rn)
 
 m_load = jp(results_dir, 'whpa.nam')
-flow_model = load_flow_model(m_load, model_ws=results_dir)
+flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
 mt_load = jp(results_dir, 'whpa.mtnam')
-transport_model = load_transport_model(mt_load, flow_model, model_ws=results_dir)
+transport_model = ops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
 
 # let's take a look at our grid
 fig = plt.figure(figsize=(8, 8))
@@ -70,6 +72,6 @@ quadmesh = mapview.plot_array(head, masked_values=[999.], alpha=0.5)
 mapview.plot_endpoint(ept)
 plt.show()
 
-obs = datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
+obs = ops.datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
 plt.plot(obs[:,0], obs[:,1])
 plt.show()
