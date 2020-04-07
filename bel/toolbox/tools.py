@@ -186,6 +186,43 @@ class MeshOps:
         self.ncol = self.xlim // self.grf
 
     @staticmethod
+    def blocks_from_rc(rows, columns):
+        """
+        Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
+        """
+
+        nrow = len(rows)
+        ncol = len(columns)
+        delr = rows
+        delc = columns
+        r_sum = np.cumsum(delr)
+        c_sum = np.cumsum(delc)
+
+        blocks = []
+        for c in range(nrow):
+            for n in range(ncol):
+                b = [[c_sum[n] - delc[n], r_sum[c] - delr[c]],
+                     [c_sum[n] - delc[n], r_sum[c]],
+                     [c_sum[n], r_sum[c]],
+                     [c_sum[n], r_sum[c] - delr[c]]]
+                blocks.append(b)
+        blocks = np.array(blocks)
+
+        return blocks
+
+    @staticmethod
+    def rc_from_blocks(blocks):
+        """
+        Computes the x and y dimensions of each block
+        :param blocks:
+        :return:
+        """
+        dc = np.array([np.diff(b[:, 0]).max() for b in blocks])
+        dr = np.array([np.diff(b[:, 1]).max() for b in blocks])
+
+        return dc, dr
+
+    @staticmethod
     def refine_axis(widths, r_pt, ext, cnd, d_dim, a_lim):
         # TODO: write better documentation for this
         x0 = widths

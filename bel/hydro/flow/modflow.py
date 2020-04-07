@@ -135,7 +135,7 @@ def flow(exe_name, model_ws, wells):
     for yc in ncd0[0]:
         for xc in ncd0[1]:
             xyz_dummy.append([xc, yc])
-
+    # TODO: delr and delc seem to be inverted - write an issue
     dis5 = flopy.modflow.ModflowDis(model=model,
                                     nlay=nlay,
                                     nrow=nrow,
