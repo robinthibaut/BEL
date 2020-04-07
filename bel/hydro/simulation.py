@@ -63,9 +63,10 @@ wells_xy = [pwxy + [-50, -50],
 wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
 
 
-def main():
-    # Main results directory.
-    res_dir = uuid.uuid4().hex
+def main(res_dir=None):
+    if not res_dir:
+        # Main results directory.
+        res_dir = uuid.uuid4().hex
     results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
     FileOps.dirmaker(results_dir)
@@ -85,20 +86,21 @@ def main():
     np.save(jp(results_dir, 'pz'), pzs)
 
     # Deletes everything except final results
-    for the_file in os.listdir(results_dir):
-        if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
-            file_path = os.path.join(results_dir, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print(e)
+    if not res_dir:
+        for the_file in os.listdir(results_dir):
+            if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
+                file_path = os.path.join(results_dir, the_file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print(e)
 
 
 if __name__ == "__main__":
-    main()
+    main('illustration')
     # jobs = []
     # n_series = 250
     # n_jobs = 4
