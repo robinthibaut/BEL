@@ -12,7 +12,7 @@ for r, d, f in os.walk(res_dir, topdown=False):
 
 for r, d, f in os.walk(res_dir, topdown=False):
     # Adds the data files to the lists, which will be loaded later
-    if 'bkt.npy' in f and 'sd.npy' in f and 'hk0.npy' in f:
+    if 'bkt.npy' in f and 'pz.npy' in f and 'hk0.npy' in f:
         pass
     else:  # If one of the files is missing, deletes the sub-folder
         try:
