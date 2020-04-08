@@ -136,7 +136,7 @@ class Plot:
             plt.show()
             plt.close()
 
-    def h_pca_inverse_plot(self, v, e, pca_o, vn):
+    def h_pca_inverse_plot(self, pca_o, e, vn):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
         @param v: Original, untransformed signed distance array
@@ -145,13 +145,14 @@ class Plot:
         @param vn: Number of components to inverse-transform.
         @return:
         """
-        v_pc = pca_o.transform(v)
-        v_pred = (np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_)
-        self.whp(v_pred.reshape(1, self.nrow, self.ncol), colors='cyan', alpha=.8, lw=1, show=False)
-        self.whp(v[e].reshape(1, self.nrow, self.ncol), colors='red', alpha=1, lw=1, show=True)
+        shape = pca_o.raw_data.shape
+        v_pc = pca_o.training_pc
+        v_pred = (np.dot(v_pc[e, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+        self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)
+        self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=True)
 
     @staticmethod
-    def d_pca_inverse_plot(self, v, e, pca_o, vn):
+    def d_pca_inverse_plot(v, e, pca_o, vn):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
         @param v: Original, untransformed data array
@@ -166,8 +167,7 @@ class Plot:
         plt.plot(v_pred, 'c', alpha=.8)
         plt.show()
 
-    @staticmethod
-    def pca_inverse_compare(pco_d, pco_h, nd, nh):
+    def pca_inverse_compare(self, pco_d, pco_h, nd, nh):
         """
         Plots original data and recovered data by PCA inverse transformation given a number of components
         @param pco_h: PCA object for h
@@ -177,8 +177,8 @@ class Plot:
         @return:
         """
         n_compare = np.random.randint(len(pco_d.predict_pc))  # Sample number to perform inverse transform comparison
-        Plot.d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
-        Plot.h_pca_inverse_plot(pco_h.training_physical, n_compare, pco_h.operator, nh)
+        self.d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
+        self.h_pca_inverse_plot(pco_h, n_compare, nh)
         plt.show()
         # Displays the explained variance percentage given the number of components
         print(pco_d.perc_pca_components(nd))

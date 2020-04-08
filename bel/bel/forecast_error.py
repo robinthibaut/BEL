@@ -32,6 +32,11 @@ fig_pred_dir = jp(fig_dir, 'Predictions')
 f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
+# Inspect transformation between physical and PC space
+dnc0 = d_pco.ncomp
+hnc0 = h_pco.ncomp
+mp.pca_inverse_compare(d_pco, h_pco, dnc0, hnc0)
+
 # Random sample from the posterior
 sample_n = 0
 n_posts = 500
