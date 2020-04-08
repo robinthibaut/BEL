@@ -151,7 +151,7 @@ class Plot:
         self.whp(v[e].reshape(1, self.nrow, self.ncol), colors='red', alpha=1, lw=1, show=True)
 
     @staticmethod
-    def d_pca_inverse_plot(v, e, pca_o, vn):
+    def d_pca_inverse_plot(self, v, e, pca_o, vn):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
         @param v: Original, untransformed data array
@@ -165,6 +165,24 @@ class Plot:
         plt.plot(v[e], 'r', alpha=.8)
         plt.plot(v_pred, 'c', alpha=.8)
         plt.show()
+
+    @staticmethod
+    def pca_inverse_compare(pco_d, pco_h, nd, nh):
+        """
+        Plots original data and recovered data by PCA inverse transformation given a number of components
+        @param pco_h: PCA object for h
+        @param pco_d: PCA object for d
+        @param nd: number of components in d
+        @param nh: number of components in h
+        @return:
+        """
+        n_compare = np.random.randint(len(pco_d.predict_pc))  # Sample number to perform inverse transform comparison
+        Plot.d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
+        Plot.h_pca_inverse_plot(pco_h.training_physical, n_compare, pco_h.operator, nh)
+        plt.show()
+        # Displays the explained variance percentage given the number of components
+        print(pco_d.perc_pca_components(nd))
+        print(pco_h.perc_pca_components(nh))
 
     @staticmethod
     def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):

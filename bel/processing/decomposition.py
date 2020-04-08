@@ -24,21 +24,30 @@ plt.style.use('dark_background')
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
+# TODO: Save global grid dimensions in dictionary
 x_lim, y_lim, grf = [800, 1150], [300, 700], 1
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 
 def bel(n_training=250, n_test=5, new_dir=None):
+    """
+    This function loads raw data and perform both PCA and CCA on it.
+    It saves resutls as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
+
+    @param n_training: Number of samples used to train the model
+    @param n_test: Number of samples on which to perform prediction
+    @param new_dir: Name of the forecast directory
+    @return:
+    """
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
-
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
 
-    if new_dir is not None:
+    if new_dir is not None:  # If a new_dir is provided, it assumes that a roots.dat file exist in that folder.
         with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
             roots = f.read().splitlines()
-    else:
+    else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         roots = None
 
@@ -55,7 +64,7 @@ def bel(n_training=250, n_test=5, new_dir=None):
     # TODO: create dirmaker decorator function to pass before saving objects instead of code below
     [FileOps.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    n = n_training + n_test  # Total number of simulations to load.
+    n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
     check = False  # Flag to check for simulations issues
     tc0, pzs, roots_ = FileOps.load_res(res_dir=res_dir, n=n, check=check, roots=roots)
     # Save file roots
@@ -77,6 +86,8 @@ def bel(n_training=250, n_test=5, new_dir=None):
     mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
 
     # %%  PCA
+    # PCA is performed with maximum number of components.
+    # We choose an appropriate number of components to keep later on.
 
     # Choose size of training and prediction set
     n_sim = len(h)  # Number of simulations
@@ -90,7 +101,7 @@ def bel(n_training=250, n_test=5, new_dir=None):
     # PCA on transport curves
     d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
-    d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)
+    d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)  # Performs transformation
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
@@ -109,14 +120,6 @@ def bel(n_training=250, n_test=5, new_dir=None):
     # Compares true value with inverse transformation from PCA
     ndo = 45  # Number of components for breakthrough curves
     nho = 30  # Number of components for signed distance
-
-    def pca_inverse_compare():
-        n_compare = np.random.randint(n_training)  # Sample number to perform inverse transform comparison
-        mp.d_pca_inverse_plot(d_training, n_compare, d_pco.operator, ndo)
-        mp.h_pca_inverse_plot(h_training, n_compare, h_pco.operator, nho)
-        # Displays the explained variance percentage given the number of components
-        print(d_pco.perc_pca_components(ndo))
-        print(h_pco.perc_pca_components(nho))
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo

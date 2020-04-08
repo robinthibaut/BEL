@@ -60,8 +60,10 @@ class PCAOps:
             pca_operator = joblib.load(jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
             self.operator = pca_operator
 
-        pc_training = pca_operator.transform(self.training_physical)  # Principal components
+        # Transform training data into principal components
+        pc_training = pca_operator.transform(self.training_physical)
         self.training_pc = pc_training
+        # Transform prediction data into principal components
         pc_prediction = pca_operator.transform(self.predict_physical)
         self.predict_pc = pc_prediction
 
