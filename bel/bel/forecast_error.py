@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.neighbors import KernelDensity
 
-from bel.toolbox.tools import Plot, MeshOps, PosteriorOps
+from bel.toolbox.plots import Plot
+from bel.toolbox.mesh_ops import MeshOps
+from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
 
@@ -33,11 +35,12 @@ forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
                                       pca_h=h_pco,
                                       cca_obj=cca,
-                                      n_posts=n_posts, add_comp=0)
+                                      n_posts=n_posts,
+                                      add_comp=0)
 # Get the true array of the prediction
-d_pc_obs = d_pco.dpp[sample_n]
+d_pc_obs = d_pco.dpp[sample_n]  # Prediction set - PCA space
 shape = h_pco.raw_data.shape
-h_true_obs = h_pco.dp[sample_n].reshape(shape[1], shape[2])
+h_true_obs = h_pco.dp[sample_n].reshape(shape[1], shape[2])  # Prediction set - physical space
 
 # Predicting the function based for a certain number of 'observations'
 h_pc_true_pred = cca.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))

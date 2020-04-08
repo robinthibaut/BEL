@@ -9,7 +9,7 @@ from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
-from bel.toolbox.tools import FileOps
+from bel.toolbox.file_ops import FileOps
 
 # Directories
 mod_dir = os.getcwd()  # Module directory

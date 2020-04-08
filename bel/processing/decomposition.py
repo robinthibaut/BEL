@@ -9,7 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
-from bel.toolbox.tools import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.toolbox.file_ops import FileOps
+from bel.toolbox.data_ops import DataOps
+from bel.toolbox.mesh_ops import MeshOps
+from bel.toolbox.plots import Plot
+from bel.toolbox.pca_ops import PCAOps
+from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
 
 plt.style.use('dark_background')
@@ -18,10 +23,10 @@ mp = Plot()
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
-sd = SignedDistance(grf=5)
+sd = SignedDistance(x_lim=[800, 1150], y_lim=[300, 700], grf=2)
 
 
-def bel(n_training=100, n_test=5):
+def bel(n_training=250, n_test=5):
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
@@ -51,7 +56,7 @@ def bel(n_training=100, n_test=5):
         for r in roots:
             f.write(os.path.basename(r) + '\n')
 
-    # Compute signed distance on pzs
+    # Compute signed distance on pzs. h is the matrix of target feature on which PCA will be performed
     h = np.array([sd.function(pp) for pp in pzs])
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
@@ -120,7 +125,6 @@ def bel(n_training=100, n_test=5):
     # %% CCA
 
     load_cca = False
-
     if not load_cca:
         n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
         # components between d and h.
