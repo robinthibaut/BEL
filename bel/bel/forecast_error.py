@@ -31,7 +31,7 @@ f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca'
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Random sample from the posterior
-sample_n = 0
+sample_n = 1
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
@@ -55,6 +55,7 @@ mp.whp_prediction(forecasts=forecast_posterior,
                   h_true=h_true_obs,
                   h_pred=h_pred,
                   fig_file=ff)
+
 # %% extract 0 contours
 
 c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast_posterior]
