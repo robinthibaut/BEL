@@ -12,7 +12,7 @@ from bel.toolbox.mesh_ops import MeshOps
 
 
 def flow(exe_name, model_ws, wells):
-    # %% Model name
+    # Model name
     model_name = 'whpa'
     grid_dir = jp(os.getcwd(), 'grid')  # Directory containing grid information
     # %% Modflow

@@ -23,7 +23,7 @@ plt.style.use('dark_background')
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+x_lim, y_lim, grf = [800, 1150], [300, 700], 1
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 

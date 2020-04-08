@@ -11,7 +11,7 @@ class FileOps:
         pass
 
     @staticmethod
-    def load_res(res_dir, n=0, check=True):
+    def load_res(res_dir, n=0, check=True, roots=None):
         """
 
         @param check: Whether to check breaktrough curves for unrealistic results or not.
@@ -25,26 +25,31 @@ class FileOps:
         sd_files = []  # Signed-distance files
         hk_files = []  # Hydraulic conductivity files
         # r=root, d=directories, f = files
-        roots = []
-        for r, d, f in os.walk(res_dir, topdown=False):
-            # Adds the data files to the lists, which will be loaded later
-            if 'bkt.npy' in f and 'pz.npy' in f and 'hk0.npy' in f:
-                bkt_files.append(jp(r, 'bkt.npy'))
-                sd_files.append(jp(r, 'pz.npy'))
-                hk_files.append(jp(r, 'hk0.npy'))
-                roots.append(r)
-            else:  # If one of the files is missing, deletes the sub-folder
-                try:
-                    if r != res_dir:  # Make sure to not delete the main results directory !
-                        shutil.rmtree(r)
-                except TypeError:
-                    pass
-        if n:
-            folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
-            bkt_files = np.array(bkt_files)[folders]
-            sd_files = np.array(sd_files)[folders]
-            hk_files = np.array(hk_files)[folders]
-            roots = np.array(roots)[folders]
+        if not roots:
+            roots = []
+            for r, d, f in os.walk(res_dir, topdown=False):
+                # Adds the data files to the lists, which will be loaded later
+                if 'bkt.npy' in f and 'pz.npy' in f and 'hk0.npy' in f:
+                    bkt_files.append(jp(r, 'bkt.npy'))
+                    sd_files.append(jp(r, 'pz.npy'))
+                    hk_files.append(jp(r, 'hk0.npy'))
+                    roots.append(r)
+                else:  # If one of the files is missing, deletes the sub-folder
+                    try:
+                        if r != res_dir:  # Make sure to not delete the main results directory !
+                            shutil.rmtree(r)
+                    except TypeError:
+                        pass
+            if n:
+                folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
+                bkt_files = np.array(bkt_files)[folders]
+                sd_files = np.array(sd_files)[folders]
+                hk_files = np.array(hk_files)[folders]
+                roots = np.array(roots)[folders]
+        else:
+            [bkt_files.append(jp(r, 'bkt.npy')) for r in roots]
+            [sd_files.append(jp(r, 'pz.npy')) for r in roots]
+            [hk_files.append(jp(r, 'hk0.npy')) for r in roots]
 
         # Load and filter results
         # We first load the breakthrough curves and check for errors.

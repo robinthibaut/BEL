@@ -20,8 +20,9 @@ mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 # Directories & files paths
 cwd = os.getcwd()
-wdir = jp('..', 'hydro', 'grid')
-bel_dir = jp('..', 'forecasts', '5e80c508-a4d5-4634-9810-2ef5df80a7a9')
+wdir = jp('bel', 'hydro', 'grid')
+mp.wdir = wdir
+bel_dir = jp('bel', 'forecasts', '5e80c508-a4d5-4634-9810-2ef5df80a7a9')
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
