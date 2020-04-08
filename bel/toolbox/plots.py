@@ -9,8 +9,12 @@ class Plot:
 
         if y_lim is None:
             self.ylim = [0, 1000]
+        else:
+            self.ylim = y_lim
         if x_lim is None:
             self.xlim = [0, 1500]
+        else:
+            self.xlim = x_lim
         self.grf = grf
         self.nrow = int(np.diff(y_lim) / grf)  # Number of rows
         self.ncol = int(np.diff(x_lim) / grf)  # Number of columns
