@@ -7,8 +7,8 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-from bel.hydro.sgems.sgems import SGEMS
-from bel.toolbox.tools import MeshOps
+from bel.toolbox.sgems.sgems import SGEMS
+from bel.toolbox.mesh_ops import MeshOps
 
 
 def flow(exe_name, model_ws, wells):

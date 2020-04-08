@@ -9,7 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
-from bel.toolbox.tools import FileOps, DataOps, MeshOps, Plot, PCAOps, PosteriorOps
+from bel.toolbox.file_ops import FileOps
+from bel.toolbox.data_ops import DataOps
+from bel.toolbox.mesh_ops import MeshOps
+from bel.toolbox.plots import Plot
+from bel.toolbox.pca_ops import PCAOps
+from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
 
 plt.style.use('dark_background')
