@@ -15,14 +15,15 @@ plt.style.use('dark_background')
 
 mo = MeshOps()
 po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+x_lim, y_lim, grf = [800, 1150], [300, 700], 5
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-bel_dir = jp('bel', 'forecasts', '5e80c508-a4d5-4634-9810-2ef5df80a7a9')
+study_folder = '7a362886-38fd-4808-af55-3ceaab752d84'
+bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
@@ -32,7 +33,7 @@ f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca'
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Random sample from the posterior
-sample_n = 1
+sample_n = 0
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,

@@ -142,7 +142,6 @@ def bel(n_training=250, n_test=5, new_dir=None):
 
 if __name__ == "__main__":
     multi = 0
-
     if multi:
         jobs = []
         n_jobs = 4
