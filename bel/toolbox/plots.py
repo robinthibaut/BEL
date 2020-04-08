@@ -5,15 +5,17 @@ import numpy as np
 
 class Plot:
 
-    def __init__(self, xlim, ylim, grf):
+    def __init__(self, x_lim=None, y_lim=None, grf=5):
 
-        self.xlim = 1500
-        self.ylim = 1000
-        self.grf = 5
-        self.nrow = self.ylim // self.grf
-        self.ncol = self.xlim // self.grf
+        if y_lim is None:
+            self.ylim = [0, 1000]
+        if x_lim is None:
+            self.xlim = [0, 1500]
+        self.grf = grf
+        self.nrow = int(np.diff(y_lim) / grf)  # Number of rows
+        self.ncol = int(np.diff(x_lim) / grf)  # Number of columns
         self.x, self.y = np.meshgrid(
-            np.linspace(0, self.xlim, int(self.xlim / self.grf)), np.linspace(0, self.ylim, int(self.ylim / self.grf)))
+            np.linspace(x_lim[0], x_lim[1], self.ncol), np.linspace(y_lim[0], y_lim[1], self.nrow))
         self.wdir = jp('..', 'hydro', 'grid')
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)

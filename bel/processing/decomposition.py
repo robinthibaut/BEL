@@ -19,11 +19,12 @@ from bel.processing.signed_distance import SignedDistance
 
 plt.style.use('dark_background')
 
-mp = Plot()
+
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
 sd = SignedDistance(x_lim=[800, 1150], y_lim=[300, 700], grf=2)
+mp = Plot(x_lim=[800, 1150], y_lim=[300, 700], grf=2)
 
 
 def bel(n_training=250, n_test=5):

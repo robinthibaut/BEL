@@ -103,7 +103,7 @@ class MeshOps:
             x0 = np.insert(x0, wherex[0], nwxs)  # insert new
 
             cs = np.cumsum(
-                x0)  # Cumulative width should equal xlim, but it will not be the case, have to adapt width
+                x0)  # Cumulative width should equal x_lim, but it will not be the case, have to adapt width
             difx = xlim - cs[-1]
             where_default = np.where(abs(x0 - dx) <= 5)[0]  # Location of cells whose widths will be adapted
             where_left = where_default[
