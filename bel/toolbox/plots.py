@@ -92,7 +92,7 @@ class Plot:
         # Plot background
         if bkg_field_array is not None:
             plt.imshow(bkg_field_array,
-                       extent=(0, self.xlim, 0, self.ylim),
+                       extent=(self.xlim[0], self.xlim[1], self.ylim[0], self.ylim[1]),
                        vmin=vmin,
                        vmax=vmax,
                        cmap=cmap)

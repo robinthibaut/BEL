@@ -23,8 +23,9 @@ plt.style.use('dark_background')
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
-sd = SignedDistance(x_lim=[800, 1150], y_lim=[300, 700], grf=2)
-mp = Plot(x_lim=[800, 1150], y_lim=[300, 700], grf=2)
+x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
+mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 
 def bel(n_training=250, n_test=5):
@@ -63,7 +64,7 @@ def bel(n_training=250, n_test=5):
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # Preprocess d in an arbitrary number of time steps.
-    tc = do.d_process(tc0=tc0, n_time_steps=200)
+    tc = do.d_process(tc0=tc0, n_time_steps=250)
     n_wel = len(tc[0])  # Number of injecting wels
 
     # Plot d
@@ -136,44 +137,44 @@ def bel(n_training=250, n_test=5):
         cca = joblib.load(jp(obj_dir, 'cca.pkl'))
         n_comp_cca = cca.n_components_
 
-    # Returns x_scores, y_scores after fitting inputs.
-    d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
-    d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-
-    # Correlation coefficients plots
-    mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
-
-    # Pick an observation
-    for sample_n in range(n_obs):
-        d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
-        h_true = h[n_training:][sample_n]  # True prediction
-        # %% Sample the posterior
-        n_posts = 500
-        add_comp = 0
-        forecast_posterior = po.random_sample(sample_n=sample_n,
-                                              pca_d=d_pco,
-                                              pca_h=h_pco,
-                                              cca_obj=cca,
-                                              n_posts=n_posts, add_comp=add_comp)
-        # Predicting the function based for a certain number of 'observations'
-        h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
-        # Going back to the original function dimension and reshape.
-        h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
-
-        # Plot results
-        ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, n_comp_cca))
-        mp.whp_prediction(forecasts=forecast_posterior,
-                          h_true=h_true,
-                          h_pred=h_pred,
-                          fig_file=ff)
-
-        def save_forecasts():
-            true_file = jp(obj_dir, '{}_true.npy'.format(sample_n))
-            np.save(true_file, h_true)
-            forecast_file = jp(obj_dir, '{}_forecasts.npy'.format(sample_n))
-            np.save(forecast_file, forecast_posterior)
-
-        # save_forecasts()
+    # # Returns x_scores, y_scores after fitting inputs.
+    # d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
+    # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+    #
+    # # Correlation coefficients plots
+    # mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
+    #
+    # # Pick an observation
+    # for sample_n in range(n_obs):
+    #     d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
+    #     h_true = h[n_training:][sample_n]  # True prediction
+    #     # %% Sample the posterior
+    #     n_posts = 500
+    #     add_comp = 0
+    #     forecast_posterior = po.random_sample(sample_n=sample_n,
+    #                                           pca_d=d_pco,
+    #                                           pca_h=h_pco,
+    #                                           cca_obj=cca,
+    #                                           n_posts=n_posts, add_comp=add_comp)
+    #     # Predicting the function based for a certain number of 'observations'
+    #     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
+    #     # Going back to the original function dimension and reshape.
+    #     h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
+    #
+    #     # Plot results
+    #     ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, n_comp_cca))
+    #     mp.whp_prediction(forecasts=forecast_posterior,
+    #                       h_true=h_true,
+    #                       h_pred=h_pred,
+    #                       fig_file=ff)
+    #
+    #     def save_forecasts():
+    #         true_file = jp(obj_dir, '{}_true.npy'.format(sample_n))
+    #         np.save(true_file, h_true)
+    #         forecast_file = jp(obj_dir, '{}_forecasts.npy'.format(sample_n))
+    #         np.save(forecast_file, forecast_posterior)
+    #
+    #     # save_forecasts()
 
     shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 

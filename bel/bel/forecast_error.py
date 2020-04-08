@@ -12,14 +12,16 @@ from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
 
-mp = Plot()
+
 mo = MeshOps()
 po = PosteriorOps()
+x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('..', 'hydro', 'grid')
-bel_dir = jp(cwd, 'forecasts', '370f6fac-27c4-4277-a114-5c1d70a5bdb2')
+bel_dir = jp('..', 'forecasts', '5e80c508-a4d5-4634-9810-2ef5df80a7a9')
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
 fig_pred_dir = jp(fig_dir, 'Predictions')
@@ -29,7 +31,7 @@ f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca'
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Random sample from the posterior
-sample_n = 4
+sample_n = 0
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
@@ -38,9 +40,9 @@ forecast_posterior = po.random_sample(sample_n=sample_n,
                                       n_posts=n_posts,
                                       add_comp=0)
 # Get the true array of the prediction
-d_pc_obs = d_pco.dpp[sample_n]  # Prediction set - PCA space
+d_pc_obs = d_pco.predict_pc[sample_n]  # Prediction set - PCA space
 shape = h_pco.raw_data.shape
-h_true_obs = h_pco.dp[sample_n].reshape(shape[1], shape[2])  # Prediction set - physical space
+h_true_obs = h_pco.predict_physical[sample_n].reshape(shape[1], shape[2])  # Prediction set - physical space
 
 # Predicting the function based for a certain number of 'observations'
 h_pc_true_pred = cca.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))
@@ -72,12 +74,12 @@ xykde = np.vstack([x, y]).T
 # plt.show()
 
 # Grid geometry
-xmin = 0
-xmax = 1500
-ymin = 0
-ymax = 1000
+xmin = x_lim[0]
+xmax = x_lim[1]
+ymin = y_lim[0]
+ymax = y_lim[1]
 # Create a structured grid to estimate kernel density
-cell_dim = 5
+cell_dim = grf
 xgrid = np.arange(xmin, xmax, cell_dim)
 ygrid = np.arange(ymin, ymax, cell_dim)
 X, Y = np.meshgrid(xgrid, ygrid)
