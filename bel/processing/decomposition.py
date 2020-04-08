@@ -26,7 +26,7 @@ po = PosteriorOps()
 sd = SignedDistance(grf=5)
 
 
-def bel(n_training=300, n_test=5):
+def bel(n_training=250, n_test=5):
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
@@ -125,7 +125,6 @@ def bel(n_training=300, n_test=5):
     # %% CCA
 
     load_cca = False
-
     if not load_cca:
         n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
         # components between d and h.

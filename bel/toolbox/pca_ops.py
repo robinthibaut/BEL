@@ -18,11 +18,11 @@ class PCAOps:
         self.n_training = None  # Number of training data
         self.operator = None  # PCA operator
         self.ncomp = None  # Number of components
-        self.d0 = None  # Original data
-        self.dt = None  # Training set - physical space
-        self.dp = None  # Prediction set - physical space
-        self.dtp = None  # Training set - PCA space
-        self.dpp = None  # Prediction set - PCA space
+        # self.origin_physical = None  # Original data
+        self.training_physical = None  # Training set - physical space
+        self.predict_physical = None  # Prediction set - physical space
+        self.training_pc = None  # Training set - PCA space
+        self.predict_pc = None  # Prediction set - PCA space
 
     def pca_tp(self, n_training):
         """
@@ -33,12 +33,12 @@ class PCAOps:
         self.n_training = n_training
         # Flattens the array
         d_original = np.array([item for sublist in self.raw_data for item in sublist]).reshape(len(self.raw_data), -1)
-        self.d0 = d_original
+        # self.origin_physical = d_original
         # Splits into training and test according to chosen n_training.
         d_t = d_original[:self.n_training]
-        self.dt = d_t
+        self.training_physical = d_t
         d_p = d_original[self.n_training:]
-        self.dp = d_p
+        self.predict_physical = d_p
 
         return d_t, d_p
 
@@ -54,16 +54,16 @@ class PCAOps:
         if not load:
             pca_operator = PCA()
             self.operator = pca_operator
-            pca_operator.fit(self.dt)  # Principal components
+            pca_operator.fit(self.training_physical)  # Principal components
             joblib.dump(pca_operator, jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
         else:
             pca_operator = joblib.load(jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
             self.operator = pca_operator
 
-        pc_training = pca_operator.transform(self.dt)  # Principal components
-        self.dtp = pc_training
-        pc_prediction = pca_operator.transform(self.dp)
-        self.dpp = pc_prediction
+        pc_training = pca_operator.transform(self.training_physical)  # Principal components
+        self.training_pc = pc_training
+        pc_prediction = pca_operator.transform(self.predict_physical)
+        self.predict_pc = pc_prediction
 
         return pc_training, pc_prediction
 
@@ -93,10 +93,10 @@ class PCAOps:
 
         self.ncomp = n_comp  # Assign the number of components in the class for later use
 
-        pc_training = self.dtp.copy()  # Reloads the original training components
+        pc_training = self.training_pc.copy()  # Reloads the original training components
         pc_training = pc_training[:, :n_comp]  # Cut
 
-        pc_prediction = self.dpp.copy()  # Reloads the original test components
+        pc_prediction = self.predict_pc.copy()  # Reloads the original test components
         pc_prediction = pc_prediction[:, :n_comp]  # Cut
 
         return pc_training, pc_prediction
@@ -105,9 +105,9 @@ class PCAOps:
         """
         Randomly selects PC components from the original training matrix dtp
         """
-        r_rows = np.random.choice(self.dtp.shape[0], n_posts)  # Selects n_posts rows from the dtp array
-        score_selection = self.dtp[r_rows, self.ncomp:]  # Extracts those rows, from the number of components used until
-        # the end of the array.
+        r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the dtp array
+        score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
+        # used until the end of the array.
 
         # For each column of shape n_sim-ncomp, selects a random PC component to add.
         test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
