@@ -47,9 +47,9 @@ class FileOps:
                 hk_files = np.array(hk_files)[folders]
                 roots = np.array(roots)[folders]
         else:
-            [bkt_files.append(jp(r, 'bkt.npy')) for r in roots]
-            [sd_files.append(jp(r, 'pz.npy')) for r in roots]
-            [hk_files.append(jp(r, 'hk0.npy')) for r in roots]
+            [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
+            [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
+            [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
         # Load and filter results
         # We first load the breakthrough curves and check for errors.

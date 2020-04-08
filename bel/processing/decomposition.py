@@ -3,6 +3,7 @@ import shutil
 import uuid
 import warnings
 from os.path import join as jp
+from multiprocessing import Process
 
 import joblib
 import matplotlib.pyplot as plt
@@ -28,16 +29,20 @@ sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 
-def bel(n_training=250, n_test=5):
+def bel(n_training=250, n_test=5, new_dir=None):
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
 
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
 
-    new_dir = str(uuid.uuid4())  # sub-directory for forecasts
+    if new_dir is not None:
+        with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
+            roots = f.read().splitlines()
+    else:
+        new_dir = str(uuid.uuid4())  # sub-directory for forecasts
+        roots = None
 
     sub_dir = jp(bel_dir, new_dir)
-
     obj_dir = jp(sub_dir, 'objects')
 
     fig_dir = jp(sub_dir, 'figures')
@@ -52,10 +57,10 @@ def bel(n_training=250, n_test=5):
 
     n = n_training + n_test  # Total number of simulations to load.
     check = False  # Flag to check for simulations issues
-    tc0, pzs, roots = FileOps.load_res(res_dir=res_dir, n=n, check=check)
+    tc0, pzs, roots_ = FileOps.load_res(res_dir=res_dir, n=n, check=check, roots=roots)
     # Save file roots
-    with open(jp(obj_dir, 'roots.dat'), 'w') as f:
-        for r in roots:
+    with open(jp(sub_dir, 'roots.dat'), 'w') as f:
+        for r in roots_:
             f.write(os.path.basename(r) + '\n')
 
     # Compute signed distance on pzs. h is the matrix of target feature on which PCA will be performed
@@ -93,7 +98,7 @@ def bel(n_training=250, n_test=5):
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
     # Explained variance plots
-    mp.explained_variance(d_pco.operator, n_comp=20, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
+    mp.explained_variance(d_pco.operator, n_comp=40, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
     mp.explained_variance(h_pco.operator, n_comp=20, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
 
     # Scores plots
@@ -126,66 +131,27 @@ def bel(n_training=250, n_test=5):
     joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
     # %% CCA
 
-    load_cca = False
-    if not load_cca:
-        n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
-        # components between d and h.
-        cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2))  # By default, it scales the data
-        cca.fit(d_pc_training, h_pc_training)  # Fit
-        joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
-    else:
-        cca = joblib.load(jp(obj_dir, 'cca.pkl'))
-        n_comp_cca = cca.n_components_
-
-    # # Returns x_scores, y_scores after fitting inputs.
-    # d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
-    # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-    #
-    # # Correlation coefficients plots
-    # mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
-    #
-    # # Pick an observation
-    # for sample_n in range(n_obs):
-    #     d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
-    #     h_true = h[n_training:][sample_n]  # True prediction
-    #     # %% Sample the posterior
-    #     n_posts = 500
-    #     add_comp = 0
-    #     forecast_posterior = po.random_sample(sample_n=sample_n,
-    #                                           pca_d=d_pco,
-    #                                           pca_h=h_pco,
-    #                                           cca_obj=cca,
-    #                                           n_posts=n_posts, add_comp=add_comp)
-    #     # Predicting the function based for a certain number of 'observations'
-    #     h_pc_true_pred = cca.predict(d_pc_obs.reshape(1, -1))
-    #     # Going back to the original function dimension and reshape.
-    #     h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(h.shape[1], h.shape[2])
-    #
-    #     # Plot results
-    #     ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, n_comp_cca))
-    #     mp.whp_prediction(forecasts=forecast_posterior,
-    #                       h_true=h_true,
-    #                       h_pred=h_pred,
-    #                       fig_file=ff)
-    #
-    #     def save_forecasts():
-    #         true_file = jp(obj_dir, '{}_true.npy'.format(sample_n))
-    #         np.save(true_file, h_true)
-    #         forecast_file = jp(obj_dir, '{}_forecasts.npy'.format(sample_n))
-    #         np.save(forecast_file, forecast_posterior)
-    #
-    #     # save_forecasts()
+    n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
+    # components between d and h.
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2))  # By default, it scales the data
+    cca.fit(d_pc_training, h_pc_training)  # Fit
+    joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
     shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 
 
 if __name__ == "__main__":
-    bel()
-    # jobs = []
-    # n_jobs = 4
-    # for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-    #     process = Process(target=forecasts)
-    #     jobs.append(process)
-    #     process.start()
-    # process.join()
-    # process.close()
+    multi = 0
+
+    if multi:
+        jobs = []
+        n_jobs = 4
+        for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
+            process = Process(target=bel)
+            jobs.append(process)
+            process.start()
+        process.join()
+        process.close()
+    else:
+        bel(new_dir='7a362886-38fd-4808-af55-3ceaab752d84')
+
