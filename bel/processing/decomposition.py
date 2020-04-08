@@ -56,7 +56,7 @@ def bel(n_training=250, n_test=5):
         for r in roots:
             f.write(os.path.basename(r) + '\n')
 
-    # Compute signed distance on pzs
+    # Compute signed distance on pzs. h is the matrix of target feature on which PCA will be performed
     h = np.array([sd.function(pp) for pp in pzs])
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
