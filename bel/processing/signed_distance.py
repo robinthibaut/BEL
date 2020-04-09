@@ -45,6 +45,11 @@ class SignedDistance:
         return phi
 
     def function(self, pzs):
+        """
+        Given an array of coordinates of polygon vertices, computes its signed distance field.
+        @param pzs: Array of ordered vertices coordinates of a polygon.
+        @return: Signed distance matrix
+        """
 
         phi = self.matrix_poly_bin(pzs)
 
