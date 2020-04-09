@@ -1,7 +1,15 @@
+"""
+This script pre-processes the data.
+- It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
+do not necessarily share the same time steps - d
+- It computes the signed distance field for each particles endpoints file - h
+It then perform PCA keeping all components on both d and h.
+Finally, CCA is performed after selecting an appropriate number of PC to keep.
+
+It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
+"""
 import os
-import shutil
 import uuid
-import warnings
 from os.path import join as jp
 from multiprocessing import Process
 
@@ -114,10 +122,11 @@ def bel(n_training=250, n_test=5, new_dir=None):
     mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
     mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
+    # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
     # Compares true value with inverse transformation from PCA
-    ndo = 45  # Number of components for breakthrough curves
-    nho = 30  # Number of components for signed distance
+    ndo = d_pco.n_pca_components(0.999)  # Number of components for breakthrough curves
+    nho = h_pco.n_pca_components(0.98)  # Number of components for signed distance
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo
@@ -155,5 +164,5 @@ if __name__ == "__main__":
         process.join()
         process.close()
     else:
-        bel(new_dir='7a362886-38fd-4808-af55-3ceaab752d84')
+        bel(new_dir=None)
 

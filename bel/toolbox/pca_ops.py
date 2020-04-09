@@ -1,3 +1,8 @@
+"""
+Collection of functions to use the PCA class from scikit-learn.
+"""
+
+
 from os.path import join as jp
 import joblib
 import numpy as np
@@ -70,7 +75,8 @@ class PCAOps:
 
     def n_pca_components(self, perc):
         """
-        Given an explained variance percentage, returns the number of components necessary to obtain that level.
+        Given an explained variance percentage, returns the number of components
+        necessary to obtain that level.
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
         nc = len(np.where(evr <= perc)[0])
@@ -79,7 +85,7 @@ class PCAOps:
 
     def perc_pca_components(self, n_c):
         """
-        Returns the explained variance percentage given a number of components n_c
+        Returns the explained variance percentage given a number of components n_c.
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
 
@@ -117,7 +123,8 @@ class PCAOps:
 
     def inverse_transform(self, pc_to_invert):
         """
-        Inverse transform PC
+        Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
+        The self.operator.components contains all components.
         @param pc_to_invert: PC array
         @return:
         """

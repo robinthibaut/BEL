@@ -22,7 +22,7 @@ mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-study_folder = '7a362886-38fd-4808-af55-3ceaab752d84'
+study_folder = '33d83e5d-ec93-4e9d-a148-3552aa18eded'
 bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
@@ -32,6 +32,8 @@ fig_pred_dir = jp(fig_dir, 'Predictions')
 f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
+print(d_pco.perc_pca_components(45))
+print(h_pco.perc_pca_components(30))
 # Inspect transformation between physical and PC space
 dnc0 = d_pco.ncomp
 hnc0 = h_pco.ncomp
