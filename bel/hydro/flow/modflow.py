@@ -12,6 +12,13 @@ from bel.toolbox.mesh_ops import MeshOps
 
 
 def flow(exe_name, model_ws, wells):
+    """
+    Builds and run customized MODFLOW simulation.
+    :param exe_name: Path to the executable file.
+    :param model_ws: Path to the working directory.
+    :param wells: Array containing wells data.
+    :return:
+    """
     # Model name
     model_name = 'whpa'
     grid_dir = jp(os.getcwd(), 'grid')  # Directory containing grid information

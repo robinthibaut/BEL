@@ -19,26 +19,24 @@ exe_name_mf = jp(exe_loc, 'mf2005.exe')
 exe_name_mt = jp(exe_loc, 'mt3d.exe')
 exe_name_mp = jp(exe_loc, 'mp7.exe')
 
+
 # TODO: check if the code does what I want when I change the discretization
 # FIXME: Pumping well position in wells_data
 # Define injection wells
 # [ [X, Y, [r#1, r#2... r#n]] ]
 # Pumping well located at [1000, 500]
-
 # Template
 # wells_data = np.array([[980, 500, [0, 24, 0]]])
 
-# x = np.arange(850, 1100, 40)
-# y = np.arange(350, 650, 40)
-# len(x)*len(y)
-
-# x = np.arange(950, 1150, 100)
-# y = np.arange(450, 650, 100)
-# len(x)*len(y)
-# wells_xy = np.transpose([np.tile(x, len(y)), np.repeat(y, len(x))])
-
 
 def gen_rand_well(radius, x0, y0):
+    """
+    Generates random coordinates within a circle.
+    :param radius:
+    :param x0:
+    :param y0:
+    :return:
+    """
     # random angle
     alpha = 2 * np.pi * np.random.random()
     # random radius
@@ -50,16 +48,18 @@ def gen_rand_well(radius, x0, y0):
     return [x, y]
 
 
+# Pumping well data
 pumping_well = np.array([[1000, 500, [-1000, -1000, -1000]]])
 pwxy = pumping_well[0, :2]
 
+# Injection wells location
 wells_xy = [pwxy + [-50, -50],
             pwxy + [-70, 60],
             pwxy + [-100, 5],
             pwxy + [68, 15],
             pwxy + [30, 80],
             pwxy + [50, -30]]
-# wells_xy = np.load(jp(cwd, 'grid', 'iw.npy'))
+
 wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
 
 

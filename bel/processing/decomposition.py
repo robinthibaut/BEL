@@ -41,7 +41,7 @@ mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 def bel(n_training=250, n_test=5, new_dir=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
-    It saves resutls as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
+    It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
     @param n_training: Number of samples used to train the model
     @param n_test: Number of samples on which to perform prediction
