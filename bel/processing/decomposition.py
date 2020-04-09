@@ -72,12 +72,13 @@ def bel(n_training=250, n_test=5, new_dir=None):
         for r in roots_:
             f.write(os.path.basename(r) + '\n')
 
-    # Compute signed distance on pzs. h is the matrix of target feature on which PCA will be performed
+    # Compute signed distance on pzs.
+    # h is the matrix of target feature on which PCA will be performed.
     h = np.array([sd.function(pp) for pp in pzs])
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
-    # Preprocess d in an arbitrary number of time steps.
+    # Subdivide d in an arbitrary number of time steps.
     tc = do.d_process(tc0=tc0, n_time_steps=250)
     n_wel = len(tc[0])  # Number of injecting wels
 
@@ -94,11 +95,8 @@ def bel(n_training=250, n_test=5, new_dir=None):
     n_obs = n_test  # Number of 'observations' on which the predictions will be made.
     n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 
-    if n_training != n_sim - n_obs:
-        warnings.warn("The size of training set doesn't correspond with user input")
-
-    load = False  # Whether to load already dumped PCA operator
     # PCA on transport curves
+    load = False  # Whether to load already dumped PCA operator
     d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
     d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)  # Performs transformation
@@ -136,11 +134,13 @@ def bel(n_training=250, n_test=5, new_dir=None):
 
     n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
     # components between d and h.
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2))  # By default, it scales the data
+    float_epsilon = np.finfo(float).eps
+    # By default, it scales the data
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
-    shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
+    # shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 
 
 if __name__ == "__main__":

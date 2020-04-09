@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 
 class PCAOps:
 
-    def __init__(self, name, raw_data, directory='temp'):
+    def __init__(self, name, raw_data, directory=None):
         """
 
         @param name: name of the parameter on which to perform operations
@@ -45,8 +45,7 @@ class PCAOps:
     def pca_transformation(self, load=False):
         """
         Instantiate the PCA object and transforms both training and test data.
-        Depending on the value of the load parameter, it will create a new one or load a previously computed one,
-        stored in the 'temp' folder.
+        Depending on the value of the load parameter, it will create a new one or load a previously computed one.
         @param load:
         @return: PC training, PC test
         """
