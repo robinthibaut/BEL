@@ -19,9 +19,6 @@ exe_name_mf = jp(exe_loc, 'mf2005.exe')
 exe_name_mt = jp(exe_loc, 'mt3d.exe')
 exe_name_mp = jp(exe_loc, 'mp7.exe')
 
-
-# TODO: check if the code does what I want when I change the discretization
-# FIXME: Pumping well position in wells_data
 # Define injection wells
 # [ [X, Y, [r#1, r#2... r#n]] ]
 # Pumping well located at [1000, 500]

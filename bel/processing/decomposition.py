@@ -125,8 +125,8 @@ def bel(n_training=250, n_test=5, new_dir=None):
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
     # Compares true value with inverse transformation from PCA
-    ndo = d_pco.n_pca_components(0.999)  # Number of components for breakthrough curves
-    nho = h_pco.n_pca_components(0.98)  # Number of components for signed distance
+    ndo = d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+    nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo

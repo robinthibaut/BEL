@@ -75,6 +75,7 @@
       <w>lunit</w>
       <w>mcomp</w>
       <w>mixelm</w>
+      <w>modelgrid</w>
       <w>modelname</w>
       <w>modflow</w>
       <w>modflowmodel</w>
@@ -122,6 +123,7 @@
       <w>pzone</w>
       <w>referencetime</w>
       <w>rowcelldivisions</w>
+      <w>savetxt</w>
       <w>savucn</w>
       <w>scikit</w>
       <w>scipy</w>

@@ -10,7 +10,7 @@ def transport(modflowmodel, exe_name):
     """
 
     @param modflowmodel: flopy modflow model object
-    @param exe_name:
+    @param exe_name: Path to executable file
     @return:
     """
 
@@ -42,7 +42,7 @@ def transport(modflowmodel, exe_name):
     for yc in yxz_grid[0]:
         for xc in yxz_grid[1]:
             xy_true.append([xc, yc])
-    xy_nodes_2d = np.reshape(xy_true, (nlay*nrow*ncol, 2))  # Flattens xy to correspond to node numbering
+    xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))  # Flattens xy to correspond to node numbering
 
     wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
     wells_number = wells_data.shape[0]  # Total number of wells
@@ -54,7 +54,7 @@ def transport(modflowmodel, exe_name):
     injection_well_data = wells_data[1:]
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
     xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
-    # TODO: There seems to be a problem with their get_lrc() method.
+    # TODO: There seems to be a problem with their get_lrc() method - issue submitted
 
     lpf = modflowmodel.lpf  # LPF package
 
@@ -128,49 +128,49 @@ def transport(modflowmodel, exe_name):
     filenames = None
 
     # noinspection PyTypeChecker
-    btn = flopy.mt3d.mtbtn.Mt3dBtn(model=mt,
-                                   MFStyleArr=MFStyleArr,
-                                   DRYCell=DRYCell,
-                                   Legacy99Stor=Legacy99Stor,
-                                   FTLPrint=FTLPrint,
-                                   NoWetDryPrint=NoWetDryPrint,
-                                   OmitDryBud=OmitDryBud,
-                                   AltWTSorb=AltWTSorb,
-                                   ncomp=ncomp,
-                                   mcomp=mcomp,
-                                   tunit=tunit,
-                                   lunit=lunit,
-                                   munit=munit,
-                                   prsity=prsity,
-                                   icbund=icbund,
-                                   sconc=sconc,
-                                   # sconc2=sconc2,
-                                   # sconc3=sconc3,
-                                   cinact=cinact,
-                                   thkmin=thkmin,
-                                   ifmtcn=ifmtcn,
-                                   ifmtnp=ifmtnp,
-                                   ifmtrf=ifmtrf,
-                                   ifmtdp=ifmtdp,
-                                   savucn=savucn,
-                                   nprs=nprs,
-                                   timprs=timprs,
-                                   obs=obs,
-                                   nprobs=nprobs,
-                                   chkmas=chkmas,
-                                   nprmas=nprmas,
-                                   perlen=perlen,
-                                   nstp=nstp,
-                                   tsmult=tsmult,
-                                   ssflag=ssflag,
-                                   dt0=dt0,
-                                   mxstrn=mxstrn,
-                                   ttsmult=ttsmult,
-                                   ttsmax=ttsmax,
-                                   species_names=species_names,
-                                   extension=extension,
-                                   unitnumber=unitnumber,
-                                   filenames=filenames)
+    flopy.mt3d.mtbtn.Mt3dBtn(model=mt,
+                             MFStyleArr=MFStyleArr,
+                             DRYCell=DRYCell,
+                             Legacy99Stor=Legacy99Stor,
+                             FTLPrint=FTLPrint,
+                             NoWetDryPrint=NoWetDryPrint,
+                             OmitDryBud=OmitDryBud,
+                             AltWTSorb=AltWTSorb,
+                             ncomp=ncomp,
+                             mcomp=mcomp,
+                             tunit=tunit,
+                             lunit=lunit,
+                             munit=munit,
+                             prsity=prsity,
+                             icbund=icbund,
+                             sconc=sconc,
+                             # sconc2=sconc2,
+                             # sconc3=sconc3,
+                             cinact=cinact,
+                             thkmin=thkmin,
+                             ifmtcn=ifmtcn,
+                             ifmtnp=ifmtnp,
+                             ifmtrf=ifmtrf,
+                             ifmtdp=ifmtdp,
+                             savucn=savucn,
+                             nprs=nprs,
+                             timprs=timprs,
+                             obs=obs,
+                             nprobs=nprobs,
+                             chkmas=chkmas,
+                             nprmas=nprmas,
+                             perlen=perlen,
+                             nstp=nstp,
+                             tsmult=tsmult,
+                             ssflag=ssflag,
+                             dt0=dt0,
+                             mxstrn=mxstrn,
+                             ttsmult=ttsmult,
+                             ttsmax=ttsmax,
+                             species_names=species_names,
+                             extension=extension,
+                             unitnumber=unitnumber,
+                             filenames=filenames)
 
     # %% Mt3dAdv
 
@@ -194,25 +194,25 @@ def transport(modflowmodel, exe_name):
     filenames = None
 
     # noinspection PyTypeChecker
-    adv = flopy.mt3d.Mt3dAdv(model=mt,
-                             mixelm=mixelm,
-                             percel=percel,
-                             mxpart=mxpart,
-                             nadvfd=nadvfd,
-                             itrack=itrack,
-                             wd=wd,
-                             dceps=dceps,
-                             nplane=nplane,
-                             npl=npl,
-                             nph=nph,
-                             npmin=npmin,
-                             npmax=npmax,
-                             nlsink=nlsink,
-                             npsink=npsink,
-                             dchmoc=dchmoc,
-                             extension=extension,
-                             unitnumber=unitnumber,
-                             filenames=filenames)
+    flopy.mt3d.Mt3dAdv(model=mt,
+                       mixelm=mixelm,
+                       percel=percel,
+                       mxpart=mxpart,
+                       nadvfd=nadvfd,
+                       itrack=itrack,
+                       wd=wd,
+                       dceps=dceps,
+                       nplane=nplane,
+                       npl=npl,
+                       nph=nph,
+                       npmin=npmin,
+                       npmax=npmax,
+                       nlsink=nlsink,
+                       npsink=npsink,
+                       dchmoc=dchmoc,
+                       extension=extension,
+                       unitnumber=unitnumber,
+                       filenames=filenames)
 
     # %% Mt3dDsp
 
@@ -228,17 +228,17 @@ def transport(modflowmodel, exe_name):
     filenames = None
 
     # noinspection PyTypeChecker
-    dsp = flopy.mt3d.Mt3dDsp(model=mt,
-                             al=al,
-                             trpt=trpt,
-                             trpv=trpv,
-                             dmcoef=dmcoef,
-                             # dmcoef2=dmcoef2,
-                             # dmcoef3=dmcoef3,
-                             extension=extension,
-                             multiDiff=multiDiff,
-                             unitnumber=unitnumber,
-                             filenames=filenames)
+    flopy.mt3d.Mt3dDsp(model=mt,
+                       al=al,
+                       trpt=trpt,
+                       trpv=trpv,
+                       dmcoef=dmcoef,
+                       # dmcoef2=dmcoef2,
+                       # dmcoef3=dmcoef3,
+                       extension=extension,
+                       multiDiff=multiDiff,
+                       unitnumber=unitnumber,
+                       filenames=filenames)
 
     # %% Mt3dSsm
 
@@ -253,8 +253,6 @@ def transport(modflowmodel, exe_name):
     # Template:
     # [(‘k’, np.int), (“i”, np.int), (“j”, np.int), (“css”, np.float32),
     # (“itype”, np.int), ((cssms(n), np.float), n=1, ncomp)]
-
-    stress_period_data = {}
 
     # layer, row, column, concentration specie 1 (dummy value), type, concentration specie 1,
     # concentration specie 2, concentration specie 3
@@ -288,7 +286,7 @@ def transport(modflowmodel, exe_name):
         return spdt
 
     iw_lrc = injection_well_data[:, 0, :3]  # R L C of each IW in the refined flow grid
-    iw_pr = np.array([[0, 1.5, 0] for c in range(ncomp)])  # Injection rate for each time period. We decide to assign
+    iw_pr = np.array([[0, 1.5, 0] for _ in range(ncomp)])  # Injection rate for each time period. We decide to assign
     # the same for each IW.
     # The units are KG/D
 
@@ -315,15 +313,15 @@ def transport(modflowmodel, exe_name):
     # stress_period_data[2] = [(iw1[0], iw1[1], iw1[2], 0, 2)]
 
     # noinspection PyTypeChecker
-    ssm = flopy.mt3d.Mt3dSsm(model=mt,
-                             crch=crch,
-                             cevt=cevt,
-                             mxss=mxss,
-                             stress_period_data=stress_period_data,
-                             dtype=dtype,
-                             extension=extension,
-                             unitnumber=unitnumber,
-                             filenames=filenames)
+    flopy.mt3d.Mt3dSsm(model=mt,
+                       crch=crch,
+                       cevt=cevt,
+                       mxss=mxss,
+                       stress_period_data=stress_period_data,
+                       dtype=dtype,
+                       extension=extension,
+                       unitnumber=unitnumber,
+                       filenames=filenames)
 
     # %% Mt3dGcg
 
@@ -339,31 +337,28 @@ def transport(modflowmodel, exe_name):
     filenames = None
 
     # noinspection PyTypeChecker
-    gcg = flopy.mt3d.Mt3dGcg(model=mt,
-                             mxiter=mxiter,
-                             iter1=iter1,
-                             isolve=isolve,
-                             ncrs=ncrs,
-                             accl=accl,
-                             cclose=cclose,
-                             iprgcg=iprgcg,
-                             extension=extension,
-                             unitnumber=unitnumber,
-                             filenames=filenames)
+    flopy.mt3d.Mt3dGcg(model=mt,
+                       mxiter=mxiter,
+                       iter1=iter1,
+                       isolve=isolve,
+                       ncrs=ncrs,
+                       accl=accl,
+                       cclose=cclose,
+                       iprgcg=iprgcg,
+                       extension=extension,
+                       unitnumber=unitnumber,
+                       filenames=filenames)
 
     # %% MT3D run
 
     mt.write_input()
-
     mt.run_model(silent=True,
                  pause=False,
                  report=True)
 
     # Export
     only_files = [f for f in listdir(model_ws) if isfile(jp(model_ws, f))]  # Listing all files in results folder
-
     obs_files = [jp(model_ws, x) for x in only_files if '.OBS' in x]  # Selects OBS files
-
     observations = [mt.load_obs(of) for of in obs_files]  # Loading observations results
     fields = observations[0].dtype.names
     hey = np.array(

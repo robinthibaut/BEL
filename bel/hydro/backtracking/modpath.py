@@ -22,7 +22,7 @@ def backtrack(flowmodel, exe_name):
     rowcelldivisions = 15
     layercelldivisions = 1
     # Total number of particles = ccd*rcd*lcd
-    # Subdivision data:
+    # Subdivision data
     sd = flopy.modpath.CellDataType(drape=drape,
                                     columncelldivisions=columncelldivisions,
                                     rowcelldivisions=rowcelldivisions,
@@ -49,9 +49,9 @@ def backtrack(flowmodel, exe_name):
 
     porosity_mp = 0.2
 
-    mpbas = flopy.modpath.Modpath7Bas(mp,
-                                      porosity=porosity_mp,
-                                      defaultiface=defaultiface)
+    flopy.modpath.Modpath7Bas(mp,
+                              porosity=porosity_mp,
+                              defaultiface=defaultiface)
 
     simulationtype = 'combined'
     trackingdirection = 'backward'
@@ -69,20 +69,20 @@ def backtrack(flowmodel, exe_name):
 
     # Run modpath simulation
 
-    mpsim = flopy.modpath.Modpath7Sim(mp,
-                                      simulationtype=simulationtype,
-                                      trackingdirection=trackingdirection,
-                                      weaksinkoption=weaksinkoption,
-                                      weaksourceoption=weaksourceoption,
-                                      budgetoutputoption=budgetoutputoption,
-                                      budgetcellnumbers=budgetcellnumbers,
-                                      traceparticledata=traceparticledata,
-                                      referencetime=referencetime,
-                                      stoptimeoption=stoptimeoption,
-                                      stoptime=stoptime,
-                                      timepointdata=timepointdata,
-                                      zonedataoption=zonedataoption, zones=zones,
-                                      particlegroups=particlegroups)
+    flopy.modpath.Modpath7Sim(mp,
+                              simulationtype=simulationtype,
+                              trackingdirection=trackingdirection,
+                              weaksinkoption=weaksinkoption,
+                              weaksourceoption=weaksourceoption,
+                              budgetoutputoption=budgetoutputoption,
+                              budgetcellnumbers=budgetcellnumbers,
+                              traceparticledata=traceparticledata,
+                              referencetime=referencetime,
+                              stoptimeoption=stoptimeoption,
+                              stoptime=stoptime,
+                              timepointdata=timepointdata,
+                              zonedataoption=zonedataoption, zones=zones,
+                              particlegroups=particlegroups)
 
     # Write modpath datasets
     mp.write_input()
