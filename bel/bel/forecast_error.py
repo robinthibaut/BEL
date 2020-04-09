@@ -144,3 +144,6 @@ mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        colors='red',
        fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
        show=True)
+
+if __name__ == '__main__':
+    pass

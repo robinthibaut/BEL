@@ -6,7 +6,9 @@ import meshio
 import matplotlib.pyplot as plt
 
 import diavatly
-from bel.toolbox.tools import FileOps, MeshOps, Plot
+from bel.toolbox.file_ops import FileOps
+from bel.toolbox.mesh_ops import MeshOps
+from bel.toolbox.plots import Plot
 
 
 ops = FileOps()
@@ -66,3 +68,6 @@ meshio.write_points_cells(
     cell_data={'hk': np.array([1])},
     # field_data=field_data
     )
+
+if __name__ == '__main__':
+    pass
