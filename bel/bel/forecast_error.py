@@ -15,29 +15,39 @@ plt.style.use('dark_background')
 
 mo = MeshOps()
 po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 5
+x_lim, y_lim, grf = [800, 1150], [300, 700], 1
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-study_folder = '33d83e5d-ec93-4e9d-a148-3552aa18eded'
+study_folder = 'b0ab4292-0f39-4e89-a9da-b5cac19e9a96'
 bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
+fig_cca_dir = jp(fig_dir, 'CCA')
 fig_pred_dir = jp(fig_dir, 'Predictions')
 
 # Load objects
 f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
 cca, d_pco, h_pco = list(map(joblib.load, f_names))
 
-print(d_pco.perc_pca_components(45))
-print(h_pco.perc_pca_components(30))
 # Inspect transformation between physical and PC space
 dnc0 = d_pco.ncomp
 hnc0 = h_pco.ncomp
+print(d_pco.perc_pca_components(dnc0))
+print(h_pco.perc_pca_components(hnc0))
 mp.pca_inverse_compare(d_pco, h_pco, dnc0, hnc0)
+
+# Cut desired number of PC components
+d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
+h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
+
+# CCA plots
+d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
+d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # Random sample from the posterior
 sample_n = 0

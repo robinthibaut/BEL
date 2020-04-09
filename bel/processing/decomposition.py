@@ -106,12 +106,12 @@ def bel(n_training=250, n_test=5, new_dir=None):
     # PCA on transport curves
     load = False  # Whether to load already dumped PCA operator
     d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
-    d_training, d_prediction = d_pco.pca_tp(n_training)  # Split into training and prediction
+    d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)  # Performs transformation
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
-    h_training, h_prediction = h_pco.pca_tp(n_training)
+    h_pco.pca_tp(n_training)
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
     # Explained variance plots
@@ -148,8 +148,6 @@ def bel(n_training=250, n_test=5, new_dir=None):
     cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
-
-    # shutil.copy(__file__, jp(fig_dir, 'copied_script.py'))
 
 
 if __name__ == "__main__":
