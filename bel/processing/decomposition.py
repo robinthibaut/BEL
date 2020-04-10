@@ -33,7 +33,7 @@ do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
 # TODO: Save global grid dimensions in dictionary
-x_lim, y_lim, grf = [800, 1150], [300, 700], 1
+x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
@@ -43,10 +43,10 @@ def bel(n_training=300, n_test=5, new_dir=None):
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
-    @param n_training: Number of samples used to train the model
-    @param n_test: Number of samples on which to perform prediction
-    @param new_dir: Name of the forecast directory
-    @return:
+    :param n_training: Number of samples used to train the model
+    :param n_test: Number of samples on which to perform prediction
+    :param new_dir: Name of the forecast directory
+    :return:
     """
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
@@ -103,15 +103,14 @@ def bel(n_training=300, n_test=5, new_dir=None):
     n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 
     # PCA on transport curves
-    load = False  # Whether to load already dumped PCA operator
     d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
     d_pco.pca_tp(n_training)  # Split into training and prediction
-    d_pc_training, d_pc_prediction = d_pco.pca_transformation(load=load)  # Performs transformation
+    d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
     h_pco.pca_tp(n_training) # Split into training and prediction
-    h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
+    h_pc_training, h_pc_prediction = h_pco.pca_transformation()
 
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.

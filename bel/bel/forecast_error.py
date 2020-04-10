@@ -14,14 +14,14 @@ plt.style.use('dark_background')
 
 mo = MeshOps()
 po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 1
+x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 # Directories & files paths
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-study_folder = 'b0ab4292-0f39-4e89-a9da-b5cac19e9a96'
+study_folder = '63c18b43-a376-403a-88a1-0f6b2091513a'
 bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
@@ -88,9 +88,9 @@ xykde = np.vstack([x, y]).T
 # %% Kernel density
 
 # Scatter plot vertices
-# nn = sample_n
-# plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
-# plt.show()
+nn = sample_n
+plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
+plt.show()
 
 # Grid geometry
 xmin = x_lim[0]
@@ -99,10 +99,9 @@ ymin = y_lim[0]
 ymax = y_lim[1]
 # Create a structured grid to estimate kernel density
 # TODO: create a function to copy/paste values on differently refined grids
-grf_kd = 5
-
+grf_kd = 10
 mpkde = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf_kd)
-
+mpkde.wdir = wdir
 cell_dim = grf_kd
 xgrid = np.arange(xmin, xmax, cell_dim)
 ygrid = np.arange(ymin, ymax, cell_dim)
@@ -145,7 +144,7 @@ score = score_norm(score)
 # Assign the computed scores to the grid
 z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
 z[inside] = score
-z = np.flipud(z.reshape(shape[1], shape[2]))  # Flip to correspond
+z = np.flipud(z.reshape(X.shape))  # Flip to correspond
 
 # Plot KDE
 mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
@@ -153,7 +152,8 @@ mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        lw=1,
        colors='red',
        show=False)
-mpkde.whp(bkg_field_array=z,
+mpkde.whp(h=[],
+          bkg_field_array=z,
           vmin=None,
           vmax=None,
           cmap='RdGy',

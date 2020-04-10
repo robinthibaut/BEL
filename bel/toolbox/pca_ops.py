@@ -13,8 +13,8 @@ class PCAOps:
     def __init__(self, name, raw_data, directory=None):
         """
 
-        @param name: name of the parameter on which to perform operations
-        @param raw_data: original dataset
+        :param name: name of the parameter on which to perform operations
+        :param raw_data: original dataset
         """
         self.directory = directory
         self.name = name
@@ -31,8 +31,8 @@ class PCAOps:
     def pca_tp(self, n_training):
         """
         Given an arbitrary size of training data, splits the original array accordingly
-        @param n_training:
-        @return: training, test
+        :param n_training:
+        :return: training, test
         """
         self.n_training = n_training
         # Flattens the array
@@ -50,7 +50,7 @@ class PCAOps:
         """
         Instantiate the PCA object and transforms both training and test data.
         Depending on the value of the load parameter, it will create a new one or load a previously computed one.
-        @return: PC training, PC test
+        :return: PC training, PC test
         """
 
         pca_operator = PCA()
@@ -87,8 +87,8 @@ class PCAOps:
     def pca_refresh(self, n_comp):
         """
         Given a number of components to keep, returns the PC array with the corresponding shape.
-        @param n_comp:
-        @return:
+        :param n_comp:
+        :return:
         """
 
         self.ncomp = n_comp  # Assign the number of components in the class for later use
@@ -118,8 +118,8 @@ class PCAOps:
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
-        @param pc_to_invert: PC array
-        @return:
+        :param pc_to_invert: PC array
+        :return:
         """
         inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
 
