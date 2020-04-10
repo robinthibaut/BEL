@@ -9,6 +9,7 @@ from sklearn.neighbors import KernelDensity
 from bel.toolbox.plots import Plot
 from bel.toolbox.mesh_ops import MeshOps
 from bel.toolbox.posterior_ops import PosteriorOps
+from bel.processing.signed_distance import SignedDistance
 
 plt.style.use('dark_background')
 
@@ -49,7 +50,7 @@ d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 # mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # %% Random sample from the posterior
-sample_n = 0
+sample_n = 1
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
@@ -80,7 +81,7 @@ mp.whp_prediction(forecasts=forecast_posterior,
 # First create figures for each forecast.
 c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast_posterior]
 plt.close() # Close plots
-# .allseg[0][0] extracts the certices of each O contour = WHPA's vertices
+# .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
 v = np.array([c0.allsegs[0][0] for c0 in c0s])
 # Reshape coordinates
 x = np.hstack([vi[:, 0] for vi in v])
@@ -166,4 +167,19 @@ mpkde.whp(bkg_field_array=z,
           show=True)
 
 # %% New approach : stack binary WHPA
+# For this approach we use our SignedDistance module
+sd_kd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
+mpbin = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+mpbin.wdir = wdir
+bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in v]
+big_sum = np.sum(bin_whpa, axis=0)
+b_low = np.where(big_sum == 0, 1, big_sum)
+mpbin.whp(bkg_field_array=big_sum,
+          show_wells=True,
+          vmin=None,
+          vmax=None,
+          cmap='RdGy',
+          show=True)
 
+# A measure of the error could be a measure of the area covered by the n samples.
+error = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.

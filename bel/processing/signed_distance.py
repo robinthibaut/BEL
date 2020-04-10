@@ -29,10 +29,10 @@ class SignedDistance:
         whether the cell is inside or outside said polygon.
         To compute the signed distance function, we need a negative/positive value.
 
-        @param pzs: Polygon vertices
-        @param outside: Value to assign to the matrix outside of the polygon
-        @param inside: Value to assign to the matrix inside of the polygon
-        @return: phi, the binary matrix
+        :param pzs: Polygon vertices
+        :param outside: Value to assign to the matrix outside of the polygon
+        :param inside: Value to assign to the matrix inside of the polygon
+        :return: phi, the binary matrix
         """
 
         poly = Polygon(pzs, True)  # Creates a Polygon abject out of the polygon vertices in pzs
@@ -47,8 +47,8 @@ class SignedDistance:
     def function(self, pzs):
         """
         Given an array of coordinates of polygon vertices, computes its signed distance field.
-        @param pzs: Array of ordered vertices coordinates of a polygon.
-        @return: Signed distance matrix
+        :param pzs: Array of ordered vertices coordinates of a polygon.
+        :return: Signed distance matrix
         """
 
         phi = self.matrix_poly_bin(pzs)
