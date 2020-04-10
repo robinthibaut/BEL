@@ -121,13 +121,21 @@ Finally, CCA is performed after selecting an appropriate number of PC to keep.</
 <p>It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.</p>
 <dl class="function">
 <dt id="bel.processing.decomposition.bel">
-<code class="sig-prename descclassname">bel.processing.decomposition.</code><code class="sig-name descname">bel</code><span class="sig-paren">(</span><em class="sig-param">n_training=250</em>, <em class="sig-param">n_test=5</em>, <em class="sig-param">new_dir=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.decomposition.bel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">bel.processing.decomposition.</code><code class="sig-name descname">bel</code><span class="sig-paren">(</span><em class="sig-param">n_training=300</em>, <em class="sig-param">n_test=5</em>, <em class="sig-param">new_dir=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.decomposition.bel" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function loads raw data and perform both PCA and CCA on it.
-It saves resutls as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.</p>
-<p>&#64;param n_training: Number of samples used to train the model
-&#64;param n_test: Number of samples on which to perform prediction
-&#64;param new_dir: Name of the forecast directory
-&#64;return:</p>
+It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_training</strong> – Number of samples used to train the model</p></li>
+<li><p><strong>n_test</strong> – Number of samples on which to perform prediction</p></li>
+<li><p><strong>new_dir</strong> – Name of the forecast directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -141,8 +149,8 @@ It saves resutls as pkl objects that have to be loaded in the forecast_error.py 
 <dt id="bel.processing.signed_distance.SignedDistance.function">
 <code class="sig-name descname">function</code><span class="sig-paren">(</span><em class="sig-param">pzs</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.signed_distance.SignedDistance.function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given an array of coordinates of polygon vertices, computes its signed distance field.
-&#64;param pzs: Array of ordered vertices coordinates of a polygon.
-&#64;return: Signed distance matrix</p>
+:param pzs: Array of ordered vertices coordinates of a polygon.
+:return: Signed distance matrix</p>
 </dd></dl>
 
 <dl class="method">
@@ -152,10 +160,18 @@ It saves resutls as pkl objects that have to be loaded in the forecast_error.py 
 centroids coordinates of the surface discretization, assign to the matrix a certain value
 whether the cell is inside or outside said polygon.
 To compute the signed distance function, we need a negative/positive value.</p>
-<p>&#64;param pzs: Polygon vertices
-&#64;param outside: Value to assign to the matrix outside of the polygon
-&#64;param inside: Value to assign to the matrix inside of the polygon
-&#64;return: phi, the binary matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pzs</strong> – Polygon vertices</p></li>
+<li><p><strong>outside</strong> – Value to assign to the matrix outside of the polygon</p></li>
+<li><p><strong>inside</strong> – Value to assign to the matrix inside of the polygon</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>phi, the binary matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

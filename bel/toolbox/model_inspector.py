@@ -4,15 +4,18 @@ from os.path import join as jp
 import flopy
 import matplotlib.pyplot as plt
 
-from bel.toolbox.tools import FileOps
+from bel.toolbox.file_ops import FileOps
 
 ops = FileOps()
 
 rn = 'illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
+# Load flow model
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
+
+# Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = ops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
 
@@ -36,15 +39,15 @@ fig = plt.figure(figsize=(15, 10))
 ax = fig.add_subplot(1, 2, 1, aspect='equal')
 ax.set_title('plot_array()')
 mapview = flopy.plot.PlotMapView(model=flow_model)
-quadmesh = mapview.plot_ibound()
-quadmesh = mapview.plot_array(head, masked_values=[999.], alpha=0.5)
+mapview.plot_ibound()
+mapview.plot_array(head, masked_values=[999.], alpha=0.5)
 mapview.plot_bc("WEL")
 plt.show()
 
 ax = fig.add_subplot(1, 2, 2, aspect='equal')
 ax.set_title('contour_array()')
 mapview = flopy.plot.PlotMapView(model=flow_model)
-quadmesh = mapview.plot_ibound()
+mapview.plot_ibound()
 mapview.plot_bc("WEL")
 contour_set = mapview.contour_array(head, masked_values=[999.], levels=20)
 plt.show()
@@ -67,8 +70,8 @@ fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(1, 1, 1, aspect='equal')
 ax.set_title('plot_array()')
 mapview = flopy.plot.PlotMapView(model=flow_model)
-quadmesh = mapview.plot_ibound()
-quadmesh = mapview.plot_array(head, masked_values=[999.], alpha=0.5)
+mapview.plot_ibound()
+mapview.plot_array(head, masked_values=[999.], alpha=0.5)
 mapview.plot_endpoint(ept)
 plt.show()
 

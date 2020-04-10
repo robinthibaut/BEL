@@ -184,7 +184,7 @@ def flow(exe_name, model_ws, wells):
         """
         iw = [0, wel_info[0], wel_info[1]]  # Injection wel location - layer row column
         iwr = wel_info[2]  # Well rate for the defined time periods
-        iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))
+        iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
 
@@ -214,45 +214,41 @@ def flow(exe_name, model_ws, wells):
     # 2: [[    0 ,    50 ,    80 , -2400. ]]
     # }
 
-    wel = flopy.modflow.ModflowWel(model=model,
-                                   stress_period_data=wel_stress_period_data)
-
-    # wel.check(level=0)
+    flopy.modflow.ModflowWel(model=model,
+                             stress_period_data=wel_stress_period_data)
 
     # %% ModflowBas
 
-    bas = flopy.modflow.ModflowBas(model=model,
-                                   ibound=ibound,
-                                   strt=strt,
-                                   ifrefm=True,
-                                   ixsec=False,
-                                   ichflg=False,
-                                   stoper=None,
-                                   hnoflo=-999.99,
-                                   extension='bas',
-                                   unitnumber=None,
-                                   filenames=None)
-
-    # bas.check(level=0)
+    flopy.modflow.ModflowBas(model=model,
+                             ibound=ibound,
+                             strt=strt,
+                             ifrefm=True,
+                             ixsec=False,
+                             ichflg=False,
+                             stoper=None,
+                             hnoflo=-999.99,
+                             extension='bas',
+                             unitnumber=None,
+                             filenames=None)
 
     # %% ModflowPcg
 
-    pcg = flopy.modflow.ModflowPcg(model=model,
-                                   mxiter=70,
-                                   iter1=70,
-                                   npcond=1,
-                                   hclose=1e-3,
-                                   rclose=1e-3,
-                                   relax=0.99,
-                                   nbpol=0,
-                                   iprpcg=0,
-                                   mutpcg=3,
-                                   damp=1.0,
-                                   dampt=1.0,
-                                   ihcofadd=0,
-                                   extension='pcg',
-                                   unitnumber=None,
-                                   filenames=None)
+    flopy.modflow.ModflowPcg(model=model,
+                             mxiter=70,
+                             iter1=70,
+                             npcond=1,
+                             hclose=1e-3,
+                             rclose=1e-3,
+                             relax=0.99,
+                             nbpol=0,
+                             iprpcg=0,
+                             mutpcg=3,
+                             damp=1.0,
+                             dampt=1.0,
+                             ihcofadd=0,
+                             extension='pcg',
+                             unitnumber=None,
+                             filenames=None)
 
     # %% ModflowOc
 
@@ -267,16 +263,16 @@ def flow(exe_name, model_ws, wells):
                                                    'save budget',
                                                    'print budget']
 
-    oc = flopy.modflow.ModflowOc(model=model,
-                                 stress_period_data=stress_period_data_oc,
-                                 compact=True)
+    flopy.modflow.ModflowOc(model=model,
+                            stress_period_data=stress_period_data_oc,
+                            compact=True)
 
     # %% ModflowLmt
     # Necessary to create a xxx.ftl file to link modflow simulation to mt3dms transport simulation.
     output_file_name = 'mt3d_link.ftl'
 
-    lmt = flopy.modflow.ModflowLmt(model=model,
-                                   output_file_name=output_file_name)
+    flopy.modflow.ModflowLmt(model=model,
+                             output_file_name=output_file_name)
 
     # %% SGEMS
 

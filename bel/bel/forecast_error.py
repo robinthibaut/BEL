@@ -172,8 +172,8 @@ sd_kd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mpbin = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mpbin.wdir = wdir
 bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in v]
-big_sum = np.sum(bin_whpa, axis=0)
-b_low = np.where(big_sum == 0, 1, big_sum)
+big_sum = np.sum(bin_whpa, axis=0)  # Stack them
+b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
 mpbin.whp(bkg_field_array=big_sum,
           show_wells=True,
           vmin=None,

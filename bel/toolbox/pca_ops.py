@@ -15,6 +15,7 @@ class PCAOps:
 
         :param name: name of the parameter on which to perform operations
         :param raw_data: original dataset
+
         """
         self.directory = directory
         self.name = name

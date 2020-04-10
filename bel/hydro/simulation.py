@@ -47,15 +47,15 @@ def gen_rand_well(radius, x0, y0):
 
 # Pumping well data
 pumping_well = np.array([[1000, 500, [-1000, -1000, -1000]]])
-pwxy = pumping_well[0, :2]
+pw_xy = pumping_well[0, :2]
 
 # Injection wells location
-wells_xy = [pwxy + [-50, -50],
-            pwxy + [-70, 60],
-            pwxy + [-100, 5],
-            pwxy + [68, 15],
-            pwxy + [30, 80],
-            pwxy + [50, -30]]
+wells_xy = [pw_xy + [-50, -50],
+            pw_xy + [-70, 60],
+            pw_xy + [-100, 5],
+            pw_xy + [68, 15],
+            pw_xy + [30, 80],
+            pw_xy + [50, -30]]
 
 wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
 
@@ -74,14 +74,14 @@ def main(res_dir=None):
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
-    if flow_model:
+    if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on
         delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
         pzs = end_points[delineation]  # x-y coordinates protection zone
-        np.save(jp(results_dir, 'pz'), pzs)
+        np.save(jp(results_dir, 'pz'), pzs)  # Save those
 
         # Deletes everything except final results
         if not res_dir:

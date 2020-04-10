@@ -285,8 +285,8 @@ each sub-block preserving the “physical” layout of arr.</p>
 <code class="sig-name descname">inverse_transform</code><span class="sig-paren">(</span><em class="sig-param">pc_to_invert</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.inverse_transform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
 The self.operator.components contains all components.
-&#64;param pc_to_invert: PC array
-&#64;return:</p>
+:param pc_to_invert: PC array
+:return:</p>
 </dd></dl>
 
 <dl class="method">
@@ -306,25 +306,24 @@ necessary to obtain that level.</p>
 <dt id="bel.toolbox.pca_ops.PCAOps.pca_refresh">
 <code class="sig-name descname">pca_refresh</code><span class="sig-paren">(</span><em class="sig-param">n_comp</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_refresh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a number of components to keep, returns the PC array with the corresponding shape.
-&#64;param n_comp:
-&#64;return:</p>
+:param n_comp:
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.pca_ops.PCAOps.pca_tp">
 <code class="sig-name descname">pca_tp</code><span class="sig-paren">(</span><em class="sig-param">n_training</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_tp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given an arbitrary size of training data, splits the original array accordingly
-&#64;param n_training:
-&#64;return: training, test</p>
+:param n_training:
+:return: training, test</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.pca_ops.PCAOps.pca_transformation">
-<code class="sig-name descname">pca_transformation</code><span class="sig-paren">(</span><em class="sig-param">load=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_transformation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pca_transformation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_transformation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate the PCA object and transforms both training and test data.
 Depending on the value of the load parameter, it will create a new one or load a previously computed one.
-&#64;param load:
-&#64;return: PC training, PC test</p>
+:return: PC training, PC test</p>
 </dd></dl>
 
 <dl class="method">
@@ -347,24 +346,24 @@ Depending on the value of the load parameter, it will create a new one or load a
 <em class="property">static </em><code class="sig-name descname">cca</code><span class="sig-paren">(</span><em class="sig-param">cca</em>, <em class="sig-param">d</em>, <em class="sig-param">h</em>, <em class="sig-param">d_pc_prediction</em>, <em class="sig-param">h_pc_prediction</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.cca" title="Permalink to this definition">¶</a></dt>
 <dd><p>CCA plots.
 Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-&#64;param cca: CCA operator
-&#64;param d: d CCA scores
-&#64;param h: h CCA scores
-&#64;param d_pc_prediction: d test PC scores
-&#64;param h_pc_prediction: h test PC scores
-&#64;param sdir:
-&#64;param show:
-&#64;return:</p>
+:param cca: CCA operator
+:param d: d CCA scores
+:param h: h CCA scores
+:param d_pc_prediction: d test PC scores
+:param h_pc_prediction: h test PC scores
+:param sdir:
+:param show:
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.curves">
 <code class="sig-name descname">curves</code><span class="sig-paren">(</span><em class="sig-param">tc</em>, <em class="sig-param">n_wel</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shows every breakthrough curve stacked on a plot.
-&#64;param tc: Curves with shape (n_sim, n_wells, n_time_steps)
-&#64;param n_wel: Number of observation points
-&#64;param sdir: Directory in which to save figure
-&#64;param show: Whether to show or not</p>
+:param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+:param n_wel: Number of observation points
+:param sdir: Directory in which to save figure
+:param show: Whether to show or not</p>
 </dd></dl>
 
 <dl class="method">
@@ -372,91 +371,92 @@ Receives d, h PC components to be predicted, transforms them in CCA space and ad
 <code class="sig-name descname">curves_i</code><span class="sig-paren">(</span><em class="sig-param">tc</em>, <em class="sig-param">n_wel</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.curves_i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shows every breakthrough individually for each observation point.
 Will produce n_well figures of n_sim curves each.
-&#64;param tc: Curves with shape (n_sim, n_wells, n_time_steps)
-&#64;param n_wel: Number of observation points
-&#64;param sdir: Directory in which to save figure
-&#64;param show: Whether to show or not</p>
+:param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+:param n_wel: Number of observation points
+:param sdir: Directory in which to save figure
+:param show: Whether to show or not</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.d_pca_inverse_plot">
 <em class="property">static </em><code class="sig-name descname">d_pca_inverse_plot</code><span class="sig-paren">(</span><em class="sig-param">v</em>, <em class="sig-param">e</em>, <em class="sig-param">pca_o</em>, <em class="sig-param">vn</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.d_pca_inverse_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot used to compare the reproduction of the original physical space after PCA transformation
-&#64;param v: Original, untransformed data array
-&#64;param e: Sample number on which the test is performed
-&#64;param pca_o: data PCA operator
-&#64;param vn: Number of components to inverse-transform the data
-&#64;return:</p>
+:param v: Original, untransformed data array
+:param e: Sample number on which the test is performed
+:param pca_o: data PCA operator
+:param vn: Number of components to inverse-transform the data
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.explained_variance">
 <em class="property">static </em><code class="sig-name descname">explained_variance</code><span class="sig-paren">(</span><em class="sig-param">pca</em>, <em class="sig-param">n_comp=0</em>, <em class="sig-param">xfs=2</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.explained_variance" title="Permalink to this definition">¶</a></dt>
 <dd><p>PCA explained variance plot
-&#64;param pca: PCA operator
-&#64;param n_comp: Number of components to display
-&#64;param xfs: X-axis fontsize
-&#64;param fig_file:
-&#64;param show:
-&#64;return:</p>
+:param pca: PCA operator
+:param n_comp: Number of components to display
+:param xfs: X-axis fontsize
+:param fig_file:
+:param show:
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.h_pca_inverse_plot">
 <code class="sig-name descname">h_pca_inverse_plot</code><span class="sig-paren">(</span><em class="sig-param">pca_o</em>, <em class="sig-param">e</em>, <em class="sig-param">vn</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.h_pca_inverse_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot used to compare the reproduction of the original physical space after PCA transformation
-&#64;param v: Original, untransformed signed distance array
-&#64;param e: Sample number on which the test is performed
-&#64;param pca_o: signed distance PCA operator
-&#64;param vn: Number of components to inverse-transform.
-&#64;return:</p>
+:param e: Sample number on which the test is performed
+:param pca_o: signed distance PCA operator
+:param vn: Number of components to inverse-transform.
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.pca_inverse_compare">
 <code class="sig-name descname">pca_inverse_compare</code><span class="sig-paren">(</span><em class="sig-param">pco_d</em>, <em class="sig-param">pco_h</em>, <em class="sig-param">nd</em>, <em class="sig-param">nh</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.pca_inverse_compare" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots original data and recovered data by PCA inverse transformation given a number of components
-&#64;param pco_h: PCA object for h
-&#64;param pco_d: PCA object for d
-&#64;param nd: number of components in d
-&#64;param nh: number of components in h
-&#64;return:</p>
+:param pco_h: PCA object for h
+:param pco_d: PCA object for d
+:param nd: number of components in d
+:param nh: number of components in h
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.pca_scores">
 <em class="property">static </em><code class="sig-name descname">pca_scores</code><span class="sig-paren">(</span><em class="sig-param">training</em>, <em class="sig-param">prediction</em>, <em class="sig-param">n_comp</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.pca_scores" title="Permalink to this definition">¶</a></dt>
 <dd><p>PCA scores plot, displays scores of observations above those of training.
-&#64;param training: Training scores
-&#64;param prediction: Test scores
-&#64;param n_comp: How many componnents to show
-&#64;param fig_file:
-&#64;param show:
-&#64;return:</p>
+:param training: Training scores
+:param prediction: Test scores
+:param n_comp: How many components to show
+:param fig_file:
+:param show:
+:return:</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.whp">
-<code class="sig-name descname">whp</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">alpha=0.4</em>, <em class="sig-param">lw=0.5</em>, <em class="sig-param">bkg_field_array=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">cmap='coolwarm'</em>, <em class="sig-param">colors='white'</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">whp</code><span class="sig-paren">(</span><em class="sig-param">h=None</em>, <em class="sig-param">alpha=0.4</em>, <em class="sig-param">lw=0.5</em>, <em class="sig-param">bkg_field_array=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">x_lim=None</em>, <em class="sig-param">y_lim=None</em>, <em class="sig-param">cmap='coolwarm'</em>, <em class="sig-param">colors='white'</em>, <em class="sig-param">show_wells=False</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produces the WHPA plot, that is the zero-contour of the signed distance array.
 It assumes that well information can be loaded from pw.npy and iw.npy.
 I should change this.
-&#64;param cmap: colormap for the background array
-&#64;param vmax: max value to plot for the background array
-&#64;param vmin: max value to plot for the background array
-&#64;param bkg_field_array: 2D array whose values will be plotted on the grid
-&#64;param h: Array containing grids of values whose 0 contour will be computed and plotted
-&#64;param alpha: opacity of the 0 contour lines
-&#64;param lw: Line width
-&#64;param colors: Line color
-&#64;param fig_file:
-&#64;param show:
-&#64;return:</p>
+:param show_wells: whether to plot well coordinates or not
+:param cmap: colormap for the background array
+:param vmax: max value to plot for the background array
+:param vmin: max value to plot for the background array
+:param bkg_field_array: 2D array whose values will be plotted on the grid
+:param h: Array containing grids of values whose 0 contour will be computed and plotted
+:param alpha: opacity of the 0 contour lines
+:param lw: Line width
+:param colors: Line color
+:param fig_file:
+:param show:
+:param x_lim: [x_min, x_max]
+:param y_lim: [y_min, y_max]</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bel.toolbox.plots.Plot.whp_prediction">
-<code class="sig-name descname">whp_prediction</code><span class="sig-paren">(</span><em class="sig-param">forecasts</em>, <em class="sig-param">h_true</em>, <em class="sig-param">h_pred</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp_prediction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">whp_prediction</code><span class="sig-paren">(</span><em class="sig-param">forecasts</em>, <em class="sig-param">h_true</em>, <em class="sig-param">h_pred</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show_wells=False</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp_prediction" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
