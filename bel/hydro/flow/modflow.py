@@ -408,33 +408,31 @@ def flow(exe_name, model_ws, wells):
 
     # %% ModflowLpf
 
-    lpf = flopy.modflow.ModflowLpf(model=model,
-                                   laytyp=laytyp,
-                                   layavg=layavg,
-                                   chani=chani,
-                                   layvka=layvka,
-                                   laywet=laywet,
-                                   ipakcb=ipakcb,
-                                   hdry=hdry,
-                                   iwdflg=iwdflg,
-                                   wetfct=wetfct,
-                                   iwetit=iwetit,
-                                   ihdwet=ihdwet,
-                                   hk=hk,
-                                   hani=hani,
-                                   vka=vka,
-                                   ss=ss,
-                                   sy=sy,
-                                   vkcb=vkcb,
-                                   wetdry=wetdry,
-                                   storagecoefficient=storagecoefficient,
-                                   constantcv=constantcv,
-                                   thickstrt=thickstrt,
-                                   nocvcorrection=nocvcorrection,
-                                   novfc=novfc,
-                                   extension='lpf')
-
-    # lpf.check(level=0)
+    flopy.modflow.ModflowLpf(model=model,
+                             laytyp=laytyp,
+                             layavg=layavg,
+                             chani=chani,
+                             layvka=layvka,
+                             laywet=laywet,
+                             ipakcb=ipakcb,
+                             hdry=hdry,
+                             iwdflg=iwdflg,
+                             wetfct=wetfct,
+                             iwetit=iwetit,
+                             ihdwet=ihdwet,
+                             hk=hk,
+                             hani=hani,
+                             vka=vka,
+                             ss=ss,
+                             sy=sy,
+                             vkcb=vkcb,
+                             wetdry=wetdry,
+                             storagecoefficient=storagecoefficient,
+                             constantcv=constantcv,
+                             thickstrt=thickstrt,
+                             nocvcorrection=nocvcorrection,
+                             novfc=novfc,
+                             extension='lpf')
 
     # %% Modflow Run
 

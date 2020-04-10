@@ -14,6 +14,8 @@ results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 # Load flow model
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
+# Wells are ordered by node number
+spd = flow_model.wel.stress_period_data.df
 
 # Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')

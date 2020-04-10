@@ -9,9 +9,9 @@ import numpy as np
 def transport(modflowmodel, exe_name):
     """
 
-    @param modflowmodel: flopy modflow model object
-    @param exe_name: Path to executable file
-    @return:
+    :param modflowmodel: flopy modflow model object
+    :param exe_name: Path to executable file
+    :return:
     """
 
     version = 'mt3d-usgs'
@@ -57,8 +57,6 @@ def transport(modflowmodel, exe_name):
     # TODO: There seems to be a problem with their get_lrc() method - issue submitted
 
     lpf = modflowmodel.lpf  # LPF package
-
-    # mt.check(level=0)
 
     # %% Mt3dBtn
 

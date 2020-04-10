@@ -11,7 +11,7 @@ def backtrack(flowmodel, exe_name):
     model_ws = flowmodel.model_ws
     dis = flowmodel.dis  # DIS package
     wells_data = np.load(jp(model_ws, 'spd.npy'))
-    pumping_well_data = wells_data[0]  # Pumping well in last
+    pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]
     wn = int(dis.get_node(pw_lrc)[0])
 
