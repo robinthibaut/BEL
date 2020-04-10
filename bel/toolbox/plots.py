@@ -145,8 +145,8 @@ class Plot:
             plt.show()
             plt.close()
 
-    def whp_prediction(self, forecasts, h_true, h_pred, fig_file=None, show=False):
-        self.whp(h=forecasts)
+    def whp_prediction(self, forecasts, h_true, h_pred, fig_file=None, show_wells=False, show=False):
+        self.whp(h=forecasts, show_wells=show_wells)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
         # Plot true h predicted
@@ -197,7 +197,8 @@ class Plot:
         :param nh: number of components in h
         :return:
         """
-        n_compare = np.random.randint(len(pco_d.predict_pc))  # Sample number to perform inverse transform comparison
+        # Sample number to perform inverse transform comparison
+        n_compare = np.random.randint(len(pco_d.training_physical))
         self.d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
         self.h_pca_inverse_plot(pco_h, n_compare, nh)
         plt.show()

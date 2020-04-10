@@ -46,7 +46,7 @@ h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 # CCA plots
 d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
 d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
+# mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # %% Random sample from the posterior
 sample_n = 0
@@ -72,17 +72,20 @@ ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca.n_components))
 mp.whp_prediction(forecasts=forecast_posterior,
                   h_true=h_true_obs,
                   h_pred=h_pred,
+                  show_wells=True,
                   fig_file=ff)
 
 # %% extract 0 contours
 
+# First create figures for each forecast.
 c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast_posterior]
-plt.close()
+plt.close() # Close plots
+# .allseg[0][0] extracts the certices of each O contour = WHPA's vertices
 v = np.array([c0.allsegs[0][0] for c0 in c0s])
-
+# Reshape coordinates
 x = np.hstack([vi[:, 0] for vi in v])
 y = np.hstack([vi[:, 1] for vi in v])
-
+# Final array np.array([[x0, y0],...[xn,yn]])
 xykde = np.vstack([x, y]).T
 
 # %% Kernel density
@@ -99,7 +102,8 @@ ymin = y_lim[0]
 ymax = y_lim[1]
 # Create a structured grid to estimate kernel density
 # TODO: create a function to copy/paste values on differently refined grids
-grf_kd = 10
+# Prepare the Plot instance with right dimensions
+grf_kd = 2
 mpkde = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf_kd)
 mpkde.wdir = wdir
 cell_dim = grf_kd
@@ -109,14 +113,14 @@ X, Y = np.meshgrid(xgrid, ygrid)
 # x, y coordinates of the grid cells vertices
 xy = np.vstack([X.ravel(), Y.ravel()]).T
 
-# Define a disk within which the KDE will be performed
+# Define a disk within which the KDE will be performed to save time
 x0, y0, radius = 1000, 500, 200
 r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
 inside = r < radius
 xyu = xy[inside]  # Create mask
 
 # Perform KDE
-bw = 1.618
+bw = 1.618  # Arbitrary 'smoothing' parameter
 kde = KernelDensity(kernel='gaussian',  # Fit kernel density
                     bandwidth=bw).fit(xykde)
 score = np.exp(kde.score_samples(xyu))  # Sample at the desired grid cells
@@ -144,20 +148,22 @@ score = score_norm(score)
 # Assign the computed scores to the grid
 z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
 z[inside] = score
-z = np.flipud(z.reshape(X.shape))  # Flip to correspond
+z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
 # Plot KDE
 mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        alpha=1,
        lw=1,
+       show_wells=True,
        colors='red',
        show=False)
-mpkde.whp(h=[],
-          bkg_field_array=z,
+mpkde.whp(bkg_field_array=z,
           vmin=None,
           vmax=None,
           cmap='RdGy',
           colors='red',
           fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
           show=True)
+
+# %% New approach : stack binary WHPA
 
