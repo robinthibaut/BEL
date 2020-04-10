@@ -66,7 +66,7 @@ class Plot:
                 plt.close()
 
     def whp(self,
-            h,
+            h=None,
             alpha=0.4,
             lw=.5,
             bkg_field_array=None,

@@ -12,7 +12,6 @@ from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
 
-
 mo = MeshOps()
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 1
@@ -153,18 +152,12 @@ mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        alpha=1,
        lw=1,
        colors='red',
-       fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
        show=False)
-mpkde.whp(h_true_obs.reshape(1, shape[1], shape[2]),
-       alpha=1,
-       lw=1,
-       bkg_field_array=z,
-       vmin=None,
-       vmax=None,
-       cmap='RdGy',
-       colors='red',
-       fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
-       show=True)
+mpkde.whp(bkg_field_array=z,
+          vmin=None,
+          vmax=None,
+          cmap='RdGy',
+          colors='red',
+          fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
+          show=True)
 
-if __name__ == '__main__':
-    pass

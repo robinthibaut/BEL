@@ -69,7 +69,6 @@ def bel(n_training=300, n_test=5, new_dir=None):
     fig_pred_dir = jp(fig_dir, 'Predictions')
 
     # Creates directories
-    # TODO: create dirmaker decorator function to pass before saving objects instead of code below
     [FileOps.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
@@ -114,19 +113,19 @@ def bel(n_training=300, n_test=5, new_dir=None):
     h_pco.pca_tp(n_training) # Split into training and prediction
     h_pc_training, h_pc_prediction = h_pco.pca_transformation(load=load)
 
-    # Explained variance plots
-    mp.explained_variance(d_pco.operator, n_comp=40, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    mp.explained_variance(h_pco.operator, n_comp=20, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
-
-    # Scores plots
-    mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
-    mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=20, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
-
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
     # Compares true value with inverse transformation from PCA
     ndo = d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
+
+    # Explained variance plots
+    mp.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
+    mp.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+
+    # Scores plots
+    mp.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
+    mp.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo
