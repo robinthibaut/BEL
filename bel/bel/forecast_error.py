@@ -49,7 +49,7 @@ d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
 d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
-# Random sample from the posterior
+# %% Random sample from the posterior
 sample_n = 0
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
@@ -99,7 +99,12 @@ xmax = x_lim[1]
 ymin = y_lim[0]
 ymax = y_lim[1]
 # Create a structured grid to estimate kernel density
-cell_dim = grf
+# TODO: create a function to copy/paste values on differently refined grids
+grf_kd = 5
+
+mpkde = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf_kd)
+
+cell_dim = grf_kd
 xgrid = np.arange(xmin, xmax, cell_dim)
 ygrid = np.arange(ymin, ymax, cell_dim)
 X, Y = np.meshgrid(xgrid, ygrid)
@@ -145,6 +150,12 @@ z = np.flipud(z.reshape(shape[1], shape[2]))  # Flip to correspond
 
 # Plot KDE
 mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
+       alpha=1,
+       lw=1,
+       colors='red',
+       fig_file=jp(fig_pred_dir, '{}comp.png'.format(sample_n)),
+       show=False)
+mpkde.whp(h_true_obs.reshape(1, shape[1], shape[2]),
        alpha=1,
        lw=1,
        bkg_field_array=z,

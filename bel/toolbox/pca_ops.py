@@ -47,28 +47,22 @@ class PCAOps:
 
         return d_t, d_p
 
-    def pca_transformation(self, load=False):
+    def pca_transformation(self):
         """
         Instantiate the PCA object and transforms both training and test data.
         Depending on the value of the load parameter, it will create a new one or load a previously computed one.
-        @param load:
         @return: PC training, PC test
         """
-        # TODO: Change here
-        if not load:
-            pca_operator = PCA()
-            self.operator = pca_operator
-            pca_operator.fit(self.training_physical)  # Principal components
-            joblib.dump(pca_operator, jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
-        else:
-            pca_operator = joblib.load(jp(self.directory, '{}_pca_operator.pkl'.format(self.name)))
-            self.operator = pca_operator
+
+        pca_operator = PCA()
+        self.operator = pca_operator
+        self.operator.fit(self.training_physical)  # Principal components
 
         # Transform training data into principal components
-        pc_training = pca_operator.transform(self.training_physical)
+        pc_training = self.operator.transform(self.training_physical)
         self.training_pc = pc_training
         # Transform prediction data into principal components
-        pc_prediction = pca_operator.transform(self.predict_physical)
+        pc_prediction = self.operator.transform(self.predict_physical)
         self.predict_pc = pc_prediction
 
         return pc_training, pc_prediction
