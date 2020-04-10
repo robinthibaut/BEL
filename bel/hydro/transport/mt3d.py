@@ -63,6 +63,8 @@ def transport(modflowmodel, exe_name):
     # I will have to define an active zone because otherwise it takes a long time.
     # Start from the coordinates of the cells and use np.where
     # Defining mt3d active zone - I take the maximum distance from an IW to the PW and add 20m.
+    # TODO: change this and create a convex hull out of well coordinates and save icbund.
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html
     ext_a = np.abs(xy_injection_wells - xy_pumping_well).max() + 20
     # Extent in meters around the well
     x_inf = xy_pumping_well[0] - ext_a
@@ -89,7 +91,7 @@ def transport(modflowmodel, exe_name):
     NoWetDryPrint = False
     OmitDryBud = False
     AltWTSorb = False
-    ncomp = wells_number - 1  # The number of components = #injecting well
+    ncomp = wells_number - 1  # The number of components = number of injecting wells
     mcomp = ncomp
     tunit = 'D'
     lunit = 'M'
