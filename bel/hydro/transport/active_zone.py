@@ -1,11 +1,14 @@
 from os.path import join as jp
-import numpy as np
 
 import flopy
+import matplotlib.pyplot as plt
+import numpy as np
 
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.processing.signed_distance import SignedDistance, get_centroids
+from bel.toolbox.plots import Plot
 from bel.toolbox.mesh_ops import MeshOps
+from diavatly import model_map
 
 
 def active_zone(modflowmodel):
@@ -40,7 +43,6 @@ def active_zone(modflowmodel):
     xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))  # Flattens xy to correspond to node numbering
 
     wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
-    wells_number = wells_data.shape[0]  # Total number of wells
     pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]  # PW layer row column
     pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
@@ -54,44 +56,49 @@ def active_zone(modflowmodel):
     sdm.xys = xy_true
     sdm.nrow = nrow
     sdm.ncol = ncol
+
+    # Given the euclidean distances from each injection well to the pumping well,
+    # arbitrary parameters are chosen to expand the polygon defined by those welles around
+    # the pumping well. This expanded polygon will then act as a mask to define the
+    # transport active zone.
     diffs = xy_injection_wells - xy_pumping_well
-    dists = np.array(list(map(np.linalg.norm, diffs)))
+    dists = np.array(list(map(np.linalg.norm, diffs)))  # Eucliden distances
     meas = 1 / np.log(dists)
     meas -= min(meas)
     meas /= max(meas)
     meas += 1
     meas *= 2
+
+    # Expand the polygon
     xyw_scaled = diffs * meas.reshape(-1, 1) + xy_pumping_well
-    poly_deli = tsp(xyw_scaled)
-    poly_xyw = xyw_scaled[poly_deli]
+    poly_deli = tsp(xyw_scaled)  # Get polygon delineation
+    poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
+    # Assign 0|1 value
     icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
     mt_icbund_file = jp('grid', 'mt3d_icbund.npy')
-    np.save(mt_icbund_file, icbund)
-    icbund = np.load(mt_icbund_file)
+    np.save(mt_icbund_file, icbund)  # Save active zone
 
+    # Check what we've done: plot the active zone.
     val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
+    # Define a dummy grid with large cell dimensions to plot on it.
     grf_dummy = 10
     nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1])/grf_dummy)
     ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1])/grf_dummy)
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
+
     mo = MeshOps()
     inds = mo.matrix_paste(xy_dummy, xy_true)
     val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
-    # cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
-    from bel.toolbox.plots import Plot
+
+    # We have to use flipud for the matrix to correspond.
     po = Plot(grf=grf_dummy)
     po.whp(bkg_field_array=np.flipud(val_dummy_r),
            show_wells=True,
            show=True)
 
-    from diavatly import model_map
-    import matplotlib.pyplot as plt
-    from bel.toolbox.mesh_ops import MeshOps
-    mo = MeshOps()
     grid1 = mo.blocks_from_rc(np.ones(nrow_dummy)*grf_dummy, np.ones(ncol_dummy)*grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)
-    plt.plot(xy_pumping_well[0], xy_pumping_well[1], 'ko', markersize=2000)
     plt.show()
 
