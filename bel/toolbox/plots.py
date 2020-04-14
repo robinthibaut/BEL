@@ -16,10 +16,10 @@ class Plot:
         else:
             self.xlim = x_lim
         self.grf = grf
-        self.nrow = int(np.diff(self.y_lim) / grf)  # Number of rows
-        self.ncol = int(np.diff(self.x_lim) / grf)  # Number of columns
+        self.nrow = int(np.diff(self.ylim) / grf)  # Number of rows
+        self.ncol = int(np.diff(self.xlim) / grf)  # Number of columns
         self.x, self.y = np.meshgrid(
-            np.linspace(self.x_lim[0], self.x_lim[1], self.ncol), np.linspace(self.y_lim[0], self.y_lim[1], self.nrow))
+            np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = jp('..', 'hydro', 'grid')
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)
