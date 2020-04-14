@@ -64,8 +64,11 @@ def transport(modflowmodel, exe_name):
     # Start from the coordinates of the cells and use np.where
     # Defining mt3d active zone - I take the maximum distance from an IW to the PW and add 20m.
     # TODO: change this and use signed_distance module to create a polygon as an active zone
+    # Put this in the main simulation script
     from bel.hydro.whpa.travelling_particles import tsp
-    from bel.processing.signed_distance import SignedDistance
+    from bel.processing.signed_distance import SignedDistance, get_centroids
+    from bel.toolbox.mesh_ops import MeshOps
+    mo = MeshOps()
     sdm = SignedDistance()
     sdm.xys = xy_true
     sdm.nrow = nrow
@@ -74,20 +77,17 @@ def transport(modflowmodel, exe_name):
     poly_deli = tsp(xyw_scaled)
     poly_xyw = xyw_scaled[poly_deli]
     icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
+    mt_icbund_file = jp('grid', 'mt3d_icbund.npy')
+    np.save(mt_icbund_file, icbund)
+    icbund = np.load(mt_icbund_file)
     # Need function to copy/paste on grids
-    # ext_a = np.abs(xy_injection_wells - xy_pumping_well).max() + 20
-    # Extent in meters around the well
-    # x_inf = xy_pumping_well[0] - ext_a
-    # x_sup = xy_pumping_well[0] + ext_a
-    # y_inf = xy_pumping_well[1] - ext_a
-    # y_sup = xy_pumping_well[1] + ext_a
-    #
+    grf_dummy = 10
+    nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1])/grf_dummy)
+    ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1])/grf_dummy)
+    array_dummy = np.zeros((nrow_dummy, ncol_dummy))
+    xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
+    inds = mo.matrix_paste(xy_true, xy_dummy)
     # cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
-    #
-    # icbund = np.zeros((nlay, nrow, ncol))  # zero=array with grid shape
-    # ind_a = np.where((cdx[:, :, :, 0] > x_inf) & (cdx[:, :, :, 0] < x_sup) &
-    #                  (cdx[:, :, :, 1] > y_inf) & (cdx[:, :, :, 1] < y_sup))
-    # icbund[ind_a] = 1  # Coordinates around wel are active
     from diavatly import model_map
     import matplotlib.pyplot as plt
     from bel.toolbox.mesh_ops import MeshOps

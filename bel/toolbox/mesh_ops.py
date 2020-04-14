@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial import distance_matrix
 
 
 class MeshOps:
@@ -9,6 +10,12 @@ class MeshOps:
         self.grf = 1  # Cell dimension (1m)
         self.nrow = self.ylim // self.grf
         self.ncol = self.xlim // self.grf
+
+    @staticmethod
+    def matrix_paste(c_big, c_small):
+        dm = distance_matrix(c_big, c_small)  # Compute distance matrix between refined and dummy grid.
+        inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
+        return inds
 
     @staticmethod
     def blocks_from_rc(rows, columns):
