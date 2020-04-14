@@ -8,7 +8,7 @@ from bel.toolbox.file_ops import FileOps
 
 ops = FileOps()
 
-rn = 'illustration'
+rn = 'test'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # Load flow model
@@ -28,6 +28,13 @@ mapview = flopy.plot.PlotMapView(model=flow_model, extent=(900, 1100, 400, 600))
 ibound = mapview.plot_ibound()
 linecollection = mapview.plot_grid()
 wel = mapview.plot_bc("WEL")
+plt.show()
+
+# let's take a look at our grid
+fig_mt = plt.figure(figsize=(8, 8))
+ax_mt = fig_mt.add_subplot(1, 1, 1, aspect='equal')
+mapview_mt = flopy.plot.PlotMapView(model=transport_model, extent=(0, 1500, 0, 1000))
+ibound_mt = mapview_mt.plot_ibound()
 plt.show()
 
 # plot head
