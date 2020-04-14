@@ -60,49 +60,47 @@ def transport(modflowmodel, exe_name):
 
     # %% Mt3dBtn
 
-    # I will have to define an active zone because otherwise it takes a long time.
-    # Start from the coordinates of the cells and use np.where
-    # Defining mt3d active zone - I take the maximum distance from an IW to the PW and add 20m.
-    # TODO: change this and use signed_distance module to create a polygon as an active zone
-    # Put this in the main simulation script
-    from bel.hydro.whpa.travelling_particles import tsp
-    from bel.processing.signed_distance import SignedDistance, get_centroids
-    from bel.toolbox.mesh_ops import MeshOps
-    mo = MeshOps()
-    sdm = SignedDistance()
-    sdm.xys = xy_true
-    sdm.nrow = nrow
-    sdm.ncol = ncol
-    diffs = xy_injection_wells - xy_pumping_well
-    dists = np.array(list(map(np.linalg.norm, diffs)))
-    meas = np.sqrt(dists)
-    meas -= min(meas)
-    meas /= max(meas)
-    meas *= 2
-    meas += 1
-    xyw_scaled = np.multiply(diffs, meas) + xy_pumping_well
-    poly_deli = tsp(xyw_scaled)
-    poly_xyw = xyw_scaled[poly_deli]
-    icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
     mt_icbund_file = jp('grid', 'mt3d_icbund.npy')
-    np.save(mt_icbund_file, icbund)
+
+    def active_zone():
+        from bel.hydro.whpa.travelling_particles import tsp
+        from bel.processing.signed_distance import SignedDistance
+        sdm = SignedDistance()
+        sdm.xys = xy_true
+        sdm.nrow = nrow
+        sdm.ncol = ncol
+        diffs = xy_injection_wells - xy_pumping_well
+        dists = np.array(list(map(np.linalg.norm, diffs)))
+        # Arbitrary parameters:
+        meas = 1/np.log(dists)
+        meas -= min(meas)
+        meas /= max(meas)
+        meas += 1
+        meas *= 2
+        xyw_scaled = diffs*meas.reshape(-1, 1) + xy_pumping_well
+        poly_deli = tsp(xyw_scaled)
+        poly_xyw = xyw_scaled[poly_deli]
+        icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
+        np.save(mt_icbund_file, icbund)
+
     icbund = np.load(mt_icbund_file)
-    val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
+
+    # val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
     # Need function to copy/paste on grids
-    grf_dummy = 10
-    nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1])/grf_dummy)
-    ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1])/grf_dummy)
-    array_dummy = np.zeros((nrow_dummy, ncol_dummy))
-    xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
-    inds = mo.matrix_paste(xy_dummy, xy_true)
-    val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
-    val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
-    # cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
-    from bel.toolbox.plots import Plot
-    po = Plot(grf=grf_dummy)
-    po.whp(bkg_field_array=np.flipud(val_dummy_r),
-           show_wells=True,
-           show=True)
+    # grf_dummy = 10
+    # nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1])/grf_dummy)
+    # ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1])/grf_dummy)
+    # array_dummy = np.zeros((nrow_dummy, ncol_dummy))
+    # xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
+    # inds = mo.matrix_paste(xy_dummy, xy_true)
+    # val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
+    # val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
+    # # cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
+    # from bel.toolbox.plots import Plot
+    # po = Plot(grf=grf_dummy)
+    # po.whp(bkg_field_array=np.flipud(val_dummy_r),
+    #        show_wells=True,
+    #        show=True)
     #
     # from diavatly import model_map
     # import matplotlib.pyplot as plt
@@ -112,7 +110,6 @@ def transport(modflowmodel, exe_name):
     # model_map(grid1, vals=val_dummy, log=0)
     # plt.plot(xy_pumping_well[0], xy_pumping_well[1], 'ko', markersize=2000)
     # plt.show()
-
 
     MFStyleArr = False
     DRYCell = False
