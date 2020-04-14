@@ -100,7 +100,7 @@ def main(res_dir=None):
 
 
 if __name__ == "__main__":
-    main('illustration')
+    main('test')
     # jobs = []
     # n_series = 250
     # n_jobs = 4

@@ -64,26 +64,39 @@ def transport(modflowmodel, exe_name):
     # Start from the coordinates of the cells and use np.where
     # Defining mt3d active zone - I take the maximum distance from an IW to the PW and add 20m.
     # TODO: change this and use signed_distance module to create a polygon as an active zone
-
-
-    ext_a = np.abs(xy_injection_wells - xy_pumping_well).max() + 20
+    from bel.hydro.whpa.travelling_particles import tsp
+    from bel.processing.signed_distance import SignedDistance
+    sdm = SignedDistance()
+    sdm.xys = xy_true
+    sdm.nrow = nrow
+    sdm.ncol = ncol
+    xyw_scaled = (xy_injection_wells - xy_pumping_well)*1.5 + xy_pumping_well
+    poly_deli = tsp(xyw_scaled)
+    poly_xyw = xyw_scaled[poly_deli]
+    icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
+    # Need function to copy/paste on grids
+    # ext_a = np.abs(xy_injection_wells - xy_pumping_well).max() + 20
     # Extent in meters around the well
-    x_inf = xy_pumping_well[0] - ext_a
-    x_sup = xy_pumping_well[0] + ext_a
-    y_inf = xy_pumping_well[1] - ext_a
-    y_sup = xy_pumping_well[1] + ext_a
+    # x_inf = xy_pumping_well[0] - ext_a
+    # x_sup = xy_pumping_well[0] + ext_a
+    # y_inf = xy_pumping_well[1] - ext_a
+    # y_sup = xy_pumping_well[1] + ext_a
+    #
+    # cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
+    #
+    # icbund = np.zeros((nlay, nrow, ncol))  # zero=array with grid shape
+    # ind_a = np.where((cdx[:, :, :, 0] > x_inf) & (cdx[:, :, :, 0] < x_sup) &
+    #                  (cdx[:, :, :, 1] > y_inf) & (cdx[:, :, :, 1] < y_sup))
+    # icbund[ind_a] = 1  # Coordinates around wel are active
+    from diavatly import model_map
+    import matplotlib.pyplot as plt
+    from bel.toolbox.mesh_ops import MeshOps
+    mo = MeshOps()
+    grid1 = mo.blocks_from_rc(dis.delc, dis.delr)
+    model_map(grid1, vals=np.reshape(icbund, nrow*ncol), log=0)
+    plt.plot(xy_pumping_well[0], xy_pumping_well[1], 'ko', markersize=200)
+    plt.show()
 
-    cdx = np.reshape(xy_true, (nlay, nrow, ncol, 2))  # Coordinates of centroids of refined grid
-
-    icbund = np.zeros((nlay, nrow, ncol))  # zero=array with grid shape
-    ind_a = np.where((cdx[:, :, :, 0] > x_inf) & (cdx[:, :, :, 0] < x_sup) &
-                     (cdx[:, :, :, 1] > y_inf) & (cdx[:, :, :, 1] < y_sup))
-    icbund[ind_a] = 1  # Coordinates around wel are active
-
-    # model_map(grid1, vals=np.reshape(icbund, nrow*ncol), log=0)
-    # # plt.plot(pw[0], pw[1], 'ko')
-    # # plt.title('Transport active zone')
-    # plt.show()
 
     MFStyleArr = False
     DRYCell = False
