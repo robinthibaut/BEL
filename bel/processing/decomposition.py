@@ -8,6 +8,8 @@ Finally, CCA is performed after selecting an appropriate number of PC to keep.
 
 It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
 """
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 import uuid
 from os.path import join as jp
@@ -31,7 +33,6 @@ plt.style.use('dark_background')
 do = DataOps()
 mo = MeshOps()
 po = PosteriorOps()
-# TODO: Save global grid dimensions in dictionary
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)

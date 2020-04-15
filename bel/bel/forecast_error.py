@@ -10,6 +10,7 @@ from bel.toolbox.plots import Plot
 from bel.toolbox.mesh_ops import MeshOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
+from bel.toolbox.hausdorff import modified_distance
 
 plt.style.use('dark_background')
 
@@ -22,7 +23,7 @@ mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-study_folder = '63c18b43-a376-403a-88a1-0f6b2091513a'
+study_folder = 'efafb443-0845-4237-be34-497a612b0e29'
 bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
@@ -47,10 +48,10 @@ h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 # CCA plots
 d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
 d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-# mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
+mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # %% Random sample from the posterior
-sample_n = 1
+sample_n = 0
 n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
@@ -77,23 +78,19 @@ mp.whp_prediction(forecasts=forecast_posterior,
                   fig_file=ff)
 
 # %% extract 0 contours
+vertices = mp.contours_vertices(forecast_posterior)
 
-# First create figures for each forecast.
-c0s = [plt.contour(mp.x, mp.y, f, [0]) for f in forecast_posterior]
-plt.close() # Close plots
-# .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
-v = np.array([c0.allsegs[0][0] for c0 in c0s])
 # Reshape coordinates
-x = np.hstack([vi[:, 0] for vi in v])
-y = np.hstack([vi[:, 1] for vi in v])
+x_stack = np.hstack([vi[:, 0] for vi in vertices])
+y_stack = np.hstack([vi[:, 1] for vi in vertices])
 # Final array np.array([[x0, y0],...[xn,yn]])
-xykde = np.vstack([x, y]).T
+xykde = np.vstack([x_stack, y_stack]).T
 
 # %% Kernel density
 
 # Scatter plot vertices
 nn = sample_n
-plt.plot(v[nn][:, 0], v[nn][:, 1], 'o-')
+plt.plot(vertices[nn][:, 0], vertices[nn][:, 1], 'o-')
 plt.show()
 
 # Grid geometry
@@ -171,7 +168,7 @@ mpkde.whp(bkg_field_array=z,
 sd_kd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mpbin = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 mpbin.wdir = wdir
-bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in v]
+bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in vertices]
 big_sum = np.sum(bin_whpa, axis=0)  # Stack them
 b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
 mpbin.whp(bkg_field_array=big_sum,

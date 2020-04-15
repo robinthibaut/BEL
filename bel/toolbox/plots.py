@@ -24,6 +24,16 @@ class Plot:
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)
 
+    def contours_vertices(self, arrays, c=0):
+        if len(arrays.shape) < 3:
+            arrays = [arrays]
+        # First create figures for each forecast.
+        c0s = [plt.contour(self.x, self.y, f, [c]) for f in arrays]
+        plt.close()  # Close plots
+        # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
+        v = np.array([c0.allsegs[0][0] for c0 in c0s])
+        return v
+
     def curves(self, tc, n_wel, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
