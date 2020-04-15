@@ -186,6 +186,18 @@ class FileOps:
                 os.remove(jp(r, 'sd.npy'))
 
     @staticmethod
+    def remove_incomplete(res_tree):
+        """
+
+        :param res_tree: Path directing to the folder containing the directories of results
+        :return:
+        """
+        for r, d, f in os.walk(res_tree, topdown=False):
+            # Adds the data files to the lists, which will be loaded later
+            if 'bkt.npy' not in f and 'hk.npy' not in f and 'pz.npy' not in f and r != res_tree:
+                shutil.rmtree(r)
+
+    @staticmethod
     def keep_essential(res_dir):
         """
         Deletes everything in a simulation folder except specific files.
