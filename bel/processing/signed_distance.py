@@ -1,10 +1,14 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import numpy as np
 import skfmm  # Library to compute the signed distance
 from matplotlib.patches import Polygon
 
 
 def get_centroids(array, grf):
-    """Given a m x n matrix, returns the m x n x 2 matrix of the coordinates of centroids."""
+    """
+    Given a m x n matrix, returns the m x n x 2 matrix of the coordinates of centroids.
+    """
     xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2))  # Getting centroids
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 

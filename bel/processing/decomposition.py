@@ -11,7 +11,6 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 import os
 import uuid
 from os.path import join as jp
-from multiprocessing import Process
 
 import joblib
 import matplotlib.pyplot as plt
@@ -149,16 +148,5 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
-    multi = 0
-    if multi:
-        jobs = []
-        n_jobs = 4
-        for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-            process = Process(target=bel)
-            jobs.append(process)
-            process.start()
-        process.join()
-        process.close()
-    else:
-        bel(new_dir=None)
+    bel(new_dir=None)
 

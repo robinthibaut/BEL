@@ -19,12 +19,12 @@ def modified_distance(a, b):
     Returns
     -------
     d : double
-        The modified Hausdorff distance between arrays `a` and `b`,
+        The modified Hausdorff distance between arrays `a` and `b`.
 
     Raises
     ------
     ValueError
-        An exception is thrown if `u` and `v` do not have
+        An exception is thrown if `a` and `b` do not have
         the same number of columns.
 
     References
@@ -44,8 +44,7 @@ def modified_distance(a, b):
     b = np.asarray(b, dtype=np.float64, order='c')
 
     if a.shape[1] != b.shape[1]:
-        raise ValueError('a and b need to have the same '
-                         'number of columns')
+        raise ValueError('a and b must have the same number of columns')
 
     d = cdist(a, b)
     fhd = np.mean(np.min(d, axis=0))
