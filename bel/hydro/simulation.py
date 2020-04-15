@@ -4,7 +4,7 @@ import uuid
 from os.path import join as jp
 
 import numpy as np
-from multiprocessing import Process
+import multiprocessing as mp
 
 from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
@@ -13,7 +13,7 @@ from bel.hydro.whpa.travelling_particles import tsp
 from bel.toolbox.file_ops import FileOps
 
 
-def main(folder=None):
+def simulation(folder=None):
     # Directories
     mod_dir = os.getcwd()  # Module directory
     exe_loc = jp(mod_dir, 'exe')  # EXE directory
@@ -32,7 +32,7 @@ def main(folder=None):
     # Generates the result directory
     FileOps.dirmaker(results_dir)
     # Loads well information
-    wells_data = np.load(jp('..', 'grid', 'iw'))
+    wells_data = np.load(jp(mod_dir, 'grid', 'iw.npy'), allow_pickle=True)
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
@@ -51,14 +51,11 @@ def main(folder=None):
         shutil.rmtree(results_dir)
 
 
+def main():
+    pool = mp.Pool(mp.cpu_count())
+    pool.map(simulation, np.zeros(1000))
+
+
 if __name__ == "__main__":
-    jobs = []
-    n_series = 250
-    n_jobs = 4
-    for j in range(n_series):
-        for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-            process = Process(target=main)
-            jobs.append(process)
-            process.start()
-        process.join()
-        process.close()
+    main()
+
