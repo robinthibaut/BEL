@@ -53,9 +53,9 @@ def simulation(folder=None):
 
 def main():
     pool = mp.Pool(mp.cpu_count())
-    pool.map(simulation, np.zeros(1000))
+    pool.map(simulation, np.zeros(2))
 
 
 if __name__ == "__main__":
-    main()
+    simulation()
 

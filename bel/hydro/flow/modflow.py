@@ -64,7 +64,7 @@ def flow(exe_name, model_ws, wells):
 
     # Refinement
     # pt is the first instance of the pumping well location.
-    pw_d = np.load(jp(model_ws, 'pw.npy'), allow_pickle=True)  # Pumping well location
+    pw_d = np.load(jp(grid_dir, 'pw.npy'), allow_pickle=True)  # Pumping well location
     # Point around which refinement will occur
     pt = pw_d[0][:2]
     # [cell size, extent around pt in m]
