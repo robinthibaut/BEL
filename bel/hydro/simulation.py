@@ -4,6 +4,7 @@ import uuid
 from os.path import join as jp
 
 import numpy as np
+from multiprocessing import Process
 
 from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
@@ -88,29 +89,19 @@ def main(folder=None):
 
         # Deletes everything except final results
         if not folder:
-            for the_file in os.listdir(results_dir):
-                if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
-                    file_path = os.path.join(results_dir, the_file)
-                    try:
-                        if os.path.isfile(file_path):
-                            os.unlink(file_path)
-                        elif os.path.isdir(file_path):
-                            shutil.rmtree(file_path)
-                    except Exception as e:
-                        print(e)
+            FileOps.keep_essential(results_dir)
     else:
         shutil.rmtree(results_dir)
 
 
 if __name__ == "__main__":
-    main('test')
-    # jobs = []
-    # n_series = 250
-    # n_jobs = 4
-    # for j in range(n_series):
-    #     for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
-    #         process = Process(target=main)
-    #         jobs.append(process)
-    #         process.start()
-    #     process.join()
-    #     process.close()
+    jobs = []
+    n_series = 250
+    n_jobs = 4
+    for j in range(n_series):
+        for i in range(n_jobs):  # Can run max 4 instances of mt3dms at once on this computer
+            process = Process(target=main)
+            jobs.append(process)
+            process.start()
+        process.join()
+        process.close()

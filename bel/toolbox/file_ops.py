@@ -16,7 +16,7 @@ class FileOps:
 
         @param check: Whether to check breaktrough curves for unrealistic results or not.
         @param res_dir: main directory containing results sub-directories
-        @param n: if != 0, will randomly select n sub-folders from res_dir
+        @param n: if != 0, will randomly select n sub-folders from res_tree
         @return: tp, sd
         """
         # TODO: Split this function to generalize and load one feature at a time
@@ -80,7 +80,7 @@ class FileOps:
 
         @param check: Whether to check breaktrough curves for unrealistic results or not.
         @param res_dir: main directory containing results sub-directories
-        @param n: if != 0, will randomly select n sub-folders from res_dir
+        @param n: if != 0, will randomly select n sub-folders from res_tree
         @param data_flag: if True, only loads data and not the target
         @return: tp, sd
         """
@@ -172,3 +172,47 @@ class FileOps:
         transport_reloaded.ftlfilename = ftl_file
 
         return transport_reloaded
+
+    @staticmethod
+    def remove_sd(res_tree):
+        """
+
+        :param res_tree: Path directing to the folder containing the directories of results
+        :return:
+        """
+        for r, d, f in os.walk(res_tree, topdown=False):
+            # Adds the data files to the lists, which will be loaded later
+            if 'sd.npy' in f:
+                os.remove(jp(r, 'sd.npy'))
+
+    @staticmethod
+    def keep_essential(res_dir):
+        """
+        Deletes everything in a simulation folder except specific files.
+        :param res_dir: Path to the folder containing results
+        :return:
+        """
+        for the_file in os.listdir(res_dir):
+            if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
+                file_path = os.path.join(res_dir, the_file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print(e)
+
+    @staticmethod
+    def remove_bad(res_tree):
+        """
+
+        :param res_tree: Path directing to the folder containing the directories of results
+        :return:
+        """
+        for r, d, f in os.walk(res_tree, topdown=False):
+            # Adds the data files to the lists, which will be loaded later
+            if 'mt3d_link.ftl' in f:
+                if r != res_tree:  # Make sure to not delete the main results directory !
+                    print('removed 1 folder')
+                    shutil.rmtree(r)
