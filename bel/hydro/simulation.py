@@ -20,46 +20,6 @@ exe_name_mf = jp(exe_loc, 'mf2005.exe')
 exe_name_mt = jp(exe_loc, 'mt3d.exe')
 exe_name_mp = jp(exe_loc, 'mp7.exe')
 
-# Define injection wells
-# [ [X, Y, [r#1, r#2... r#n]] ]
-# Pumping well located at [1000, 500]
-# Template
-# wells_data = np.array([[980, 500, [0, 24, 0]]])
-
-
-def gen_rand_well(radius, x0, y0):
-    """
-    Generates random coordinates within a circle.
-    :param radius:
-    :param x0:
-    :param y0:
-    :return:
-    """
-    # random angle
-    alpha = 2 * np.pi * np.random.random()
-    # random radius
-    r = 50 + radius * np.sqrt(np.random.random())
-    # calculating coordinates
-    x = r * np.cos(alpha) + x0
-    y = r * np.sin(alpha) + y0
-
-    return [x, y]
-
-
-# Pumping well data
-pumping_well = np.array([[1000, 500, [-1000, -1000, -1000]]])
-pw_xy = pumping_well[0, :2]
-
-# Injection wells location
-wells_xy = [pw_xy + [-50, -50],
-            pw_xy + [-70, 60],
-            pw_xy + [-100, 5],
-            pw_xy + [68, 15],
-            pw_xy + [30, 80],
-            pw_xy + [50, -30]]
-
-wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
-
 
 def main(folder=None):
     if not folder:
@@ -71,10 +31,8 @@ def main(folder=None):
     results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
     FileOps.dirmaker(results_dir)
-    np.save(jp(mod_dir, 'grid', 'iw'), wells_data)  # Saves injection wells stress period data
-    np.save(jp(results_dir, 'iw'), wells_data)  # Saves injection wells stress period data
-    np.save(jp(mod_dir, 'grid', 'pw'), pumping_well)  #
-    np.save(jp(results_dir, 'pw'), pumping_well)  # Saves pumping well stress period data
+    # Loads well information
+    wells_data = np.load(jp(mod_dir, 'grid', 'iw'))
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
@@ -86,7 +44,6 @@ def main(folder=None):
         delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
         pzs = end_points[delineation]  # x-y coordinates protection zone
         np.save(jp(results_dir, 'pz'), pzs)  # Save those
-
         # Deletes everything except final results
         if not folder:
             FileOps.keep_essential(results_dir)
