@@ -60,10 +60,13 @@ wells_xy = [pw_xy + [-50, -50],
 wells_data = np.array([[wxy[0], wxy[1], [0, 24, 0]] for wxy in wells_xy])
 
 
-def main(res_dir=None):
-    if not res_dir:
+def main(folder=None):
+    if not folder:
         # Main results directory.
         res_dir = uuid.uuid4().hex
+    else:
+        res_dir = folder
+
     results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
     FileOps.dirmaker(results_dir)
@@ -84,7 +87,7 @@ def main(res_dir=None):
         np.save(jp(results_dir, 'pz'), pzs)  # Save those
 
         # Deletes everything except final results
-        if not res_dir:
+        if not folder:
             for the_file in os.listdir(results_dir):
                 if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
                     file_path = os.path.join(results_dir, the_file)
