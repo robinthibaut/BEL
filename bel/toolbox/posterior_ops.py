@@ -19,12 +19,12 @@ class PosteriorOps:
                   d_cca_prediction):
         """
         Estimating posterior uncertainties.
-        @param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
-        @param d_cca_training: Canonical Variate of the training data
-        @param d_pc_training: Principal Components of the training data
-        @param d_rotations: CCA rotations of the training data
-        @param d_cca_prediction: Canonical Variate of the observation
-        @return: h_mean_posterior, h_posterior_covariance
+        :param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
+        :param d_cca_training: Canonical Variate of the training data
+        :param d_pc_training: Principal Components of the training data
+        :param d_rotations: CCA rotations of the training data
+        :param d_cca_prediction: Canonical Variate of the observation
+        :return: h_mean_posterior, h_posterior_covariance
         """
 
         # TODO: add dimension check
