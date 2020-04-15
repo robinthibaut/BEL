@@ -35,6 +35,7 @@ def modified_distance(a, b):
 
     See Also
     --------
+    Another Python implementation.
     https://github.com/sapphire008/Python/blob/master/generic/HausdorffDistance.py
 
     """

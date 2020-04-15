@@ -24,11 +24,16 @@ class PosteriorOps:
 
         Parameters
         ----------
-        :param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
-        :param d_cca_training: Canonical Variate of the training data
-        :param d_pc_training: Principal Components of the training data
-        :param d_rotations: CCA rotations of the training data
-        :param d_cca_prediction: Canonical Variate of the observation
+        :param h_cca_training_gaussian:
+               Canonical Variate of the training target, Gaussian-distributed
+        :param d_cca_training:
+               Canonical Variate of the training data
+        :param d_pc_training:
+               Principal Components of the training data
+        :param d_rotations:
+               CCA rotations of the training data
+        :param d_cca_prediction:
+               Canonical Variate of the observation
 
         Returns
         -------
