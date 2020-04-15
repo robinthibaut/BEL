@@ -171,12 +171,37 @@ mpbin.wdir = wdir
 bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in vertices]
 big_sum = np.sum(bin_whpa, axis=0)  # Stack them
 b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
-mpbin.whp(bkg_field_array=big_sum,
+mpbin.whp(bkg_field_array=b_low,
           show_wells=True,
           vmin=None,
           vmax=None,
           cmap='RdGy',
+          fig_file=jp(fig_pred_dir, '{}_0stacked.png'.format(sample_n)),
           show=True)
 
 # a measure of the error could be a measure of the area covered by the n samples.
 error = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+
+
+#  Let's try Hausdorff...
+
+v_h_true = mp.contours_vertices(h_true_obs)[0]
+v_h_pred = mp.contours_vertices(h_pred)[0]
+mhd = modified_distance(v_h_true, v_h_pred)
+
+mhds = np.array([modified_distance(v_h_true, vt) for vt in vertices])
+print(mhds.mean())
+print(mhds.min())
+print(mhds.max())
+
+min_pos = np.where(mhds == mhds.min())[0][0]
+max_pos = np.where(mhds == mhds.max())[0][0]
+
+
+# Plot results
+ff = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca.n_components))
+mp.whp_prediction(forecasts=np.expand_dims(forecast_posterior[max_pos], axis=0),
+                  h_true=h_true_obs,
+                  h_pred=forecast_posterior[min_pos],
+                  show_wells=True,
+                  fig_file=ff)
