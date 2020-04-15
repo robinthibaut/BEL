@@ -181,5 +181,5 @@ mpbin.whp(bkg_field_array=big_sum,
           cmap='RdGy',
           show=True)
 
-# A measure of the error could be a measure of the area covered by the n samples.
+# a measure of the error could be a measure of the area covered by the n samples.
 error = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
