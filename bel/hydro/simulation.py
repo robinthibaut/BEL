@@ -12,12 +12,11 @@ from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.toolbox.file_ops import FileOps
 
-# Directories
-mod_dir = os.getcwd()  # Module directory
-exe_loc = jp(mod_dir, 'exe')  # EXE directory
-
 
 def main(folder=None):
+    # Directories
+    mod_dir = os.getcwd()  # Module directory
+    exe_loc = jp(mod_dir, 'exe')  # EXE directory
     # EXE files directory.
     exe_name_mf = jp(exe_loc, 'mf2005.exe')
     exe_name_mt = jp(exe_loc, 'mt3d.exe')
@@ -33,7 +32,7 @@ def main(folder=None):
     # Generates the result directory
     FileOps.dirmaker(results_dir)
     # Loads well information
-    wells_data = np.load(jp(mod_dir, 'grid', 'iw'))
+    wells_data = np.load(jp('..', mod_dir, 'grid', 'iw'))
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
