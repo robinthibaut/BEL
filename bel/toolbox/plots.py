@@ -155,7 +155,14 @@ class Plot:
             plt.show()
             plt.close()
 
-    def whp_prediction(self, forecasts, h_true, h_pred, fig_file=None, show_wells=False, show=False):
+    def whp_prediction(self,
+                       forecasts,
+                       h_true,
+                       h_pred,
+                       fig_file=None,
+                       show_wells=False,
+                       show=False):
+
         self.whp(h=forecasts, show_wells=show_wells)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
