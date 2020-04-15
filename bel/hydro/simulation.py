@@ -32,7 +32,7 @@ def main(folder=None):
     # Generates the result directory
     FileOps.dirmaker(results_dir)
     # Loads well information
-    wells_data = np.load(jp('..', mod_dir, 'grid', 'iw'))
+    wells_data = np.load(jp('..', 'grid', 'iw'))
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
