@@ -12,7 +12,7 @@ import numpy as np
 
 # TODO: Separate this script in 2: the first part will be a function, given a python script as argument, will run sgems
 #       The other part will be used to specifically write python code for my simulations. Push all to Github
-# from subprocess import Popen
+
 
 def path_leaf(path):
     """Extracts file name from a path name"""
