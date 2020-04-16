@@ -103,12 +103,40 @@ class SGEMS:
                             angle_z=None):
 
         """
-
         This function produces a python code that SGems will understand to run the specified commands
+
+        :param op_folder:
+        :param simulation_name:
+        :param output:
+        :param grid:
+        :param fixed_nodes:
+        :param algo:
+        :param number_realizations:
+        :param seed:
+        :param kriging_type:
+        :param trend:
+        :param local_mean:
+        :param hard_data_grid:
+        :param hard_data_property:
+        :param assign_hard_data:
+        :param max_conditioning_data:
+        :param search_ellipsoid_geometry:
+        :param target_histogram_flag:
+        :param target_histogram:
+        :param variogram_nugget:
+        :param variogram_number_stuctures:
+        :param variogram_structures_contribution:
+        :param variogram_type:
+        :param range_max:
+        :param range_med:
+        :param range_min:
+        :param angle_x:
+        :param angle_y:
+        :param angle_z:
+        :return:
 
         """
 
-        # FILE NAME
         if angle_z is None:
             angle_z = [0]
         if angle_y is None:
@@ -135,6 +163,8 @@ class SGEMS:
             fixed_nodes = []
         if grid is None:
             grid = [50, 50, 1, 1, 1, 1, 0, 0, 0]
+
+        # FILE NAME
         file_name = os.path.join(op_folder, 'simusgems.py')
         sgf = open(file_name, 'w')
 
