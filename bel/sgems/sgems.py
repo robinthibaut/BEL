@@ -76,31 +76,31 @@ class SGEMS:
                             op_folder='',
                             simulation_name='simulation',
                             output='hydrk',
-                            grid=[50, 50, 1, 1, 1, 1, 0, 0, 0],
-                            fixed_nodes=[],
+                            grid=None,
+                            fixed_nodes=None,
                             algo='sgsim',
                             number_realizations=1,
                             seed=np.random.randint(10000000),
                             kriging_type='Simple Kriging (SK)',
-                            trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            trend=None,
                             local_mean=0,
                             hard_data_grid='',
                             hard_data_property='',
                             assign_hard_data=0,
                             max_conditioning_data=20,
-                            search_ellipsoid_geometry=[15, 15, 7.5, 0.398941, 0, 0],
+                            search_ellipsoid_geometry=None,
                             target_histogram_flag=0,
-                            target_histogram=[0, 0, 0, 0],  # min, max, mean, std
+                            target_histogram=None,  # min, max, mean, std
                             variogram_nugget=0,
                             variogram_number_stuctures=1,
-                            variogram_structures_contribution=[1],
-                            variogram_type=['Spherical'],
-                            range_max=[50],
-                            range_med=[40],
-                            range_min=[20],
-                            angle_x=[0],
-                            angle_y=[0],
-                            angle_z=[0]):
+                            variogram_structures_contribution=None,
+                            variogram_type=None,
+                            range_max=None,
+                            range_med=None,
+                            range_min=None,
+                            angle_x=None,
+                            angle_y=None,
+                            angle_z=None):
 
         """
 
@@ -109,6 +109,32 @@ class SGEMS:
         """
 
         # FILE NAME
+        if angle_z is None:
+            angle_z = [0]
+        if angle_y is None:
+            angle_y = [0]
+        if angle_x is None:
+            angle_x = [0]
+        if range_min is None:
+            range_min = [20]
+        if range_med is None:
+            range_med = [40]
+        if range_max is None:
+            range_max = [50]
+        if variogram_type is None:
+            variogram_type = ['Spherical']
+        if variogram_structures_contribution is None:
+            variogram_structures_contribution = [1]
+        if target_histogram is None:
+            target_histogram = [0, 0, 0, 0]
+        if search_ellipsoid_geometry is None:
+            search_ellipsoid_geometry = [15, 15, 7.5, 0.398941, 0, 0]
+        if trend is None:
+            trend = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        if fixed_nodes is None:
+            fixed_nodes = []
+        if grid is None:
+            grid = [50, 50, 1, 1, 1, 1, 0, 0, 0]
         file_name = os.path.join(op_folder, 'simusgems.py')
         sgf = open(file_name, 'w')
 
@@ -252,15 +278,15 @@ class SGEMS:
 
             tpt = '    <structure_S# contribution="STRUCTCONT" type="TYPEVG">            <ranges max="RMAX" medium="RMED" min="RMIN" />            <angles x="ANGLEX" y="ANGLEY" z="ANGLEZ" />        </structure_S#>    '
 
-            vartpt = ''
+            vartpt_ = ''
 
             for i in range(0, ns[0], 1):
                 tptu = tpt.replace('S#', str(i + 1))
                 for j in range(0, len(vparams), 1):
                     tptu = tptu.replace(vparams[j][1], str(vparams[j][0][i]))
-                vartpt += tptu
+                vartpt_ += tptu
 
-            return vartpt
+            return vartpt_
 
         vartpt = [variograms(sc, varparams), 'VARIOGRAMS']
 

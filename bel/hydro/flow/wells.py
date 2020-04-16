@@ -1,6 +1,8 @@
 import os
 from os.path import join as jp
+
 import numpy as np
+
 
 # Define injection wells
 # [ [X, Y, [r#1, r#2... r#n]] ]

@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.neighbors import KernelDensity
 
-from bel.toolbox.plots import Plot
-from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
 from bel.toolbox.hausdorff import modified_distance
+from bel.toolbox.plots import Plot
+from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
 

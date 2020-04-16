@@ -1,12 +1,12 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+import multiprocessing as mp
 import os
 import shutil
 import uuid
 from os.path import join as jp
 
 import numpy as np
-import multiprocessing as mp
 
 import bel.toolbox.file_ops as fops
 from bel.hydro.backtracking.modpath import backtrack
