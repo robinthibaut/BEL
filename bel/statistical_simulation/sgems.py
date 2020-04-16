@@ -10,7 +10,7 @@ import subprocess
 import numpy as np
 
 
-# TODO: Separate this script in 2: the first part will be a function, given a python script as argument, will run sgems
+# TODO: Separate this script in 2: the first part will be a function, given a python script as argument, will run statistical_simulation
 #       The other part will be used to specifically write python code for my simulations. Push all to Github
 
 
@@ -32,7 +32,7 @@ def joinlist(j, mylist):
 def so(filename):
     """
     This code transforms the SGems simulations output into a python readable and exploitable format,
-    given the sgems output file as argument
+    given the statistical_simulation output file as argument
     """
 
     datac = open(filename, 'r').readlines()
@@ -55,7 +55,7 @@ def so(filename):
 
 def transform(f, k_mean, k_std):
     """
-    Transforms the values of the sgems simulations into meaningful data
+    Transforms the values of the statistical_simulation simulations into meaningful data
     """
 
     ff = f * k_std + k_mean
@@ -169,7 +169,7 @@ class SGEMS:
         sgf = open(file_name, 'w')
 
         # Create script file
-        run_script = os.path.join(op_folder, 'sgems.script')
+        run_script = os.path.join(op_folder, 'statistical_simulation.script')
         rscpt = open(run_script, 'w')
         rscpt.write(' '.join(['RunScript', file_name]))
         rscpt.close()
@@ -178,7 +178,7 @@ class SGEMS:
         batch = os.path.join(op_folder, 'RunSgems.bat')
         bat = open(batch, 'w')
         bat.write(' '.join(['cd', op_folder, '\n']))
-        bat.write(' '.join(['sgems', 'sgems.script']))
+        bat.write(' '.join(['statistical_simulation', 'statistical_simulation.script']))
         bat.close()
 
         # Number of cells
@@ -361,30 +361,30 @@ class SGEMS:
         # of the simulation.
 
         template = """\
-import sgems\n\
+import statistical_simulation\n\
 import os
 os.chdir("OPFOLDER")
 #os.chdir('sim')
-sgems.execute('DeleteObjects NAME')\n\
-sgems.execute('DeleteObjects finished')\n\
-sgems.execute('NewCartesianGrid  NAME::GRID')\n\
+statistical_simulation.execute('DeleteObjects NAME')\n\
+statistical_simulation.execute('DeleteObjects finished')\n\
+statistical_simulation.execute('NewCartesianGrid  NAME::GRID')\n\
 #\n\
 nodata = -9966699\n\
-sgems.execute('NewCartesianGrid  hd::GRID')\n\
+statistical_simulation.execute('NewCartesianGrid  hd::GRID')\n\
 hard_data = [nodata for i in range(NCELLS)]\n\
 fn = FNODES\n\
 for n in fn:\n\
     hard_data[n[0]] = n[1]\n\
-sgems.set_property('hd', 'hard', hard_data)\n\
+statistical_simulation.set_property('hd', 'hard', hard_data)\n\
 #\n\
-#sgems.execute('NewCartesianGrid  th::GRID')\n\
+#statistical_simulation.execute('NewCartesianGrid  th::GRID')\n\
 #thv = VALUESTH\n\
-#sgems.set_property('th', 'thv', thv)\n\
+#statistical_simulation.set_property('th', 'thv', thv)\n\
 #\n\
-sgems.execute('DeleteObjects finished')\n\
-sgems.execute('RunGeostatAlgorithm  ALGO::/GeostatParamUtils/XML::<parameters>   <algorithm name="ALGO" />    <Grid_Name value="NAME" />    <Property_Name value="OUTPUT" />    <Nb_Realizations value="REALIZATIONS" />    <Seed value="SEED" />    <Kriging_Type value="KRIGING" />    <Trend value="TREND" />    <Local_Mean_Property value="LMPV" />    <Assign_Hard_Data value="AHDV" />    <Hard_Data grid="HDG" property="HGPP" />    <Max_Conditioning_Data value="DATACON" />    <Search_Ellipsoid value="SEARCHELLIPSOID" />    <Use_Target_Histogram value="THF" />    <nonParamCdf ref_on_file="1" ref_on_grid="0" break_ties="0" filename="THFILE" grid="th" property="thv">        <LTI_type function="Power" extreme="MINTH" omega="3" />        <UTI_type function="Power" extreme="MAXTH" omega="0.333" />    </nonParamCdf>    <Variogram nugget="NUGGET" structures_count="NSTRUCT">      VARIOGRAMS      </Variogram></parameters>')\n\
-sgems.execute('SaveGeostatGrid  NAME::OUTPUT.grid::gslib::0::OUTLIST')\n\
-#sgems.execute('SaveGeostatGrid  NAME::OUTPUT.sgems::s-gems::0::OUTLIST')\n\
+statistical_simulation.execute('DeleteObjects finished')\n\
+statistical_simulation.execute('RunGeostatAlgorithm  ALGO::/GeostatParamUtils/XML::<parameters>   <algorithm name="ALGO" />    <Grid_Name value="NAME" />    <Property_Name value="OUTPUT" />    <Nb_Realizations value="REALIZATIONS" />    <Seed value="SEED" />    <Kriging_Type value="KRIGING" />    <Trend value="TREND" />    <Local_Mean_Property value="LMPV" />    <Assign_Hard_Data value="AHDV" />    <Hard_Data grid="HDG" property="HGPP" />    <Max_Conditioning_Data value="DATACON" />    <Search_Ellipsoid value="SEARCHELLIPSOID" />    <Use_Target_Histogram value="THF" />    <nonParamCdf ref_on_file="1" ref_on_grid="0" break_ties="0" filename="THFILE" grid="th" property="thv">        <LTI_type function="Power" extreme="MINTH" omega="3" />        <UTI_type function="Power" extreme="MAXTH" omega="0.333" />    </nonParamCdf>    <Variogram nugget="NUGGET" structures_count="NSTRUCT">      VARIOGRAMS      </Variogram></parameters>')\n\
+statistical_simulation.execute('SaveGeostatGrid  NAME::OUTPUT.grid::gslib::0::OUTLIST')\n\
+#statistical_simulation.execute('SaveGeostatGrid  NAME::OUTPUT.statistical_simulation::s-gems::0::OUTLIST')\n\
 mfn = 'OUTPUT' + '.params'\n\
 mfile = open(mfn, 'w')\n\
 for line in PARAMS:\n\
@@ -613,22 +613,22 @@ mfile.close()\n\
         # I implemented a code within this template to create a 'params' file which will contain the information
         # of the simulation.
         template = """\
-import sgems\n\
+import statistical_simulation\n\
 import os
 os.chdir('OPFOLDER')
 tin = os.path.join('.', 'ti', 'TIFILE')\n\
 tio = open(tin, 'r').readlines()\n\
 data = [float(tio[i]) for i in range(3, len(tio), 1)]\n\
 os.chdir('sim')\n\
-sgems.execute('DeleteObjects NAME')\n\
-sgems.execute('DeleteObjects finished')\n\
-sgems.execute('NewCartesianGrid  NAME::GRID')\n\
-sgems.execute('NewCartesianGrid  ti::GRID')\n\
-sgems.set_property('ti', 'facies', data)\n\
-sgems.execute('DeleteObjects finished')\n\
-sgems.execute("RunGeostatAlgorithm  snesim_std::/GeostatParamUtils/XML::<parameters>  <algorithm name='snesim_std' />     <Cmin  value='CMIN' />     <Constraint_Marginal_ADVANCED  value='CMA' />     <resimulation_criterion  value='RECRI' />     <resimulation_iteration_nb  value='REITN' />     <Nb_Multigrids_ADVANCED  value='NMULTIGRID' />     <Debug_Level  value='DEBUG' />     <Subgrid_choice  value='SUBGRIDCHOICE'  />     <expand_isotropic  value='EXPANDISO'  />     <expand_anisotropic  value='EXPANDANISO'  />     <aniso_factor  value='ANISOFACTOR' />     <Use_Affinity  value='AFFINITY'  />     <Use_Rotation  value='ROTATION'  />     <Hard_Data  grid='HDG' region='HDREGION' property='HDPP'  />     <use_pre_simulated_gridded_data  value='USEPRESIMDATA'  />     <Use_ProbField  value='USEPROBFIELD'  />     <ProbField_properties count='PFPPC'   value='PFCV'  />     <TauModelObject  value='TAUMODELOBJECT' />     <use_vertical_proportion  value='USEVERTICALPROP'  />     <GridSelector_Sim value='NAME' region='GREGION'  />     <Property_Name_Sim  value='OUTPUT' />     <Nb_Realizations  value='REALIZATIONS' />     <Seed  value='SEED' />     <PropertySelector_Training  grid='ti' region='TRAINING_REGION' property='TRAINING_PP'  />     <Nb_Facies  value='NFACIES' />     <Marginal_Cdf  value='MARGINALCDF' />     <Max_Cond  value='DATACON' />     <Search_Ellipsoid  value='SEARCHELLIPSOID' />  </parameters>")  
-sgems.execute('SaveGeostatGrid  NAME::OUTPUT.out::gslib::0::OUTLIST')\n\
-sgems.execute('SaveGeostatGrid  NAME::OUTPUT.sgems::s-gems::0::OUTLIST')\n\
+statistical_simulation.execute('DeleteObjects NAME')\n\
+statistical_simulation.execute('DeleteObjects finished')\n\
+statistical_simulation.execute('NewCartesianGrid  NAME::GRID')\n\
+statistical_simulation.execute('NewCartesianGrid  ti::GRID')\n\
+statistical_simulation.set_property('ti', 'facies', data)\n\
+statistical_simulation.execute('DeleteObjects finished')\n\
+statistical_simulation.execute("RunGeostatAlgorithm  snesim_std::/GeostatParamUtils/XML::<parameters>  <algorithm name='snesim_std' />     <Cmin  value='CMIN' />     <Constraint_Marginal_ADVANCED  value='CMA' />     <resimulation_criterion  value='RECRI' />     <resimulation_iteration_nb  value='REITN' />     <Nb_Multigrids_ADVANCED  value='NMULTIGRID' />     <Debug_Level  value='DEBUG' />     <Subgrid_choice  value='SUBGRIDCHOICE'  />     <expand_isotropic  value='EXPANDISO'  />     <expand_anisotropic  value='EXPANDANISO'  />     <aniso_factor  value='ANISOFACTOR' />     <Use_Affinity  value='AFFINITY'  />     <Use_Rotation  value='ROTATION'  />     <Hard_Data  grid='HDG' region='HDREGION' property='HDPP'  />     <use_pre_simulated_gridded_data  value='USEPRESIMDATA'  />     <Use_ProbField  value='USEPROBFIELD'  />     <ProbField_properties count='PFPPC'   value='PFCV'  />     <TauModelObject  value='TAUMODELOBJECT' />     <use_vertical_proportion  value='USEVERTICALPROP'  />     <GridSelector_Sim value='NAME' region='GREGION'  />     <Property_Name_Sim  value='OUTPUT' />     <Nb_Realizations  value='REALIZATIONS' />     <Seed  value='SEED' />     <PropertySelector_Training  grid='ti' region='TRAINING_REGION' property='TRAINING_PP'  />     <Nb_Facies  value='NFACIES' />     <Marginal_Cdf  value='MARGINALCDF' />     <Max_Cond  value='DATACON' />     <Search_Ellipsoid  value='SEARCHELLIPSOID' />  </parameters>")  
+statistical_simulation.execute('SaveGeostatGrid  NAME::OUTPUT.out::gslib::0::OUTLIST')\n\
+statistical_simulation.execute('SaveGeostatGrid  NAME::OUTPUT.statistical_simulation::s-gems::0::OUTLIST')\n\
 mfn = 'OUTPUT' + '.params'\n\
 mfile = open(mfn, 'w')\n\
 for line in PARAMS:\n\

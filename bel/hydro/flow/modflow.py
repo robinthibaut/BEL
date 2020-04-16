@@ -7,7 +7,7 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-import bel.sgems as sg
+import bel.statistical_simulation.sgems as sg
 import bel.toolbox.mesh_ops as mops
 
 
@@ -123,7 +123,7 @@ def flow(exe_name, model_ws, wells):
     nrow_d = int(y_lim / min_cell_dim)
     ncol_d = int(x_lim / min_cell_dim)
 
-    # Creation of a dummy modflow grid to work with sgems, which doesn't have the same cell structure.
+    # Creation of a dummy modflow grid to work with statistical_simulation, which doesn't have the same cell structure.
     model_dummy = flopy.modflow.Modflow(modelname='dummy')
 
     dis_sgems = flopy.modflow.ModflowDis(model=model_dummy,
@@ -283,7 +283,7 @@ def flow(exe_name, model_ws, wells):
     else:
         sgems = sg.SGEMS()
         nr = 1  # Number of realizations.
-        # Extracts wells nodes number in sgems grid, to fix their simulated value.
+        # Extracts wells nodes number in statistical_simulation grid, to fix their simulated value.
         wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
         # Hard data node
         # fixed_nodes = [[pwnode_sg, 2], [iw1node_sg, 1], [iw2node_sg, 1.5], [iw3node_sg, 0.7], [iw4node_sg, 1.2]]
@@ -344,7 +344,7 @@ def flow(exe_name, model_ws, wells):
         # Setting the hydraulic conductivity matrix.
         hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]
 
-        # Flip to correspond to sgems grid ! hk_array is now a list of the
+        # Flip to correspond to statistical_simulation grid ! hk_array is now a list of the
         # arrays of conductivities for each realization.
         hk_array = [np.fliplr(hk_array[h]) for h in range(0, nr, 1)]
 
@@ -358,7 +358,7 @@ def flow(exe_name, model_ws, wells):
             val.append(fl2)
         val = [item for sublist in val for item in sublist]  # Flattening
 
-        # If the sgems grid is different from the modflow grid, which might be the case since we would like to refine
+        # If the statistical_simulation grid is different from the modflow grid, which might be the case since we would like to refine
         # in some ways the flow mesh, the piece of code below assigns to the flow grid the values of the hk simulations
         # based on the closest distance between cells.
         inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
