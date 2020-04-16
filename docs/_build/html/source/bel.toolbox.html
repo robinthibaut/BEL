@@ -1,0 +1,563 @@
+
+
+
+<!--
+  ~ Copyright (c) 2020. Robin Thibaut, Ghent University
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>bel.toolbox package &mdash; BEL  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="BEL  documentation" href="../index.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> BEL </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+            action="../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+          
+          
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">bel.toolbox package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.data_ops">bel.toolbox.data_ops module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.file_ops">bel.toolbox.file_ops module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.mesh_ops">bel.toolbox.mesh_ops module</a></li>
+<li><a class="reference internal" href="#bel-toolbox-paraview-module">bel.toolbox.paraview module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.pca_ops">bel.toolbox.pca_ops module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.plots">bel.toolbox.plots module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox.posterior_ops">bel.toolbox.posterior_ops module</a></li>
+<li><a class="reference internal" href="#bel-toolbox-visualization-module">bel.toolbox.visualization module</a></li>
+<li><a class="reference internal" href="#module-bel.toolbox">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+          
+        
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
+  <div class="section" id="bel-toolbox-package">
+<h1>bel.toolbox package<a class="headerlink" href="#bel-toolbox-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bel.toolbox.sgems.html">bel.toolbox.sgems package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bel.toolbox.sgems.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bel.toolbox.sgems.html#module-bel.toolbox.sgems.sgems">bel.toolbox.sgems.sgems module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bel.toolbox.sgems.html#module-bel.toolbox.sgems">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-bel.toolbox.data_ops">
+<span id="bel-toolbox-data-ops-module"></span><h2>bel.toolbox.data_ops module<a class="headerlink" href="#module-bel.toolbox.data_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.toolbox.data_ops.DataOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.data_ops.</code><code class="sig-name descname">DataOps</code><a class="headerlink" href="#bel.toolbox.data_ops.DataOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.data_ops.DataOps.d_process">
+<em class="property">static </em><code class="sig-name descname">d_process</code><span class="sig-paren">(</span><em class="sig-param">tc0</em>, <em class="sig-param">n_time_steps=500</em>, <em class="sig-param">t_max=101.08</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.data_ops.DataOps.d_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>The breakthrough curves do not share the same time steps.
+We need to save the data array in a consistent shape, thus interpolates and sub-divides each simulation
+curves into n time steps.
+&#64;param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
+&#64;param n_time_steps: desired number of time step, will be the new dimension in shape[1].
+&#64;param t_max: Time corresponding to the end of the simulation.
+&#64;return: Data array with shape (n_sim, n_time_steps, n_wells)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.data_ops.DataOps.gaussian_distribution">
+<code class="sig-name descname">gaussian_distribution</code><span class="sig-paren">(</span><em class="sig-param">original_array</em>, <em class="sig-param">name='gd'</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.data_ops.DataOps.gaussian_distribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.data_ops.DataOps.gaussian_inverse">
+<code class="sig-name descname">gaussian_inverse</code><span class="sig-paren">(</span><em class="sig-param">original_array</em>, <em class="sig-param">name='gd'</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.data_ops.DataOps.gaussian_inverse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.data_ops.DataOps.h_process">
+<code class="sig-name descname">h_process</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">sc=5</em>, <em class="sig-param">wdir=''</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.data_ops.DataOps.h_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process signed distance array.
+&#64;param h: Signed distance array
+&#64;param sc: New cell dimension in x and y direction (original is 1)
+&#64;param wdir: Folder to save the new array into</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.toolbox.file_ops">
+<span id="bel-toolbox-file-ops-module"></span><h2>bel.toolbox.file_ops module<a class="headerlink" href="#module-bel.toolbox.file_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.toolbox.file_ops.FileOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.file_ops.</code><code class="sig-name descname">FileOps</code><a class="headerlink" href="#bel.toolbox.file_ops.FileOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.datread">
+<em class="property">static </em><code class="sig-name descname">datread</code><span class="sig-paren">(</span><em class="sig-param">file=None</em>, <em class="sig-param">header=0</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.datread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads space separated dat file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.dirmaker">
+<em class="property">static </em><code class="sig-name descname">dirmaker</code><span class="sig-paren">(</span><em class="sig-param">dird</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.dirmaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a folder path, check if it exists, and if not, creates it
+:param dird: path
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.load_data">
+<em class="property">static </em><code class="sig-name descname">load_data</code><span class="sig-paren">(</span><em class="sig-param">res_dir</em>, <em class="sig-param">n=0</em>, <em class="sig-param">check=True</em>, <em class="sig-param">data_flag=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;param check: Whether to check breaktrough curves for unrealistic results or not.
+&#64;param res_dir: main directory containing results sub-directories
+&#64;param n: if != 0, will randomly select n sub-folders from res_dir
+&#64;param data_flag: if True, only loads data and not the target
+&#64;return: tp, sd</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.load_flow_model">
+<em class="property">static </em><code class="sig-name descname">load_flow_model</code><span class="sig-paren">(</span><em class="sig-param">nam_file</em>, <em class="sig-param">exe_name=''</em>, <em class="sig-param">model_ws=''</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.load_flow_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.load_res">
+<em class="property">static </em><code class="sig-name descname">load_res</code><span class="sig-paren">(</span><em class="sig-param">res_dir</em>, <em class="sig-param">n=0</em>, <em class="sig-param">check=True</em>, <em class="sig-param">roots=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.load_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;param check: Whether to check breaktrough curves for unrealistic results or not.
+&#64;param res_dir: main directory containing results sub-directories
+&#64;param n: if != 0, will randomly select n sub-folders from res_dir
+&#64;return: tp, sd</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.file_ops.FileOps.load_transport_model">
+<em class="property">static </em><code class="sig-name descname">load_transport_model</code><span class="sig-paren">(</span><em class="sig-param">nam_file</em>, <em class="sig-param">modflowmodel</em>, <em class="sig-param">exe_name=''</em>, <em class="sig-param">model_ws=''</em>, <em class="sig-param">ftl_file='mt3d_link.ftl'</em>, <em class="sig-param">version='mt3d-usgs'</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.file_ops.FileOps.load_transport_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.toolbox.mesh_ops">
+<span id="bel-toolbox-mesh-ops-module"></span><h2>bel.toolbox.mesh_ops module<a class="headerlink" href="#module-bel.toolbox.mesh_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.toolbox.mesh_ops.MeshOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.mesh_ops.</code><code class="sig-name descname">MeshOps</code><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.blocks_from_rc">
+<em class="property">static </em><code class="sig-name descname">blocks_from_rc</code><span class="sig-paren">(</span><em class="sig-param">rows</em>, <em class="sig-param">columns</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.blocks_from_rc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.blocks_from_rc_3d">
+<em class="property">static </em><code class="sig-name descname">blocks_from_rc_3d</code><span class="sig-paren">(</span><em class="sig-param">rows</em>, <em class="sig-param">columns</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.blocks_from_rc_3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.blockshaped">
+<em class="property">static </em><code class="sig-name descname">blockshaped</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">nrows</em>, <em class="sig-param">ncols</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.blockshaped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an array of shape (n, nrows, ncols) where
+n * nrows * ncols = arr.size</p>
+<p>If arr is a 2D array, the returned array should look like n sub-blocks with
+each sub-block preserving the “physical” layout of arr.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.h_sub">
+<code class="sig-name descname">h_sub</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">un</em>, <em class="sig-param">uc</em>, <em class="sig-param">sc</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.h_sub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.rc_from_blocks">
+<em class="property">static </em><code class="sig-name descname">rc_from_blocks</code><span class="sig-paren">(</span><em class="sig-param">blocks</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.rc_from_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the x and y dimensions of each block
+:param blocks:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.mesh_ops.MeshOps.refine_axis">
+<em class="property">static </em><code class="sig-name descname">refine_axis</code><span class="sig-paren">(</span><em class="sig-param">widths</em>, <em class="sig-param">r_pt</em>, <em class="sig-param">ext</em>, <em class="sig-param">cnd</em>, <em class="sig-param">d_dim</em>, <em class="sig-param">a_lim</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.mesh_ops.MeshOps.refine_axis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bel-toolbox-paraview-module">
+<h2>bel.toolbox.paraview module<a class="headerlink" href="#bel-toolbox-paraview-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-bel.toolbox.pca_ops">
+<span id="bel-toolbox-pca-ops-module"></span><h2>bel.toolbox.pca_ops module<a class="headerlink" href="#module-bel.toolbox.pca_ops" title="Permalink to this headline">¶</a></h2>
+<p>Collection of functions to use the PCA class from scikit-learn.</p>
+<dl class="class">
+<dt id="bel.toolbox.pca_ops.PCAOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.pca_ops.</code><code class="sig-name descname">PCAOps</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">raw_data</em>, <em class="sig-param">directory=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.inverse_transform">
+<code class="sig-name descname">inverse_transform</code><span class="sig-paren">(</span><em class="sig-param">pc_to_invert</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
+The self.operator.components contains all components.
+:param pc_to_invert: PC array
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.n_pca_components">
+<code class="sig-name descname">n_pca_components</code><span class="sig-paren">(</span><em class="sig-param">perc</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.n_pca_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an explained variance percentage, returns the number of components
+necessary to obtain that level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.pc_random">
+<code class="sig-name descname">pc_random</code><span class="sig-paren">(</span><em class="sig-param">n_posts</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pc_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly selects PC components from the original training matrix dtp</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.pca_refresh">
+<code class="sig-name descname">pca_refresh</code><span class="sig-paren">(</span><em class="sig-param">n_comp</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a number of components to keep, returns the PC array with the corresponding shape.
+:param n_comp:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.pca_tp">
+<code class="sig-name descname">pca_tp</code><span class="sig-paren">(</span><em class="sig-param">n_training</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an arbitrary size of training data, splits the original array accordingly
+:param n_training:
+:return: training, test</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.pca_transformation">
+<code class="sig-name descname">pca_transformation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.pca_transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate the PCA object and transforms both training and test data.
+Depending on the value of the load parameter, it will create a new one or load a previously computed one.
+:return: PC training, PC test</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.pca_ops.PCAOps.perc_pca_components">
+<code class="sig-name descname">perc_pca_components</code><span class="sig-paren">(</span><em class="sig-param">n_c</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.pca_ops.PCAOps.perc_pca_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the explained variance percentage given a number of components n_c.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.toolbox.plots">
+<span id="bel-toolbox-plots-module"></span><h2>bel.toolbox.plots module<a class="headerlink" href="#module-bel.toolbox.plots" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.toolbox.plots.Plot">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.plots.</code><code class="sig-name descname">Plot</code><span class="sig-paren">(</span><em class="sig-param">x_lim=None</em>, <em class="sig-param">y_lim=None</em>, <em class="sig-param">grf=5</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.cca">
+<em class="property">static </em><code class="sig-name descname">cca</code><span class="sig-paren">(</span><em class="sig-param">cca</em>, <em class="sig-param">d</em>, <em class="sig-param">h</em>, <em class="sig-param">d_pc_prediction</em>, <em class="sig-param">h_pc_prediction</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.cca" title="Permalink to this definition">¶</a></dt>
+<dd><p>CCA plots.
+Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
+:param cca: CCA operator
+:param d: d CCA scores
+:param h: h CCA scores
+:param d_pc_prediction: d test PC scores
+:param h_pc_prediction: h test PC scores
+:param sdir:
+:param show:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.curves">
+<code class="sig-name descname">curves</code><span class="sig-paren">(</span><em class="sig-param">tc</em>, <em class="sig-param">n_wel</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows every breakthrough curve stacked on a plot.
+:param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+:param n_wel: Number of observation points
+:param sdir: Directory in which to save figure
+:param show: Whether to show or not</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.curves_i">
+<code class="sig-name descname">curves_i</code><span class="sig-paren">(</span><em class="sig-param">tc</em>, <em class="sig-param">n_wel</em>, <em class="sig-param">sdir=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.curves_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows every breakthrough individually for each observation point.
+Will produce n_well figures of n_sim curves each.
+:param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+:param n_wel: Number of observation points
+:param sdir: Directory in which to save figure
+:param show: Whether to show or not</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.d_pca_inverse_plot">
+<em class="property">static </em><code class="sig-name descname">d_pca_inverse_plot</code><span class="sig-paren">(</span><em class="sig-param">v</em>, <em class="sig-param">e</em>, <em class="sig-param">pca_o</em>, <em class="sig-param">vn</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.d_pca_inverse_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot used to compare the reproduction of the original physical space after PCA transformation
+:param v: Original, untransformed data array
+:param e: Sample number on which the test is performed
+:param pca_o: data PCA operator
+:param vn: Number of components to inverse-transform the data
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.explained_variance">
+<em class="property">static </em><code class="sig-name descname">explained_variance</code><span class="sig-paren">(</span><em class="sig-param">pca</em>, <em class="sig-param">n_comp=0</em>, <em class="sig-param">xfs=2</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.explained_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>PCA explained variance plot
+:param pca: PCA operator
+:param n_comp: Number of components to display
+:param xfs: X-axis fontsize
+:param fig_file:
+:param show:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.h_pca_inverse_plot">
+<code class="sig-name descname">h_pca_inverse_plot</code><span class="sig-paren">(</span><em class="sig-param">pca_o</em>, <em class="sig-param">e</em>, <em class="sig-param">vn</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.h_pca_inverse_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot used to compare the reproduction of the original physical space after PCA transformation
+:param e: Sample number on which the test is performed
+:param pca_o: signed distance PCA operator
+:param vn: Number of components to inverse-transform.
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.pca_inverse_compare">
+<code class="sig-name descname">pca_inverse_compare</code><span class="sig-paren">(</span><em class="sig-param">pco_d</em>, <em class="sig-param">pco_h</em>, <em class="sig-param">nd</em>, <em class="sig-param">nh</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.pca_inverse_compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots original data and recovered data by PCA inverse transformation given a number of components
+:param pco_h: PCA object for h
+:param pco_d: PCA object for d
+:param nd: number of components in d
+:param nh: number of components in h
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.pca_scores">
+<em class="property">static </em><code class="sig-name descname">pca_scores</code><span class="sig-paren">(</span><em class="sig-param">training</em>, <em class="sig-param">prediction</em>, <em class="sig-param">n_comp</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.pca_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>PCA scores plot, displays scores of observations above those of training.
+:param training: Training scores
+:param prediction: Test scores
+:param n_comp: How many components to show
+:param fig_file:
+:param show:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.whp">
+<code class="sig-name descname">whp</code><span class="sig-paren">(</span><em class="sig-param">h=None</em>, <em class="sig-param">alpha=0.4</em>, <em class="sig-param">lw=0.5</em>, <em class="sig-param">bkg_field_array=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">x_lim=None</em>, <em class="sig-param">y_lim=None</em>, <em class="sig-param">cmap='coolwarm'</em>, <em class="sig-param">colors='white'</em>, <em class="sig-param">show_wells=False</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces the WHPA plot, that is the zero-contour of the signed distance array.
+It assumes that well information can be loaded from pw.npy and iw.npy.
+I should change this.
+:param show_wells: whether to plot well coordinates or not
+:param cmap: colormap for the background array
+:param vmax: max value to plot for the background array
+:param vmin: max value to plot for the background array
+:param bkg_field_array: 2D array whose values will be plotted on the grid
+:param h: Array containing grids of values whose 0 contour will be computed and plotted
+:param alpha: opacity of the 0 contour lines
+:param lw: Line width
+:param colors: Line color
+:param fig_file:
+:param show:
+:param x_lim: [x_min, x_max]
+:param y_lim: [y_min, y_max]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.plots.Plot.whp_prediction">
+<code class="sig-name descname">whp_prediction</code><span class="sig-paren">(</span><em class="sig-param">forecasts</em>, <em class="sig-param">h_true</em>, <em class="sig-param">h_pred</em>, <em class="sig-param">fig_file=None</em>, <em class="sig-param">show_wells=False</em>, <em class="sig-param">show=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.plots.Plot.whp_prediction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.toolbox.posterior_ops">
+<span id="bel-toolbox-posterior-ops-module"></span><h2>bel.toolbox.posterior_ops module<a class="headerlink" href="#module-bel.toolbox.posterior_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.toolbox.posterior_ops.PosteriorOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.posterior_ops.</code><code class="sig-name descname">PosteriorOps</code><a class="headerlink" href="#bel.toolbox.posterior_ops.PosteriorOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.toolbox.posterior_ops.PosteriorOps.posterior">
+<code class="sig-name descname">posterior</code><span class="sig-paren">(</span><em class="sig-param">h_cca_training_gaussian</em>, <em class="sig-param">d_cca_training</em>, <em class="sig-param">d_pc_training</em>, <em class="sig-param">d_rotations</em>, <em class="sig-param">d_cca_prediction</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.posterior_ops.PosteriorOps.posterior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimating posterior uncertainties.
+&#64;param h_cca_training_gaussian: Canonical Variate of the training target, Gaussian-distributed
+&#64;param d_cca_training: Canonical Variate of the training data
+&#64;param d_pc_training: Principal Components of the training data
+&#64;param d_rotations: CCA rotations of the training data
+&#64;param d_cca_prediction: Canonical Variate of the observation
+&#64;return: h_mean_posterior, h_posterior_covariance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.toolbox.posterior_ops.PosteriorOps.random_sample">
+<code class="sig-name descname">random_sample</code><span class="sig-paren">(</span><em class="sig-param">sample_n</em>, <em class="sig-param">pca_d</em>, <em class="sig-param">pca_h</em>, <em class="sig-param">cca_obj</em>, <em class="sig-param">n_posts=1</em>, <em class="sig-param">add_comp=0</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.posterior_ops.PosteriorOps.random_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bel-toolbox-visualization-module">
+<h2>bel.toolbox.visualization module<a class="headerlink" href="#bel-toolbox-visualization-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-bel.toolbox">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bel.toolbox" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+	    </div>
+            <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Robin Thibaut.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/doctools.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/language_data.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+  </body>
+</html>
