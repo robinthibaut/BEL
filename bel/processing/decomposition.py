@@ -19,10 +19,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
-from bel.toolbox.file_ops import FileOps
+import bel.toolbox.file_ops as fops
+import bel.toolbox.plots as plot
 from bel.toolbox.data_ops import DataOps
 from bel.toolbox.mesh_ops import MeshOps
-from bel.toolbox.plots import Plot
 from bel.toolbox.pca_ops import PCAOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
@@ -35,7 +35,7 @@ mo = MeshOps()
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
-mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 
 def bel(n_training=300, n_test=5, new_dir=None):
@@ -69,11 +69,11 @@ def bel(n_training=300, n_test=5, new_dir=None):
     fig_pred_dir = jp(fig_dir, 'Predictions')
 
     # Creates directories
-    [dirmaker() for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
+    [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
     check = False  # Flag to check for simulations issues
-    tc0, pzs, roots_ = load_res(n=n, check=check, roots=roots)
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, check=check, roots=roots)
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
@@ -119,12 +119,12 @@ def bel(n_training=300, n_test=5, new_dir=None):
     nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
 
     # Explained variance plots
-    explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+    plot.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
+    plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
 
     # Scores plots
-    pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
-    pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
+    plot.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
+    plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo
