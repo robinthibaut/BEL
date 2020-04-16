@@ -3,12 +3,12 @@ from os.path import join as jp
 import flopy
 import matplotlib.pyplot as plt
 import numpy as np
+from diavatly import model_map
 
 import bel.toolbox.mesh_ops as mops
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.processing.signed_distance import SignedDistance, get_centroids
 from bel.toolbox.plots import Plot
-from diavatly import model_map
 
 
 def active_zone(modflowmodel):

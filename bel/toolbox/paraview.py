@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 import diavatly
 import bel.toolbox.file_ops as fops
+import bel.toolbox.mesh_ops as mops
 from bel.toolbox.plots import Plot
 
 
@@ -23,8 +24,8 @@ delr = flow_model.modelgrid.delc
 xyz_vertices = flow_model.modelgrid.xyzvertices
 
 # I'll be working with hexahedron, vtk type = 12
-blocks2d = fops.blocks_from_rc(delr, delc)
-blocks = fops.blocks_from_rc_3d(delr, delc)
+blocks2d = mops.blocks_from_rc(delr, delc)
+blocks = mops.blocks_from_rc_3d(delr, delc)
 blocks3d = blocks.reshape(-1, 3)
 # Let's first try 2D export !
 # Load hk array
