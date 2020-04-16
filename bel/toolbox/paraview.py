@@ -26,8 +26,8 @@ delr = flow_model.modelgrid.delc
 xyz_vertices = flow_model.modelgrid.xyzvertices
 
 # I'll be working with hexahedron, vtk type = 12
-blocks2d = mo.blocks_from_rc(delr, delc)
-blocks = mo.blocks_from_rc_3d(delr, delc)
+blocks2d = blocks_from_rc(delr, delc)
+blocks = blocks_from_rc_3d(delr, delc)
 blocks3d = blocks.reshape(-1, 3)
 # Let's first try 2D export !
 # Load hk array

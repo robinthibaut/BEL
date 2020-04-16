@@ -76,11 +76,11 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
         plt.close()
 
 
-def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+def cca(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-    :param cca: CCA operator
+    :param cca_operator: CCA operator
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
@@ -90,17 +90,17 @@ def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
     :return:
     """
 
-    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)  # Gets correlation coefficient
+    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
 
     # CCA plots for each observation:
-    for i in range(cca.n_components):
+    for i in range(cca_operator.n_components):
         comp_n = i
         plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
-            d_cca_prediction, h_cca_prediction = cca.transform(d_obs.reshape(1, -1),
-                                                               h_obs.reshape(1, -1))
+            d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
+                                                                        h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
