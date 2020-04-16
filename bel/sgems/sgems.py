@@ -29,6 +29,40 @@ def joinlist(j, mylist):
     return gp
 
 
+def so(filename):
+    """
+    This code transforms the SGems simulations output into a python readable and exploitable format,
+    given the sgems output file as argument
+    """
+
+    datac = open(filename, 'r').readlines()
+    # Extraction of the grid size from the first lines of the output
+    nsimu = int(datac[1])
+    dims = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", datac[0])
+    ncol = int(dims[0])
+    nrow = int(dims[1])
+    nlay = int(dims[2])
+    # Each simulation result is separated
+    head = nsimu + 2
+    datac = datac[head:]
+    data = [line.split(' ')[:-1] for line in datac if len(line) > 1]
+    data = np.array(data, dtype=np.float)
+    sims = [data[:, i] for i in range(0, nsimu, 1)]
+
+    # return nrow, ncol, nlay, gaussian_simulation
+    return sims
+
+
+def transform(f, k_mean, k_std):
+    """
+    Transforms the values of the sgems simulations into meaningful data
+    """
+
+    ff = f * k_std + k_mean
+
+    return 10 ** ff
+
+
 class SGEMS:
 
     def __init__(self):
@@ -36,40 +70,6 @@ class SGEMS:
         self.seed = 0
         # The idea here is to initiate a list that will contain the simulations parameters. I will save it in a text
         # file in dedicated simulations folders for example. I don't know if this 'self' method is optimal yet.
-
-    @staticmethod
-    def so(filename):
-        """
-        This code transforms the SGems simulations output into a python readable and exploitable format,
-        given the sgems output file as argument
-        """
-
-        datac = open(filename, 'r').readlines()
-        # Extraction of the grid size from the first lines of the output
-        nsimu = int(datac[1])
-        dims = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", datac[0])
-        ncol = int(dims[0])
-        nrow = int(dims[1])
-        nlay = int(dims[2])
-        # Each simulation result is separated
-        head = nsimu + 2
-        datac = datac[head:]
-        data = [line.split(' ')[:-1] for line in datac if len(line) > 1]
-        data = np.array(data, dtype=np.float)
-        sims = [data[:, i] for i in range(0, nsimu, 1)]
-
-        # return nrow, ncol, nlay, gaussian_simulation
-        return sims
-
-    @staticmethod
-    def transform(f, k_mean, k_std):
-        """
-        Transforms the values of the sgems simulations into meaningful data
-        """
-
-        ff = f * k_std + k_mean
-
-        return 10 ** ff
 
     def gaussian_simulation(self,
                             # core_path='',
@@ -352,7 +352,6 @@ mfile.close()\n\
         # shutil.copyfile(file_name, jp(op_folder, path_leaf(file_name)))
 
         subprocess.call([batch])  # Opens the BAT file
-
 
     def SNESIM(self,
                tifile='ti1channel - Copy.grid',

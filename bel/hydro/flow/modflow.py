@@ -8,8 +8,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import bel.toolbox.mesh_ops as mops
-from bel.sgems import SGEMS
-
+import bel.sgems as sg
 
 
 def flow(exe_name, model_ws, wells):
@@ -282,7 +281,7 @@ def flow(exe_name, model_ws, wells):
     if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If re-using an older model
         valkr = np.load(jp(model_ws, '{}.npy').format(op))
     else:
-        sgems = SGEMS()
+        sgems = sg.SGEMS()
         nr = 1  # Number of realizations.
         # Extracts wells nodes number in sgems grid, to fix their simulated value.
         wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
@@ -332,7 +331,7 @@ def flow(exe_name, model_ws, wells):
 
         opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
 
-        hk = SGEMS.so(opl)  # Grid information directly derived from the output file.
+        hk = sg.so(opl)  # Grid information directly derived from the output file.
 
         k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
 
@@ -340,7 +339,7 @@ def flow(exe_name, model_ws, wells):
 
         hkp = np.copy(hk)
 
-        hk_array = [SGEMS.transform(h, k_mean, k_std) for h in hkp]
+        hk_array = [sg.transform(h, k_mean, k_std) for h in hkp]
 
         # Setting the hydraulic conductivity matrix.
         hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]
