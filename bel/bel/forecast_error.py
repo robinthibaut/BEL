@@ -48,7 +48,7 @@ h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 # CCA plots
 d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
 d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-mp.cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
+cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # %% Random sample from the posterior
 sample_n = 0

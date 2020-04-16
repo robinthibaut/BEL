@@ -3,6 +3,122 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def d_pca_inverse_plot(v, e, pca_o, vn):
+    """
+    Plot used to compare the reproduction of the original physical space after PCA transformation
+    :param v: Original, untransformed data array
+    :param e: Sample number on which the test is performed
+    :param pca_o: data PCA operator
+    :param vn: Number of components to inverse-transform the data
+    :return:
+    """
+    v_pc = pca_o.transform(v)
+    v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+    plt.plot(v[e], 'r', alpha=.8)
+    plt.plot(v_pred, 'c', alpha=.8)
+    plt.show()
+
+
+def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
+    """
+    PCA explained variance plot
+    :param pca: PCA operator
+    :param n_comp: Number of components to display
+    :param xfs: X-axis fontsize
+    :param fig_file:
+    :param show:
+    :return:
+    """
+    plt.grid(alpha=0.2)
+    if not n_comp:
+        n_comp = pca.n_components_
+    plt.xticks(np.arange(n_comp), fontsize=xfs)
+    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]),
+             '-o', linewidth=.5, markersize=1.5, alpha=.8)
+    plt.xlabel('Number of components')
+    plt.ylabel('Explained variance')
+    if fig_file:
+        plt.savefig(fig_file, dpi=300)
+        plt.close()
+    if show:
+        plt.show()
+        plt.close()
+
+
+def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
+    """
+    PCA scores plot, displays scores of observations above those of training.
+    :param training: Training scores
+    :param prediction: Test scores
+    :param n_comp: How many components to show
+    :param fig_file:
+    :param show:
+    :return:
+    """
+    # Scores plot
+    plt.grid(alpha=0.2)
+    ut = n_comp
+    plt.xticks(np.arange(ut), fontsize=8)
+    plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.2)  # Plot all training scores
+    for sample_n in range(len(prediction)):
+        pc_obs = prediction[sample_n]
+        plt.plot(pc_obs.T[:ut],  # Plot observations scores
+                 'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+                 label=str(sample_n))
+    plt.tick_params(labelsize=6)
+    plt.legend(fontsize=3)
+
+    if fig_file:
+        plt.savefig(fig_file, dpi=300)
+        plt.close()
+    if show:
+        plt.show()
+        plt.close()
+
+
+def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+    """
+    CCA plots.
+    Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
+    :param cca: CCA operator
+    :param d: d CCA scores
+    :param h: h CCA scores
+    :param d_pc_prediction: d test PC scores
+    :param h_pc_prediction: h test PC scores
+    :param sdir:
+    :param show:
+    :return:
+    """
+
+    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)  # Gets correlation coefficient
+
+    # CCA plots for each observation:
+    for i in range(cca.n_components):
+        comp_n = i
+        plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
+        for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
+            d_obs = d_pc_prediction[sample_n]
+            h_obs = h_pc_prediction[sample_n]
+            d_cca_prediction, h_cca_prediction = cca.transform(d_obs.reshape(1, -1),
+                                                               h_obs.reshape(1, -1))
+            d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+
+            plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+                     'o', markersize=4.5, alpha=.7,
+                     label='{}'.format(sample_n))
+
+        plt.grid('w', linewidth=.3, alpha=.4)
+        plt.tick_params(labelsize=8)
+        plt.title(round(cca_coefficient[i], 4))
+        plt.legend(fontsize=5)
+        if sdir:
+            plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
+            plt.close()
+        if show:
+            plt.show()
+            plt.close()
+
+
 class Plot:
 
     def __init__(self, x_lim=None, y_lim=None, grf=5):
@@ -189,22 +305,6 @@ class Plot:
         self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)
         self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=True)
 
-    @staticmethod
-    def d_pca_inverse_plot(v, e, pca_o, vn):
-        """
-        Plot used to compare the reproduction of the original physical space after PCA transformation
-        :param v: Original, untransformed data array
-        :param e: Sample number on which the test is performed
-        :param pca_o: data PCA operator
-        :param vn: Number of components to inverse-transform the data
-        :return:
-        """
-        v_pc = pca_o.transform(v)
-        v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-        plt.plot(v[e], 'r', alpha=.8)
-        plt.plot(v_pred, 'c', alpha=.8)
-        plt.show()
-
     def pca_inverse_compare(self, pco_d, pco_h, nd, nh):
         """
         Plots original data and recovered data by PCA inverse transformation given a number of components
@@ -216,109 +316,9 @@ class Plot:
         """
         # Sample number to perform inverse transform comparison
         n_compare = np.random.randint(len(pco_d.training_physical))
-        self.d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
+        d_pca_inverse_plot(pco_d.training_physical, n_compare, pco_d.operator, nd)
         self.h_pca_inverse_plot(pco_h, n_compare, nh)
         plt.show()
         # Displays the explained variance percentage given the number of components
         print(pco_d.perc_pca_components(nd))
         print(pco_h.perc_pca_components(nh))
-
-    @staticmethod
-    def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
-        """
-        PCA explained variance plot
-        :param pca: PCA operator
-        :param n_comp: Number of components to display
-        :param xfs: X-axis fontsize
-        :param fig_file:
-        :param show:
-        :return:
-        """
-        plt.grid(alpha=0.2)
-        if not n_comp:
-            n_comp = pca.n_components_
-        plt.xticks(np.arange(n_comp), fontsize=xfs)
-        plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]),
-                 '-o', linewidth=.5, markersize=1.5, alpha=.8)
-        plt.xlabel('Number of components')
-        plt.ylabel('Explained variance')
-        if fig_file:
-            plt.savefig(fig_file, dpi=300)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
-
-    @staticmethod
-    def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
-        """
-        PCA scores plot, displays scores of observations above those of training.
-        :param training: Training scores
-        :param prediction: Test scores
-        :param n_comp: How many components to show
-        :param fig_file:
-        :param show:
-        :return:
-        """
-        # Scores plot
-        plt.grid(alpha=0.2)
-        ut = n_comp
-        plt.xticks(np.arange(ut), fontsize=8)
-        plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.2)  # Plot all training scores
-        for sample_n in range(len(prediction)):
-            pc_obs = prediction[sample_n]
-            plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                     'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-                     label=str(sample_n))
-        plt.tick_params(labelsize=6)
-        plt.legend(fontsize=3)
-
-        if fig_file:
-            plt.savefig(fig_file, dpi=300)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
-
-    @staticmethod
-    def cca(cca, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
-        """
-        CCA plots.
-        Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-        :param cca: CCA operator
-        :param d: d CCA scores
-        :param h: h CCA scores
-        :param d_pc_prediction: d test PC scores
-        :param h_pc_prediction: h test PC scores
-        :param sdir:
-        :param show:
-        :return:
-        """
-
-        cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca.n_components)  # Gets correlation coefficient
-
-        # CCA plots for each observation:
-        for i in range(cca.n_components):
-            comp_n = i
-            plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
-            for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
-                d_obs = d_pc_prediction[sample_n]
-                h_obs = h_pc_prediction[sample_n]
-                d_cca_prediction, h_cca_prediction = cca.transform(d_obs.reshape(1, -1),
-                                                                   h_obs.reshape(1, -1))
-                d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
-
-                plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-                         'o', markersize=4.5, alpha=.7,
-                         label='{}'.format(sample_n))
-
-            plt.grid('w', linewidth=.3, alpha=.4)
-            plt.tick_params(labelsize=8)
-            plt.title(round(cca_coefficient[i], 4))
-            plt.legend(fontsize=5)
-            if sdir:
-                plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
-                plt.close()
-            if show:
-                plt.show()
-                plt.close()
