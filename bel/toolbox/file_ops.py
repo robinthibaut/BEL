@@ -100,11 +100,11 @@ def remove_bad(res_tree):
 def load_data(res_dir, n=0, check=True, data_flag=False):
     """
 
-    @param check: Whether to check breaktrough curves for unrealistic results or not.
-    @param res_dir: main directory containing results sub-directories
-    @param n: if != 0, will randomly select n sub-folders from res_tree
-    @param data_flag: if True, only loads data and not the target
-    @return: tp, sd
+    :param check: Whether to check breaktrough curves for unrealistic results or not.
+    :param res_dir: main directory containing results sub-directories
+    :param n: if != 0, will randomly select n sub-folders from res_tree
+    :param data_flag: if True, only loads data and not the target
+    :return: tp, sd
     """
     # TODO: Split this function to generalize and load one feature at a time
 
@@ -163,10 +163,11 @@ def load_data(res_dir, n=0, check=True, data_flag=False):
 def load_res(res_dir, n=0, check=True, roots=None):
     """
 
-    @param check: Whether to check breaktrough curves for unrealistic results or not.
-    @param res_dir: main directory containing results sub-directories
-    @param n: if != 0, will randomly select n sub-folders from res_tree
-    @return: tp, sd
+    :param roots:
+    :param check: Whether to check breaktrough curves for unrealistic results or not.
+    :param res_dir: main directory containing results sub-directories
+    :param n: if != 0, will randomly select n sub-folders from res_tree
+    :return: tp, sd
     """
     # TODO: Split this function to generalize and load one feature at a time
 
@@ -222,4 +223,3 @@ def load_res(res_dir, n=0, check=True, roots=None):
     # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
     sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
     return tpt, sd, roots
-

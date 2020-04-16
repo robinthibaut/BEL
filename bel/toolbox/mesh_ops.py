@@ -155,13 +155,3 @@ def h_sub(h, un, uc, sc):
         h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
 
     return h_u
-
-
-class MeshOps:
-
-    def __init__(self):
-        self.xlim = 1500
-        self.ylim = 1000
-        self.grf = 1  # Cell dimension (1m)
-        self.nrow = self.ylim // self.grf
-        self.ncol = self.xlim // self.grf

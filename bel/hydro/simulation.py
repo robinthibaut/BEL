@@ -8,11 +8,12 @@ from os.path import join as jp
 import numpy as np
 import multiprocessing as mp
 
+import bel.toolbox.file_ops as fops
 from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
-from bel.toolbox.file_ops import dirmaker, keep_essential
+
 
 
 def simulation(folder=None):
@@ -32,7 +33,7 @@ def simulation(folder=None):
 
     results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
-    dirmaker(results_dir)
+    fops.dirmaker(results_dir)
     # Loads well information
     wells_data = np.load(jp(mod_dir, 'grid', 'iw.npy'), allow_pickle=True)
     # Run Flow
@@ -48,7 +49,7 @@ def simulation(folder=None):
         np.save(jp(results_dir, 'pz'), pzs)  # Save those
         # Deletes everything except final results
         if not folder:
-            keep_essential(results_dir)
+            fops.keep_essential(results_dir)
     else:
         shutil.rmtree(results_dir)
 

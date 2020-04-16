@@ -22,7 +22,6 @@ from sklearn.cross_decomposition import CCA
 import bel.toolbox.file_ops as fops
 import bel.toolbox.plots as plot
 from bel.toolbox.data_ops import DataOps
-from bel.toolbox.mesh_ops import MeshOps
 from bel.toolbox.pca_ops import PCAOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
@@ -31,7 +30,6 @@ plt.style.use('dark_background')
 
 
 do = DataOps()
-mo = MeshOps()
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)

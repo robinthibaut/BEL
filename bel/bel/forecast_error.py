@@ -7,14 +7,12 @@ import numpy as np
 from sklearn.neighbors import KernelDensity
 
 from bel.toolbox.plots import Plot
-from bel.toolbox.mesh_ops import MeshOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
 from bel.toolbox.hausdorff import modified_distance
 
 plt.style.use('dark_background')
 
-mo = MeshOps()
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
