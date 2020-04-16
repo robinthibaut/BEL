@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.matlib import repmat
 
-from bel.processing.data_ops import TargetOps
+from bel.processing.target_ops import TargetOps
 
 
 class PosteriorOps:

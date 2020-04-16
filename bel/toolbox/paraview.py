@@ -6,19 +6,16 @@ import meshio
 import matplotlib.pyplot as plt
 
 import diavatly
-from bel.toolbox.file_ops import FileOps
-from bel.toolbox.mesh_ops import MeshOps
+import bel.toolbox.file_ops as fops
 from bel.toolbox.plots import Plot
 
 
-ops = FileOps()
-mo = MeshOps()
 po = Plot()
 
 rn = 'illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 m_load = jp(results_dir, 'whpa.nam')
-flow_model = load_flow_model(m_load, model_ws=results_dir)
+flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
 
 # TODO: write issue for inverted delr and delc
 delc = flow_model.modelgrid.delr
@@ -26,8 +23,8 @@ delr = flow_model.modelgrid.delc
 xyz_vertices = flow_model.modelgrid.xyzvertices
 
 # I'll be working with hexahedron, vtk type = 12
-blocks2d = blocks_from_rc(delr, delc)
-blocks = blocks_from_rc_3d(delr, delc)
+blocks2d = fops.blocks_from_rc(delr, delc)
+blocks = fops.blocks_from_rc_3d(delr, delc)
 blocks3d = blocks.reshape(-1, 3)
 # Let's first try 2D export !
 # Load hk array
