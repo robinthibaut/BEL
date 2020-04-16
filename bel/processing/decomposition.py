@@ -21,7 +21,8 @@ from sklearn.cross_decomposition import CCA
 
 import bel.toolbox.file_ops as fops
 import bel.toolbox.plots as plot
-from bel.processing.data_ops import TargetOps
+import bel.processing.data_ops as dops
+from bel.processing.target_ops import TargetOps
 from bel.toolbox.pca_ops import PCAOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
@@ -84,7 +85,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # Subdivide d in an arbitrary number of time steps.
-    tc = d_process(tc0=tc0, n_time_steps=250)
+    tc = dops.d_process(tc0=tc0, n_time_steps=250)
     n_wel = len(tc[0])  # Number of injecting wels
 
     # Plot d

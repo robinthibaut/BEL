@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import bel.toolbox.mesh_ops as mops
-from bel.toolbox.sgems.sgems import SGEMS
+from bel.sgems import SGEMS
 
 
 
