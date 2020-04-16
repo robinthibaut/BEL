@@ -10,8 +10,9 @@ import subprocess
 import numpy as np
 
 
-# TODO: Separate this script in 2: the first part will be a function, given a python script as argument, will run statistical_simulation
-#       The other part will be used to specifically write python code for my simulations. Push all to Github
+# TODO: Separate this script in 2: the first part will be a function, given a python script as argument,
+#  will run statistical_simulation The other part will be used to specifically write python code for my simulations.
+#  Push all to Github
 
 
 def path_leaf(path):
