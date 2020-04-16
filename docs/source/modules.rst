@@ -1,5 +1,5 @@
-bel
-===
+Project
+=======
 
 .. toctree::
    :maxdepth: 4

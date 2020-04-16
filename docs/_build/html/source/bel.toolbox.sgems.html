@@ -48,7 +48,7 @@
         <a href="../index.html" class="fa fa-home"> BEL </a>
         <div role="search">
 	  <form id ="rtd-search-form" class="wy-form"
-            action="../search.html" method="get">
+		action="../search.html" method="get">
 	    <input type="text" name="q" placeholder="Search docs" />
 	    <input type="hidden" name="check_keywords" value="yes" />
 	    <input type="hidden" name="area" value="default" />
@@ -64,8 +64,8 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">bel.toolbox.sgems package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-bel.toolbox.sgems.sgems">bel.toolbox.sgems.sgems module</a></li>
-<li><a class="reference internal" href="#module-bel.toolbox.sgems">Module contents</a></li>
+<li><a class="reference internal" href="#bel-toolbox-sgems-sgems-module">bel.toolbox.sgems.sgems module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -113,53 +113,11 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-bel.toolbox.sgems.sgems">
-<span id="bel-toolbox-sgems-sgems-module"></span><h2>bel.toolbox.sgems.sgems module<a class="headerlink" href="#module-bel.toolbox.sgems.sgems" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="bel.toolbox.sgems.sgems.SGEMS">
-<em class="property">class </em><code class="sig-prename descclassname">bel.toolbox.sgems.sgems.</code><code class="sig-name descname">SGEMS</code><a class="headerlink" href="#bel.toolbox.sgems.sgems.SGEMS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="bel.toolbox.sgems.sgems.SGEMS.SNESIM">
-<code class="sig-name descname">SNESIM</code><span class="sig-paren">(</span><em class="sig-param">tifile='ti1channel - Copy.grid', core_path='', op_folder='', simulation_name='SNESIM', output='hk', grid=[250, 250, 1, 5, 5, 5, 0, 0, 0], algo='snesim_std', number_realizations=1, cmin=1, cma=0, recri=-1, reitn=1, nmultigrid=3, debug=0, subgridchoice=0, expandiso=1, expandaniso=0, anisofactor='', affinity=0, rotation=0, usepresimdata=0, useprobfield=0, pfppc=0, pfppcv='', taumodelobject='1 1', useverticalprop=0, gregion='', trainingregion='', nfacies=2, marginalcdf='0.5 0.5', trainingproperty='facies', seed=137732, hard_data_grid='', hdgregion='', hard_data_property='', max_conditioning_data=60, search_ellipsoid_geometry=[100, 80, 50, 0.5, 0.4, 0.3]</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.SGEMS.SNESIM" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="bel.toolbox.sgems.sgems.SGEMS.gaussian_simulation">
-<code class="sig-name descname">gaussian_simulation</code><span class="sig-paren">(</span><em class="sig-param">op_folder='', simulation_name='simulation', output='hydrk', grid=[50, 50, 1, 1, 1, 1, 0, 0, 0], fixed_nodes=[], algo='sgsim', number_realizations=1, seed=1153808, kriging_type='Simple Kriging (SK)', trend=[0, 0, 0, 0, 0, 0, 0, 0, 0], local_mean=0, hard_data_grid='', hard_data_property='', assign_hard_data=0, max_conditioning_data=20, search_ellipsoid_geometry=[15, 15, 7.5, 0.398941, 0, 0], target_histogram_flag=0, target_histogram=[0, 0, 0, 0], variogram_nugget=0, variogram_number_stuctures=1, variogram_structures_contribution=[1], variogram_type=['Spherical'], range_max=[50], range_med=[40], range_min=[20], angle_x=[0], angle_y=[0], angle_z=[0]</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.SGEMS.gaussian_simulation" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function produces a python code that SGems will understand to run the specified commands</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bel.toolbox.sgems.sgems.SGEMS.so">
-<em class="property">static </em><code class="sig-name descname">so</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.SGEMS.so" title="Permalink to this definition">¶</a></dt>
-<dd><p>This code transforms the SGems simulations output into a python readable and exploitable format,
-given the sgems output file as argument</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bel.toolbox.sgems.sgems.SGEMS.transform">
-<em class="property">static </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">k_mean</em>, <em class="sig-param">k_std</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.SGEMS.transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transforms the values of the sgems simulations into meaningful data</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="bel.toolbox.sgems.sgems.joinlist">
-<code class="sig-prename descclassname">bel.toolbox.sgems.sgems.</code><code class="sig-name descname">joinlist</code><span class="sig-paren">(</span><em class="sig-param">j</em>, <em class="sig-param">mylist</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.joinlist" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function that joins an array of numbers with j as separator. For example, joinlist(‘^’, [1,2]) returns 1^2</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bel.toolbox.sgems.sgems.path_leaf">
-<code class="sig-prename descclassname">bel.toolbox.sgems.sgems.</code><code class="sig-name descname">path_leaf</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.toolbox.sgems.sgems.path_leaf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts file name from a path name</p>
-</dd></dl>
-
+<div class="section" id="bel-toolbox-sgems-sgems-module">
+<h2>bel.toolbox.sgems.sgems module<a class="headerlink" href="#bel-toolbox-sgems-sgems-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-bel.toolbox.sgems">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bel.toolbox.sgems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

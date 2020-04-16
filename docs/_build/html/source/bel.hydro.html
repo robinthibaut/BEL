@@ -48,7 +48,7 @@
         <a href="../index.html" class="fa fa-home"> BEL </a>
         <div role="search">
 	  <form id ="rtd-search-form" class="wy-form"
-            action="../search.html" method="get">
+		action="../search.html" method="get">
 	    <input type="text" name="q" placeholder="Search docs" />
 	    <input type="hidden" name="check_keywords" value="yes" />
 	    <input type="hidden" name="area" value="default" />
@@ -124,11 +124,13 @@
 <li class="toctree-l1"><a class="reference internal" href="bel.hydro.flow.html">bel.hydro.flow package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.flow.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.flow.html#module-bel.hydro.flow.modflow">bel.hydro.flow.modflow module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bel.hydro.flow.html#module-bel.hydro.flow.wells">bel.hydro.flow.wells module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.flow.html#module-bel.hydro.flow">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bel.hydro.transport.html">bel.hydro.transport package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.transport.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bel.hydro.transport.html#module-bel.hydro.transport.active_zone">bel.hydro.transport.active_zone module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.transport.html#module-bel.hydro.transport.mt3d">bel.hydro.transport.mt3d module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bel.hydro.transport.html#module-bel.hydro.transport">Module contents</a></li>
 </ul>
@@ -148,18 +150,13 @@
 <div class="section" id="module-bel.hydro.simulation">
 <span id="bel-hydro-simulation-module"></span><h2>bel.hydro.simulation module<a class="headerlink" href="#module-bel.hydro.simulation" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="bel.hydro.simulation.gen_rand_well">
-<code class="sig-prename descclassname">bel.hydro.simulation.</code><code class="sig-name descname">gen_rand_well</code><span class="sig-paren">(</span><em class="sig-param">radius</em>, <em class="sig-param">x0</em>, <em class="sig-param">y0</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.hydro.simulation.gen_rand_well" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates random coordinates within a circle.
-:param radius:
-:param x0:
-:param y0:
-:return:</p>
-</dd></dl>
+<dt id="bel.hydro.simulation.main">
+<code class="sig-prename descclassname">bel.hydro.simulation.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bel.hydro.simulation.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
-<dt id="bel.hydro.simulation.main">
-<code class="sig-prename descclassname">bel.hydro.simulation.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">res_dir=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.hydro.simulation.main" title="Permalink to this definition">¶</a></dt>
+<dt id="bel.hydro.simulation.simulation">
+<code class="sig-prename descclassname">bel.hydro.simulation.</code><code class="sig-name descname">simulation</code><span class="sig-paren">(</span><em class="sig-param">folder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.hydro.simulation.simulation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

@@ -1,28 +1,21 @@
 bel.toolbox package
 ===================
 
-Subpackages
------------
-
-.. toctree::
-
-   bel.toolbox.sgems
-
 Submodules
 ----------
-
-bel.toolbox.data\_ops module
-----------------------------
-
-.. automodule:: bel.toolbox.data_ops
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 bel.toolbox.file\_ops module
 ----------------------------
 
 .. automodule:: bel.toolbox.file_ops
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+bel.toolbox.hausdorff module
+----------------------------
+
+.. automodule:: bel.toolbox.hausdorff
    :members:
    :undoc-members:
    :show-inheritance:
@@ -35,18 +28,18 @@ bel.toolbox.mesh\_ops module
    :undoc-members:
    :show-inheritance:
 
-bel.toolbox.paraview module
----------------------------
+bel.toolbox.model\_inspector module
+-----------------------------------
 
-.. automodule:: bel.toolbox.paraview
+.. automodule:: bel.toolbox.model_inspector
    :members:
    :undoc-members:
    :show-inheritance:
 
-bel.toolbox.pca\_ops module
+bel.toolbox.paraview module
 ---------------------------
 
-.. automodule:: bel.toolbox.pca_ops
+.. automodule:: bel.toolbox.paraview
    :members:
    :undoc-members:
    :show-inheritance:
@@ -63,14 +56,6 @@ bel.toolbox.posterior\_ops module
 ---------------------------------
 
 .. automodule:: bel.toolbox.posterior_ops
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-bel.toolbox.visualization module
---------------------------------
-
-.. automodule:: bel.toolbox.visualization
    :members:
    :undoc-members:
    :show-inheritance:

@@ -12,6 +12,14 @@ bel.hydro.flow.modflow module
    :undoc-members:
    :show-inheritance:
 
+bel.hydro.flow.wells module
+---------------------------
+
+.. automodule:: bel.hydro.flow.wells
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

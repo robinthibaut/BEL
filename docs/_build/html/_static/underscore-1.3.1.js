@@ -448,7 +448,7 @@
     return -1;
   };
 
-  // Generate an integer Array containing an arithmetic progression. a port of
+  // Generate an integer Array containing an arithmetic progression. A port of
   // the native Python `range()` function. See
   // [the Python documentation](http://docs.python.org/library/functions.html#range).
   _.range = function(start, stop, step) {
@@ -674,7 +674,7 @@
     // Identical objects are equal. `0 === -0`, but they aren't identical.
     // See the Harmony `egal` proposal: http://wiki.ecmascript.org/doku.php?id=harmony:egal.
     if (a === b) return a !== 0 || 1 / a == 1 / b;
-    // a strict comparison is necessary because `null == undefined`.
+    // A strict comparison is necessary because `null == undefined`.
     if (a == null || b == null) return a === b;
     // Unwrap any wrapped objects.
     if (a._chain) a = a._wrapped;
@@ -957,7 +957,7 @@
     return chain ? _(obj).chain() : obj;
   };
 
-  // a method to easily add functions to the OOP wrapper.
+  // A method to easily add functions to the OOP wrapper.
   var addToWrapper = function(name, func) {
     wrapper.prototype[name] = function() {
       var args = slice.call(arguments);

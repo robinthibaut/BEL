@@ -9,6 +9,8 @@ Subpackages
    bel.bel
    bel.hydro
    bel.processing
+   bel.statistical_simulation
+   bel.temp
    bel.toolbox
 
 Module contents

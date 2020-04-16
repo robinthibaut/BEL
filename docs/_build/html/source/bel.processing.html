@@ -48,7 +48,7 @@
         <a href="../index.html" class="fa fa-home"> BEL </a>
         <div role="search">
 	  <form id ="rtd-search-form" class="wy-form"
-            action="../search.html" method="get">
+		action="../search.html" method="get">
 	    <input type="text" name="q" placeholder="Search docs" />
 	    <input type="hidden" name="check_keywords" value="yes" />
 	    <input type="hidden" name="area" value="default" />
@@ -64,8 +64,11 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">bel.processing package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-bel.processing.data_ops">bel.processing.data_ops module</a></li>
 <li><a class="reference internal" href="#module-bel.processing.decomposition">bel.processing.decomposition module</a></li>
+<li><a class="reference internal" href="#module-bel.processing.pca_ops">bel.processing.pca_ops module</a></li>
 <li><a class="reference internal" href="#module-bel.processing.signed_distance">bel.processing.signed_distance module</a></li>
+<li><a class="reference internal" href="#module-bel.processing.target_ops">bel.processing.target_ops module</a></li>
 <li><a class="reference internal" href="#module-bel.processing">Module contents</a></li>
 </ul>
 </li>
@@ -114,6 +117,21 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-bel.processing.data_ops">
+<span id="bel-processing-data-ops-module"></span><h2>bel.processing.data_ops module<a class="headerlink" href="#module-bel.processing.data_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="bel.processing.data_ops.d_process">
+<code class="sig-prename descclassname">bel.processing.data_ops.</code><code class="sig-name descname">d_process</code><span class="sig-paren">(</span><em class="sig-param">tc0</em>, <em class="sig-param">n_time_steps=500</em>, <em class="sig-param">t_max=101.08</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.data_ops.d_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>The breakthrough curves do not share the same time steps.
+We need to save the data array in a consistent shape, thus interpolates and sub-divides each simulation
+curves into n time steps.
+&#64;param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
+&#64;param n_time_steps: desired number of time step, will be the new dimension in shape[1].
+&#64;param t_max: Time corresponding to the end of the simulation.
+&#64;return: Data array with shape (n_sim, n_time_steps, n_wells)</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-bel.processing.decomposition">
 <span id="bel-processing-decomposition-module"></span><h2>bel.processing.decomposition module<a class="headerlink" href="#module-bel.processing.decomposition" title="Permalink to this headline">¶</a></h2>
 <p>This script pre-processes the data.
@@ -140,6 +158,68 @@ It saves results as pkl objects that have to be loaded in the forecast_error.py 
 <dd class="field-even"><p></p>
 </dd>
 </dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.processing.pca_ops">
+<span id="bel-processing-pca-ops-module"></span><h2>bel.processing.pca_ops module<a class="headerlink" href="#module-bel.processing.pca_ops" title="Permalink to this headline">¶</a></h2>
+<p>Collection of functions to use the PCA class from scikit-learn.</p>
+<dl class="class">
+<dt id="bel.processing.pca_ops.PCAOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.processing.pca_ops.</code><code class="sig-name descname">PCAOps</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">raw_data</em>, <em class="sig-param">directory=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.inverse_transform">
+<code class="sig-name descname">inverse_transform</code><span class="sig-paren">(</span><em class="sig-param">pc_to_invert</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
+The self.operator.components contains all components.
+:param pc_to_invert: PC array
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.n_pca_components">
+<code class="sig-name descname">n_pca_components</code><span class="sig-paren">(</span><em class="sig-param">perc</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.n_pca_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an explained variance percentage, returns the number of components
+necessary to obtain that level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.pc_random">
+<code class="sig-name descname">pc_random</code><span class="sig-paren">(</span><em class="sig-param">n_posts</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.pc_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly selects PC components from the original training matrix dtp</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.pca_refresh">
+<code class="sig-name descname">pca_refresh</code><span class="sig-paren">(</span><em class="sig-param">n_comp</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.pca_refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a number of components to keep, returns the PC array with the corresponding shape.
+:param n_comp:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.pca_tp">
+<code class="sig-name descname">pca_tp</code><span class="sig-paren">(</span><em class="sig-param">n_training</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.pca_tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an arbitrary size of training data, splits the original array accordingly
+:param n_training:
+:return: training, test</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.pca_transformation">
+<code class="sig-name descname">pca_transformation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.pca_transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate the PCA object and transforms both training and test data.
+Depending on the value of the load parameter, it will create a new one or load a previously computed one.
+:return: PC training, PC test</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.pca_ops.PCAOps.perc_pca_components">
+<code class="sig-name descname">perc_pca_components</code><span class="sig-paren">(</span><em class="sig-param">n_c</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.pca_ops.PCAOps.perc_pca_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the explained variance percentage given a number of components n_c.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -184,6 +264,25 @@ To compute the signed distance function, we need a negative/positive value.</p>
 <dt id="bel.processing.signed_distance.get_centroids">
 <code class="sig-prename descclassname">bel.processing.signed_distance.</code><code class="sig-name descname">get_centroids</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">grf</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.signed_distance.get_centroids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a m x n matrix, returns the m x n x 2 matrix of the coordinates of centroids.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bel.processing.target_ops">
+<span id="bel-processing-target-ops-module"></span><h2>bel.processing.target_ops module<a class="headerlink" href="#module-bel.processing.target_ops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="bel.processing.target_ops.TargetOps">
+<em class="property">class </em><code class="sig-prename descclassname">bel.processing.target_ops.</code><code class="sig-name descname">TargetOps</code><a class="headerlink" href="#bel.processing.target_ops.TargetOps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="bel.processing.target_ops.TargetOps.gaussian_distribution">
+<code class="sig-name descname">gaussian_distribution</code><span class="sig-paren">(</span><em class="sig-param">original_array</em>, <em class="sig-param">name='gd'</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.target_ops.TargetOps.gaussian_distribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bel.processing.target_ops.TargetOps.gaussian_inverse">
+<code class="sig-name descname">gaussian_inverse</code><span class="sig-paren">(</span><em class="sig-param">original_array</em>, <em class="sig-param">name='gd'</em><span class="sig-paren">)</span><a class="headerlink" href="#bel.processing.target_ops.TargetOps.gaussian_inverse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
