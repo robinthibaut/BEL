@@ -18,7 +18,7 @@ po = Plot()
 rn = 'illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 m_load = jp(results_dir, 'whpa.nam')
-flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
+flow_model = load_flow_model(m_load, model_ws=results_dir)
 
 # TODO: write issue for inverted delr and delc
 delc = flow_model.modelgrid.delr

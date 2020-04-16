@@ -32,7 +32,7 @@ def simulation(folder=None):
 
     results_dir = jp(mod_dir, 'results', res_dir)
     # Generates the result directory
-    FileOps.dirmaker(results_dir)
+    dirmaker()
     # Loads well information
     wells_data = np.load(jp(mod_dir, 'grid', 'iw.npy'), allow_pickle=True)
     # Run Flow
@@ -48,7 +48,7 @@ def simulation(folder=None):
         np.save(jp(results_dir, 'pz'), pzs)  # Save those
         # Deletes everything except final results
         if not folder:
-            FileOps.keep_essential(results_dir)
+            keep_essential()
     else:
         shutil.rmtree(results_dir)
 

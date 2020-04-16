@@ -13,13 +13,13 @@ results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # Load flow model
 m_load = jp(results_dir, 'whpa.nam')
-flow_model = ops.load_flow_model(m_load, model_ws=results_dir)
+flow_model = load_flow_model(m_load, model_ws=results_dir)
 # Wells are ordered by node number
 spd = flow_model.wel.stress_period_data.df
 
 # Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
-transport_model = ops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
+transport_model = load_transport_model(mt_load, flow_model, model_ws=results_dir)
 
 # let's take a look at our grid
 fig = plt.figure(figsize=(8, 8))
@@ -84,6 +84,6 @@ mapview.plot_array(head, masked_values=[999.], alpha=0.5)
 mapview.plot_endpoint(ept)
 plt.show()
 
-obs = ops.datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
+obs = datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
 plt.plot(obs[:,0], obs[:,1])
 plt.show()

@@ -9,10 +9,10 @@ def cleanup():
     # cwd = os.getcwd()
     res_tree = jp('..', 'hydro', 'results')
     # r=root, d=directories, f = files
-    fo.remove_incomplete(res_tree)
+    remove_incomplete(res_tree)
     for r, _, _ in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fo.keep_essential(r)
+            keep_essential(r)
 
 
 if __name__ == '__main__':
