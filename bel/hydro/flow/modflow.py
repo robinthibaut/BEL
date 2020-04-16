@@ -7,8 +7,9 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
+import bel.toolbox.mesh_ops as mops
 from bel.toolbox.sgems.sgems import SGEMS
-from bel.toolbox.mesh_ops import MeshOps
+
 
 
 def flow(exe_name, model_ws, wells):
@@ -96,7 +97,7 @@ def flow(exe_name, model_ws, wells):
     delr = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
 
     # Refinement of the mesh
-    r_a = refine_axis
+    r_a = mops.refine_axis
     for p in r_params:
         delc = r_a(delc, pt[0], p[1], p[0], dx, x_lim)
         delr = r_a(delr, pt[1], p[1], p[0], dy, y_lim)

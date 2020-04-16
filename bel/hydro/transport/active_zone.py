@@ -4,10 +4,10 @@ import flopy
 import matplotlib.pyplot as plt
 import numpy as np
 
+import bel.toolbox.mesh_ops as mops
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.processing.signed_distance import SignedDistance, get_centroids
 from bel.toolbox.plots import Plot
-from bel.toolbox.mesh_ops import MeshOps
 from diavatly import model_map
 
 
@@ -87,8 +87,7 @@ def active_zone(modflowmodel):
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
-    mo = MeshOps()
-    inds = matrix_paste(xy_dummy, xy_true)
+    inds = mops.matrix_paste(xy_dummy, xy_true)
     val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
 
@@ -98,7 +97,7 @@ def active_zone(modflowmodel):
            show_wells=True,
            show=True)
 
-    grid1 = blocks_from_rc(np.ones(nrow_dummy)*grf_dummy, np.ones(ncol_dummy)*grf_dummy)
+    grid1 = mops.blocks_from_rc(np.ones(nrow_dummy)*grf_dummy, np.ones(ncol_dummy)*grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)
     plt.show()
 
