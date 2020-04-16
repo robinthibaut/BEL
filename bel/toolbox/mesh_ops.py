@@ -148,6 +148,14 @@ def matrix_paste(c_big, c_small):
 
 
 def h_sub(h, un, uc, sc):
+    """
+    Process signed distance array.
+    :param h: Signed distance array
+    :param un: # rows
+    :param uc: # columns
+    :param sc: New cell dimension in x and y direction (original is 1)
+
+    """
     h_u = np.zeros((h.shape[0], un, uc))
     for i in range(h.shape[0]):
         sim = h[i]
@@ -155,3 +163,4 @@ def h_sub(h, un, uc, sc):
         h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
 
     return h_u
+

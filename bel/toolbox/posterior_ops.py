@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.matlib import repmat
 
-from bel.toolbox.data_ops import DataOps
+from bel.processing.data_ops import TargetOps
 
 
 class PosteriorOps:
@@ -11,7 +11,7 @@ class PosteriorOps:
     def __init__(self):
         self.posterior_mean = 0
         self.posterior_covariance = 0
-        self.ops = DataOps()
+        self.ops = TargetOps()
 
     def posterior(self,
                   h_cca_training_gaussian,

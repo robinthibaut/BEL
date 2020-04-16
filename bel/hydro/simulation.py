@@ -15,7 +15,6 @@ from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
 
 
-
 def simulation(folder=None):
     # Directories
     mod_dir = os.getcwd()  # Module directory

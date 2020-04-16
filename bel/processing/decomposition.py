@@ -21,7 +21,7 @@ from sklearn.cross_decomposition import CCA
 
 import bel.toolbox.file_ops as fops
 import bel.toolbox.plots as plot
-from bel.toolbox.data_ops import DataOps
+from bel.processing.data_ops import TargetOps
 from bel.toolbox.pca_ops import PCAOps
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.processing.signed_distance import SignedDistance
@@ -29,7 +29,7 @@ from bel.processing.signed_distance import SignedDistance
 plt.style.use('dark_background')
 
 
-do = DataOps()
+do = TargetOps()
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
 sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
@@ -84,7 +84,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
     # Subdivide d in an arbitrary number of time steps.
-    tc = do.d_process(tc0=tc0, n_time_steps=250)
+    tc = d_process(tc0=tc0, n_time_steps=250)
     n_wel = len(tc[0])  # Number of injecting wels
 
     # Plot d
@@ -107,7 +107,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
     # PCA on signed distance
     h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
-    h_pco.pca_tp(n_training) # Split into training and prediction
+    h_pco.pca_tp(n_training)  # Split into training and prediction
     h_pc_training, h_pc_prediction = h_pco.pca_transformation()
 
     # TODO: Build a framework to select the number of PC components.
