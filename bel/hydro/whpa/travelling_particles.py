@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import math
 
 import numpy as np
@@ -8,7 +10,7 @@ from ortools.constraint_solver import routing_enums_pb2
 def datread(file=None, header=0):
     """Reads space separated dat file"""
     with open(file, 'r') as fr:
-        op = np.array([list(map(float, l.split())) for l in fr.readlines()[header:]])
+        op = np.array([list(map(float, i.split())) for i in fr.readlines()[header:]])
     return op
 
 
