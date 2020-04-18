@@ -179,7 +179,7 @@ class SGEMS:
         batch = os.path.join(op_folder, 'RunSgems.bat')
         bat = open(batch, 'w')
         bat.write(' '.join(['cd', op_folder, '\n']))
-        bat.write(' '.join(['statistical_simulation', 'statistical_simulation.script']))
+        bat.write(' '.join(['sgems', 'statistical_simulation.script']))
         bat.close()
 
         # Number of cells
@@ -362,7 +362,7 @@ class SGEMS:
         # of the simulation.
 
         template = """\
-import statistical_simulation\n\
+import sgems as statistical_simulation\n\
 import os
 os.chdir("OPFOLDER")
 #os.chdir('sim')
