@@ -24,7 +24,7 @@ def simulation(folder=None):
     exe_name_mt = jp(exe_loc, 'mt3d.exe')
     exe_name_mp = jp(exe_loc, 'mp7.exe')
 
-    if folder is None:
+    if not folder:
         # Main results directory.
         res_dir = uuid.uuid4().hex
     else:

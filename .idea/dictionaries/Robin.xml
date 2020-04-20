@@ -2,6 +2,7 @@
   <dictionary name="Robin">
     <words>
       <w>accl</w>
+      <w>algo</w>
       <w>allseg</w>
       <w>blockshaped</w>
       <w>botm</w>
@@ -67,6 +68,7 @@
       <w>iwetit</w>
       <w>joblib</w>
       <w>kper</w>
+      <w>kriging</w>
       <w>kstp</w>
       <w>layavg</w>
       <w>layercelldivisions</w>
