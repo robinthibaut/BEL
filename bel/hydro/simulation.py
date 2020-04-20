@@ -24,7 +24,7 @@ def simulation(folder=None):
     exe_name_mt = jp(exe_loc, 'mt3d.exe')
     exe_name_mp = jp(exe_loc, 'mp7.exe')
 
-    if not folder:
+    if folder is None:
         # Main results directory.
         res_dir = uuid.uuid4().hex
     else:
@@ -54,10 +54,10 @@ def simulation(folder=None):
 
 
 def main():
-    pool = mp.Pool(mp.cpu_count())
+    pool = mp.Pool(mp.cpu_count()-1)
     pool.map(simulation, np.zeros(300))
 
 
 if __name__ == "__main__":
-    simulation()
+    main()
 
