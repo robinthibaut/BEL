@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/bel/forecasts" />
       <excludeFolder url="file://$MODULE_DIR$/bel/hydro/results" />
+      <excludeFolder url="file://$MODULE_DIR$/bel/misc/backup" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/comparison_post" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/issues" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/old_scripts" />

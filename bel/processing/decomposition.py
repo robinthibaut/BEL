@@ -30,13 +30,6 @@ from bel.toolbox.posterior_ops import PosteriorOps
 plt.style.use('dark_background')
 
 
-do = TargetOps()
-po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 2
-sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
-mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-
-
 def bel(n_training=300, n_test=5, new_dir=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
@@ -148,5 +141,12 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
+
+    do = TargetOps()
+    po = PosteriorOps()
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+
     bel(new_dir=None)
 
