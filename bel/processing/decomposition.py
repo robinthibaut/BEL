@@ -24,8 +24,6 @@ import bel.toolbox.file_ops as fops
 import bel.toolbox.plots as plot
 from bel.processing.pca_ops import PCAOps
 from bel.processing.signed_distance import SignedDistance
-from bel.processing.target_ops import TargetOps
-from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
 
@@ -40,6 +38,11 @@ def bel(n_training=300, n_test=5, new_dir=None):
     :param new_dir: Name of the forecast directory
     :return:
     """
+
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
@@ -141,12 +144,4 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
-
-    do = TargetOps()
-    po = PosteriorOps()
-    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
-    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-
     bel(new_dir=None)
-
