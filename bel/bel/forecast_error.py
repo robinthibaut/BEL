@@ -1,5 +1,6 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+import multiprocessing as mp
 import os
 from os.path import join as jp
 
@@ -16,18 +17,20 @@ from bel.toolbox.posterior_ops import PosteriorOps
 plt.style.use('dark_background')
 
 
-def error():
+def error(study_folder):
 
     po = PosteriorOps()
     x_lim, y_lim, grf = [800, 1150], [300, 700], 2
-    mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
     # Directories & files paths
     cwd = os.getcwd()
-    wdir = jp('bel', 'hydro', 'grid')
-    mp.wdir = wdir
-    study_folder = '5c254d8f-7ab6-4627-b3a3-7a50564e56b7'
-    bel_dir = jp('bel', 'forecasts', study_folder)
+    main_dir = os.path.dirname(cwd)
+
+    grid_dir = jp(main_dir, 'hydro', 'grid')
+    mplot.wdir = grid_dir
+
+    bel_dir = jp(main_dir, 'bel', 'forecasts', study_folder)
     res_dir = jp(bel_dir, 'objects')
     fig_dir = jp(bel_dir, 'figures')
     fig_cca_dir = jp(fig_dir, 'CCA')
@@ -42,7 +45,7 @@ def error():
     hnc0 = h_pco.ncomp
     print(d_pco.perc_pca_components(dnc0))
     print(h_pco.perc_pca_components(hnc0))
-    mp.pca_inverse_compare(d_pco, h_pco, dnc0, hnc0)
+    mplot.pca_inverse_compare(d_pco, h_pco, dnc0, hnc0)
 
     # Cut desired number of PC components
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
@@ -74,14 +77,14 @@ def error():
 
     # Plot results
     ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca_operator.n_components))
-    mp.whp_prediction(forecasts=forecast_posterior,
+    mplot.whp_prediction(forecasts=forecast_posterior,
                       h_true=h_true_obs,
                       h_pred=h_pred,
                       show_wells=True,
                       fig_file=ff)
 
     # %% extract 0 contours
-    vertices = mp.contours_vertices(forecast_posterior)
+    vertices = mplot.contours_vertices(forecast_posterior)
 
     # Reshape coordinates
     x_stack = np.hstack([vi[:, 0] for vi in vertices])
@@ -107,7 +110,7 @@ def error():
         # Prepare the Plot instance with right dimensions
         grf_kd = 2
         mpkde = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf_kd)
-        mpkde.wdir = wdir
+        mpkde.wdir = grid_dir
         cell_dim = grf_kd
         xgrid = np.arange(xmin, xmax, cell_dim)
         ygrid = np.arange(ymin, ymax, cell_dim)
@@ -151,7 +154,7 @@ def error():
         z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
         # Plot KDE
-        mp.whp(h_true_obs.reshape(1, shape[1], shape[2]),
+        mplot.whp(h_true_obs.reshape(1, shape[1], shape[2]),
                alpha=1,
                lw=1,
                show_wells=True,
@@ -170,7 +173,7 @@ def error():
         # For this approach we use our SignedDistance module
         sd_kd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
         mpbin = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-        mpbin.wdir = wdir
+        mpbin.wdir = grid_dir
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
@@ -187,7 +190,7 @@ def error():
 
     #  Let's try Hausdorff...
     def hausdorff():
-        v_h_true = mp.contours_vertices(h_true_obs)[0]
+        v_h_true = mplot.contours_vertices(h_true_obs)[0]
         # v_h_pred = mp.contours_vertices(h_pred)[0]
         # mhd = modified_distance(v_h_true, v_h_pred)
 
@@ -201,7 +204,7 @@ def error():
 
         # Plot results
         fig = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca_operator.n_components))
-        mp.whp_prediction(forecasts=np.expand_dims(forecast_posterior[max_pos], axis=0),
+        mplot.whp_prediction(forecasts=np.expand_dims(forecast_posterior[max_pos], axis=0),
                           h_true=h_true_obs,
                           h_pred=forecast_posterior[min_pos],
                           show_wells=True,
@@ -210,5 +213,16 @@ def error():
         hausdorff()
 
 
+def main():
+    cwd = os.getcwd()
+    main_dir = os.path.dirname(cwd)
+    bel_dir = jp(main_dir, 'forecasts')
+    list_subfolders = [f.name for f in os.scandir(bel_dir) if f.is_dir()]
+    pool = mp.Pool(mp.cpu_count()-1)
+    pool.map(error, list_subfolders)
+
+
 if __name__ == '__main__':
-    error()
+    main()
+
+    # error(study_folder=decompositions)
