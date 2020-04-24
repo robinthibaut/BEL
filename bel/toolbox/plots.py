@@ -278,11 +278,12 @@ class Plot:
                        forecasts,
                        h_true,
                        h_pred,
+                       bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
                        show=False):
 
-        self.whp(h=forecasts, show_wells=show_wells)
+        self.whp(h=forecasts, show_wells=show_wells, bkg_field_array=bkg_field_array)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
         # Plot true h predicted

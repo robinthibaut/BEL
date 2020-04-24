@@ -90,9 +90,9 @@ xykde = np.vstack([x_stack, y_stack]).T
 # %% Kernel density
 
 # Scatter plot vertices
-nn = sample_n
-plt.plot(vertices[nn][:, 0], vertices[nn][:, 1], 'o-')
-plt.show()
+# nn = sample_n
+# plt.plot(vertices[nn][:, 0], vertices[nn][:, 1], 'o-')
+# plt.show()
 
 # Grid geometry
 xmin = x_lim[0]
@@ -197,7 +197,6 @@ print(mhds.max())
 
 min_pos = np.where(mhds == mhds.min())[0][0]
 max_pos = np.where(mhds == mhds.max())[0][0]
-
 
 # Plot results
 ff = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca_operator.n_components))
