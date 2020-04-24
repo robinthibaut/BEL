@@ -1,8 +1,11 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
-from os.path import join as jp
 import shutil
-import numpy as np
+from os.path import join as jp
+
 import flopy
+import numpy as np
 
 
 def datread(file=None, header=0):
@@ -97,6 +100,32 @@ def remove_bad(res_tree):
                 shutil.rmtree(r)
 
 
+def remove_bkt(res_dir):
+    """
+    Loads all breakthrough curves from the results and delete folder in case
+    the max computed concentration is > 1.
+    :param res_dir:
+    :return:
+    """
+    bkt_files = []  # Breakthrough curves files
+    # r=root, d=directories, f = files
+    roots = []
+    for r, d, f in os.walk(res_dir, topdown=False):
+        # Adds the data files to the lists, which will be loaded later
+        if 'bkt.npy' in f:
+            bkt_files.append(jp(r, 'bkt.npy'))
+            roots.append(r)
+    tpt = list(map(np.load, bkt_files))
+    rm = []  # Will contain indices to remove
+    for i in range(len(tpt)):
+        for j in range(len(tpt[i])):
+            if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
+                rm.append(i)
+                break
+    for index in sorted(rm, reverse=True):
+        shutil.rmtree(roots[index])
+
+
 def load_data(res_dir, n=0, check=True, data_flag=False):
     """
 
@@ -160,14 +189,13 @@ def load_data(res_dir, n=0, check=True, data_flag=False):
         return tpt, roots
 
 
-def load_res(res_dir, n=0, check=True, roots=None):
+def load_res(res_dir, n=0, roots=None):
     """
-
+    Loads results from main results folder. It assumes the the filter have previously been cleaned.
     :param roots:
-    :param check: Whether to check breaktrough curves for unrealistic results or not.
     :param res_dir: main directory containing results sub-directories
     :param n: if != 0, will randomly select n sub-folders from res_tree
-    :return: tp, sd
+    :return: tp, sd, roots
     """
     # TODO: Split this function to generalize and load one feature at a time
 
@@ -201,24 +229,6 @@ def load_res(res_dir, n=0, check=True, roots=None):
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
-    # Load and filter results
-    # We first load the breakthrough curves and check for errors.
-    # If one of the concentration is > 1, it means the simulation is unrealistic and we remove it from the dataset.
-    if check:  # Check whether to delete for simulation issues
-        tpt = list(map(np.load, bkt_files))
-        rm = []  # Will contain indices to remove
-        for i in range(len(tpt)):
-            for j in range(len(tpt[i])):
-                if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
-                    rm.append(i)
-                    break
-        for index in sorted(rm, reverse=True):
-            del bkt_files[index]
-            del sd_files[index]
-            del hk_files[index]
-            del roots[index]
-
-    # Check unpacking
     tpt = list(map(np.load, bkt_files))  # Re-load transport curves
     # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
     sd = np.array(list(map(np.load, sd_files)))  # Load signed distance

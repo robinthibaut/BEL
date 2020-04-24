@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
 
@@ -12,6 +14,7 @@ def cleanup():
     for r, _, _ in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.keep_essential(r)
+            fops.remove_bkt(r)
 
 
 if __name__ == '__main__':

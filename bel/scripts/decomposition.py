@@ -24,17 +24,8 @@ import bel.toolbox.file_ops as fops
 import bel.toolbox.plots as plot
 from bel.processing.pca_ops import PCAOps
 from bel.processing.signed_distance import SignedDistance
-from bel.processing.target_ops import TargetOps
-from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
-
-
-do = TargetOps()
-po = PosteriorOps()
-x_lim, y_lim, grf = [800, 1150], [300, 700], 2
-sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
-mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
 
 def bel(n_training=300, n_test=5, new_dir=None):
@@ -47,6 +38,11 @@ def bel(n_training=300, n_test=5, new_dir=None):
     :param new_dir: Name of the forecast directory
     :return:
     """
+
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
@@ -71,8 +67,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    check = False  # Flag to check for simulations issues
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, check=check, roots=roots)
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots)
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
@@ -149,4 +144,3 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 if __name__ == "__main__":
     bel(new_dir=None)
-

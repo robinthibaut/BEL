@@ -19,7 +19,7 @@ def simulation(folder=None):
     if folder is 0:
         folder = None
     # Directories
-    mod_dir = os.getcwd()  # Module directory
+    mod_dir = jp('..', os.getcwd())  # Module directory
     exe_loc = jp(mod_dir, 'exe')  # EXE directory
     # EXE files directory.
     exe_name_mf = jp(exe_loc, 'mf2005.exe')
@@ -61,5 +61,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    simulation()
 
