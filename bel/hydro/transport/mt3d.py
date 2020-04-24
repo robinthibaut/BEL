@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 from os import listdir
 from os.path import isfile
 from os.path import join as jp
@@ -6,7 +8,7 @@ import flopy
 import numpy as np
 
 
-def transport(modflowmodel, exe_name):
+def transport(modflowmodel, exe_name, grid_dir):
     """
 
     :param modflowmodel: flopy modflow model object
@@ -60,7 +62,7 @@ def transport(modflowmodel, exe_name):
 
     # %% Mt3dBtn
 
-    mt_icbund_file = jp('grid', 'mt3d_icbund.npy')
+    mt_icbund_file = jp(grid_dir, 'mt3d_icbund.npy')
     icbund = np.load(mt_icbund_file)
 
     MFStyleArr = False
