@@ -33,15 +33,13 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(mod_dir, 'results', res_dir)
-
-    # Loads well information
-    wells_data = np.load(jp(main_dir, 'hydro', 'grid', 'iw.npy'), allow_pickle=True)
+    results_dir = jp(main_dir, 'hydro', 'results', res_dir)
+    grid_dir = jp(main_dir, 'hydro', 'grid')
     # Generates the result directory
     fops.dirmaker(results_dir)
 
     # Run Flow
-    flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
+    flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, grid_dir=grid_dir)
     # # Run Transport
     if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt)

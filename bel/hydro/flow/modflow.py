@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 from datetime import date
 from os.path import join as jp
@@ -11,17 +13,16 @@ import bel.statistical_simulation.sgems as sg
 import bel.toolbox.mesh_ops as mops
 
 
-def flow(exe_name, model_ws, wells):
+def flow(exe_name, model_ws, grid_dir):
     """
     Builds and run customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
     :param model_ws: Path to the working directory.
-    :param wells: Array containing wells data.
+    :param grid_dir: Path to wells data directory.
     :return:
     """
     # Model name
     model_name = 'whpa'
-    grid_dir = jp(os.getcwd(), 'grid')  # Directory containing grid information
     # %% Modflow
     model = flopy.modflow.Modflow(modelname=model_name,
                                   namefile_ext='nam',
@@ -189,7 +190,9 @@ def flow(exe_name, model_ws, wells):
         return [iw, iwr, iw_lrc, spiw]
 
     pwa = pw_d  # Pumping well location
-    iwa = np.array(wells)  # wells is given as function argument
+
+    # Loads well information
+    iwa = np.load(jp(grid_dir, 'iw.npy'), allow_pickle=True)
 
     wells_data = np.concatenate((pwa, iwa), axis=0)  # Concatenates well data (pumping, injection)
 
