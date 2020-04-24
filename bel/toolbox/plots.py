@@ -206,6 +206,7 @@ class Plot:
             cmap='coolwarm',
             colors='white',
             show_wells=False,
+            title=None,
             fig_file=None,
             show=False):
         """
@@ -263,6 +264,9 @@ class Plot:
         else:
             plt.ylim(y_lim[0], y_lim[1])
 
+        if title:
+            plt.title(title)
+
         # Tick size
         plt.tick_params(labelsize=5)
 
@@ -281,9 +285,10 @@ class Plot:
                        bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
+                       title=None,
                        show=False):
 
-        self.whp(h=forecasts, show_wells=show_wells, bkg_field_array=bkg_field_array)
+        self.whp(h=forecasts, show_wells=show_wells, bkg_field_array=bkg_field_array, title=title)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
         # Plot true h predicted

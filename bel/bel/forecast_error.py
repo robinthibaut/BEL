@@ -18,7 +18,6 @@ plt.style.use('dark_background')
 
 
 def error(study_folder):
-
     po = PosteriorOps()
     x_lim, y_lim, grf = [800, 1150], [300, 700], 2
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
@@ -43,8 +42,8 @@ def error(study_folder):
     # Inspect transformation between physical and PC space
     dnc0 = d_pco.ncomp
     hnc0 = h_pco.ncomp
-    print(d_pco.perc_pca_components(dnc0))
-    print(h_pco.perc_pca_components(hnc0))
+    # print(d_pco.perc_pca_components(dnc0))
+    # print(h_pco.perc_pca_components(hnc0))
     mplot.pca_inverse_compare(d_pco, h_pco, dnc0, hnc0)
 
     # Cut desired number of PC components
@@ -78,10 +77,10 @@ def error(study_folder):
     # Plot results
     ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca_operator.n_components))
     mplot.whp_prediction(forecasts=forecast_posterior,
-                      h_true=h_true_obs,
-                      h_pred=h_pred,
-                      show_wells=True,
-                      fig_file=ff)
+                         h_true=h_true_obs,
+                         h_pred=h_pred,
+                         show_wells=True,
+                         fig_file=ff)
 
     # %% extract 0 contours
     vertices = mplot.contours_vertices(forecast_posterior)
@@ -155,11 +154,11 @@ def error(study_folder):
 
         # Plot KDE
         mplot.whp(h_true_obs.reshape(1, shape[1], shape[2]),
-               alpha=1,
-               lw=1,
-               show_wells=True,
-               colors='red',
-               show=False)
+                  alpha=1,
+                  lw=1,
+                  show_wells=True,
+                  colors='red',
+                  show=False)
         mpkde.whp(bkg_field_array=z,
                   vmin=None,
                   vmax=None,
@@ -174,7 +173,7 @@ def error(study_folder):
         sd_kd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
         mpbin = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
         mpbin.wdir = grid_dir
-        bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1/n_posts, outside=0) for p in vertices]
+        bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / n_posts, outside=0) for p in vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         mpbin.whp(bkg_field_array=b_low,
@@ -205,12 +204,13 @@ def error(study_folder):
         # Plot results
         fig = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca_operator.n_components))
         mplot.whp_prediction(forecasts=np.expand_dims(forecast_posterior[max_pos], axis=0),
-                          h_true=h_true_obs,
-                          h_pred=forecast_posterior[min_pos],
-                          show_wells=True,
-                          fig_file=fig)
+                             h_true=h_true_obs,
+                             h_pred=forecast_posterior[min_pos],
+                             show_wells=True,
+                             title=str(mhds.mean()),
+                             fig_file=fig)
 
-        hausdorff()
+    hausdorff()
 
 
 def main():
@@ -218,11 +218,10 @@ def main():
     main_dir = os.path.dirname(cwd)
     bel_dir = jp(main_dir, 'forecasts')
     list_subfolders = [f.name for f in os.scandir(bel_dir) if f.is_dir()]
-    pool = mp.Pool(mp.cpu_count()-1)
+    pool = mp.Pool(mp.cpu_count() - 1)
     pool.map(error, list_subfolders)
 
 
 if __name__ == '__main__':
     main()
 
-    # error(study_folder=decompositions)
