@@ -143,4 +143,5 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
-    bel(new_dir=None)
+    for i in range(5):
+        bel(new_dir=None)
