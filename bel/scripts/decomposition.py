@@ -67,8 +67,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    check = True  # Flag to check for simulations issues
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, check=check, roots=roots)
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots)
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
