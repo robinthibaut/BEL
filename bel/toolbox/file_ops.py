@@ -1,8 +1,11 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
-from os.path import join as jp
 import shutil
-import numpy as np
+from os.path import join as jp
+
 import flopy
+import numpy as np
 
 
 def datread(file=None, header=0):
@@ -95,6 +98,27 @@ def remove_bad(res_tree):
             if r != res_tree:  # Make sure to not delete the main results directory !
                 print('removed 1 folder')
                 shutil.rmtree(r)
+
+
+def remove_bkt(res_dir):
+
+    bkt_files = []  # Breakthrough curves files
+    # r=root, d=directories, f = files
+    roots = []
+    for r, d, f in os.walk(res_dir, topdown=False):
+        # Adds the data files to the lists, which will be loaded later
+        if 'bkt.npy' in f:
+            bkt_files.append(jp(r, 'bkt.npy'))
+            roots.append(r)
+    tpt = list(map(np.load, bkt_files))
+    rm = []  # Will contain indices to remove
+    for i in range(len(tpt)):
+        for j in range(len(tpt[i])):
+            if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
+                rm.append(i)
+                break
+    for index in sorted(rm, reverse=True):
+        shutil.rmtree(roots[index])
 
 
 def load_data(res_dir, n=0, check=True, data_flag=False):
