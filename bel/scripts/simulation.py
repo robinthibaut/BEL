@@ -16,9 +16,12 @@ from bel.hydro.whpa.travelling_particles import tsp
 
 
 def simulation(folder=None):
+    if folder is 0:
+        folder = None
     # Directories
-    mod_dir = jp('..', os.getcwd())  # Module directory
-    exe_loc = jp(mod_dir, 'exe')  # EXE directory
+    mod_dir = os.getcwd()  # Module directory
+    main_dir = os.path.dirname(mod_dir)
+    exe_loc = jp(main_dir, 'hydro', 'exe')  # EXE directory
     # EXE files directory.
     exe_name_mf = jp(exe_loc, 'mf2005.exe')
     exe_name_mt = jp(exe_loc, 'mt3d.exe')
@@ -31,10 +34,12 @@ def simulation(folder=None):
         res_dir = folder
 
     results_dir = jp(mod_dir, 'results', res_dir)
+
+    # Loads well information
+    wells_data = np.load(jp(main_dir, 'hydro', 'grid', 'iw.npy'), allow_pickle=True)
     # Generates the result directory
     fops.dirmaker(results_dir)
-    # Loads well information
-    wells_data = np.load(jp(mod_dir, 'grid', 'iw.npy'), allow_pickle=True)
+
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, wells=wells_data)
     # # Run Transport
@@ -59,5 +64,5 @@ def main():
 
 
 if __name__ == "__main__":
-    simulation()
+    simulation('new_illustration')
 
