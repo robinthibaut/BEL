@@ -16,6 +16,8 @@ from bel.hydro.whpa.travelling_particles import tsp
 
 
 def simulation(folder=None):
+    if folder is 0:
+        folder = None
     # Directories
     mod_dir = os.getcwd()  # Module directory
     exe_loc = jp(mod_dir, 'exe')  # EXE directory
