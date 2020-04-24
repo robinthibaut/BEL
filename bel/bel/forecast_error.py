@@ -13,7 +13,8 @@ from bel.toolbox.hausdorff import modified_distance
 from bel.toolbox.plots import Plot, cca_plot
 from bel.toolbox.posterior_ops import PosteriorOps
 
-plt.style.use('dark_background')
+# plt.style.use('dark_background')
+plt.style.use('cyberpunk')
 
 po = PosteriorOps()
 x_lim, y_lim, grf = [800, 1150], [300, 700], 2
