@@ -30,7 +30,7 @@ def error(study_folder):
     grid_dir = jp(main_dir, 'hydro', 'grid')
     mplot.wdir = grid_dir
 
-    bel_dir = jp(main_dir, 'bel', 'forecasts', study_folder)
+    bel_dir = jp(main_dir, 'forecasts', study_folder)
     res_dir = jp(bel_dir, 'objects')
     fig_dir = jp(bel_dir, 'figures')
     fig_cca_dir = jp(fig_dir, 'CCA')
