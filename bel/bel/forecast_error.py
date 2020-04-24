@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
 
@@ -8,7 +10,7 @@ from sklearn.neighbors import KernelDensity
 
 from bel.processing.signed_distance import SignedDistance
 from bel.toolbox.hausdorff import modified_distance
-from bel.toolbox.plots import Plot
+from bel.toolbox.plots import Plot, cca_plot
 from bel.toolbox.posterior_ops import PosteriorOps
 
 plt.style.use('dark_background')
@@ -21,7 +23,7 @@ mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 cwd = os.getcwd()
 wdir = jp('bel', 'hydro', 'grid')
 mp.wdir = wdir
-study_folder = 'efafb443-0845-4237-be34-497a612b0e29'
+study_folder = '5c254d8f-7ab6-4627-b3a3-7a50564e56b7'
 bel_dir = jp('bel', 'forecasts', study_folder)
 res_dir = jp(bel_dir, 'objects')
 fig_dir = jp(bel_dir, 'figures')
@@ -30,7 +32,7 @@ fig_pred_dir = jp(fig_dir, 'Predictions')
 
 # Load objects
 f_names = list(map(lambda fn: jp(res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
-cca, d_pco, h_pco = list(map(joblib.load, f_names))
+cca_operator, d_pco, h_pco = list(map(joblib.load, f_names))
 
 # Inspect transformation between physical and PC space
 dnc0 = d_pco.ncomp
@@ -44,9 +46,9 @@ d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
 # CCA plots
-d_cca_training, h_cca_training = cca.transform(d_pc_training, h_pc_training)
+d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
 d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-cca(cca, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
+cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction, sdir=fig_cca_dir)
 
 # %% Random sample from the posterior
 sample_n = 0
@@ -54,7 +56,7 @@ n_posts = 500
 forecast_posterior = po.random_sample(sample_n=sample_n,
                                       pca_d=d_pco,
                                       pca_h=h_pco,
-                                      cca_obj=cca,
+                                      cca_obj=cca_operator,
                                       n_posts=n_posts,
                                       add_comp=0)
 # Get the true array of the prediction
@@ -63,12 +65,12 @@ shape = h_pco.raw_data.shape
 h_true_obs = h_pco.predict_physical[sample_n].reshape(shape[1], shape[2])  # Prediction set - physical space
 
 # Predicting the function based for a certain number of 'observations'
-h_pc_true_pred = cca.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))
+h_pc_true_pred = cca_operator.predict(d_pc_obs[:d_pco.ncomp].reshape(1, -1))
 # Going back to the original function dimension and reshape.
 h_pred = h_pco.inverse_transform(h_pc_true_pred).reshape(shape[1], shape[2])
 
 # Plot results
-ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca.n_components))
+ff = jp(fig_pred_dir, '{}_{}.png'.format(sample_n, cca_operator.n_components))
 mp.whp_prediction(forecasts=forecast_posterior,
                   h_true=h_true_obs,
                   h_pred=h_pred,
@@ -197,7 +199,7 @@ max_pos = np.where(mhds == mhds.max())[0][0]
 
 
 # Plot results
-ff = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca.n_components))
+ff = jp(fig_pred_dir, '{}_{}_hausdorff.png'.format(sample_n, cca_operator.n_components))
 mp.whp_prediction(forecasts=np.expand_dims(forecast_posterior[max_pos], axis=0),
                   h_true=h_true_obs,
                   h_pred=forecast_posterior[min_pos],

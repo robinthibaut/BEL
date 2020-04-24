@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 from os.path import join as jp
 
 import matplotlib.pyplot as plt
@@ -77,7 +79,7 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
         plt.close()
 
 
-def cca(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
@@ -321,5 +323,5 @@ class Plot:
         self.h_pca_inverse_plot(pco_h, n_compare, nh)
         plt.show()
         # Displays the explained variance percentage given the number of components
-        print(pco_d.perc_pca_components(nd))
-        print(pco_h.perc_pca_components(nh))
+        # print(pco_d.perc_pca_components(nd))
+        # print(pco_h.perc_pca_components(nh))
