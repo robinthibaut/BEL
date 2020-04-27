@@ -106,7 +106,7 @@ def flow(exe_name, model_ws, grid_dir):
             try:
                 delc = np.load(jp(grid_dir, 'delc.npy'))
                 delr = np.load(jp(grid_dir, 'delr.npy'))
-            except NameError:
+            except FileNotFoundError:
                 delc, delr = refine_()
     else:
         np.savetxt(disf, r_params)
