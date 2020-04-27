@@ -103,8 +103,11 @@ def flow(exe_name, model_ws, grid_dir):
             delc, delr = refine_()
         else:
             flag_dis = 1  # If discretization is the same, use old distance matrix
-            delc = np.load(jp(grid_dir, 'delc.npy'))
-            delr = np.load(jp(grid_dir, 'delr.npy'))
+            try:
+                delc = np.load(jp(grid_dir, 'delc.npy'))
+                delr = np.load(jp(grid_dir, 'delr.npy'))
+            except NameError:
+                delc, delr = refine_()
     else:
         np.savetxt(disf, r_params)
         delc, delr = refine_()
@@ -368,9 +371,9 @@ def flow(exe_name, model_ws, grid_dir):
             val.append(fl2)
         val = [item for sublist in val for item in sublist]  # Flattening
 
-        # If the statistical_simulation grid is different from the modflow grid, which might be the case since we would like to refine
-        # in some ways the flow mesh, the piece of code below assigns to the flow grid the values of the hk simulations
-        # based on the closest distance between cells.
+        # If the statistical_simulation grid is different from the modflow grid, which might be the case since we
+        # would like to refine in some ways the flow mesh, the piece of code below assigns to the flow grid the
+        # values of the hk simulations based on the closest distance between cells.
         inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
         # between differently discretized meshes.
         if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste

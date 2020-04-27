@@ -11,6 +11,7 @@ import numpy as np
 def transport(modflowmodel, exe_name, grid_dir):
     """
 
+    :param grid_dir: Directory containing discretization information
     :param modflowmodel: flopy modflow model object
     :param exe_name: Path to executable file
     :return:
@@ -50,13 +51,12 @@ def transport(modflowmodel, exe_name, grid_dir):
     wells_number = wells_data.shape[0]  # Total number of wells
     pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]  # PW layer row column
-    pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
-    xy_pumping_well = xy_nodes_2d[pw_node]  # Get PW x, y coordinates (meters) from well node number
+    # pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
+    # xy_pumping_well = xy_nodes_2d[pw_node]  # Get PW x, y coordinates (meters) from well node number
 
     injection_well_data = wells_data[1:]
-    iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
-    xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
-    # TODO: There seems to be a problem with their get_lrc() method - issue submitted
+    # iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
+    # xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
 
     lpf = modflowmodel.lpf  # LPF package
 

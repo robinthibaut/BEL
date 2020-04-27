@@ -5,6 +5,7 @@ from os.path import join as jp
 
 import flopy
 import matplotlib.pyplot as plt
+from flopy.export import vtk
 
 import bel.toolbox.file_ops as fops
 
@@ -14,14 +15,15 @@ results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 # Load flow model
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
-dis = flow_model.dis
-dis.top.export(jp(results_dir, 'top'), fmt='vtk')
+flow_model.export(jp(results_dir, 'vtk', 'flow'), fmt='vtk')
+vtk.export_heads(flow_model, jp(results_dir, 'whpa.hds'), jp(results_dir, 'vtk', 'flow'), binary=True, kstpkper=(0, 0))
 # Wells are ordered by node number
 spd = flow_model.wel.stress_period_data.df
 
 # Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
+transport_model.export(jp(results_dir, 'vtk', 'transport'), fmt='vtk')
 
 # let's take a look at our grid
 fig = plt.figure(figsize=(8, 8))
@@ -69,6 +71,7 @@ plt.show()
 endfile = jp(results_dir, 'whpa_mp.mpend')
 endobj = flopy.utils.EndpointFile(endfile)
 ept = endobj.get_alldata()
+vtk.ex
 
 # load the pathline data
 pthfile = jp(results_dir, 'whpa_mp.mppth')
