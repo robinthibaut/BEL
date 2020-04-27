@@ -81,6 +81,18 @@ def flow(exe_name, model_ws, grid_dir):
                          [1.5, 20],
                          [1, 10]])
 
+    def refine_():
+        along_c = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
+        along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
+        r_a = mops.refine_axis
+        for p in r_params:
+            along_c = r_a(along_c, pt[0], p[1], p[0], dx, x_lim)
+            along_r = r_a(along_r, pt[1], p[1], p[0], dy, y_lim)
+        np.save(jp(grid_dir, 'delc'), along_c)
+        np.save(jp(grid_dir, 'delr'), along_r)
+
+        return along_c, along_r
+
     # Saving r_params to avoid computing distance matrix each time
     flag_dis = 0  # If discretization is different
     disf = jp(grid_dir, 'dis.txt')  # discretization txt file
@@ -88,19 +100,14 @@ def flow(exe_name, model_ws, grid_dir):
         r_params_loaded = np.loadtxt(disf)  # loads dis info
         if not np.array_equal(r_params, r_params_loaded):  # if new refinement parameters differ from the previous one
             np.savetxt(disf, r_params)  # update file
+            delc, delr = refine_()
         else:
             flag_dis = 1  # If discretization is the same, use old distance matrix
+            delc = np.load(jp(grid_dir, 'delc.npy'))
+            delr = np.load(jp(grid_dir, 'delr.npy'))
     else:
         np.savetxt(disf, r_params)
-
-    delc = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
-    delr = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
-
-    # Refinement of the mesh
-    r_a = mops.refine_axis
-    for p in r_params:
-        delc = r_a(delc, pt[0], p[1], p[0], dx, x_lim)
-        delr = r_a(delr, pt[1], p[1], p[0], dy, y_lim)
+        delc, delr = refine_()
 
     ncol = len(delc)  # new number of columns
     nrow = len(delr)

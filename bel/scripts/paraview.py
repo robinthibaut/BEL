@@ -1,15 +1,16 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
-import numpy as np
-
-import meshio
-import matplotlib.pyplot as plt
 
 import diavatly
+import matplotlib.pyplot as plt
+import meshio
+import numpy as np
+
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 from bel.toolbox.plots import Plot
-
 
 po = Plot()
 
@@ -18,7 +19,6 @@ results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
 
-# TODO: write issue for inverted delr and delc
 delc = flow_model.modelgrid.delr
 delr = flow_model.modelgrid.delc
 xyz_vertices = flow_model.modelgrid.xyzvertices

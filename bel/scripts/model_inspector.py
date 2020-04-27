@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
 
@@ -6,12 +8,14 @@ import matplotlib.pyplot as plt
 
 import bel.toolbox.file_ops as fops
 
-rn = 'test'
+rn = 'example_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # Load flow model
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
+dis = flow_model.dis
+dis.top.export(jp(results_dir, 'top'), fmt='vtk')
 # Wells are ordered by node number
 spd = flow_model.wel.stress_period_data.df
 
@@ -83,5 +87,5 @@ mapview.plot_endpoint(ept)
 plt.show()
 
 obs = fops.datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
-plt.plot(obs[:,0], obs[:,1])
+plt.plot(obs[:, 0], obs[:, 1])
 plt.show()
