@@ -88,7 +88,7 @@ def transport(modflowmodel, exe_name, grid_dir):
     ifmtnp = 0
     ifmtrf = 0
     ifmtdp = 0
-    savucn = False
+    savucn = True  # Save concentration array or not
     nprs = 0
     timprs = None
     obs = [tuple(pw_lrc)]  # Observation point = PW location (layer row column)

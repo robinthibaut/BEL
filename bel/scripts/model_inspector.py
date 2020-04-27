@@ -24,6 +24,10 @@ spd = flow_model.wel.stress_period_data.df
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
 transport_model.export(jp(results_dir, 'vtk', 'transport'), fmt='vtk')
+ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]
+ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]
+times = [uo.get_times() for uo in ucn_obj]
+concs = [uo.get_alldata() for uo in ucn_obj]
 
 # let's take a look at our grid
 fig = plt.figure(figsize=(8, 8))
@@ -67,11 +71,12 @@ plt.show()
 
 # Plot modpath
 
+mpnam = jp(results_dir, 'whpa_mp.mpnam')
 # load the endpoint data
 endfile = jp(results_dir, 'whpa_mp.mpend')
 endobj = flopy.utils.EndpointFile(endfile)
 ept = endobj.get_alldata()
-vtk.ex
+
 
 # load the pathline data
 pthfile = jp(results_dir, 'whpa_mp.mppth')
