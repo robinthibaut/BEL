@@ -3,6 +3,7 @@
 import multiprocessing as mp
 import os
 import shutil
+import time
 import uuid
 from os.path import join as jp
 
@@ -62,5 +63,7 @@ def main():
 
 
 if __name__ == "__main__":
-    simulation('new_illustration')
-
+    start = time.time()
+    simulation('example_illustration')
+    end = time.time()
+    print((end-start)/60)
