@@ -28,8 +28,8 @@ def backtrack(flowmodel, exe_name, load=False):
     # Create particle group
 
     drape = 0
-    columncelldivisions = 15
-    rowcelldivisions = 15
+    columncelldivisions = 12
+    rowcelldivisions = 12
     layercelldivisions = 1
     # Total number of particles = ccd*rcd*lcd
     # Subdivision data

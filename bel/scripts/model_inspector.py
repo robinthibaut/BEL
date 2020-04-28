@@ -28,7 +28,7 @@ blocks = mops.blocks_from_rc_3d(delc, delr)
 blocks3d = blocks.reshape(-1, 3)
 
 
-def flow_vtk(export=False):
+def flow_vtk():
     flow_model.export(jp(results_dir, 'vtk', 'flow'), fmt='vtk')
     vtk.export_heads(flow_model,
                      jp(results_dir, 'whpa.hds'),
@@ -75,7 +75,6 @@ ts = tso.get_alldata()
 fig = plt.figure(figsize=(10, 10))
 
 ax = fig.add_subplot(1, 1, 1, aspect='equal')
-ax.set_title('plot_array()')
 mapview = flopy.plot.PlotMapView(model=flow_model)
 mapview.plot_ibound()
 # mapview.plot_array(head, masked_values=[999.], alpha=0.5)

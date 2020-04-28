@@ -39,6 +39,7 @@ def simulation(folder=None):
     # Generates the result directory
     fops.dirmaker(results_dir)
 
+    # TODO: extract sgems implementation from modflow.py
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, grid_dir=grid_dir)
     # # Run Transport
@@ -64,6 +65,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('example_illustration')
+    simulation('new_illustration')
     end = time.time()
     print((end-start)/60)
