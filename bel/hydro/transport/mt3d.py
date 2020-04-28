@@ -198,8 +198,6 @@ def transport(modflowmodel, exe_name, grid_dir):
     trpt = 0.1
     trpv = 0.01
     dmcoef = 1e-9
-    # dmcoef2 = 1e-9
-    # dmcoef3 = 1e-9
     extension = 'dsp'
     multiDiff = False
     unitnumber = None
@@ -211,8 +209,6 @@ def transport(modflowmodel, exe_name, grid_dir):
                        trpt=trpt,
                        trpv=trpv,
                        dmcoef=dmcoef,
-                       # dmcoef2=dmcoef2,
-                       # dmcoef3=dmcoef3,
                        extension=extension,
                        multiDiff=multiDiff,
                        unitnumber=unitnumber,
@@ -348,32 +344,3 @@ def transport(modflowmodel, exe_name, grid_dir):
     np.save(jp(model_ws, 'bkt'), hey)  # saves raw curves
 
     return mt
-
-
-def transport_export(model_ws, transport_model_name):
-    # Checking transport results
-
-    #  Loading observations files.
-
-    only_files = [f for f in listdir(model_ws) if isfile(jp(model_ws, f))]  # Listing all files in results folder
-
-    obs_files = [jp(model_ws, x) for x in only_files if '.OBS' in x]  # Selects OBS files
-
-    transport_model = flopy.mt3d.Mt3dms.load(jp(model_ws, transport_model_name))  # Loads the transport model
-
-    observations = [transport_model.load_obs(of) for of in obs_files]  # Loading observations results
-    fields = observations[0].dtype.names
-
-    hey = np.array(
-        [list(zip(observations[i][fields[1]], observations[i][fields[2]])) for i in range(len(observations))])
-
-    # Saving injecting wells location in  a file
-    # ssm = transport_model.ssm
-    # df = ssm.stress_period_data.df.values
-    # iwn = df[:, 1:3]  # nodes
-    # grid = transport_model.modelgrid
-    # iw_xy = [np.mean(grid.get_cell_vertices(int(i[0]), int(i[1])), axis=0) for i in iwn]
-    #
-    # np.savetxt('wells.xy', iw_xy)  # Saves injecting wells location
-
-    np.save(jp(model_ws, 'bkt'), hey)  # saves raw curves
