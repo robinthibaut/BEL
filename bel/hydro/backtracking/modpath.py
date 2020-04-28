@@ -1,19 +1,29 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 from os.path import join as jp
 
 import flopy
 import numpy as np
 
 
-def backtrack(flowmodel, exe_name):
+def backtrack(flowmodel, exe_name, load=False):
+    """
+    Function to implement Modpath 7 backtracking simulation.
+    :param  flowmodel: Modflow model
+    :param exe_name: MP7 executable file path
+    :param load: bool, option to load the model instead of running it
+    :return: if load is False, returns the particles endpoints
+             if load is True, returns the model itself
+    """
     model_name = flowmodel.name
     # MODPATH
-    mpfname = model_name + '_mp'
-    model_ws = flowmodel.model_ws
+    mpfname = model_name + '_mp'  # Model name
+    model_ws = flowmodel.model_ws  # Model working directory
     dis = flowmodel.dis  # DIS package
-    wells_data = np.load(jp(model_ws, 'spd.npy'))
+    wells_data = np.load(jp(model_ws, 'spd.npy'))  # Stress period data
     pumping_well_data = wells_data[0]  # Pumping well in first
-    pw_lrc = pumping_well_data[0][:3]
-    wn = int(dis.get_node(pw_lrc)[0])
+    pw_lrc = pumping_well_data[0][:3]  # Pumping well layer, row, column
+    wn = int(dis.get_node(pw_lrc)[0])  # Pumping well node number
 
     # Create particle group
 
@@ -46,7 +56,7 @@ def backtrack(flowmodel, exe_name):
                                 flowmodel=flowmodel,
                                 exe_name=exe_name,
                                 model_ws=model_ws)
-
+    # Define porosity
     porosity_mp = 0.2
 
     flopy.modpath.Modpath7Bas(mp,
@@ -87,6 +97,8 @@ def backtrack(flowmodel, exe_name):
     # Write modpath datasets
     mp.write_input()
 
+    if load:
+        return mp
     # Run modpath
     mp.run_model(silent=True)
 
