@@ -71,7 +71,7 @@ def transport(modflowmodel, exe_name, grid_dir):
     lunit = 'M'
     munit = 'KG'
     prsity = lpf.sy.array  # Porosity loaded from the LPF package = sy
-    sconc = 0
+    sconc = 0  # Starting concentration
     cinact = 1e+30
     thkmin = 0.01
     ifmtcn = 0
@@ -122,8 +122,6 @@ def transport(modflowmodel, exe_name, grid_dir):
                              prsity=prsity,
                              icbund=icbund,
                              sconc=sconc,
-                             # sconc2=sconc2,
-                             # sconc3=sconc3,
                              cinact=cinact,
                              thkmin=thkmin,
                              ifmtcn=ifmtcn,
