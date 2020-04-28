@@ -135,3 +135,40 @@ for i in range(1, 7):
         cell_data=array,
         # field_data=field_data
         )
+
+
+conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+array = {}
+for i in range(1, 7):
+    cflip = np.fliplr(conc0[i-1, 2]).reshape(-1)
+    dic_conc = {'conc{}'.format(i): cflip}
+    array.update(dic_conc)
+
+meshio.write_points_cells(
+    jp(results_dir, 'vtk', 'transport', 'concentrations.vtk'),
+    blocks3d,
+    cells,
+    # Optionally provide extra data on points, cells, etc.
+    # point_data=point_data,
+    cell_data=array,
+    # field_data=field_data
+    )
+
+
+conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+array = np.zeros(blocks.shape[0])
+for i in range(1, 7):
+    cflip = np.fliplr(conc0[i-1, 2]).reshape(-1)
+    array += cflip
+
+dic_conc = {'conc': array}
+
+meshio.write_points_cells(
+    jp(results_dir, 'vtk', 'transport', 'concentrations_stacked.vtk'),
+    blocks3d,
+    cells,
+    # Optionally provide extra data on points, cells, etc.
+    # point_data=point_data,
+    cell_data=dic_conc,
+    # field_data=field_data
+    )
