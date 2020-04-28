@@ -35,9 +35,6 @@ def transport(modflowmodel, exe_name, grid_dir):
 
     # Extract discretization info from modflow object
     dis = modflowmodel.dis  # DIS package
-    nlay = modflowmodel.nlay
-    nrow = modflowmodel.nrow
-    ncol = modflowmodel.ncol
     # yxz_grid is an array of the coordinates of each node:
     # [[coordinates Y], [coordinates X], [coordinates Z]]
     yxz_grid = dis.get_node_coordinates()
@@ -45,23 +42,19 @@ def transport(modflowmodel, exe_name, grid_dir):
     for yc in yxz_grid[0]:
         for xc in yxz_grid[1]:
             xy_true.append([xc, yc])
-    xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))  # Flattens xy to correspond to node numbering
 
     wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
     wells_number = wells_data.shape[0]  # Total number of wells
     pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]  # PW layer row column
-    # pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
-    # xy_pumping_well = xy_nodes_2d[pw_node]  # Get PW x, y coordinates (meters) from well node number
 
     injection_well_data = wells_data[1:]
-    # iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
-    # xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
 
     lpf = modflowmodel.lpf  # LPF package
 
     # %% Mt3dBtn
 
+    # Load previously defined active zone
     mt_icbund_file = jp(grid_dir, 'mt3d_icbund.npy')
     icbund = np.load(mt_icbund_file)
 
@@ -78,10 +71,7 @@ def transport(modflowmodel, exe_name, grid_dir):
     lunit = 'M'
     munit = 'KG'
     prsity = lpf.sy.array  # Porosity loaded from the LPF package = sy
-    # icbund = 1
     sconc = 0
-    # sconc2 = 0
-    # sconc3 = 0
     cinact = 1e+30
     thkmin = 0.01
     ifmtcn = 0
@@ -89,10 +79,16 @@ def transport(modflowmodel, exe_name, grid_dir):
     ifmtrf = 0
     ifmtdp = 0
     savucn = True  # Save concentration array or not
-    nprs = 0
-    timprs = None
+    nprs = 0  # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is specified
+    # in terms of total elapsed simulation time or the transport step number. If nprs > 0 results will be saved at
+    # the times as specified in timprs; if nprs = 0, results will not be saved except at the end of simulation; if
+    # NPRS 0, simulation results will be saved whenever the number of transport steps is an even multiple of nprs. (
+    # default is 0).
+    timprs = None  # The total elapsed time at which the simulation results are saved. The number of entries in
+    # timprs must equal nprs. (default is None).
     obs = [tuple(pw_lrc)]  # Observation point = PW location (layer row column)
-    nprobs = 1
+    nprobs = 1  # An integer indicating how frequently the concentration at the specified observation points should
+    # be saved. (default is 1).
     chkmas = True
     nprmas = 1
     perlen = None
@@ -101,7 +97,8 @@ def transport(modflowmodel, exe_name, grid_dir):
     ssflag = None
     dt0 = 0
     mxstrn = 50000
-    ttsmult = 1.0
+    ttsmult = 1.0  # The multiplier for successive transport steps within a flow time-step if the GCG solver is used
+    # and the solution option for the advection term is the standard finite-difference method. (default is 1.0)
     ttsmax = 0
     species_names = ['c{}'.format(c + 1) for c in range(ncomp)]
     extension = 'btn'
