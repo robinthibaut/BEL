@@ -57,6 +57,8 @@ def transport(modflowmodel, exe_name, grid_dir):
     # Load previously defined active zone
     mt_icbund_file = jp(grid_dir, 'mt3d_icbund.npy')
     icbund = np.load(mt_icbund_file)
+    times = np.cumsum(dis.perlen.array)
+    tmstp = np.linspace(times[0], times[-1], 100)
 
     MFStyleArr = False
     DRYCell = False
@@ -79,12 +81,12 @@ def transport(modflowmodel, exe_name, grid_dir):
     ifmtrf = 0
     ifmtdp = 0
     savucn = True  # Save concentration array or not
-    nprs = 0  # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is specified
-    # in terms of total elapsed simulation time or the transport step number. If nprs > 0 results will be saved at
-    # the times as specified in timprs; if nprs = 0, results will not be saved except at the end of simulation; if
-    # NPRS 0, simulation results will be saved whenever the number of transport steps is an even multiple of nprs. (
-    # default is 0).
-    timprs = None  # The total elapsed time at which the simulation results are saved. The number of entries in
+    nprs = len(tmstp)  # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is
+    # specified in terms of total elapsed simulation time or the transport step number. If nprs > 0 results will be
+    # saved at the times as specified in timprs; if nprs = 0, results will not be saved except at the end of
+    # simulation; if NPRS 0, simulation results will be saved whenever the number of transport steps is an even
+    # multiple of nprs. ( default is 0).
+    timprs = tmstp  # The total elapsed time at which the simulation results are saved. The number of entries in
     # timprs must equal nprs. (default is None).
     obs = [tuple(pw_lrc)]  # Observation point = PW location (layer row column)
     nprobs = 1  # An integer indicating how frequently the concentration at the specified observation points should
