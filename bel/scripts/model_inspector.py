@@ -5,9 +5,13 @@ from os.path import join as jp
 
 import flopy
 import matplotlib.pyplot as plt
+import meshio
+import numpy as np
 from flopy.export import vtk
 
 import bel.toolbox.file_ops as fops
+import bel.toolbox.mesh_ops as mops
+from bel.hydro.backtracking.modpath import backtrack
 
 rn = 'example_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
@@ -24,10 +28,10 @@ spd = flow_model.wel.stress_period_data.df
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
 transport_model.export(jp(results_dir, 'vtk', 'transport'), fmt='vtk')
-# ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]
-# ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]
-# times = [uo.get_times() for uo in ucn_obj]
-# concs = [uo.get_alldata() for uo in ucn_obj]
+ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]
+ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]
+times = [uo.get_times() for uo in ucn_obj]
+concs = np.array([uo.get_alldata() for uo in ucn_obj])
 
 # # let's take a look at our grid
 # fig = plt.figure(figsize=(8, 8))
@@ -71,7 +75,7 @@ transport_model.export(jp(results_dir, 'vtk', 'transport'), fmt='vtk')
 
 # Plot modpath
 
-mpnam = jp(results_dir, 'whpa_mp.mpnam')
+mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
 # load the endpoint data
 endfile = jp(results_dir, 'whpa_mp.mpend')
 endobj = flopy.utils.EndpointFile(endfile)
@@ -105,3 +109,29 @@ plt.show()
 obs = fops.datread(jp(results_dir, 'MT3D001.OBS'), header=2)[:, 1:]
 plt.plot(obs[:, 0], obs[:, 1])
 plt.show()
+
+
+delr = flow_model.modelgrid.delr
+delc = flow_model.modelgrid.delc
+xyz_vertices = flow_model.modelgrid.xyzvertices
+# I'll be working with hexahedron, vtk type = 12
+blocks2d = mops.blocks_from_rc(delc, delr)
+blocks = mops.blocks_from_rc_3d(delc, delr)
+blocks3d = blocks.reshape(-1, 3)
+# Let's first try 2D export !
+cells = [("quad", np.array([list(np.arange(i*4, i*4+4))])) for i in range(len(blocks))]
+for i in range(1, 7):
+    conc = np.array([np.fliplr(concs[i-1, j]).reshape(-1) for j in range(len(concs[i-1]))])
+    conc0 = np.abs(np.where(conc == 1e30, 0, conc))
+    dic_conc = [{'conc{}'.format(i): conc0[i-1]} for i in range(len(conc0))]
+    array = {}
+    [array.update(c) for c in dic_conc]
+    meshio.write_points_cells(
+        jp(results_dir, 'vtk', 'transport', 'MT3D00{}.vtk'.format(i)),
+        blocks3d,
+        cells,
+        # Optionally provide extra data on points, cells, etc.
+        # point_data=point_data,
+        cell_data=array,
+        # field_data=field_data
+        )

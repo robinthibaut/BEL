@@ -14,7 +14,7 @@ from bel.toolbox.plots import Plot
 
 po = Plot()
 
-rn = 'illustration'
+rn = 'example_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
@@ -22,7 +22,6 @@ flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
 delc = flow_model.modelgrid.delr
 delr = flow_model.modelgrid.delc
 xyz_vertices = flow_model.modelgrid.xyzvertices
-
 # I'll be working with hexahedron, vtk type = 12
 blocks2d = mops.blocks_from_rc(delr, delc)
 blocks = mops.blocks_from_rc_3d(delr, delc)
@@ -45,27 +44,3 @@ meshio.write_points_cells(
 diavatly.model_map(blocks2d, hk, log=1)
 plt.show()
 
-# Now let's try in 3D
-
-btest = np.array([[ 0.        ,  0.        ,  0.        ],
-                 [ 0.        , 10.01430035,  0.        ],
-                 [10.00226021, 10.01430035,  0.        ],
-                 [10.00226021,  0.        ,  0.        ],
-                  [ 0.        ,  0.        ,  -10        ],
-                 [ 0.        , 10.01430035,  -10        ],
-                 [10.00226021, 10.01430035,  -10        ],
-                 [10.00226021,  0.        ,  -10        ]])
-
-cells = [("hexahedron", np.array([[4, 5, 6, 7, 0, 1, 2, 3]]))]
-meshio.write_points_cells(
-    "foo3d.vtk",
-    btest,
-    cells,
-    # Optionally provide extra data on points, cells, etc.
-    # point_data=point_data,
-    cell_data={'hk': np.array([1])},
-    # field_data=field_data
-    )
-
-if __name__ == '__main__':
-    pass
