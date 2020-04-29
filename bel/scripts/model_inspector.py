@@ -11,7 +11,7 @@ from flopy.export import vtk
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 
-rn = 'test'
+rn = 'extract_sgems'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # %% Load flow model
@@ -61,7 +61,7 @@ def transport_vtk():
     transport_model.export(dir_tv, fmt='vtk')
 
 
-# transport_vtk()
+transport_vtk()
 
 
 # %% Export UCN to vtk
@@ -140,13 +140,13 @@ for i in range(n_t_stp):
 
 
 # %% Export wells objects as vtk
-pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2]
-iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
-
-wt = np.array([np.insert(pw, 2, -11), np.insert(pw, 2, 1)])
-cell_point = [("line", np.array([[i]])) for i in range(2)]
-meshio.write_points_cells(
-    jp(results_dir, 'vtk', 'pw.vtk'),
-    np.array([[1000, 500, -11], [1000, 500, 1]]),
-    cells=[("line", np.array([[0, 1]]))]
-)
+# pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2]
+# iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
+#
+# wt = np.array([np.insert(pw, 2, -11), np.insert(pw, 2, 1)])
+# cell_point = [("line", np.array([[i]])) for i in range(2)]
+# meshio.write_points_cells(
+#     jp(results_dir, 'vtk', 'pw.vtk'),
+#     np.array([[1000, 500, -11], [1000, 500, 1]]),
+#     cells=[("line", np.array([[0, 1]]))]
+# )
