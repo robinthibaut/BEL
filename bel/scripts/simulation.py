@@ -47,7 +47,7 @@ def simulation(folder=None):
                       model_ws=results_dir,
                       grid_dir=grid_dir,
                       hk_array=hk_array, xy_dummy=xy_dummy)
-    # # Run Transport
+    # Run Transport
     if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir)
         # Run Modpath
