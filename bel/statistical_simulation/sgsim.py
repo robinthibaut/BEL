@@ -20,8 +20,10 @@ def sgsim(model_ws):
     dx = 10  # Block x-dimension
     dy = 10  # Block y-dimension
     dz = 10  # Block z-dimension
+    xo, yo, zo = 0, 0, 0
     nrow = y_lim // dy  # Number of rows
     ncol = x_lim // dx  # Number of columns
+    nlay = 1
     along_r = np.ones(ncol) * dx  # Size of each cell along y-dimension - rows
     along_c = np.ones(nrow) * dy  # Size of each cell along x-dimension - columns
 
@@ -54,13 +56,14 @@ def sgsim(model_ws):
 
     op = 'hk'  # Simulations output name
 
-    if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If re-using an older model
-        valkr = np.load(jp(model_ws, '{}.npy').format(op))
+    if os.path.exists(jp(model_ws, '{}0.npy').format(op)):  # If re-using an older model
+        val = np.load(jp(model_ws, '{}0.npy').format(op))
+        return val
     else:
         sgems = sg.SGEMS()
         nr = 1  # Number of realizations.
         # Extracts wells nodes number in statistical_simulation grid, to fix their simulated value.
-        wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
+        wells_nodes_sgems = [my_node(w) for w in wells_loc]
         # Hard data node
         # fixed_nodes = [[pwnode_sg, 2], [iw1node_sg, 1], [iw2node_sg, 1.5], [iw3node_sg, 0.7], [iw4node_sg, 1.2]]
         # I now arbitrarily attribute a random value between 1 and 2 to the well nodes
@@ -69,9 +72,9 @@ def sgsim(model_ws):
         sgrid = [ncol,
                  nrow,
                  nlay,
-                 delc.array[0],
-                 delr.array[0],
-                 delr.array[0],
+                 dx,
+                 dy,
+                 dz,
                  xo, yo, zo]  # Grid information
 
         seg = [50, 50, 50, 0, 0, 0]  # Search ellipsoid geometry
@@ -134,8 +137,5 @@ def sgsim(model_ws):
             val.append(fl2)
         val = [item for sublist in val for item in sublist]  # Flattening
 
-    return 1
+        return val, centers
 
-
-if __name__ == '__main__':
-    sgsim()
