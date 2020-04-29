@@ -4,7 +4,6 @@ import os
 from os.path import join as jp
 
 import flopy
-import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from flopy.export import vtk
@@ -84,7 +83,7 @@ def stacked_conc_vtk():
         dic_conc = {'conc': array}
         # Use meshio to export the mesh
         meshio.write_points_cells(
-            jp(results_dir, 'vtk', 'transport', 'cstack_{}.vtk'.format(j)),
+            jp(results_dir, 'vtk', 'transport', 'concentration', 'cstack_{}.vtk'.format(j)),
             blocks3d,
             cells,
             # Optionally provide extra data on points, cells, etc.
@@ -94,7 +93,7 @@ def stacked_conc_vtk():
         )
 
 
-# stacked_conc_vtk()
+stacked_conc_vtk()
 
 # %% Plot modpath
 
@@ -116,20 +115,7 @@ ts = tso.get_alldata()
 
 n_particles = len(ts)
 n_t_stp = ts[0].shape[0]
-
-points_time0 = ts[0]
-xyz_point_tt = np.vstack((points_time0.x, points_time0.y, points_time0.z)).T.reshape(-1, 3)
-time_steps = points_time0.time
-cell_point = [("vertex", np.array([[i]])) for i in range(n_t_stp)]
-meshio.write_points_cells(
-    jp(results_dir, 'vtk', 'backtrack', 'particle0.vtk'),
-    xyz_point_tt,
-    cells=cell_point,
-    # Optionally provide extra data on points, cells, etc.
-    # point_data=point_data,
-    point_data={'time': time_steps},
-    # field_data=field_data
-)
+time_steps = ts[0].time
 
 points_x = np.array([ts[i].x for i in range(len(ts))])
 points_y = np.array([ts[i].y for i in range(len(ts))])
@@ -153,12 +139,14 @@ for i in range(n_t_stp):
     )
 
 
-# plot the data
-fig = plt.figure(figsize=(10, 10))
+# %% Export wells objects as vtk
+pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2]
+iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
 
-ax = fig.add_subplot(1, 1, 1, aspect='equal')
-mapview = flopy.plot.PlotMapView(model=flow_model)
-mapview.plot_ibound()
-# mapview.plot_array(head, masked_values=[999.], alpha=0.5)
-mapview.plot_endpoint(ept)
-plt.show()
+wt = np.array([np.insert(pw, 2, -11), np.insert(pw, 2, 1)])
+cell_point = [("line", np.array([[i]])) for i in range(2)]
+meshio.write_points_cells(
+    jp(results_dir, 'vtk', 'pw.vtk'),
+    np.array([[1000, 500, -11], [1000, 500, 1]]),
+    cells=[("line", np.array([[0, 1]]))]
+)
