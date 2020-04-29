@@ -14,6 +14,7 @@ from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
+from bel.statistical_simulation.sgsim import sgsim
 
 
 def simulation(folder=None):
@@ -40,8 +41,13 @@ def simulation(folder=None):
     fops.dirmaker(results_dir)
 
     # TODO: extract sgems implementation from modflow.py
+    # Statistical simulation
+    hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
     # Run Flow
-    flow_model = flow(exe_name=exe_name_mf, model_ws=results_dir, grid_dir=grid_dir)
+    flow_model = flow(exe_name=exe_name_mf,
+                      model_ws=results_dir,
+                      grid_dir=grid_dir,
+                      hk_array=hk_array, xy_dummy=xy_dummy)
     # # Run Transport
     if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir)

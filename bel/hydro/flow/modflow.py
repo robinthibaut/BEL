@@ -148,13 +148,11 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
                                     rotation=0.0,
                                     start_datetime=start_datetime)
 
-    ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids of dummy model
-    xyz_true = []
+    ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids of true model grid
+    xy_true = []
     for yc in ncd1[0]:
         for xc in ncd1[1]:
-            xyz_true.append([xc, yc])
-
-
+            xy_true.append([xc, yc])
 
     def make_well(wel_info):
         """
@@ -273,7 +271,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
         # the new hk array on a new grid.
         if flag_dis == 0:
-            dm = distance_matrix(xyz_true, xy_dummy)  # Compute distance matrix between refined and dummy grid.
+            dm = distance_matrix(xy_true, xy_dummy)  # Compute distance matrix between refined and dummy grid.
             inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
             np.save(inds_file, inds)  # Save index file to avoid re-computing
         else:  # If the inds file exists.

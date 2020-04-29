@@ -10,10 +10,7 @@ import bel.statistical_simulation.sgems as sg
 from bel.toolbox.mesh_ops import blocks_from_rc
 
 
-def sgsim(model_ws):
-    mod_dir = os.getcwd()  # Module directory
-    main_dir = os.path.dirname(mod_dir)
-    grid_dir = jp(main_dir, 'hydro', 'grid')
+def sgsim(model_ws, grid_dir):
 
     x_lim = 1500
     y_lim = 1000
