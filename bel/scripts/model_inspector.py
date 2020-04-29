@@ -11,7 +11,6 @@ from flopy.export import vtk
 
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
-from bel.hydro.backtracking.modpath import backtrack
 
 rn = 'new_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
@@ -68,20 +67,19 @@ def transport_vtk():
 
 # %% Export UCN to vtk
 
-# Cells configuration for 3D blocks
-cells = [("quad", np.array([list(np.arange(i*4, i*4+4))])) for i in range(len(blocks))]
-
 
 # Stack component concentrations for each time step
 def stacked_conc_vtk():
     # First replace 1e+30 value (inactive cells) by 0.
     conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+    # Cells configuration for 3D blocks
+    cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))])) for i in range(len(blocks))]
     for j in range(concs.shape[1]):
         # Stack the concentration of each component at each time step to visualize them in one plot.
         array = np.zeros(blocks.shape[0])
         for i in range(1, 7):
             # fliplr is necessary as the reshape modifies the array structure
-            cflip = np.fliplr(conc0[i-1, j]).reshape(-1)
+            cflip = np.fliplr(conc0[i - 1, j]).reshape(-1)
             array += cflip  # Stack all components
         dic_conc = {'conc': array}
         # Use meshio to export the mesh
@@ -93,13 +91,14 @@ def stacked_conc_vtk():
             # point_data=point_data,
             cell_data=dic_conc,
             # field_data=field_data
-            )
+        )
+
 
 # stacked_conc_vtk()
 
 # %% Plot modpath
 
-mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
+# mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
 # load the endpoint data
 endfile = jp(results_dir, 'whpa_mp.mpend')
 endobj = flopy.utils.EndpointFile(endfile)
@@ -115,6 +114,20 @@ tsfile = jp(results_dir, 'whpa_mp.timeseries')
 tso = flopy.utils.modpathfile.TimeseriesFile(tsfile)
 ts = tso.get_alldata()
 
+points_time0 = ts[0]
+xyz_point_tt = np.vstack((points_time0.x, points_time0.y, points_time0.z)).T.reshape(-1, 3)
+time_steps = points_time0.time
+cell_point = [("vertex", np.array([[i]])) for i in range(len(time_steps))]
+
+meshio.write_points_cells(
+    jp(results_dir, 'vtk', 'backtrack', 'particle0.vtk'),
+    xyz_point_tt,
+    cells=cell_point,
+    # Optionally provide extra data on points, cells, etc.
+    # point_data=point_data,
+    point_data={'time': time_steps},
+    # field_data=field_data
+)
 # plot the data
 fig = plt.figure(figsize=(10, 10))
 
