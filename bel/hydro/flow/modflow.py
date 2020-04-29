@@ -113,7 +113,7 @@ def flow(exe_name, model_ws, grid_dir):
         delc, delr = refine_()
 
     ncol = len(delc)  # new number of columns
-    nrow = len(delr)
+    nrow = len(delr)  # new number of rows
 
     top = 0  # Model top (m)
     botm = [-dz]  # List containing bottom location (m) of each layer
@@ -131,8 +131,8 @@ def flow(exe_name, model_ws, grid_dir):
     # %% ModflowDis
 
     min_cell_dim = min(dx, dy)
-    nrow_d = int(y_lim / min_cell_dim)
-    ncol_d = int(x_lim / min_cell_dim)
+    nrow_d = y_lim // min_cell_dim
+    ncol_d = x_lim // min_cell_dim
 
     # Creation of a dummy modflow grid to work with statistical_simulation, which doesn't have the same cell structure.
     model_dummy = flopy.modflow.Modflow(modelname='dummy')
@@ -332,7 +332,7 @@ def flow(exe_name, model_ws, grid_dir):
                                   target_histogram_flag=0,
                                   target_histogram=[0, 0, 0, 0],
                                   variogram_nugget=0,
-                                  variogram_number_stuctures=1,
+                                  variogram_number_structures=1,
                                   variogram_structures_contribution=[1],
                                   variogram_type=['Spherical'],
                                   range_max=[100],
