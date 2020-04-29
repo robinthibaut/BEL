@@ -114,11 +114,13 @@ tsfile = jp(results_dir, 'whpa_mp.timeseries')
 tso = flopy.utils.modpathfile.TimeseriesFile(tsfile)
 ts = tso.get_alldata()
 
+n_particles = len(ts)
+n_t_stp = ts[0].shape[0]
+
 points_time0 = ts[0]
 xyz_point_tt = np.vstack((points_time0.x, points_time0.y, points_time0.z)).T.reshape(-1, 3)
 time_steps = points_time0.time
-cell_point = [("vertex", np.array([[i]])) for i in range(len(time_steps))]
-
+cell_point = [("vertex", np.array([[i]])) for i in range(n_t_stp)]
 meshio.write_points_cells(
     jp(results_dir, 'vtk', 'backtrack', 'particle0.vtk'),
     xyz_point_tt,
@@ -128,6 +130,29 @@ meshio.write_points_cells(
     point_data={'time': time_steps},
     # field_data=field_data
 )
+
+points_x = np.array([ts[i].x for i in range(len(ts))])
+points_y = np.array([ts[i].y for i in range(len(ts))])
+points_z = np.array([ts[i].z for i in range(len(ts))])
+
+for i in range(n_t_stp):
+    xs = points_x[:, i]
+    ys = points_y[:, i]
+    zs = points_z[:, i]*0  # Replace elevation by 0 to project them in the surface
+    xyz_particles_t_i = \
+        np.vstack((xs, ys, zs)).T.reshape(-1, 3)
+    cell_point = [("vertex", np.array([[i]])) for i in range(n_particles)]
+    meshio.write_points_cells(
+        jp(results_dir, 'vtk', 'backtrack', 'particles_t{}.vtk'.format(i)),
+        xyz_particles_t_i,
+        cells=cell_point,
+        # Optionally provide extra data on points, cells, etc.
+        # point_data=point_data,
+        point_data={'time': np.ones(n_particles)*time_steps[i]},
+        # field_data=field_data
+    )
+
+
 # plot the data
 fig = plt.figure(figsize=(10, 10))
 
