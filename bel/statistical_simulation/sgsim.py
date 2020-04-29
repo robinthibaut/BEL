@@ -11,7 +11,6 @@ from bel.toolbox.mesh_ops import blocks_from_rc
 
 
 def sgsim(model_ws, grid_dir):
-
     x_lim = 1500
     y_lim = 1000
     dx = 10  # Block x-dimension
@@ -43,7 +42,9 @@ def sgsim(model_ws, grid_dir):
         :return:
         """
         rn = np.array([xy])
-        dm = np.flipud(distance_matrix(rn, centers).reshape(nrow, ncol)).flatten()
+        # Do not flip. flopy and sgems have different (x0, y0, z0).
+        # flopy : top-left corner, sgems, bottom-left cornerw
+        dm = distance_matrix(rn, centers).reshape(nrow, ncol).flatten()
         cell = np.where(dm == np.amin(dm))
         return cell[0][0]
 
@@ -55,7 +56,8 @@ def sgsim(model_ws, grid_dir):
 
     if os.path.exists(jp(model_ws, '{}0.npy').format(op)):  # If re-using an older model
         val = np.load(jp(model_ws, '{}0.npy').format(op))
-        return val
+        return val, centers
+
     else:
         sgems = sg.SGEMS()
         nr = 1  # Number of realizations.

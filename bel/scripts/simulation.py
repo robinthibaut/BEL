@@ -40,7 +40,6 @@ def simulation(folder=None):
     # Generates the result directory
     fops.dirmaker(results_dir)
 
-    # TODO: extract sgems implementation from modflow.py
     # Statistical simulation
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
     # Run Flow

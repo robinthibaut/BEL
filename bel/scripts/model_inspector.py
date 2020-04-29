@@ -11,7 +11,7 @@ from flopy.export import vtk
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 
-rn = 'new_illustration'
+rn = 'test'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # %% Load flow model
@@ -40,7 +40,7 @@ def flow_vtk():
                      binary=True, kstpkper=(0, 0))
 
 
-# flow_vtk()
+flow_vtk()
 
 # %% Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
