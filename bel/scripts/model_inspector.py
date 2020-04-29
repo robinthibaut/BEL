@@ -19,8 +19,8 @@ results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 # %% Load flow model
 m_load = jp(results_dir, 'whpa.nam')
 flow_model = fops.load_flow_model(m_load, model_ws=results_dir)
-delr = flow_model.modelgrid.delr
-delc = flow_model.modelgrid.delc
+delr = flow_model.modelgrid.delr  # thicknesses along rows
+delc = flow_model.modelgrid.delc  # thicknesses along column
 xyz_vertices = flow_model.modelgrid.xyzvertices
 # I'll be working with hexahedron, vtk type = 12
 blocks2d = mops.blocks_from_rc(delc, delr)
@@ -29,6 +29,10 @@ blocks3d = blocks.reshape(-1, 3)
 
 
 def flow_vtk():
+    """
+    Export flow model packages and computed heads to vtk format
+    :return:
+    """
     dir_fv = jp(results_dir, 'vtk', 'flow')
     fops.dirmaker(dir_fv)
     flow_model.export(dir_fv, fmt='vtk')
@@ -38,48 +42,60 @@ def flow_vtk():
                      binary=True, kstpkper=(0, 0))
 
 
-flow_vtk()
+# flow_vtk()
 
 # %% Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
-ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]
-ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]
-times = [uo.get_times() for uo in ucn_obj]
-concs = np.array([uo.get_alldata() for uo in ucn_obj])
+ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]  # Files containing concentration
+ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
+times = [uo.get_times() for uo in ucn_obj]  # Get time steps
+concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
 
 
 def transport_vtk():
+    """
+    Export transport package attributes to vtk format
+    :return:
+    """
     dir_tv = jp(results_dir, 'vtk', 'transport')
     fops.dirmaker(dir_tv)
     transport_model.export(dir_tv, fmt='vtk')
 
 
-transport_vtk()
+# transport_vtk()
 
 
 # %% Export UCN to vtk
+
+# Cells configuration for 3D blocks
 cells = [("quad", np.array([list(np.arange(i*4, i*4+4))])) for i in range(len(blocks))]
 
+
 # Stack component concentrations for each time step
-conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+def stacked_conc_vtk():
+    # First replace 1e+30 value (inactive cells) by 0.
+    conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+    for j in range(concs.shape[1]):
+        # Stack the concentration of each component at each time step to visualize them in one plot.
+        array = np.zeros(blocks.shape[0])
+        for i in range(1, 7):
+            # fliplr is necessary as the reshape modifies the array structure
+            cflip = np.fliplr(conc0[i-1, j]).reshape(-1)
+            array += cflip  # Stack all components
+        dic_conc = {'conc': array}
+        # Use meshio to export the mesh
+        meshio.write_points_cells(
+            jp(results_dir, 'vtk', 'transport', 'cstack_{}.vtk'.format(j)),
+            blocks3d,
+            cells,
+            # Optionally provide extra data on points, cells, etc.
+            # point_data=point_data,
+            cell_data=dic_conc,
+            # field_data=field_data
+            )
 
-for j in range(concs.shape[1]):
-    array = np.zeros(blocks.shape[0])
-    for i in range(1, 7):
-        cflip = np.fliplr(conc0[i-1, j]).reshape(-1)
-        array += cflip
-    dic_conc = {'conc': array}
-    meshio.write_points_cells(
-        jp(results_dir, 'vtk', 'transport', 'cstack_{}.vtk'.format(j)),
-        blocks3d,
-        cells,
-        # Optionally provide extra data on points, cells, etc.
-        # point_data=point_data,
-        cell_data=dic_conc,
-        # field_data=field_data
-        )
-
+# stacked_conc_vtk()
 
 # %% Plot modpath
 
