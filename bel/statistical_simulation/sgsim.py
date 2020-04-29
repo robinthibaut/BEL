@@ -32,7 +32,7 @@ def sgsim(model_ws, grid_dir):
         :return:
         """
         rn = np.array([xy])
-        dm = np.flipud(distance_matrix(rn, centers).reshape(nrow, ncol))
+        dm = distance_matrix(rn, centers).reshape(nrow, ncol)
         rc = np.where(dm == np.amin(dm))
         return rc[0][0], rc[1][0]
 
@@ -43,7 +43,7 @@ def sgsim(model_ws, grid_dir):
         """
         rn = np.array([xy])
         # Do not flip. flopy and sgems have different (x0, y0, z0).
-        # flopy : top-left corner, sgems, bottom-left cornerw
+        # flopy : top-left corner, sgems, bottom-left corner
         dm = distance_matrix(rn, centers).reshape(nrow, ncol).flatten()
         cell = np.where(dm == np.amin(dm))
         return cell[0][0]
