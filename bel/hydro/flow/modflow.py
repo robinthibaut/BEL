@@ -55,8 +55,8 @@ def flow(exe_name, model_ws, grid_dir):
     dy = 10  # Block y-dimension
     dz = 10  # Block z-dimension
 
-    nrow = int(y_lim / dy)  # Number of rows
-    ncol = int(x_lim / dx)  # Number of columns
+    nrow = y_lim // dy  # Number of rows
+    ncol = x_lim // dx  # Number of columns
     nlay = 1  # Number of layers
 
     xo = 0  # Grid x origin
@@ -64,7 +64,6 @@ def flow(exe_name, model_ws, grid_dir):
     zo = 0  # Grid z origin
 
     # Refinement
-    # pt is the first instance of the pumping well location.
     pw_d = np.load(jp(grid_dir, 'pw.npy'), allow_pickle=True)  # Pumping well location
     # Point around which refinement will occur
     pt = pw_d[0][:2]
