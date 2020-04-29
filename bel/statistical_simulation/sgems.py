@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 # This code produces a python code that SGems will understand to run the specified commands.
 # Here we produce sgism for the hydraulic conductivity.
 # Idea = make Class file containing methods for the simulations and Flopy
@@ -93,7 +95,7 @@ class SGEMS:
                             target_histogram_flag=0,
                             target_histogram=None,  # min, max, mean, std
                             variogram_nugget=0,
-                            variogram_number_stuctures=1,
+                            variogram_number_structures=1,
                             variogram_structures_contribution=None,
                             variogram_type=None,
                             range_max=None,
@@ -125,7 +127,7 @@ class SGEMS:
         :param target_histogram_flag:
         :param target_histogram:
         :param variogram_nugget:
-        :param variogram_number_stuctures:
+        :param variogram_number_structures:
         :param variogram_structures_contribution:
         :param variogram_type:
         :param range_max:
@@ -274,7 +276,7 @@ class SGEMS:
         # Parametrization of the normal score variogram.
         ng = [variogram_nugget, 'NUGGET']  # Value for the nugget effect.
         self.sim_params.append(ng)
-        sc = [variogram_number_stuctures, 'NSTRUCT']  # Number of nested structures, excluding the nugget effect.
+        sc = [variogram_number_structures, 'NSTRUCT']  # Number of nested structures, excluding the nugget effect.
         self.sim_params.append(sc)
         ct = [variogram_structures_contribution, 'STRUCTCONT']  # Sill for the current structure.
         self.sim_params.append(ct)
@@ -614,7 +616,7 @@ mfile.close()\n\
         # I implemented a code within this template to create a 'params' file which will contain the information
         # of the simulation.
         template = """\
-import statistical_simulation\n\
+import sgems as statistical_simulation\n\
 import os
 os.chdir('OPFOLDER')
 tin = os.path.join('.', 'ti', 'TIFILE')\n\
