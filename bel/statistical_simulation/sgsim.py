@@ -129,13 +129,5 @@ def sgsim(model_ws):
 
         np.save(jp(model_ws, op + '0'), hk_array[0])  # Save the un-discretized hk grid
 
-        # Flattening hk_array to plot it
-        fl = [item for sublist in hk_array[0] for item in sublist]
-        fl2 = [item for sublist in fl for item in sublist]
-        val = []
-        for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
-            val.append(fl2)
-        val = [item for sublist in val for item in sublist]  # Flattening
-
-        return val, centers
+        return hk_array, centers
 

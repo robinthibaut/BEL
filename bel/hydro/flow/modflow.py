@@ -9,11 +9,10 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-import bel.statistical_simulation.sgems as sg
 import bel.toolbox.mesh_ops as mops
 
 
-def flow(exe_name, model_ws, grid_dir):
+def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     """
     Builds and run customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
@@ -58,10 +57,6 @@ def flow(exe_name, model_ws, grid_dir):
     nrow = y_lim // dy  # Number of rows
     ncol = x_lim // dx  # Number of columns
     nlay = 1  # Number of layers
-
-    xo = 0  # Grid x origin
-    yo = 0  # Grid y origin
-    zo = 0  # Grid z origin
 
     # Refinement
     pw_d = np.load(jp(grid_dir, 'pw.npy'), allow_pickle=True)  # Pumping well location
@@ -133,26 +128,6 @@ def flow(exe_name, model_ws, grid_dir):
     nrow_d = y_lim // min_cell_dim
     ncol_d = x_lim // min_cell_dim
 
-    # Creation of a dummy modflow grid to work with statistical_simulation, which doesn't have the same cell structure.
-    model_dummy = flopy.modflow.Modflow(modelname='dummy')
-
-    dis_sgems = flopy.modflow.ModflowDis(model=model_dummy,
-                                         nlay=nlay,
-                                         nrow=nrow_d,
-                                         ncol=ncol_d,
-                                         delr=min_cell_dim,
-                                         delc=min_cell_dim,
-                                         top=top,
-                                         botm=botm)
-    # Nodes coordinates of dummy model
-    ncd0 = dis_sgems.get_node_coordinates()
-
-    xyz_dummy = []
-    # Fill array with x,y coordinates of cell centers
-    for yc in ncd0[0]:
-        for xc in ncd0[1]:
-            xyz_dummy.append([xc, yc])
-
     dis5 = flopy.modflow.ModflowDis(model=model,
                                     nlay=nlay,
                                     nrow=nrow,
@@ -179,12 +154,7 @@ def flow(exe_name, model_ws, grid_dir):
         for xc in ncd1[1]:
             xyz_true.append([xc, yc])
 
-    def get_node_id(dis, x, y):
-        # First get rc
-        node_rc = dis.get_rc_from_node_coordinates(x, y)  # Get node number of the wel location
-        # Then extract node
-        node = dis.get_node((0,) + node_rc)[0]
-        return node
+
 
     def make_well(wel_info):
         """
@@ -287,108 +257,33 @@ def flow(exe_name, model_ws, grid_dir):
                              output_file_name=output_file_name)
 
     # %% SGEMS
+    # Flattening hk_array to plot it
+    fl = [item for sublist in hk_array[0] for item in sublist]
+    fl2 = [item for sublist in fl for item in sublist]
+    val = []
+    for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
+        val.append(fl2)
+    val = [item for sublist in val for item in sublist]  # Flattening
 
-    op = 'hk'  # Simulations output name
-
-    if os.path.exists(jp(model_ws, '{}.npy').format(op)):  # If re-using an older model
-        valkr = np.load(jp(model_ws, '{}.npy').format(op))
+    # If the statistical_simulation grid is different from the modflow grid, which might be the case since we
+    # would like to refine in some ways the flow mesh, the piece of code below assigns to the flow grid the
+    # values of the hk simulations based on the closest distance between cells.
+    inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
+    # between differently discretized meshes.
+    if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
+        # the new hk array on a new grid.
+        if flag_dis == 0:
+            dm = distance_matrix(xyz_true, xy_dummy)  # Compute distance matrix between refined and dummy grid.
+            inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
+            np.save(inds_file, inds)  # Save index file to avoid re-computing
+        else:  # If the inds file exists.
+            inds = np.load(inds_file)
+        valk = [val[k] for k in inds]  # Contains k values for refined grid
+        valkr = np.reshape(valk, (nlay, nrow, ncol))  # Reshape in n layers x n cells in refined grid.
     else:
-        sgems = sg.SGEMS()
-        nr = 1  # Number of realizations.
-        # Extracts wells nodes number in statistical_simulation grid, to fix their simulated value.
-        wells_nodes_sgems = [get_node_id(dis_sgems, w[0], w[1]) for w in wells_data]
-        # Hard data node
-        # fixed_nodes = [[pwnode_sg, 2], [iw1node_sg, 1], [iw2node_sg, 1.5], [iw3node_sg, 0.7], [iw4node_sg, 1.2]]
-        # I now arbitrarily attribute a random value between 1 and 2 to the well nodes
-        fixed_nodes = [[w, 1 + np.random.rand()] for w in wells_nodes_sgems]
+        valkr = hk_array[0]
 
-        sgrid = [dis_sgems.ncol,
-                 dis_sgems.nrow,
-                 dis_sgems.nlay,
-                 dis_sgems.delc.array[0],
-                 dis_sgems.delr.array[0],
-                 dis_sgems.delr.array[0],
-                 xo, yo, zo]  # Grid information
-
-        seg = [50, 50, 50, 0, 0, 0]  # Search ellipsoid geometry
-
-        sgems.gaussian_simulation(op_folder=model_ws.replace('\\', '//'),
-                                  simulation_name='hk',
-                                  output=op,
-                                  grid=sgrid,
-                                  fixed_nodes=fixed_nodes,
-                                  algo='sgsim',
-                                  number_realizations=nr,
-                                  seed=np.random.randint(1000000),
-                                  kriging_type='Simple Kriging (SK)',
-                                  trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                  local_mean=0,
-                                  hard_data_grid='hd',
-                                  hard_data_property='hard',
-                                  assign_hard_data=1,
-                                  max_conditioning_data=15,
-                                  search_ellipsoid_geometry=seg,
-                                  target_histogram_flag=0,
-                                  target_histogram=[0, 0, 0, 0],
-                                  variogram_nugget=0,
-                                  variogram_number_structures=1,
-                                  variogram_structures_contribution=[1],
-                                  variogram_type=['Spherical'],
-                                  range_max=[100],
-                                  range_med=[50],
-                                  range_min=[25],
-                                  angle_x=[0],
-                                  angle_y=[0],
-                                  angle_z=[0])
-
-        opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
-
-        hk = sg.so(opl)  # Grid information directly derived from the output file.
-
-        k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
-
-        k_std = 0.4
-
-        hkp = np.copy(hk)
-
-        hk_array = [sg.transform(h, k_mean, k_std) for h in hkp]
-
-        # Setting the hydraulic conductivity matrix.
-        hk_array = [np.reshape(h, (nlay, dis_sgems.nrow, dis_sgems.ncol)) for h in hk_array]
-
-        # Flip to correspond to statistical_simulation grid ! hk_array is now a list of the
-        # arrays of conductivities for each realization.
-        hk_array = [np.fliplr(hk_array[h]) for h in range(0, nr, 1)]
-
-        np.save(jp(model_ws, op + '0'), hk_array[0])  # Save the un-discretized hk grid
-
-        # Flattening hk_array to plot it
-        fl = [item for sublist in hk_array[0] for item in sublist]
-        fl2 = [item for sublist in fl for item in sublist]
-        val = []
-        for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
-            val.append(fl2)
-        val = [item for sublist in val for item in sublist]  # Flattening
-
-        # If the statistical_simulation grid is different from the modflow grid, which might be the case since we
-        # would like to refine in some ways the flow mesh, the piece of code below assigns to the flow grid the
-        # values of the hk simulations based on the closest distance between cells.
-        inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
-        # between differently discretized meshes.
-        if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
-            # the new hk array on a new grid.
-            if flag_dis == 0:
-                dm = distance_matrix(xyz_true, xyz_dummy)  # Compute distance matrix between refined and dummy grid.
-                inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
-                np.save(inds_file, inds)  # Save index file to avoid re-computing
-            else:  # If the inds file exists.
-                inds = np.load(inds_file)
-            valk = [val[k] for k in inds]  # Contains k values for refined grid
-            valkr = np.reshape(valk, (nlay, nrow, ncol))  # Reshape in n layers x n cells in refined grid.
-        else:
-            valkr = hk_array[0]
-
-        np.save(jp(model_ws, op), valkr)
+    np.save(jp(model_ws, 'hk'), valkr)
 
     # %% Layer 1 properties
 
