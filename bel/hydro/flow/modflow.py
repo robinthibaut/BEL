@@ -15,6 +15,8 @@ import bel.toolbox.mesh_ops as mops
 def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     """
     Builds and run customized MODFLOW simulation.
+    :param xy_dummy: [x, y] coordinates of the centers of the cell of the geostatistical simulation grid
+    :param hk_array: Hydraulic conductivity array
     :param exe_name: Path to the executable file.
     :param model_ws: Path to the working directory.
     :param grid_dir: Path to wells data directory.
@@ -149,6 +151,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
                                     start_datetime=start_datetime)
 
     ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids of true model grid
+
     xy_true = []
     for yc in ncd1[0]:
         for xc in ncd1[1]:
@@ -175,8 +178,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     my_wells = [make_well(o) for o in wells_data]  # Produce well stress period data readable by modflow
 
-    spd = [mw[-1] for mw in my_wells]  # Collecting SPD for each well
-    spd = np.array(spd)
+    spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 
     np.save(jp(model_ws, 'spd'), spd)  # Saves the SPD
 
