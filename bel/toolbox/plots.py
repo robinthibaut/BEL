@@ -144,6 +144,12 @@ class Plot:
         np.random.shuffle(self.cols)
 
     def contours_vertices(self, arrays, c=0):
+        """
+        Extracts contour vertices from a list of matrices
+        :param arrays: list of matrices
+        :param c: Contour value
+        :return: vertices array
+        """
         if len(arrays.shape) < 3:
             arrays = [arrays]
         # First create figures for each forecast.
