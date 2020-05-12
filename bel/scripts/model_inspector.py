@@ -11,7 +11,7 @@ from flopy.export import vtk
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 
-rn = 'extract_sgems'
+rn = 'new_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 
 # %% Load flow model
@@ -29,7 +29,7 @@ blocks3d = blocks.reshape(-1, 3)
 def flow_vtk():
     """
     Export flow model packages and computed heads to vtk format
-    :return:
+
     """
     dir_fv = jp(results_dir, 'vtk', 'flow')
     fops.dirmaker(dir_fv)
@@ -40,7 +40,7 @@ def flow_vtk():
                      binary=True, kstpkper=(0, 0))
 
 
-flow_vtk()
+# flow_vtk()
 
 # %% Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
@@ -54,14 +54,14 @@ concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
 def transport_vtk():
     """
     Export transport package attributes to vtk format
-    :return:
+
     """
     dir_tv = jp(results_dir, 'vtk', 'transport')
     fops.dirmaker(dir_tv)
     transport_model.export(dir_tv, fmt='vtk')
 
 
-transport_vtk()
+# transport_vtk()
 
 
 # %% Export UCN to vtk
@@ -93,7 +93,7 @@ def stacked_conc_vtk():
         )
 
 
-stacked_conc_vtk()
+# stacked_conc_vtk()
 
 # %% Plot modpath
 
