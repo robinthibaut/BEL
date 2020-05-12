@@ -2,7 +2,10 @@
 import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
+
 class TargetOps:
+
+    """Perform data transformation on the target feature"""
 
     def __init__(self):
         self.gaussian_transformers = {}

@@ -100,11 +100,21 @@ class PosteriorOps:
         return h_mean_posterior.T[0], h_posterior_covariance
 
     def random_sample(self, sample_n, pca_d, pca_h, cca_obj, n_posts=1, add_comp=0):
+        """
+
+        :param sample_n: Sample number
+        :param pca_d: PCA object for observation
+        :param pca_h: PCA object for target
+        :param cca_obj: CCA object
+        :param n_posts: Number of posteriors to extract
+        :param add_comp: Flag to add remaining components
+        :return:
+        """
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
         h_pc_training, h_pc_prediction = pca_h.pca_refresh(pca_h.ncomp)
 
-        d_pc_obs = d_pc_prediction[sample_n]  # data for prediction sample
+        d_pc_obs = d_pc_prediction[sample_n]  # observation data for prediction sample
         h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
 
         d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)

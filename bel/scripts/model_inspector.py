@@ -13,6 +13,8 @@ import bel.toolbox.mesh_ops as mops
 
 rn = 'new_illustration'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
+vtk_dir = jp(results_dir, 'vtk')
+fops.dirmaker(vtk_dir)
 
 # %% Load flow model
 m_load = jp(results_dir, 'whpa.nam')
@@ -148,13 +150,20 @@ def particles_vtk():
 particles_vtk()
 
 # %% Export wells objects as vtk
-# pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2]
-# iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2]
-#
-# wt = np.array([np.insert(pw, 2, -11), np.insert(pw, 2, 1)])
-# cell_point = [("line", np.array([[i]])) for i in range(2)]
-# meshio.write_points_cells(
-#     jp(results_dir, 'vtk', 'pw.vtk'),
-#     np.array([[1000, 500, -11], [1000, 500, 1]]),
-#     cells=[("line", np.array([[0, 1]]))]
-# )
+
+
+def wels_vtk():
+    pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
+    iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
+
+    wels = np.concatenate((iw, [pw]), axis=0)
+
+    cell_point = [("vertex", np.array([[i]])) for i in range(len(wels))]
+    point_data = np.array([np.linalg.norm(w - pw) for w in wels])
+
+    meshio.write_points_cells(
+        jp(vtk_dir, 'wels.vtk'),
+        wels,
+        cells=cell_point,
+        point_data={'d_pw': point_data},
+    )

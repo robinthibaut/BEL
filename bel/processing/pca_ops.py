@@ -121,8 +121,9 @@ class PCAOps:
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
         :param pc_to_invert: PC array
-        :return:
+        :return: Back transformed array
         """
+        # TODO: double check
         inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
 
         return inv
