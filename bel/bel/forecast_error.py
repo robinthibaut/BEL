@@ -19,7 +19,7 @@ plt.style.use('dark_background')
 
 def error(study_folder):
     po = PosteriorOps()
-    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 1
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
     # Directories & files paths

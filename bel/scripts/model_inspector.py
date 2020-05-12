@@ -40,7 +40,7 @@ def flow_vtk():
                      binary=True, kstpkper=(0, 0))
 
 
-# flow_vtk()
+flow_vtk()
 
 # %% Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
@@ -61,14 +61,15 @@ def transport_vtk():
     transport_model.export(dir_tv, fmt='vtk')
 
 
-# transport_vtk()
+transport_vtk()
 
 
 # %% Export UCN to vtk
 
-
-# Stack component concentrations for each time step
 def stacked_conc_vtk():
+    """Stack component concentrations for each time step and save vtk"""
+    conc_dir = jp(results_dir, 'vtk', 'transport', 'concentration')
+    fops.dirmaker(conc_dir)
     # First replace 1e+30 value (inactive cells) by 0.
     conc0 = np.abs(np.where(concs == 1e30, 0, concs))
     # Cells configuration for 3D blocks
@@ -83,7 +84,7 @@ def stacked_conc_vtk():
         dic_conc = {'conc': array}
         # Use meshio to export the mesh
         meshio.write_points_cells(
-            jp(results_dir, 'vtk', 'transport', 'concentration', 'cstack_{}.vtk'.format(j)),
+            jp(conc_dir, 'cstack_{}.vtk'.format(j)),
             blocks3d,
             cells,
             # Optionally provide extra data on points, cells, etc.
@@ -93,51 +94,58 @@ def stacked_conc_vtk():
         )
 
 
-# stacked_conc_vtk()
+stacked_conc_vtk()
 
 # %% Plot modpath
 
-# mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
-# load the endpoint data
-endfile = jp(results_dir, 'whpa_mp.mpend')
-endobj = flopy.utils.EndpointFile(endfile)
-ept = endobj.get_alldata()
 
-# load the pathline data
-pthfile = jp(results_dir, 'whpa_mp.mppth')
-pthobj = flopy.utils.PathlineFile(pthfile)
-plines = pthobj.get_alldata()
+def particles_vtk():
+    back_dir = jp(results_dir, 'vtk', 'backtrack')
+    fops.dirmaker(back_dir)
 
-# load the time series
-tsfile = jp(results_dir, 'whpa_mp.timeseries')
-tso = flopy.utils.modpathfile.TimeseriesFile(tsfile)
-ts = tso.get_alldata()
+    # mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
+    # load the endpoint data
+    endfile = jp(results_dir, 'whpa_mp.mpend')
+    endobj = flopy.utils.EndpointFile(endfile)
+    ept = endobj.get_alldata()
 
-n_particles = len(ts)
-n_t_stp = ts[0].shape[0]
-time_steps = ts[0].time
+    # load the pathline data
+    pthfile = jp(results_dir, 'whpa_mp.mppth')
+    pthobj = flopy.utils.PathlineFile(pthfile)
+    plines = pthobj.get_alldata()
 
-points_x = np.array([ts[i].x for i in range(len(ts))])
-points_y = np.array([ts[i].y for i in range(len(ts))])
-points_z = np.array([ts[i].z for i in range(len(ts))])
+    # load the time series
+    tsfile = jp(results_dir, 'whpa_mp.timeseries')
+    tso = flopy.utils.modpathfile.TimeseriesFile(tsfile)
+    ts = tso.get_alldata()
 
-for i in range(n_t_stp):
-    xs = points_x[:, i]
-    ys = points_y[:, i]
-    zs = points_z[:, i]*0  # Replace elevation by 0 to project them in the surface
-    xyz_particles_t_i = \
-        np.vstack((xs, ys, zs)).T.reshape(-1, 3)
-    cell_point = [("vertex", np.array([[i]])) for i in range(n_particles)]
-    meshio.write_points_cells(
-        jp(results_dir, 'vtk', 'backtrack', 'particles_t{}.vtk'.format(i)),
-        xyz_particles_t_i,
-        cells=cell_point,
-        # Optionally provide extra data on points, cells, etc.
-        # point_data=point_data,
-        point_data={'time': np.ones(n_particles)*time_steps[i]},
-        # field_data=field_data
-    )
+    n_particles = len(ts)
+    n_t_stp = ts[0].shape[0]
+    time_steps = ts[0].time
 
+    points_x = np.array([ts[i].x for i in range(len(ts))])
+    points_y = np.array([ts[i].y for i in range(len(ts))])
+    points_z = np.array([ts[i].z for i in range(len(ts))])
+
+    for i in range(n_t_stp):
+        xs = points_x[:, i]
+        ys = points_y[:, i]
+        zs = points_z[:, i]*0  # Replace elevation by 0 to project them in the surface
+        xyz_particles_t_i = \
+            np.vstack((xs, ys, zs)).T.reshape(-1, 3)
+        cell_point = [("vertex", np.array([[i]])) for i in range(n_particles)]
+        meshio.write_points_cells(
+            jp(back_dir, 'particles_t{}.vtk'.format(i)),
+            xyz_particles_t_i,
+            cells=cell_point,
+            # Optionally provide extra data on points, cells, etc.
+            # point_data=point_data,
+            point_data={'time': np.ones(n_particles)*time_steps[i]},
+            # field_data=field_data
+        )
+
+
+particles_vtk()
 
 # %% Export wells objects as vtk
 # pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2]

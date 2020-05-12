@@ -39,7 +39,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
     """
 
-    x_lim, y_lim, grf = [800, 1150], [300, 700], 2  # Grid geometry
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 1  # Grid geometry
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
     mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate Plot instance
 
