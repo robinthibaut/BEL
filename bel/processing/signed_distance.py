@@ -48,7 +48,7 @@ class SignedDistance:
 
         return phi
 
-    def function(self, pzs):
+    def compute(self, pzs):
         """
         Given an array of coordinates of polygon vertices, computes its signed distance field.
         :param pzs: Array of ordered vertices coordinates of a polygon.

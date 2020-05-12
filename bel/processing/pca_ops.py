@@ -31,7 +31,8 @@ class PCAOps:
 
     def pca_tp(self, n_training):
         """
-        Given an arbitrary size of training data, splits the original array accordingly
+        Given an arbitrary size of training data, splits the original array accordingly.
+        The data used for prediction are after the training slice.
         :param n_training:
         :return: training, test
         """

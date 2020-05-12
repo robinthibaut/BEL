@@ -36,12 +36,12 @@ def bel(n_training=300, n_test=5, new_dir=None):
     :param n_training: Number of samples used to train the model
     :param n_test: Number of samples on which to perform prediction
     :param new_dir: Name of the forecast directory
-    :return:
+
     """
 
-    x_lim, y_lim, grf = [800, 1150], [300, 700], 2
-    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+    x_lim, y_lim, grf = [800, 1150], [300, 700], 2  # Grid geometry
+    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate Plot instance
 
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
@@ -67,7 +67,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots)
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots)  # Loads the results
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
@@ -75,7 +75,7 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
     # Compute signed distance on pzs.
     # h is the matrix of target feature on which PCA will be performed.
-    h = np.array([sd.function(pp) for pp in pzs])
+    h = np.array([sd.compute(pp) for pp in pzs])
     # Plot all WHPP
     mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
 
@@ -143,5 +143,4 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
-    for i in range(5):
-        bel(new_dir=None)
+    bel(new_dir='bf1794cc-fe91-436d-9714-1fe6c3822e90', n_test=1)

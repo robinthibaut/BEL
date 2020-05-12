@@ -223,5 +223,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    error('bf1794cc-fe91-436d-9714-1fe6c3822e90')
 
