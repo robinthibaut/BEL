@@ -7,7 +7,6 @@ import numpy as np
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
-from pysgems.plot.sgplots import Plots
 from pysgems.sgems import sg
 
 from bel.toolbox.file_ops import datread
@@ -38,21 +37,24 @@ def sgsim(model_ws, grid_dir):
 
     hd = PointSet(project=pjt, pointset_path=file_path)
 
-    hku = 1 + np.random.rand(len(hd.dataframe))
+    hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
     hd.dataframe['hd'] = hku
 
-    hd.export_01('hd')  # Exports in binary
+    hd.export_01('hd')  # Exports modified dataset in binary
 
     # %% Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     Discretize(project=pjt, dx=10, dy=10, xo=0, yo=0, x_lim=1500, y_lim=1000)
 
-    # %% Display point coordinates and grid
-    pl = Plots(project=pjt)
-    pl.plot_coordinates()
+    # Get sgems grid centers coordinates:
+    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx/2
+    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy/2
+    xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
+    centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
-    # %% Which feature are available
-    print(pjt.point_set.columns)
+    # %% Display point coordinates and grid
+    # pl = Plots(project=pjt)
+    # pl.plot_coordinates()
 
     # %% Load your algorithm xml file in the 'algorithms' folder.
     dir_path = os.path.abspath(__file__ + "/..")
@@ -69,19 +71,24 @@ def sgsim(model_ws, grid_dir):
     # %% Run sgems
     pjt.run()
     # Plot 2D results
-    pl.plot_2d(save=True)
+    # pl.plot_2d(save=True)
 
     opl = jp(model_ws, 'results.grid')  # Output file location.
 
     matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-    tf = np.vectorize(transform)
-    matrix = tf(matrix)
+    tf = np.vectorize(transform)  # Transform values to log10
+    matrix = tf(matrix)  # Apply fnction to results
 
-    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))
+    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
+    matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
-    matrix = np.flipud(matrix)
+    # extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
+    # plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+    # plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
+    # plt.colorbar()
+    # plt.show()
 
     np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
 
