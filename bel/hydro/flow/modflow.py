@@ -258,7 +258,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     # %% SGEMS
     # Flattening hk_array to plot it
-    fl = [item for sublist in hk_array[0] for item in sublist]
+    fl = [item for sublist in hk_array for item in sublist]
     fl2 = [item for sublist in fl for item in sublist]
     val = []
     for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.

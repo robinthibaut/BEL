@@ -14,7 +14,7 @@ from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
-from bel.statistical_simulation.sgsim import sgsim
+from bel.statistical_simulation.sgsim_new import sgsim
 
 
 def simulation(folder=None):

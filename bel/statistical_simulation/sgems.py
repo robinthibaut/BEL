@@ -6,7 +6,6 @@
 
 import ntpath  # Path for Windows
 import os
-import re
 import subprocess
 
 import numpy as np
@@ -41,10 +40,6 @@ def so(filename):
     datac = open(filename, 'r').readlines()
     # Extraction of the grid size from the first lines of the output
     nsimu = int(datac[1])
-    dims = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", datac[0])
-    ncol = int(dims[0])
-    nrow = int(dims[1])
-    nlay = int(dims[2])
     # Each simulation result is separated
     head = nsimu + 2
     datac = datac[head:]
@@ -52,7 +47,6 @@ def so(filename):
     data = np.array(data, dtype=np.float)
     sims = [data[:, i] for i in range(0, nsimu, 1)]
 
-    # return nrow, ncol, nlay, gaussian_simulation
     return sims
 
 
