@@ -7,6 +7,7 @@ import numpy as np
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
+from pysgems.plot.sgplots import Plots
 from pysgems.sgems import sg
 
 from bel.toolbox.file_ops import datread
@@ -53,7 +54,7 @@ def sgsim(model_ws, grid_dir):
     centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
     # %% Display point coordinates and grid
-    # pl = Plots(project=pjt)
+    pl = Plots(project=pjt)
     # pl.plot_coordinates()
 
     # %% Load your algorithm xml file in the 'algorithms' folder.
@@ -71,7 +72,7 @@ def sgsim(model_ws, grid_dir):
     # %% Run sgems
     pjt.run()
     # Plot 2D results
-    # pl.plot_2d(save=True)
+    pl.plot_2d(save=True)
 
     opl = jp(model_ws, 'results.grid')  # Output file location.
 
