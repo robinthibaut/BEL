@@ -259,10 +259,9 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     # %% SGEMS
     # Flattening hk_array to plot it
     fl = [item for sublist in hk_array for item in sublist]
-    fl2 = [item for sublist in fl for item in sublist]
     val = []
     for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
-        val.append(fl2)
+        val.append(fl)
     val = [item for sublist in val for item in sublist]  # Flattening
 
     # If the statistical_simulation grid is different from the modflow grid, which might be the case since we
