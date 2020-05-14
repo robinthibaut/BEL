@@ -4,130 +4,93 @@ import os
 from os.path import join as jp
 
 import numpy as np
-from scipy.spatial import distance_matrix
+from pysgems.algo.sgalgo import XML
+from pysgems.dis.sgdis import Discretize
+from pysgems.io.sgio import PointSet
+from pysgems.plot.sgplots import Plots
+from pysgems.sgems import sg
 
-import bel.statistical_simulation.sgems as sg
-from bel.toolbox.mesh_ops import blocks_from_rc
+from bel.toolbox.file_ops import datread
+
+
+def transform(f):
+    """
+    Transforms the values of the statistical_simulation simulations into meaningful data
+    """
+
+    k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    k_std = 0.4
+
+    ff = f * k_std + k_mean
+
+    return 10 ** ff
 
 
 def sgsim(model_ws, grid_dir):
-    x_lim = 1500
-    y_lim = 1000
-    dx = 10  # Block x-dimension
-    dy = 10  # Block y-dimension
-    dz = 10  # Block z-dimension
-    xo, yo, zo = 0, 0, 0
-    nrow = y_lim // dy  # Number of rows
-    ncol = x_lim // dx  # Number of columns
-    nlay = 1
-    along_r = np.ones(ncol) * dx  # Size of each cell along y-dimension - rows
-    along_c = np.ones(nrow) * dy  # Size of each cell along x-dimension - columns
+    # %% Initiate sgems pjt
+    pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
-    blocks = blocks_from_rc(along_c, along_r)
-    centers = np.array([np.mean(b, axis=0) for b in blocks])
+    # %% Load hard data point set
 
-    def my_rc(xy):
-        """
-        :param xy: [x, y]
-        :return:
-        """
-        rn = np.array([xy])
-        dm = distance_matrix(rn, centers).reshape(nrow, ncol)
-        rc = np.where(dm == np.amin(dm))
-        return rc[0][0], rc[1][0]
+    data_dir = grid_dir
+    dataset = 'wels.eas'
+    file_path = jp(data_dir, dataset)
 
-    def my_node(xy):
-        """
-        :param xy: [x, y]
-        :return:
-        """
-        rn = np.array([xy])
-        # Do not flip. flopy and sgems have different (x0, y0, z0).
-        # flopy : top-left corner, sgems, bottom-left corner
-        # dm = distance_matrix(rn, centers).reshape(nrow, ncol).flatten()
-        dm = distance_matrix(rn, centers).flatten()
-        cell = np.where(dm == np.amin(dm))
-        return cell[0][0]
+    hd = PointSet(project=pjt, pointset_path=file_path)
 
-    pwa = np.array(np.load(jp(grid_dir, 'pw.npy'), allow_pickle=True))[:, :2]  # Pumping well location
-    iwa = np.array(np.load(jp(grid_dir, 'iw.npy'), allow_pickle=True))[:, :2]  # Injection wells locations
-    wells_loc = np.concatenate((pwa, iwa), axis=0)
+    hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+    hd.dataframe['hd'] = hku
 
-    op = 'hk'  # Simulations output name
+    hd.export_01('hd')  # Exports modified dataset in binary
 
-    if os.path.exists(jp(model_ws, '{}0.npy').format(op)):  # If re-using an older model
-        val = np.load(jp(model_ws, '{}0.npy').format(op))
-        return val, centers
+    # %% Generate grid. Grid dimensions can automatically be generated based on the data points
+    # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
+    Discretize(project=pjt, dx=10, dy=10, xo=0, yo=0, x_lim=1500, y_lim=1000)
 
-    else:
-        sgems = sg.SGEMS()
-        nr = 1  # Number of realizations.
-        # Extracts wells nodes number in statistical_simulation grid, to fix their simulated value.
-        wells_nodes_sgems = [my_node(w) for w in wells_loc]
-        # Hard data node
-        # fixed_nodes = [[pwnode_sg, 2], [iw1node_sg, 1], [iw2node_sg, 1.5], [iw3node_sg, 0.7], [iw4node_sg, 1.2]]
-        # I now arbitrarily attribute a random value between 1 and 2 to the well nodes
-        fixed_nodes = [[w, 1 + np.random.rand()] for w in wells_nodes_sgems]
+    # Get sgems grid centers coordinates:
+    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx/2
+    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy/2
+    xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
+    centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
-        sgrid = [ncol,
-                 nrow,
-                 nlay,
-                 dx,
-                 dy,
-                 dz,
-                 xo, yo, zo]  # Grid information
+    # %% Display point coordinates and grid
+    pl = Plots(project=pjt)
+    # pl.plot_coordinates()
 
-        seg = [50, 50, 50, 0, 0, 0]  # Search ellipsoid geometry
+    # %% Load your algorithm xml file in the 'algorithms' folder.
+    dir_path = os.path.abspath(__file__ + "/..")
+    algo_dir = jp(dir_path, 'algorithms')
+    al = XML(project=pjt, algo_dir=algo_dir)
+    al.xml_reader('bel_sgsim')
 
-        sgems.gaussian_simulation(op_folder=model_ws.replace('\\', '//'),
-                                  simulation_name='hk',
-                                  output=op,
-                                  grid=sgrid,
-                                  fixed_nodes=fixed_nodes,
-                                  algo='sgsim',
-                                  number_realizations=nr,
-                                  seed=np.random.randint(1000000),
-                                  kriging_type='Simple Kriging (SK)',
-                                  trend=[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                  local_mean=0,
-                                  hard_data_grid='hd',
-                                  hard_data_property='hard',
-                                  assign_hard_data=1,
-                                  max_conditioning_data=15,
-                                  search_ellipsoid_geometry=seg,
-                                  target_histogram_flag=0,
-                                  target_histogram=[0, 0, 0, 0],
-                                  variogram_nugget=0,
-                                  variogram_number_structures=1,
-                                  variogram_structures_contribution=[1],
-                                  variogram_type=['Spherical'],
-                                  range_max=[100],
-                                  range_med=[50],
-                                  range_min=[25],
-                                  angle_x=[0],
-                                  angle_y=[0],
-                                  angle_z=[0])
+    # %% Modify xml below:
+    al.xml_update('Seed', 'value', str(np.random.randint(1e9)))
 
-        opl = jp(model_ws, '{}.grid'.format(op))  # Output file location.
+    # %% Write python script
+    pjt.write_command()
 
-        hk = sg.so(opl)  # Grid information directly derived from the output file.
+    # %% Run sgems
+    pjt.run()
+    # Plot 2D results
+    pl.plot_2d(save=True)
 
-        k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    opl = jp(model_ws, 'results.grid')  # Output file location.
 
-        k_std = 0.4
+    matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
+    matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-        hkp = np.copy(hk)
+    tf = np.vectorize(transform)  # Transform values to log10
+    matrix = tf(matrix)  # Apply fnction to results
 
-        hk_array = [sg.transform(h, k_mean, k_std) for h in hkp]
+    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
+    matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
-        # Setting the hydraulic conductivity matrix.
-        hk_array = [np.reshape(h, (nlay, nrow, ncol)) for h in hk_array]
+    # extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
+    # plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+    # plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
+    # plt.colorbar()
+    # plt.show()
 
-        # Flip to correspond to statistical_simulation grid ! hk_array is now a list of the
-        # arrays of conductivities for each realization.
-        hk_array = [np.fliplr(hk_array[h]) for h in range(0, nr, 1)]
+    np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
 
-        np.save(jp(model_ws, op + '0'), hk_array[0])  # Save the un-discretized hk grid
-
-        return hk_array, centers
-
+    return matrix, centers
