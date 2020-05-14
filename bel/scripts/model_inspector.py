@@ -11,7 +11,7 @@ from flopy.export import vtk
 import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 
-rn = 'new_illustration'
+rn = 'test'
 results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
 vtk_dir = jp(results_dir, 'vtk')
 fops.dirmaker(vtk_dir)
@@ -167,3 +167,5 @@ def wels_vtk():
         cells=cell_point,
         point_data={'d_pw': point_data},
     )
+
+wels_vtk()
