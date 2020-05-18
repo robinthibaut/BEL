@@ -147,7 +147,7 @@ def particles_vtk():
     points_y = np.array([ts[i].y for i in range(len(ts))])
     points_z = np.array([ts[i].z for i in range(len(ts))])
 
-    xs = points_x[:, 0]
+    xs = points_x[:, 0]  # Data at first time step
     ys = points_y[:, 0]
     zs = points_z[:, 0] * 0  # Replace elevation by 0 to project them in the surface
     prev = \
@@ -160,7 +160,9 @@ def particles_vtk():
         xyz_particles_t_i = \
             np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
-        speed = np.abs(operator.truediv(tuple(map(np.linalg.norm, xyz_particles_t_i - prev)), time_steps[i] - time_steps[i - 1]))
+        # Compute instant speed ds/dt
+        speed = np.abs(operator.truediv(tuple(map(np.linalg.norm, xyz_particles_t_i - prev)),
+                                        time_steps[i] - time_steps[i - 1]))
         prev = xyz_particles_t_i
 
         cell_point = [("vertex", np.array([[i]])) for i in range(n_particles)]
