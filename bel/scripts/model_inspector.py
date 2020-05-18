@@ -28,6 +28,14 @@ blocks2d = mops.blocks_from_rc(delc, delr)
 blocks = mops.blocks_from_rc_3d(delc, delr)
 blocks3d = blocks.reshape(-1, 3)
 
+# Transport model
+mt_load = jp(results_dir, 'whpa.mtnam')
+transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
+ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]  # Files containing concentration
+ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
+times = [uo.get_times() for uo in ucn_obj]  # Get time steps
+concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
+
 
 def flow_vtk():
     """
@@ -44,13 +52,6 @@ def flow_vtk():
 
 
 # %% Load transport model
-mt_load = jp(results_dir, 'whpa.mtnam')
-transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
-ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]  # Files containing concentration
-ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
-times = [uo.get_times() for uo in ucn_obj]  # Get time steps
-concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
-
 
 def transport_vtk():
     """
@@ -75,11 +76,13 @@ def stacked_conc_vtk():
     for j in range(concs.shape[1]):
         # Stack the concentration of each component at each time step to visualize them in one plot.
         array = np.zeros(blocks.shape[0])
+        dic_conc = {}
         for i in range(1, 7):
             # fliplr is necessary as the reshape modifies the array structure
             cflip = np.fliplr(conc0[i - 1, j]).reshape(-1)
+            dic_conc['conc_wel_{}'.format(i)] = cflip
             array += cflip  # Stack all components
-        dic_conc = {'conc': array}
+        dic_conc['stack'] = array
         # Use meshio to export the mesh
         meshio.write_points_cells(
             jp(conc_dir, 'cstack_{}.vtk'.format(j)),
@@ -202,4 +205,4 @@ def wels_vtk():
 
 
 if __name__ == '__main__':
-    particles_vtk()
+    stacked_conc_vtk()
