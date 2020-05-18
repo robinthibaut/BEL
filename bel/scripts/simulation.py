@@ -70,6 +70,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('test')
+    simulation('New folder')
     end = time.time()
     print((end-start)/60)

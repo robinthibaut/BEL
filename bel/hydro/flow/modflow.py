@@ -111,7 +111,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     ncol = len(delc)  # new number of columns
     nrow = len(delr)  # new number of rows
 
-    top = 0  # Model top (m)
+    top = np.zeros((nrow, ncol), dtype=np.float)   # Model top (m)
     botm = [-dz]  # List containing bottom location (m) of each layer
 
     # %% Model initial conditions
@@ -359,7 +359,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
-    if head.max() > top + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
+    if head.max() > top.max() + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
         # that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         # TODO: optimize this
         model = None
