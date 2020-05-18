@@ -1,5 +1,5 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
-
+import operator
 import os
 from os.path import join as jp
 
@@ -12,7 +12,8 @@ import bel.toolbox.file_ops as fops
 import bel.toolbox.mesh_ops as mops
 
 rn = 'test'
-results_dir = jp(os.getcwd(), 'bel', 'hydro', 'results', rn)
+bdir = os.path.dirname(os.getcwd())
+results_dir = jp(bdir, 'hydro', 'results', rn)
 vtk_dir = jp(results_dir, 'vtk')
 fops.dirmaker(vtk_dir)
 
@@ -42,8 +43,6 @@ def flow_vtk():
                      binary=True, kstpkper=(0, 0))
 
 
-flow_vtk()
-
 # %% Load transport model
 mt_load = jp(results_dir, 'whpa.mtnam')
 transport_model = fops.load_transport_model(mt_load, flow_model, model_ws=results_dir)
@@ -61,9 +60,6 @@ def transport_vtk():
     dir_tv = jp(results_dir, 'vtk', 'transport')
     fops.dirmaker(dir_tv)
     transport_model.export(dir_tv, fmt='vtk')
-
-
-transport_vtk()
 
 
 # %% Export UCN to vtk
@@ -96,7 +92,29 @@ def stacked_conc_vtk():
         )
 
 
-stacked_conc_vtk()
+def conc_vtk():
+    """Stack component concentrations for each time step and save vtk"""
+    # First replace 1e+30 value (inactive cells) by 0.
+    conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+    # Cells configuration for 3D blocks
+    cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))])) for i in range(len(blocks))]
+    for i in range(1, 7):
+        conc_dir = jp(results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
+        fops.dirmaker(conc_dir)
+        for j in range(concs.shape[1]):
+            array = np.fliplr(conc0[i - 1, j]).reshape(-1)
+            dic_conc = {'conc'.format(j): array}
+            # Use meshio to export the mesh
+            meshio.write_points_cells(
+                jp(conc_dir, '{}_conc.vtk'.format(j)),
+                blocks3d,
+                cells,
+                # Optionally provide extra data on points, cells, etc.
+                # point_data=point_data,
+                cell_data=dic_conc,
+                # field_data=field_data
+            )
+
 
 # %% Plot modpath
 
@@ -129,12 +147,22 @@ def particles_vtk():
     points_y = np.array([ts[i].y for i in range(len(ts))])
     points_z = np.array([ts[i].z for i in range(len(ts))])
 
+    xs = points_x[:, 0]
+    ys = points_y[:, 0]
+    zs = points_z[:, 0] * 0  # Replace elevation by 0 to project them in the surface
+    prev = \
+        np.vstack((xs, ys, zs)).T.reshape(-1, 3)
+
     for i in range(n_t_stp):
         xs = points_x[:, i]
         ys = points_y[:, i]
-        zs = points_z[:, i]*0  # Replace elevation by 0 to project them in the surface
+        zs = points_z[:, i] * 0  # Replace elevation by 0 to project them in the surface
         xyz_particles_t_i = \
             np.vstack((xs, ys, zs)).T.reshape(-1, 3)
+
+        speed = np.abs(operator.truediv(tuple(map(np.linalg.norm, xyz_particles_t_i - prev)), time_steps[i] - time_steps[i - 1]))
+        prev = xyz_particles_t_i
+
         cell_point = [("vertex", np.array([[i]])) for i in range(n_particles)]
         meshio.write_points_cells(
             jp(back_dir, 'particles_t{}.vtk'.format(i)),
@@ -142,12 +170,14 @@ def particles_vtk():
             cells=cell_point,
             # Optionally provide extra data on points, cells, etc.
             # point_data=point_data,
-            point_data={'time': np.ones(n_particles)*time_steps[i]},
+            point_data={'time': np.ones(n_particles) * time_steps[i],
+                        'speed': speed},
             # field_data=field_data
         )
 
 
 particles_vtk()
+
 
 # %% Export wells objects as vtk
 
@@ -169,4 +199,5 @@ def wels_vtk():
     )
 
 
-wels_vtk()
+if __name__ == '__main__':
+    particles_vtk()
