@@ -203,7 +203,7 @@ def particles_vtk():
 
         # Write path lines
         if i > 0:
-            for p in range(1):
+            for p in range(n_particles):
                 short = np.vstack((points_x[p, :i + 1], points_y[p, :i + 1], np.abs(points_z[p, :i + 1] * 0))).T
                 points = vtk.vtkPoints()
                 [points.InsertNextPoint(c) for c in short]
@@ -226,6 +226,32 @@ def particles_vtk():
 
                 # Add the lines to the dataset
                 polyData.SetLines(cells)
+
+                writer = vtk.vtkXMLPolyDataWriter()
+                writer.SetInputData(polyData)
+                writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
+                writer.Write()
+        else:
+            for p in range(n_particles):
+                xs = points_x[p, i]
+                ys = points_y[p, i]
+                zs = points_z[p, i] * 0  # Replace elevation by 0 to project them in the surface
+                xyz_particles_t_i = \
+                    np.vstack((xs, ys, zs)).T.reshape(-1, 3)
+
+                points = vtk.vtkPoints()
+                ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
+
+                # Create a cell array to store the points
+                vertices = vtk.vtkCellArray()
+                vertices.InsertNextCell(len(xyz_particles_t_i))
+                [vertices.InsertCellPoint(ix) for ix in ids]
+
+                # Create a polydata to store everything in
+                polyData = vtk.vtkPolyData()
+                # Add the points to the dataset
+                polyData.SetPoints(points)
+                polyData.SetVerts(vertices)
 
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
