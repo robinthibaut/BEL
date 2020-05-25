@@ -158,6 +158,8 @@ def particles_vtk():
     prev = \
         np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
+    speed_array = None
+
     for i in range(n_t_stp):
         xs = points_x[:, i]
         ys = points_y[:, i]
@@ -169,6 +171,11 @@ def particles_vtk():
         speed = np.abs(operator.truediv(tuple(map(np.linalg.norm, xyz_particles_t_i - prev)),
                                         time_steps[i] - time_steps[i - 1]))
         prev = xyz_particles_t_i
+
+        if speed_array is None:
+            speed_array = np.array([speed])
+        else:
+            speed_array = np.append(speed_array, np.array([speed]), 0)
 
         # Write particles
         cell_point = [("vertex", np.array([[i]])) for i in range(n_t_stp)]
@@ -194,21 +201,20 @@ def particles_vtk():
                 # Add the points to the dataset
                 polyData.SetPoints(points)
 
-                # polyLine = vtk.vtkPolyLine()
-                # polyLine.GetPointIds().SetNumberOfIds(i + 1)
-                # for k in range(0, i + 1):
-                #     polyLine.GetPointIds().SetId(k, k)
-
                 # Create a cell array to store the lines in and add the lines to it
                 cells = vtk.vtkCellArray()
                 cells.InsertNextCell(i+1)
                 [cells.InsertCellPoint(k) for k in range(i + 1)]
 
+                speed = vtk.vtkDoubleArray()
+                speed.SetName("Speed")
+                [speed.InsertNextValue(speed_array[k][p]) for k in range(i+1)]
+
+                polyData.GetPointData().AddArray(speed)
+
                 # Add the lines to the dataset
                 polyData.SetLines(cells)
                 polyData.Modified()
-
-
 
                 # # Setup actor and mapper
                 # mapper = vtk.vtkPolyDataMapper()
@@ -232,22 +238,8 @@ def particles_vtk():
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
                 # writer.SetFileTypeToBinary()
-                writer.SetFileName(jp(vtk_dir, 'path_p_{}_t{}.vtk'.format(p, i)))
+                writer.SetFileName(jp(back_dir, 'path_p_{}_t{}.vtk'.format(p, i)))
                 writer.Write()
-
-
-                # cell_point = {"poly_line": np.array([[k for k in range(i+1)]])}
-                #
-                # meshio.write_points_cells(
-                #     jp(back_dir, 'path_p_{}_t{}.vtu'.format(p, i)),
-                #     np.vstack((points_x[p, :i+1], points_y[p, :i+1], points_z[p, :i+1]*0)).T,
-                #     cells=cell_point,
-                #     # Optionally provide extra data on points, cells, etc.
-                #     # point_data=point_data,
-                #     # point_data={'time': np.ones(n_particles) * time_steps[i],
-                #     #             'speed': speed},
-                #     # field_data=field_data
-                # )
 
 
 # %% Export wells objects as vtk
