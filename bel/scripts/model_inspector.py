@@ -129,9 +129,9 @@ def particles_vtk():
 
     # mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
     # load the endpoint data
-    endfile = jp(results_dir, 'whpa_mp.mpend')
-    endobj = flopy.utils.EndpointFile(endfile)
-    ept = endobj.get_alldata()
+    # endfile = jp(results_dir, 'whpa_mp.mpend')
+    # endobj = flopy.utils.EndpointFile(endfile)
+    # ept = endobj.get_alldata()
 
     # # load the pathline data
     # The same information is stored in the time series file
@@ -177,21 +177,33 @@ def particles_vtk():
         else:
             speed_array = np.append(speed_array, np.array([speed]), 0)
 
-        # Write particles
-        cell_point = [("vertex", np.array([[i]])) for i in range(n_t_stp)]
-        meshio.write_points_cells(
-            jp(back_dir, 'particles_t{}.vtk'.format(i)),
-            xyz_particles_t_i,
-            cells=cell_point,
-            # Optionally provide extra data on points, cells, etc.
-            # point_data=point_data,
-            point_data={'time': np.ones(n_particles) * time_steps[i],
-                        'speed': speed},
-            # field_data=field_data
-        )
+        points = vtk.vtkPoints()
+        ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
+
+        # Create a cell array to store the points
+        vertices = vtk.vtkCellArray()
+        vertices.InsertNextCell(n_particles)
+        [vertices.InsertCellPoint(ix) for ix in ids]
+
+        # Create a polydata to store everything in
+        polyData = vtk.vtkPolyData()
+        # Add the points to the dataset
+        polyData.SetPoints(points)
+        polyData.SetVerts(vertices)
+
+        speedArray = vtk.vtkDoubleArray()
+        speedArray.SetName("Speed")
+        [speedArray.InsertNextValue(s) for s in speed]
+        polyData.GetPointData().AddArray(speedArray)
+
+        writer = vtk.vtkXMLPolyDataWriter()
+        writer.SetInputData(polyData)
+        writer.SetFileName(jp(back_dir, 'particles_t{}.vtp'.format(i)))
+        writer.Write()
+
         # Write path lines
         if i > 0:
-            for p in range(n_particles):
+            for p in range(1):
                 short = np.vstack((points_x[p, :i + 1], points_y[p, :i + 1], np.abs(points_z[p, :i + 1] * 0))).T
                 points = vtk.vtkPoints()
                 [points.InsertNextPoint(c) for c in short]
@@ -214,31 +226,10 @@ def particles_vtk():
 
                 # Add the lines to the dataset
                 polyData.SetLines(cells)
-                polyData.Modified()
-
-                # # Setup actor and mapper
-                # mapper = vtk.vtkPolyDataMapper()
-                # mapper.SetInputData(polyData)
-                #
-                # actor = vtk.vtkActor()
-                # actor.SetMapper(mapper)
-                #
-                # # Setup render window, renderer, and interactor
-                # renderer = vtk.vtkRenderer()
-                # renderWindow = vtk.vtkRenderWindow()
-                # renderWindow.SetWindowName("PolyLine")
-                # renderWindow.AddRenderer(renderer)
-                # renderWindowInteractor = vtk.vtkRenderWindowInteractor()
-                # renderWindowInteractor.SetRenderWindow(renderWindow)
-                # renderer.AddActor(actor)
-                #
-                # renderWindow.Render()
-                # renderWindowInteractor.Start()
 
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
-                # writer.SetFileTypeToBinary()
-                writer.SetFileName(jp(back_dir, 'path_p_{}_t{}.vtk'.format(p, i)))
+                writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
                 writer.Write()
 
 
