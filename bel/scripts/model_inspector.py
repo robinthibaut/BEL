@@ -123,6 +123,7 @@ def conc_vtk():
 
     points = vtk.vtkPoints()
     ugrid = vtk.vtkUnstructuredGrid()
+
     for e, b in enumerate(blocks):
         sb = sorted(b, key=lambda k: [k[1], k[0]])
         [points.InsertPoint(e*4+es, bb) for es, bb in enumerate(sb)]
@@ -130,14 +131,15 @@ def conc_vtk():
 
     ugrid.SetPoints(points)
 
-    for i in range(1, 2):
+    concArray = vtk.vtkDoubleArray()
+    concArray.SetName("conc")
+
+    for i in range(1, 7):
         conc_dir = jp(results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
         fops.dirmaker(conc_dir)
         for j in range(concs.shape[1]):
             # Set array
             array = np.fliplr(conc0[i - 1, j]).reshape(-1)
-            concArray = vtk.vtkDoubleArray()
-            concArray.SetName("conc")
             [concArray.InsertNextValue(s) for s in array]
             ugrid.GetCellData().AddArray(concArray)
 
@@ -147,6 +149,7 @@ def conc_vtk():
             writer.SetFileName(jp(conc_dir, '{}_conc.vtu'.format(j)))
             writer.Write()
 
+            concArray.Initialize()
             ugrid.GetCellData().Initialize()
 
 
