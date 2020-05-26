@@ -1,6 +1,8 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
+import math
 import operator
 import os
+from functools import reduce
 from os.path import join as jp
 
 import flopy
@@ -36,6 +38,24 @@ ucn_files = [jp(results_dir, 'MT3D00{}.UCN'.format(i)) for i in range(1, 7)]  # 
 ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
 times = [uo.get_times() for uo in ucn_obj]  # Get time steps
 concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
+
+
+def order_vertices(vertices):
+    """
+    Paraview expects vertices in a particular order, with the origin at the bottom left corner.
+    :param vertices: (x, y) coordinates of the polygon vertices
+    :return:
+    """
+    # Compute center of vertices
+    center = \
+        tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), vertices), [len(vertices)] * 2))
+
+    # Sort vertices according to angle
+    so = \
+        sorted(vertices,
+               key=lambda coord: (math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))))
+
+    return np.array(so)
 
 
 def flow_vtk():
@@ -100,6 +120,22 @@ def conc_vtk():
     """Stack component concentrations for each time step and save vtk"""
     # First replace 1e+30 value (inactive cells) by 0.
     conc0 = np.abs(np.where(concs == 1e30, 0, concs))
+
+    points = vtk.vtkPoints()
+    ugrid = vtk.vtkUnstructuredGrid()
+    for e, b in enumerate(blocks):
+        sb = sorted(b, key=lambda k: [k[1], k[0]])
+        [points.InsertPoint(e*4+es, bb) for es, bb in enumerate(sb)]
+        ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(range(e*4, e*4+4)))
+
+    ugrid.SetPoints(points)
+
+    writer = vtk.vtkXMLUnstructuredGridWriter()
+    writer.SetInputData(ugrid)
+    writer.SetFileName(jp(vtk_dir, 'grid.vtu'))
+    writer.Write()
+
+
     # Cells configuration for 3D blocks
     cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))])) for i in range(len(blocks))]
     for i in range(1, 7):
@@ -182,7 +218,7 @@ def particles_vtk():
 
         # Create a cell array to store the points
         vertices = vtk.vtkCellArray()
-        vertices.InsertNextCell(n_particles)
+        # vertices.InsertNextCell(n_particles)
         [vertices.InsertCellPoint(ix) for ix in ids]
 
         # Create a polydata to store everything in
@@ -282,4 +318,4 @@ def wels_vtk():
 
 
 if __name__ == '__main__':
-    particles_vtk()
+    conc_vtk()
