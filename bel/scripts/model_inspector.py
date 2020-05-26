@@ -160,6 +160,10 @@ def conc_vtk():
 
 
 def particles_vtk():
+    """
+    Export travelling particles time series in VTP format
+    :return:
+    """
     back_dir = jp(results_dir, 'vtk', 'backtrack')
     fops.dirmaker(back_dir)
 
@@ -196,7 +200,8 @@ def particles_vtk():
 
     speed_array = None
 
-    for i in range(n_t_stp):
+    for i in range(n_t_stp):  # For each time step i
+        # Get all particles positions
         xs = points_x[:, i]
         ys = points_y[:, i]
         zs = points_z[:, i] * 0  # Replace elevation by 0 to project them in the surface
@@ -213,6 +218,7 @@ def particles_vtk():
         else:
             speed_array = np.append(speed_array, np.array([speed]), 0)
 
+        # Initiate points object
         points = vtk.vtkPoints()
         ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
 
@@ -256,15 +262,16 @@ def particles_vtk():
                 cells.InsertNextCell(i + 1)
                 [cells.InsertCellPoint(k) for k in range(i + 1)]
 
+                # Create value array and assign it to the polydata
                 speed = vtk.vtkDoubleArray()
                 speed.SetName("speed")
                 [speed.InsertNextValue(speed_array[k][p]) for k in range(i + 1)]
-
                 polyData.GetPointData().AddArray(speed)
 
                 # Add the lines to the dataset
                 polyData.SetLines(cells)
 
+                # Export
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
                 writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
@@ -277,12 +284,13 @@ def particles_vtk():
                 xyz_particles_t_i = \
                     np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
+                # Create points
                 points = vtk.vtkPoints()
                 ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
 
                 # Create a cell array to store the points
                 vertices = vtk.vtkCellArray()
-                vertices.InsertNextCell(len(xyz_particles_t_i))
+                vertices.InsertNextCell(len(xyz_particles_t_i))  # Why is this line necessary ?
                 [vertices.InsertCellPoint(ix) for ix in ids]
 
                 # Create a polydata to store everything in
@@ -291,6 +299,7 @@ def particles_vtk():
                 polyData.SetPoints(points)
                 polyData.SetVerts(vertices)
 
+                # Export
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
                 writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
