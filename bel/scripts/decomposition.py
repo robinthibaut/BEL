@@ -21,7 +21,7 @@ from sklearn.cross_decomposition import CCA
 
 import bel.processing.data_ops as dops
 import bel.toolbox.file_ops as fops
-import bel.toolbox.plots as plot
+import bel.toolbox.visualization as plot
 from bel.processing.pca_ops import PCAOps
 from bel.processing.signed_distance import SignedDistance
 

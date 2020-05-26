@@ -47,9 +47,9 @@ def flow_vtk():
     fops.dirmaker(dir_fv)
     flow_model.export(dir_fv, fmt='vtk')
     vtk_flow.export_heads(flow_model,
-                     jp(results_dir, 'whpa.hds'),
-                     jp(results_dir, 'vtk', 'flow'),
-                     binary=True, kstpkper=(0, 0))
+                          jp(results_dir, 'whpa.hds'),
+                          jp(results_dir, 'vtk', 'flow'),
+                          binary=True, kstpkper=(0, 0))
 
 
 # %% Load transport model
@@ -191,11 +191,13 @@ def particles_vtk():
         polyData.SetPoints(points)
         polyData.SetVerts(vertices)
 
+        # Assign value array
         speedArray = vtk.vtkDoubleArray()
         speedArray.SetName("Speed")
         [speedArray.InsertNextValue(s) for s in speed]
         polyData.GetPointData().AddArray(speedArray)
 
+        # Write data
         writer = vtk.vtkXMLPolyDataWriter()
         writer.SetInputData(polyData)
         writer.SetFileName(jp(back_dir, 'particles_t{}.vtp'.format(i)))
@@ -215,12 +217,12 @@ def particles_vtk():
 
                 # Create a cell array to store the lines in and add the lines to it
                 cells = vtk.vtkCellArray()
-                cells.InsertNextCell(i+1)
+                cells.InsertNextCell(i + 1)
                 [cells.InsertCellPoint(k) for k in range(i + 1)]
 
                 speed = vtk.vtkDoubleArray()
                 speed.SetName("Speed")
-                [speed.InsertNextValue(speed_array[k][p]) for k in range(i+1)]
+                [speed.InsertNextValue(speed_array[k][p]) for k in range(i + 1)]
 
                 polyData.GetPointData().AddArray(speed)
 

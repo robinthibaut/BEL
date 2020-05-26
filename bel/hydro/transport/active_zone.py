@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 from os.path import join as jp
 
 import flopy
@@ -8,7 +10,7 @@ from diavatly import model_map
 import bel.toolbox.mesh_ops as mops
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.processing.signed_distance import SignedDistance, get_centroids
-from bel.toolbox.plots import Plot
+from bel.toolbox.visualization import Plot
 
 
 def active_zone(modflowmodel):

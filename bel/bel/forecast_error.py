@@ -11,8 +11,8 @@ from sklearn.neighbors import KernelDensity
 
 from bel.processing.signed_distance import SignedDistance
 from bel.toolbox.hausdorff import modified_distance
-from bel.toolbox.plots import Plot, cca_plot
 from bel.toolbox.posterior_ops import PosteriorOps
+from bel.toolbox.visualization import Plot, cca_plot
 
 plt.style.use('dark_background')
 
