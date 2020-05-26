@@ -130,6 +130,18 @@ def conc_vtk():
 
     ugrid.SetPoints(points)
 
+    # Assign value array
+    array = np.fliplr(conc0[0 - 1, 0]).reshape(-1)
+    concArray = vtk.vtkDoubleArray()
+    concArray.SetName("0conc_0")
+    [concArray.InsertNextValue(s) for s in array]
+    ugrid.GetCellData().AddArray(concArray)
+
+    concArray = vtk.vtkDoubleArray()
+    concArray.SetName("0conc_1")
+    [concArray.InsertNextValue(s) for s in array]
+    ugrid.GetCellData().AddArray(concArray)
+
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetInputData(ugrid)
     writer.SetFileName(jp(vtk_dir, 'grid.vtu'))
