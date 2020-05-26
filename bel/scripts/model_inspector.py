@@ -121,27 +121,29 @@ def conc_vtk():
     # First replace 1e+30 value (inactive cells) by 0.
     conc0 = np.abs(np.where(concs == 1e30, 0, concs))
 
+    # Initiate points and ugrid
     points = vtk.vtkPoints()
     ugrid = vtk.vtkUnstructuredGrid()
 
     for e, b in enumerate(blocks):
-        sb = sorted(b, key=lambda k: [k[1], k[0]])
-        [points.InsertPoint(e*4+es, bb) for es, bb in enumerate(sb)]
-        ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(range(e*4, e*4+4)))
+        sb = sorted(b, key=lambda k: [k[1], k[0]])  # Order vertices in vtkPixel convention
+        [points.InsertPoint(e*4+es, bb) for es, bb in enumerate(sb)]  # Insert points by giving first their index e*4+es
+        ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(range(e*4, e*4+4)))  # Insert cell in UGrid
 
-    ugrid.SetPoints(points)
+    ugrid.SetPoints(points)  # Set points
 
+    # Initiate array and give it a name
     concArray = vtk.vtkDoubleArray()
     concArray.SetName("conc")
 
-    for i in range(1, 7):
+    for i in range(1, 7):  # For eaxh injecting well
         conc_dir = jp(results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
         fops.dirmaker(conc_dir)
-        for j in range(concs.shape[1]):
+        for j in range(concs.shape[1]):  # For each time step
             # Set array
             array = np.fliplr(conc0[i - 1, j]).reshape(-1)
             [concArray.InsertNextValue(s) for s in array]
-            ugrid.GetCellData().AddArray(concArray)
+            ugrid.GetCellData().AddArray(concArray)  # Add array to unstructured grid
 
             # Save grid
             writer = vtk.vtkXMLUnstructuredGridWriter()
@@ -149,6 +151,7 @@ def conc_vtk():
             writer.SetFileName(jp(conc_dir, '{}_conc.vtu'.format(j)))
             writer.Write()
 
+            # Clear storage but keep name
             concArray.Initialize()
             ugrid.GetCellData().Initialize()
 
@@ -254,7 +257,7 @@ def particles_vtk():
                 [cells.InsertCellPoint(k) for k in range(i + 1)]
 
                 speed = vtk.vtkDoubleArray()
-                speed.SetName("Speed")
+                speed.SetName("speed")
                 [speed.InsertNextValue(speed_array[k][p]) for k in range(i + 1)]
 
                 polyData.GetPointData().AddArray(speed)
@@ -298,21 +301,26 @@ def particles_vtk():
 
 
 def wels_vtk():
-    pw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
-    iw = np.load(jp(os.getcwd(), 'bel', 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
+    pw = np.load(jp(bdir, 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
+    iw = np.load(jp(bdir, 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
 
     wels = np.concatenate((iw, [pw]), axis=0)
+    wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
 
-    cell_point = [("vertex", np.array([[i]])) for i in range(len(wels))]
-    point_data = np.array([np.linalg.norm(w - pw) for w in wels])
+    points = vtk.vtkPoints()
+    ids = [points.InsertNextPoint(w) for w in wels]
+    welArray = vtk.vtkCellArray()
+    welArray.InsertNextCell(len(wels))
+    [welArray.InsertCellPoint(ix) for ix in ids]
+    welPolydata = vtk.vtkPolyData()
+    welPolydata.SetPoints(points)
+    welPolydata.SetVerts(welArray)
 
-    meshio.write_points_cells(
-        jp(vtk_dir, 'wels.vtk'),
-        wels,
-        cells=cell_point,
-        point_data={'d_pw': point_data},
-    )
+    writer = vtk.vtkXMLPolyDataWriter()
+    writer.SetInputData(welPolydata)
+    writer.SetFileName(jp(vtk_dir, 'wels.vtp'))
+    writer.Write()
 
 
 if __name__ == '__main__':
-    conc_vtk()
+    wels_vtk()
