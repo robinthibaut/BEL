@@ -130,42 +130,24 @@ def conc_vtk():
 
     ugrid.SetPoints(points)
 
-    # Assign value array
-    array = np.fliplr(conc0[0 - 1, 0]).reshape(-1)
-    concArray = vtk.vtkDoubleArray()
-    concArray.SetName("0conc_0")
-    [concArray.InsertNextValue(s) for s in array]
-    ugrid.GetCellData().AddArray(concArray)
-
-    concArray = vtk.vtkDoubleArray()
-    concArray.SetName("0conc_1")
-    [concArray.InsertNextValue(s) for s in array]
-    ugrid.GetCellData().AddArray(concArray)
-
-    writer = vtk.vtkXMLUnstructuredGridWriter()
-    writer.SetInputData(ugrid)
-    writer.SetFileName(jp(vtk_dir, 'grid.vtu'))
-    writer.Write()
-
-
-    # Cells configuration for 3D blocks
-    cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))])) for i in range(len(blocks))]
-    for i in range(1, 7):
+    for i in range(1, 2):
         conc_dir = jp(results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
         fops.dirmaker(conc_dir)
         for j in range(concs.shape[1]):
+            # Set array
             array = np.fliplr(conc0[i - 1, j]).reshape(-1)
-            dic_conc = {'conc'.format(j): array}
-            # Use meshio to export the mesh
-            meshio.write_points_cells(
-                jp(conc_dir, '{}_conc.vtk'.format(j)),
-                blocks3d,
-                cells,
-                # Optionally provide extra data on points, cells, etc.
-                # point_data=point_data,
-                cell_data=dic_conc,
-                # field_data=field_data
-            )
+            concArray = vtk.vtkDoubleArray()
+            concArray.SetName("conc")
+            [concArray.InsertNextValue(s) for s in array]
+            ugrid.GetCellData().AddArray(concArray)
+
+            # Save grid
+            writer = vtk.vtkXMLUnstructuredGridWriter()
+            writer.SetInputData(ugrid)
+            writer.SetFileName(jp(conc_dir, '{}_conc.vtu'.format(j)))
+            writer.Write()
+
+            ugrid.GetCellData().Initialize()
 
 
 # %% Plot modpath
