@@ -32,7 +32,7 @@ class PCAOps:
     def pca_tp(self, n_training):
         """
         Given an arbitrary size of training data, splits the original array accordingly.
-        The data used for prediction are after the training slice.
+        The data used for prediction are after the training slice, i.e. the n_training last elements of the raw data
         :param n_training:
         :return: training, test
         """

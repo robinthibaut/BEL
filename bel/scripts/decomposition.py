@@ -12,6 +12,7 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 
 import os
 import uuid
+import warnings
 from os.path import join as jp
 
 import joblib
@@ -28,11 +29,12 @@ from bel.processing.signed_distance import SignedDistance
 plt.style.use('dark_background')
 
 
-def bel(n_training=300, n_test=5, new_dir=None):
+def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
+    :param test_roots: Folder paths containing outputs to be predicted
     :param n_training: Number of samples used to train the model
     :param n_test: Number of samples on which to perform prediction
     :param new_dir: Name of the forecast directory
@@ -46,6 +48,19 @@ def bel(n_training=300, n_test=5, new_dir=None):
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
     bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
+
+    # Parse test_roots
+    if isinstance(test_roots, (list, tuple)):
+        n_test = len(test_roots)
+        for f in test_roots:
+            if not os.path.exists(jp(res_dir, f)):
+                warnings.warn('Specified folder {} does not exist'.format(jp(res_dir, f)))
+    if isinstance(test_roots, str):
+        if os.path.exists(jp(res_dir, test_roots)):
+            test_roots = [test_roots]
+            n_test = 1
+        else:
+            warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
     if new_dir is not None:  # If a new_dir is provided, it assumes that a roots.dat file exist in that folder.
         with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
@@ -67,7 +82,8 @@ def bel(n_training=300, n_test=5, new_dir=None):
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots)  # Loads the results
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots, test_roots=test_roots)  # Loads the results
+
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
@@ -143,4 +159,4 @@ def bel(n_training=300, n_test=5, new_dir=None):
 
 
 if __name__ == "__main__":
-    bel(new_dir='bf1794cc-fe91-436d-9714-1fe6c3822e90', n_test=1)
+    bel(test_roots='test')

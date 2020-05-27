@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from collections import deque
 from os.path import join as jp
 
 import flopy
@@ -194,29 +195,41 @@ def load_data(res_dir, n=0, check=True, data_flag=False):
         return tpt, roots
 
 
-def load_res(res_dir, n=0, roots=None):
+def load_res(res_dir, n=0, roots=None, test_roots=None):
     """
     Loads results from main results folder. It assumes the the filter have previously been cleaned.
+    :param test_roots:
     :param roots:
     :param res_dir: main directory containing results sub-directories
     :param n: if != 0, will randomly select n sub-folders from res_tree
     :return: tp, sd, roots
     """
     # TODO: Split this function to generalize and load one feature at a time
+    # Using deque to insert desired test directories at the end of the lists.
+    # Maybe overkill but fun to use
+    if test_roots is None:
+        test_roots = []
 
-    bkt_files = []  # Breakthrough curves files
-    sd_files = []  # Signed-distance files
-    hk_files = []  # Hydraulic conductivity files
+    bkt_files = deque()  # Breakthrough curves files
+    sd_files = deque()  # Signed-distance files
+    hk_files = deque()  # Hydraulic conductivity files
     # r=root, d=directories, f = files
     if not roots:
-        roots = []
+        roots = deque()
         for r, d, f in os.walk(res_dir, topdown=False):
             # Adds the data files to the lists, which will be loaded later
             if 'bkt.npy' in f and 'pz.npy' in f and 'hk0.npy' in f:
-                bkt_files.append(jp(r, 'bkt.npy'))
-                sd_files.append(jp(r, 'pz.npy'))
-                hk_files.append(jp(r, 'hk0.npy'))
-                roots.append(r)
+                if os.path.basename(r) not in test_roots:
+                    bkt_files.appendleft(jp(r, 'bkt.npy'))
+                    sd_files.appendleft(jp(r, 'pz.npy'))
+                    hk_files.appendleft(jp(r, 'hk0.npy'))
+                    roots.appendleft(r)
+                else:
+                    bkt_files.append(jp(r, 'bkt.npy'))
+                    sd_files.append(jp(r, 'pz.npy'))
+                    hk_files.append(jp(r, 'hk0.npy'))
+                    roots.append(r)
+
             else:  # If one of the files is missing, deletes the sub-folder
                 try:
                     if r != res_dir:  # Make sure to not delete the main results directory !
@@ -224,17 +237,22 @@ def load_res(res_dir, n=0, roots=None):
                 except TypeError:
                     pass
         if n:
-            folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
-            bkt_files = np.array(bkt_files)[folders]
-            sd_files = np.array(sd_files)[folders]
-            hk_files = np.array(hk_files)[folders]
-            roots = np.array(roots)[folders]
+            nt = len(test_roots)
+            if nt:
+                folders = np.random.choice(np.arange(len(roots)-nt), n-nt)  # Randomly selects n folders
+                bkt_files = np.concatenate((np.array(bkt_files)[folders], bkt_files[-nt:]))
+                sd_files = np.concatenate((np.array(sd_files)[folders], sd_files[-nt:]))
+                roots = np.concatenate((np.array(roots)[folders], roots[-nt:]))
+            else:
+                folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
+                bkt_files = np.array(bkt_files)[folders]
+                sd_files = np.array(sd_files)[folders]
+                roots = np.array(roots)[folders]
     else:
         [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
     tpt = list(map(np.load, bkt_files))  # Re-load transport curves
-    # hk = np.array(list(map(np.load, hk_files)))  # Load hydraulic K
     sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
     return tpt, sd, roots
