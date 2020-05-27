@@ -23,6 +23,10 @@ plt.style.use('dark_background')
 class UncertaintyQuantification:
 
     def __init__(self, study_folder):
+        """
+
+        :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
+        """
         self.po = PosteriorOps()
         self.x_lim, self.y_lim, self.grf = [800, 1150], [300, 700], 1  # TODO: defines this by passing a model
         self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
@@ -63,6 +67,8 @@ class UncertaintyQuantification:
                  sdir=self.fig_cca_dir)
 
         # Sampling
+        self.n_training = len(d_pc_training)
+        self.n_test = len(d_pc_prediction)
         self.sample_n = 0
         self.n_posts = 500
         self.forecast_posterior = None
@@ -235,16 +241,11 @@ class UncertaintyQuantification:
     #  Let's try Hausdorff...
     def hausdorff(self):
         v_h_true = self.mplot.contours_vertices(self.h_true_obs)[0]
-        # v_h_pred = mp.contours_vertices(h_pred)[0]
-        # mhd = modified_distance(v_h_true, v_h_pred)
 
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
-        print(mhds.mean())
-        print(mhds.min())
-        print(mhds.max())
 
-        min_pos = np.where(mhds == mhds.min())[0][0]
-        max_pos = np.where(mhds == mhds.max())[0][0]
+        min_pos = np.where(mhds == np.min(mhds))[0][0]
+        max_pos = np.where(mhds == np.max(mhds))[0][0]
 
         # Plot results
         fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))

@@ -25,9 +25,8 @@ def order_vertices(vertices):
         tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), vertices), [len(vertices)] * 2))
 
     # Sort vertices according to angle
-    so = \
-        sorted(vertices,
-               key=lambda coord: (math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))))
+    so = sorted(vertices,
+                key=lambda coord: (math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))))
 
     return np.array(so)
 
