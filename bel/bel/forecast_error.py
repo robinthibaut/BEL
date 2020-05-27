@@ -254,7 +254,7 @@ class UncertaintyQuantification:
         error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
 
     #  Let's try Hausdorff...
-    def hausdorff(self):
+    def mhd(self):
         """Computes the modified Hausdorff distance"""
 
         # Delineation vertices of the true array

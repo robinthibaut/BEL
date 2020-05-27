@@ -7,4 +7,4 @@ if __name__ == '__main__':
     for i in range(uq.n_test):
         uq.sample_posterior(sample_n=i, n_posts=100)
         uq.c0(write_vtk=1)
-        # uq.hausdorff()
+        # uq.mhd()
