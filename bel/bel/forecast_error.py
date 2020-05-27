@@ -10,6 +10,7 @@ from os.path import join as jp
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
+import vtk
 from sklearn.neighbors import KernelDensity
 
 from bel.processing.signed_distance import SignedDistance
@@ -60,7 +61,7 @@ def error(study_folder):
 
     # %% Random sample from the posterior
     sample_n = 0
-    n_posts = 500
+    n_posts = 10
     forecast_posterior = po.random_sample(sample_n=sample_n,
                                           pca_d=d_pco,
                                           pca_h=h_pco,
@@ -87,6 +88,25 @@ def error(study_folder):
 
     # %% extract 0 contours
     vertices = mplot.contours_vertices(forecast_posterior)
+    for i, v in enumerate(vertices):
+        nv = len(v)
+        points = vtk.vtkPoints()
+        [points.InsertNextPoint(np.insert(c, 2, 0)) for c in v]
+        # Create a polydata to store everything in
+        polyData = vtk.vtkPolyData()
+        # Add the points to the dataset
+        polyData.SetPoints(points)
+        # Create a cell array to store the lines in and add the lines to it
+        cells = vtk.vtkCellArray()
+        cells.InsertNextCell(nv)
+        [cells.InsertCellPoint(k) for k in range(nv)]
+        # Add the lines to the dataset
+        polyData.SetLines(cells)
+        # Export
+        writer = vtk.vtkXMLPolyDataWriter()
+        writer.SetInputData(polyData)
+        writer.SetFileName(jp(fig_pred_dir, 'forecast_posterior_{}.vtp'.format(i)))
+        writer.Write()
 
     # Reshape coordinates
     x_stack = np.hstack([vi[:, 0] for vi in vertices])
