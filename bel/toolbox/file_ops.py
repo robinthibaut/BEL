@@ -240,9 +240,9 @@ def load_res(res_dir, n=0, roots=None, test_roots=None):
             nt = len(test_roots)
             if nt:
                 folders = np.random.choice(np.arange(len(roots)-nt), n-nt)  # Randomly selects n folders
-                bkt_files = np.concatenate((np.array(bkt_files)[folders], bkt_files[-nt:]))
-                sd_files = np.concatenate((np.array(sd_files)[folders], sd_files[-nt:]))
-                roots = np.concatenate((np.array(roots)[folders], roots[-nt:]))
+                bkt_files = np.concatenate((np.array(bkt_files)[folders], list(bkt_files)[-nt:]))
+                sd_files = np.concatenate((np.array(sd_files)[folders], list(sd_files)[-nt:]))
+                roots = np.concatenate((np.array(roots)[folders], list(roots)[-nt:]))
             else:
                 folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
                 bkt_files = np.array(bkt_files)[folders]

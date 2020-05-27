@@ -210,7 +210,7 @@ def error(study_folder):
                              h_true=h_true_obs,
                              h_pred=forecast_posterior[min_pos],
                              show_wells=True,
-                             title=str(mhds.mean()),
+                             title=str(np.round(mhds.mean(), 2)),
                              fig_file=fig)
 
     hausdorff()
@@ -226,5 +226,5 @@ def main():
 
 
 if __name__ == '__main__':
-    error('bf1794cc-fe91-436d-9714-1fe6c3822e90')
+    error('12d4e08d-7b5b-4845-9ef2-264cbc3bc700')
 
