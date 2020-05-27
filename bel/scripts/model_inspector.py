@@ -156,7 +156,7 @@ class ModelVTK:
 
     # %% Plot modpath
 
-    def particles_vtk(self):
+    def particles_vtk(self, path=1):
         """
         Export travelling particles time series in VTP format
         :return:
@@ -221,7 +221,7 @@ class ModelVTK:
 
             # Create a cell array to store the points
             vertices = vtk.vtkCellArray()
-            # vertices.InsertNextCell(n_particles)
+            vertices.InsertNextCell(n_particles)
             [vertices.InsertCellPoint(ix) for ix in ids]
 
             # Create a polydata to store everything in
@@ -243,7 +243,7 @@ class ModelVTK:
             writer.Write()
 
             # Write path lines
-            if i > 0:
+            if i and path:
                 for p in range(n_particles):
                     short = np.vstack((points_x[p, :i + 1], points_y[p, :i + 1], np.abs(points_z[p, :i + 1] * 0))).T
                     points = vtk.vtkPoints()
@@ -329,8 +329,4 @@ class ModelVTK:
 
 if __name__ == '__main__':
     mi = ModelVTK('test')
-    mi.flow_vtk()
-    mi.transport_vtk()
-    mi.conc_vtk()
-    mi.particles_vtk()
-    mi.wels_vtk()
+    mi.particles_vtk(path=0)

@@ -1,3 +1,4 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
 """
 This script pre-processes the data.
 - It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
@@ -8,7 +9,6 @@ Finally, CCA is performed after selecting an appropriate number of PC to keep.
 
 It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
 """
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
 import uuid
