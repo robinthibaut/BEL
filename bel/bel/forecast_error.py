@@ -13,6 +13,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from bel.processing.signed_distance import SignedDistance
+from bel.toolbox import file_ops as fops
 from bel.toolbox.hausdorff import modified_distance
 from bel.toolbox.posterior_ops import PosteriorOps
 from bel.toolbox.visualization import Plot, cca_plot
@@ -116,8 +117,15 @@ class UncertaintyQuantification:
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
+        """
+        Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
+        :param write_vtk:
+        :return:
+        """
         self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
         if write_vtk:
+            vdir = jp(self.fig_pred_dir, '{}_vtk'.format(self.sample_n))
+            fops.dirmaker(vdir)
             for i, v in enumerate(self.vertices):
                 nv = len(v)
                 points = vtk.vtkPoints()
@@ -135,7 +143,8 @@ class UncertaintyQuantification:
                 # Export
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(polyData)
-                writer.SetFileName(jp(self.fig_pred_dir, 'forecast_posterior_{}.vtp'.format(i)))
+
+                writer.SetFileName(jp(vdir, 'forecast_posterior_{}.vtp'.format(i)))
                 writer.Write()
 
     # %% Kernel density
@@ -220,13 +229,19 @@ class UncertaintyQuantification:
 
     # %% New approach : stack binary WHPA
     def binary_stack(self):
+        """
+        Takes WHPA vertices and 'binaries' the image
+        :return:
+        """
         # For this approach we use our SignedDistance module
-        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
+        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
+        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
+        # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
+        # Display result
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
                   vmin=None,
@@ -240,10 +255,15 @@ class UncertaintyQuantification:
 
     #  Let's try Hausdorff...
     def hausdorff(self):
+        """Computes the modified Hausdorff distance"""
+
+        # Delineation vertices of the true array
         v_h_true = self.mplot.contours_vertices(self.h_true_obs)[0]
 
+        # Compute MHD between the true vertices and the n sampled vertices
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
 
+        # Identify the closest and farthest results
         min_pos = np.where(mhds == np.min(mhds))[0][0]
         max_pos = np.where(mhds == np.max(mhds))[0][0]
 
