@@ -61,7 +61,7 @@ def error(study_folder):
 
     # %% Random sample from the posterior
     sample_n = 0
-    n_posts = 10
+    n_posts = 500
     forecast_posterior = po.random_sample(sample_n=sample_n,
                                           pca_d=d_pco,
                                           pca_h=h_pco,
