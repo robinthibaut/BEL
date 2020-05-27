@@ -31,8 +31,8 @@ class UncertaintyQuantification:
         self.cwd = os.getcwd()
         self.main_dir = os.path.dirname(self.cwd)
 
-        grid_dir = jp(self.main_dir, 'hydro', 'grid')
-        self.mplot.wdir = grid_dir
+        self.grid_dir = jp(self.main_dir, 'hydro', 'grid')
+        self.mplot.wdir = self.grid_dir
 
         self.bel_dir = jp(self.main_dir, 'forecasts', study_folder)
         self.res_dir = jp(self.bel_dir, 'objects')
@@ -58,17 +58,35 @@ class UncertaintyQuantification:
         # CCA plots
         d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+
         cca_plot(self.cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
                  sdir=self.fig_cca_dir)
 
+        # Sampling
+        self.sample_n = 0
+        self.n_posts = 500
+        self.forecast_posterior = None
+        self.d_pc_obs = None
+        self.h_true_obs = None
+        self.shape = None
+        self.h_pc_true_pred = None
+        self.h_pred = None
+
+        # Contours
+        self.vertices = None
+
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=0, n_posts=500):
-        self.sample_n = sample_n
-        self.forecast_posterior = self.po.random_sample(sample_n=sample_n,
+    def sample_posterior(self, sample_n=None, n_posts=None):
+        if sample_n is not None:
+            self.sample_n = sample_n
+        if n_posts is not None:
+            self.n_posts = n_posts
+
+        self.forecast_posterior = self.po.random_sample(sample_n=self.sample_n,
                                                         pca_d=self.d_pco,
                                                         pca_h=self.h_pco,
                                                         cca_obj=self.cca_operator,
-                                                        n_posts=n_posts,
+                                                        n_posts=self.n_posts,
                                                         add_comp=0)
         # Get the true array of the prediction
         self.d_pc_obs = self.d_pco.predict_pc[sample_n]  # Prediction set - PCA space
@@ -236,7 +254,3 @@ class UncertaintyQuantification:
                                   show_wells=True,
                                   title=str(np.round(mhds.mean(), 2)),
                                   fig_file=fig)
-
-
-if __name__ == '__main__':
-    pass
