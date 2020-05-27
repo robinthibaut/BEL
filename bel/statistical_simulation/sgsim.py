@@ -7,7 +7,6 @@ import numpy as np
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
-from pysgems.plot.sgplots import Plots
 from pysgems.sgems import sg
 
 from bel.toolbox.file_ops import datread
@@ -54,7 +53,7 @@ def sgsim(model_ws, grid_dir):
     centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
     # %% Display point coordinates and grid
-    pl = Plots(project=pjt)
+    # pl = Plots(project=pjt)
     # pl.plot_coordinates()
 
     # %% Load your algorithm xml file in the 'algorithms' folder.
@@ -64,7 +63,7 @@ def sgsim(model_ws, grid_dir):
     al.xml_reader('bel_sgsim')
 
     # %% Modify xml below:
-    al.xml_update('Seed', 'value', str(np.random.randint(1e9)))
+    al.xml_update('Seed', 'value', str(np.random.randint(1e9)), show=0)
 
     # %% Write python script
     pjt.write_command()
@@ -72,7 +71,7 @@ def sgsim(model_ws, grid_dir):
     # %% Run sgems
     pjt.run()
     # Plot 2D results
-    pl.plot_2d(save=True)
+    # pl.plot_2d(save=True)
 
     opl = jp(model_ws, 'results.grid')  # Output file location.
 
@@ -80,7 +79,7 @@ def sgsim(model_ws, grid_dir):
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     tf = np.vectorize(transform)  # Transform values to log10
-    matrix = tf(matrix)  # Apply fnction to results
+    matrix = tf(matrix)  # Apply function to results
 
     matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
