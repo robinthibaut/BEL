@@ -7,7 +7,7 @@ from scipy.spatial.distance import cdist
 def modified_distance(a, b):
     """
     Compute the modified Hausdorff distance between two N-D arrays.
-    Distances between pairs are calculated using a Euclidean metric.
+    Distances between pairs are calculated using an Euclidean metric.
 
     Parameters
     ----------

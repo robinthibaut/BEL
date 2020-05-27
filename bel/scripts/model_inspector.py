@@ -316,15 +316,16 @@ def wels_vtk():
     wels = np.concatenate((iw, [pw]), axis=0)
     wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
 
-    points = vtk.vtkPoints()
-    ids = [points.InsertNextPoint(w) for w in wels]
-    welArray = vtk.vtkCellArray()
+    # Export wels as VTK points
+    points = vtk.vtkPoints()  # Points
+    ids = [points.InsertNextPoint(w) for w in wels]  # Points IDS
+    welArray = vtk.vtkCellArray()  # Vertices
     welArray.InsertNextCell(len(wels))
     [welArray.InsertCellPoint(ix) for ix in ids]
-    welPolydata = vtk.vtkPolyData()
+    welPolydata = vtk.vtkPolyData()  # PolyData to store everything
     welPolydata.SetPoints(points)
     welPolydata.SetVerts(welArray)
-
+    # Save objects
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetInputData(welPolydata)
     writer.SetFileName(jp(vtk_dir, 'wels.vtp'))
