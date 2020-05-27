@@ -232,7 +232,7 @@ def load_res(res_dir, n=0, roots=None, test_roots=None):
 
             else:  # If one of the files is missing, deletes the sub-folder
                 try:
-                    if r != res_dir:  # Make sure to not delete the main results directory !
+                    if r != res_dir and 'vtk' not in r:  # Make sure to not delete the main results directory !
                         shutil.rmtree(r)
                 except TypeError:
                     pass
