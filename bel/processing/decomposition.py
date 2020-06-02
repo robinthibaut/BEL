@@ -20,9 +20,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
+import bel.goggles.visualization as plot
 import bel.processing.examples as dops
 import bel.toolbox.filesio as fops
-import bel.toolbox.visualization as plot
 from bel.math.signed_distance import SignedDistance
 from bel.processing.pca import PCAIO
 
@@ -157,6 +157,3 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
-
-if __name__ == "__main__":
-    bel(test_roots='simulation')

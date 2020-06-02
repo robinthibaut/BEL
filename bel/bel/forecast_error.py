@@ -12,11 +12,11 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
+from bel.goggles.visualization import Plot, cca_plot
 from bel.math.hausdorff import modified_distance
 from bel.math.postio import PosteriorIO
 from bel.math.signed_distance import SignedDistance
 from bel.toolbox import filesio as fops
-from bel.toolbox.visualization import Plot, cca_plot
 
 plt.style.use('dark_background')
 

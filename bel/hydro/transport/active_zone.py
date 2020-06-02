@@ -8,9 +8,9 @@ import numpy as np
 from diavatly import model_map
 
 import bel.grid.meshio as mops
+from bel.goggles.visualization import Plot
 from bel.hydro.whpa.travelling_particles import tsp
 from bel.math.signed_distance import SignedDistance, get_centroids
-from bel.toolbox.visualization import Plot
 
 
 def active_zone(modflowmodel):
