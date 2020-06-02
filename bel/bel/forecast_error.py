@@ -12,10 +12,10 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from bel.processing.signed_distance import SignedDistance
-from bel.toolbox import file_ops as fops
-from bel.toolbox.hausdorff import modified_distance
-from bel.toolbox.posterior_ops import PosteriorOps
+from bel.math.hausdorff import modified_distance
+from bel.math.signed_distance import SignedDistance
+from bel.toolbox import filesio as fops
+from bel.toolbox.postio import PosteriorIO
 from bel.toolbox.visualization import Plot, cca_plot
 
 plt.style.use('dark_background')
@@ -28,7 +28,7 @@ class UncertaintyQuantification:
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
-        self.po = PosteriorOps()
+        self.po = PosteriorIO()
         self.x_lim, self.y_lim, self.grf = [800, 1150], [300, 700], 1  # TODO: defines this by passing a model
         self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
 
@@ -84,6 +84,12 @@ class UncertaintyQuantification:
 
     # %% Random sample from the posterior
     def sample_posterior(self, sample_n=None, n_posts=None):
+        """
+        Extracts n random samples from the posterior
+        :param sample_n: Sample identifier
+        :param n_posts: Desired number of samples
+        :return:
+        """
         if sample_n is not None:
             self.sample_n = sample_n
         if n_posts is not None:
@@ -96,11 +102,11 @@ class UncertaintyQuantification:
                                                         n_posts=self.n_posts,
                                                         add_comp=0)
         # Get the true array of the prediction
-        self.d_pc_obs = self.d_pco.predict_pc[sample_n]  # Prediction set - PCA space
+        # Prediction set - PCA space
+        self.d_pc_obs = self.d_pco.predict_pc[sample_n]
         self.shape = self.h_pco.raw_data.shape
-        self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1],
-                                                                        self.shape[
-                                                                            2])  # Prediction set - physical space
+        # Prediction set - physical space
+        self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 
         # Predicting the function based for a certain number of 'observations'
         self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_obs[:self.d_pco.ncomp].reshape(1, -1))
@@ -119,8 +125,7 @@ class UncertaintyQuantification:
     def c0(self, write_vtk=1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
-        :param write_vtk:
-        :return:
+        :param write_vtk: Boolean flag to export VTK files
         """
         self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
         if write_vtk:
@@ -230,8 +235,7 @@ class UncertaintyQuantification:
     # %% New approach : stack binary WHPA
     def binary_stack(self):
         """
-        Takes WHPA vertices and 'binaries' the image
-        :return:
+        Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
         sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object

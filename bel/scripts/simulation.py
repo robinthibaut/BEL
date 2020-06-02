@@ -9,12 +9,12 @@ from os.path import join as jp
 
 import numpy as np
 
-import bel.toolbox.file_ops as fops
+import bel.toolbox.filesio as fops
 from bel.hydro.backtracking.modpath import backtrack
 from bel.hydro.flow.modflow import flow
 from bel.hydro.transport.mt3d import transport
 from bel.hydro.whpa.travelling_particles import tsp
-from bel.statistical_simulation.sgsim import sgsim
+from bel.math.sgsim import sgsim
 
 
 def simulation(folder=None):

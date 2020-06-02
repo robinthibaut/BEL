@@ -9,7 +9,7 @@ from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
-from bel.toolbox.file_ops import datread
+from bel.toolbox.filesio import datread
 
 
 def transform(f):

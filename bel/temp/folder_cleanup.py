@@ -3,7 +3,7 @@
 import os
 from os.path import join as jp
 
-import bel.toolbox.file_ops as fops
+import bel.toolbox.filesio as fops
 
 
 def cleanup():

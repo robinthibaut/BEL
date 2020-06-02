@@ -10,8 +10,8 @@ import numpy as np
 import vtk
 from flopy.export import vtk as vtk_flow
 
-import bel.toolbox.file_ops as fops
-import bel.toolbox.mesh_ops as mops
+import bel.toolbox.filesio as fops
+import bel.toolbox.meshio as mops
 
 
 def order_vertices(vertices):

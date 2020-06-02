@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from diavatly import model_map
 
-import bel.toolbox.mesh_ops as mops
+import bel.toolbox.meshio as mops
 from bel.hydro.whpa.travelling_particles import tsp
-from bel.processing.signed_distance import SignedDistance, get_centroids
+from bel.math.signed_distance import SignedDistance, get_centroids
 from bel.toolbox.visualization import Plot
 
 

@@ -9,7 +9,7 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-import bel.toolbox.mesh_ops as mops
+import bel.toolbox.meshio as mops
 
 
 def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
