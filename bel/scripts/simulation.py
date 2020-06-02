@@ -36,7 +36,7 @@ def simulation(folder=None):
         res_dir = folder
 
     results_dir = jp(main_dir, 'hydro', 'results', res_dir)
-    grid_dir = jp(main_dir, 'hydro', 'grid')
+    grid_dir = jp(main_dir, 'grid', 'parameters')
     # Generates the result directory
     fops.dirmaker(results_dir)
 

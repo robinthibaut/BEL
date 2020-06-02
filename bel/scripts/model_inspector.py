@@ -304,8 +304,8 @@ class ModelVTK:
     # %% Export wells objects as vtk
 
     def wels_vtk(self):
-        pw = np.load(jp(self.bdir, 'hydro', 'grid', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
-        iw = np.load(jp(self.bdir, 'hydro', 'grid', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
+        pw = np.load(jp(self.bdir, 'grid', 'parameters', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
+        iw = np.load(jp(self.bdir, 'grid', 'parameters', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
 
         wels = np.concatenate((iw, [pw]), axis=0)
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
