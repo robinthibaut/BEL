@@ -159,4 +159,4 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
 
 if __name__ == "__main__":
-    bel(n_test=10)
+    bel(test_roots='simulation')

@@ -327,5 +327,8 @@ class ModelVTK:
 
 
 if __name__ == '__main__':
-    mi = ModelVTK('test')
+    mi = ModelVTK('simulation')
+    mi.flow_vtk()
+    mi.transport_vtk()
     mi.particles_vtk(path=0)
+    mi.wels_vtk()

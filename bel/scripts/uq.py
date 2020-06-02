@@ -3,7 +3,7 @@
 from bel.bel.forecast_error import UncertaintyQuantification
 
 if __name__ == '__main__':
-    uq = UncertaintyQuantification(study_folder='3d077529-0a0f-4fc5-9822-0a351503583e')
+    uq = UncertaintyQuantification(study_folder='1e77f10f-6bbb-4521-abfb-14be26699f94')
     for i in range(uq.n_test):
         uq.sample_posterior(sample_n=i, n_posts=100)
         uq.c0(write_vtk=1)
