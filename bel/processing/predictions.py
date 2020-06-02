@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
 
-class TargetOps:
+class TargetIO:
 
     """Perform data transformation on the target feature"""
 

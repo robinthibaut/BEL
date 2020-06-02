@@ -1,3 +1,4 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
 """
 This script pre-processes the data.
 - It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
@@ -8,7 +9,6 @@ Finally, CCA is performed after selecting an appropriate number of PC to keep.
 
 It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
 """
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
 import uuid
@@ -20,11 +20,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
-import bel.processing.data_ops as dops
-import bel.toolbox.file_ops as fops
+import bel.processing.examples as dops
+import bel.toolbox.filesio as fops
 import bel.toolbox.visualization as plot
-from bel.processing.pca_ops import PCAOps
-from bel.processing.signed_distance import SignedDistance
+from bel.math.signed_distance import SignedDistance
+from bel.processing.pca import PCAIO
 
 plt.style.use('dark_background')
 
@@ -47,7 +47,7 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
-    bel_dir = jp('..', 'forecasts')  # Directory in which to load forecasts
+    bel_dir = jp('..', 'bel', 'forecasts')  # Directory in which to load forecasts
 
     # Parse test_roots
     if isinstance(test_roots, (list, tuple)):
@@ -113,12 +113,12 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 
     # PCA on transport curves
-    d_pco = PCAOps(name='d', raw_data=tc, directory=obj_dir)
+    d_pco = PCAIO(name='d', raw_data=tc, directory=obj_dir)
     d_pco.pca_tp(n_training)  # Split into training and prediction
     d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
 
     # PCA on signed distance
-    h_pco = PCAOps(name='h', raw_data=h, directory=obj_dir)
+    h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
     h_pco.pca_tp(n_training)  # Split into training and prediction
     h_pc_training, h_pc_prediction = h_pco.pca_transformation()
 
@@ -159,4 +159,4 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
 
 if __name__ == "__main__":
-    bel(test_roots='test')
+    bel(n_test=10)

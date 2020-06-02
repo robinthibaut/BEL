@@ -9,7 +9,7 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-import bel.toolbox.mesh_ops as mops
+import bel.grid.meshio as mops
 
 
 def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
@@ -359,7 +359,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
-    if head.max() > top.max() + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
+    if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
         # that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         # TODO: optimize this
         model = None

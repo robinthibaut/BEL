@@ -5,6 +5,7 @@
       <w>advection</w>
       <w>algo</w>
       <w>allseg</w>
+      <w>binarizes</w>
       <w>blockshaped</w>
       <w>botm</w>
       <w>breaktrough</w>
@@ -124,6 +125,7 @@
       <w>nrows</w>
       <w>nstp</w>
       <w>nwxs</w>
+      <w>paraview</w>
       <w>particlegroups</w>
       <w>pathline</w>
       <w>perc</w>

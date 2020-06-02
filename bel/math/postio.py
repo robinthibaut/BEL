@@ -3,15 +3,15 @@
 import numpy as np
 from numpy.matlib import repmat
 
-from bel.processing.target_ops import TargetOps
+from bel.processing.predictions import TargetIO
 
 
-class PosteriorOps:
+class PosteriorIO:
 
     def __init__(self):
         self.posterior_mean = 0
         self.posterior_covariance = 0
-        self.ops = TargetOps()
+        self.ops = TargetIO()
 
     def posterior(self,
                   h_cca_training_gaussian,
@@ -153,7 +153,7 @@ class PosteriorOps:
         h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
-        if add_comp:
+        if add_comp:  # TODO: double check
             rnpc = np.array([pca_h.pc_random(n_posts) for i in range(n_posts)])
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
         # Generate forecast in the initial dimension and reshape.

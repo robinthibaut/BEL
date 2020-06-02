@@ -1,3 +1,5 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import numpy as np
 from scipy.spatial import distance_matrix
 

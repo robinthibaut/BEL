@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 
-class PCAOps:
+class PCAIO:
 
     def __init__(self, name, raw_data, directory=None):
         """
