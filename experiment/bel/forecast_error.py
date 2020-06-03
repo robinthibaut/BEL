@@ -30,7 +30,7 @@ class UncertaintyQuantification:
         """
         self.po = PosteriorIO()
         fc = Focus()
-        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim  # TODO: defines this by passing a model
+        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
         self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
 
         # Directories & files paths
