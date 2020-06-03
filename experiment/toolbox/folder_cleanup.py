@@ -16,6 +16,3 @@ def cleanup():
             fops.keep_essential(r)
             fops.remove_bkt(r)
 
-
-if __name__ == '__main__':
-    cleanup()

@@ -13,7 +13,7 @@ import numpy as np
 
 @dataclass
 class Directories:
-
+    """Define main directories"""
     main_dir = dirname(dirname(os.path.abspath(__file__)))
 
     hydro_res_dir = join(main_dir, 'hydro', 'results')
