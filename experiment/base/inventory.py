@@ -22,6 +22,12 @@ class Directories:
 
 
 @dataclass
+class FileNames:
+    """Class to keep track of important file names"""
+    pass
+
+
+@dataclass
 class GridDimensions:
     """Class for keeping track of grid dimensions"""
     x_lim: float = 1500
