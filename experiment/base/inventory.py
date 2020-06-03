@@ -4,10 +4,17 @@ Grid geometry parameters need to be passed around modules.
 Defining data classes allows to avoid declaring those parameters several times.
 """
 
+import os
 from dataclasses import dataclass
+from os.path import dirname, join
 
 import numpy as np
 
+
+@dataclass
+class Directories:
+    main_dir = dirname(dirname(os.path.abspath(__file__)))
+    grid_dir = join(main_dir, 'grid', 'parameters')
 
 @dataclass
 class GridDimensions:
@@ -40,13 +47,29 @@ class GridDimensions:
 @dataclass
 class Wels:
     """Wels coordinates"""
-    wels_coordinates = {'pumping1': [1000, 500],
-                        'injection1': [950, 450],
-                        'injection2': [930, 560],
-                        'injection3': [900, 505],
-                        'injection4': [1068, 515],
-                        'injection5': [1030, 580],
-                        'injection6': [1050, 470]}
+    wels_data = {
+        'pumping0':
+            {'coordinates': [1000, 500],
+             'rates': [-1000, -1000, -1000]},
+        'injection0':
+            {'coordinates': [950, 450],
+             'rates': [0, 24, 0]},
+        'injection1':
+            {'coordinates': [930, 560],
+             'rates': [0, 24, 0]},
+        'injection2':
+            {'coordinates': [900, 505],
+             'rates': [0, 24, 0]},
+        'injection3':
+            {'coordinates': [1068, 515],
+             'rates': [0, 24, 0]},
+        'injection4':
+            {'coordinates': [1030, 580],
+             'rates': [0, 24, 0]},
+        'injection5':
+            {'coordinates': [1050, 470],
+             'rates': [0, 24, 0]}
+    }
 
 
 @dataclass
@@ -55,3 +78,5 @@ class Focus:
     x_range = [800, 1150]
     y_range = [300, 700]
     cell_dim = 1
+
+
