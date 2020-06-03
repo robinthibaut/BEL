@@ -143,11 +143,11 @@ class PosteriorIO:
         d_cca_prediction = d_cca_prediction.T
 
         # Estimate the posterior mean and covariance (Tarantola)
-        h_mean_posterior, h_posterior_covariance = self.posterior(h_cca_training_gaussian,
-                                                                  d_cca_training,
-                                                                  d_pc_training,
-                                                                  d_rotations,
-                                                                  d_cca_prediction)
+        self.posterior(h_cca_training_gaussian,
+                       d_cca_training,
+                       d_pc_training,
+                       d_rotations,
+                       d_cca_prediction)
         shp = pca_h.raw_data.shape  # Original shape
         # n_posts = 500  # Number of estimates sampled from the distribution.
         # Draw n_posts random samples from the multivariate normal distribution :
@@ -166,8 +166,9 @@ class PosteriorIO:
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.pc_random(n_posts) for i in range(n_posts)])
-            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])
+            rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
+            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Add them
+
         # Generate forecast in the initial dimension and reshape.
         forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
 

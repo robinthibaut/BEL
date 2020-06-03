@@ -1,8 +1,9 @@
+#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
+
 """
 Collection of functions to use the PCA class from scikit-learn.
 """
-
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import numpy as np
 from sklearn.decomposition import PCA
@@ -18,12 +19,11 @@ class PCAIO:
 
         """
         self.directory = directory
-        self.name = name
+        self.name = name  # str, name of the object
         self.raw_data = raw_data  # raw data
         self.n_training = None  # Number of training data
         self.operator = None  # PCA operator
         self.ncomp = None  # Number of components
-        # self.origin_physical = None  # Original data
         self.training_physical = None  # Training set - physical space
         self.predict_physical = None  # Prediction set - physical space
         self.training_pc = None  # Training set - PCA space
@@ -39,7 +39,6 @@ class PCAIO:
         self.n_training = n_training
         # Flattens the array
         d_original = np.array([item for sublist in self.raw_data for item in sublist]).reshape(len(self.raw_data), -1)
-        # self.origin_physical = d_original
         # Splits into training and test according to chosen n_training.
         d_t = d_original[:self.n_training]
         self.training_physical = d_t
@@ -107,7 +106,7 @@ class PCAIO:
         """
         Randomly selects PC components from the original training matrix dtp
         """
-        r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the dtp array
+        r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the training array
         score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
         # used until the end of the array.
 
