@@ -35,7 +35,7 @@ def gen_rand_well(radius, x0, y0):
     return [x, y]
 
 
-def well_maker():
+def wel_export():
     # Directories
     md = Directories()
     grid_dir = md.grid_dir
@@ -50,4 +50,4 @@ def well_maker():
 
 
 if __name__ == '__main__':
-    well_maker()
+    wel_export()

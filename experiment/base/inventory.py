@@ -13,8 +13,13 @@ import numpy as np
 
 @dataclass
 class Directories:
+
     main_dir = dirname(dirname(os.path.abspath(__file__)))
+
+    hydro_res_dir = join(main_dir, 'hydro', 'results')
+    forecasts_dir = join(main_dir, 'bel', 'forecasts')
     grid_dir = join(main_dir, 'grid', 'parameters')
+
 
 @dataclass
 class GridDimensions:
