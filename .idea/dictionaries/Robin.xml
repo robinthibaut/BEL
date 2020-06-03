@@ -44,6 +44,7 @@
       <w>edgecolor</w>
       <w>endfile</w>
       <w>endobj</w>
+      <w>englobing</w>
       <w>extx</w>
       <w>exvar</w>
       <w>flopy</w>
@@ -109,6 +110,7 @@
       <w>ncols</w>
       <w>ncomp</w>
       <w>ncrs</w>
+      <w>ndarray</w>
       <w>nlay</w>
       <w>nlsink</w>
       <w>nocvcorrection</w>
