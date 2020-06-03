@@ -24,12 +24,17 @@ class Directories:
 @dataclass
 class GridDimensions:
     """Class for keeping track of grid dimensions"""
-    x_lim: int = 1500
-    y_lim: int = 1000
+    x_lim: float = 1500
+    y_lim: float = 1000
+    z_lim: float = 1
 
-    dx: int = 10  # Block x-dimension
-    dy: int = 10  # Block y-dimension
-    dz: int = 10  # Block z-dimension
+    dx: float = 10  # Block x-dimension
+    dy: float = 10  # Block y-dimension
+    dz: float = 10  # Block z-dimension
+
+    xo: float = 0
+    yo: float = 0
+    zo: float = 0
 
     nrow: int = y_lim // dy  # Number of rows
     ncol: int = x_lim // dx  # Number of columns
