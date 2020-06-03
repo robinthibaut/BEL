@@ -157,3 +157,5 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
+    return new_dir
+
