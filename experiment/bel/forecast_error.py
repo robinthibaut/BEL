@@ -39,7 +39,7 @@ class UncertaintyQuantification:
         self.grid_dir = jp(self.main_dir, 'grid', 'parameters')
         self.mplot.wdir = self.grid_dir
 
-        self.bel_dir = jp(self.main_dir, 'experiment', 'forecasts', study_folder)
+        self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)
         self.res_dir = jp(self.bel_dir, 'objects')
         self.fig_dir = jp(self.bel_dir, 'figures')
         self.fig_cca_dir = jp(self.fig_dir, 'CCA')

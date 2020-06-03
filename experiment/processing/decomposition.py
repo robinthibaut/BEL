@@ -47,7 +47,7 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
     # Directories
     res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
-    bel_dir = jp('..', 'experiment', 'forecasts')  # Directory in which to load forecasts
+    bel_dir = jp('..', 'bel', 'forecasts')  # Directory in which to load forecasts
 
     # Parse test_roots
     if isinstance(test_roots, (list, tuple)):
@@ -156,4 +156,6 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
+
+    return new_dir
 

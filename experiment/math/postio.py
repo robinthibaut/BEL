@@ -52,6 +52,8 @@ class PosteriorIO:
         """
 
         # TODO: add dimension check
+
+
         # Size of the set
         n_training = d_cca_training.shape[1]
 
