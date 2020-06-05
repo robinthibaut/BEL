@@ -1,7 +1,6 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import multiprocessing as mp
-import os
 import shutil
 import time
 import uuid
@@ -10,6 +9,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.toolbox.filesio as fops
+from experiment.base.inventory import Directories
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -21,8 +21,8 @@ def simulation(folder=None):
     if folder is 0:
         folder = None
     # Directories
-    mod_dir = os.getcwd()  # Module directory
-    main_dir = os.path.dirname(mod_dir)
+    md = Directories()
+    main_dir = md.main_dir
     exe_loc = jp(main_dir, 'hydro', 'exe')  # EXE directory
     # EXE files directory.
     exe_name_mf = jp(exe_loc, 'mf2005.exe')
@@ -35,8 +35,9 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(main_dir, 'hydro', 'results', res_dir)
-    grid_dir = jp(main_dir, 'grid', 'parameters')
+    results_dir = jp(md.hydro_res_dir, res_dir)
+
+    grid_dir = md.grid_dir
     # Generates the result directory
     fops.dirmaker(results_dir)
 
@@ -64,12 +65,12 @@ def simulation(folder=None):
 
 
 def main():
-    pool = mp.Pool(mp.cpu_count()-1)
-    pool.map(simulation, np.zeros(1000))
+    pool = mp.Pool(mp.cpu_count() - 1)
+    pool.map(simulation, np.zeros(300))
 
 
 if __name__ == "__main__":
     start = time.time()
-    main()
+    simulation('lol')
     end = time.time()
-    print((end-start)/60)
+    print((end - start) / 60)

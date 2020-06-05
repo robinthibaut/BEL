@@ -5,6 +5,8 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import numpy as np
 
+from experiment.base.inventory import Directories, Wels
+
 
 def d_pca_inverse_plot(v, e, pca_o, vn):
     """
@@ -126,6 +128,8 @@ class Plot:
 
     def __init__(self, x_lim=None, y_lim=None, grf=5):
 
+        md = Directories()
+
         if y_lim is None:
             self.ylim = [0, 1000]
         else:
@@ -139,7 +143,7 @@ class Plot:
         self.ncol = int(np.diff(self.xlim) / grf)  # Number of columns
         self.x, self.y = np.meshgrid(
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
-        self.wdir = jp('..', 'grid', 'parameters')
+        self.wdir = md.grid_dir
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
         np.random.shuffle(self.cols)
 
@@ -252,13 +256,15 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            pwl = np.load((jp(self.wdir, 'pw.npy')), allow_pickle=True)[:, :2]
-            plt.plot(pwl[0][0], pwl[0][1], 'wo', label='pw')
-            iwl = np.load((jp(self.wdir, 'iw.npy')), allow_pickle=True)[:, :2]
-            for i in range(len(iwl)):
-                plt.plot(iwl[i][0], iwl[i][1], 'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                         label='iw{}'.format(i))
-            plt.legend(fontsize=8)
+            wbd = Wels().wels_data
+            pwl = wbd['pumping0']['coordinates']
+            plt.plot(pwl[0], pwl[1], 'wo', label='pw')
+            for i in wbd:
+                if 'pumping' not in i:
+                    plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
+                             'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+                             label='iw{}'.format(i))
+                plt.legend(fontsize=8)
 
         # Plot limits
         if x_lim is None:

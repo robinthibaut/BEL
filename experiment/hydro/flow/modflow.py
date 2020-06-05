@@ -10,6 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import experiment.grid.meshio as mops
+from experiment.base import inventory
 
 
 def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
@@ -49,33 +50,26 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     lenuni = 2  # Distance units = meters
 
-    x_lim = 1500
-    y_lim = 1000
+    gd = inventory.GridDimensions()
 
-    dx = 10  # Block x-dimension
-    dy = 10  # Block y-dimension
-    dz = 10  # Block z-dimension
+    x_lim = gd.x_lim
+    y_lim = gd.y_lim
 
-    nrow = y_lim // dy  # Number of rows
-    ncol = x_lim // dx  # Number of columns
-    nlay = 1  # Number of layers
+    dx = gd.dx  # Block x-dimension
+    dy = gd.dy  # Block y-dimension
+    dz = gd.dz  # Block z-dimension
+
+    nrow = gd.nrow  # Number of rows
+    ncol = gd.ncol  # Number of columns
+    nlay = gd.nlay  # Number of layers
 
     # Refinement
-    pw_d = np.load(jp(grid_dir, 'pw.npy'), allow_pickle=True)  # Pumping well location
+    wcd = inventory.Wels()
+    pw_d = wcd.wels_data['pumping0']
     # Point around which refinement will occur
-    pt = pw_d[0][:2]
+    pt = pw_d['coordinates']
     # [cell size, extent around pt in m]
-    r_params = np.array([[9, 150],
-                         [8, 100],
-                         [7, 90],
-                         [6, 80],
-                         [5, 70],
-                         [4, 60],
-                         [3, 50],
-                         [2.5, 40],
-                         [2, 30],
-                         [1.5, 20],
-                         [1, 10]])
+    r_params = gd.r_params
 
     def refine_():
         along_c = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
@@ -157,26 +151,19 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
         for xc in ncd1[1]:
             xy_true.append([xc, yc])
 
-    def make_well(wel_info):
+    def make_well(wel_name):
         """
         Produce well stress period data readable by modflow
-        :param wel_info: [ r, c, [rate sp #0, ..., rate sp# n] ]
+        :param wel_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         :return:
         """
-        iw = [0, wel_info[0], wel_info[1]]  # Injection wel location - layer row column
-        iwr = wel_info[2]  # Well rate for the defined time periods
+        iw = [0, wcd.wels_data[wel_name]['coordinates'][0], wcd.wels_data[wel_name]['coordinates'][1]]
+        iwr = wcd.wels_data[wel_name]['rates']  # Well rate for the defined time periods
         iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
 
-    pwa = pw_d  # Pumping well location
-
-    # Loads well information
-    iwa = np.load(jp(grid_dir, 'iw.npy'), allow_pickle=True)
-
-    wells_data = np.concatenate((pwa, iwa), axis=0)  # Concatenates well data (pumping, injection)
-
-    my_wells = [make_well(o) for o in wells_data]  # Produce well stress period data readable by modflow
+    my_wells = [make_well(o) for o in wcd.wels_data]  # Produce well stress period data readable by modflow
 
     spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 
@@ -359,8 +346,8 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
-    if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top, it means
-        # that an error occurred, and we shouldn't waste time computing the transport on a false solution.
+    if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top,
+        # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         # TODO: optimize this
         model = None
 

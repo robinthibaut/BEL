@@ -3,7 +3,6 @@
 Forecast error analysis
 """
 
-import os
 from os.path import join as jp
 
 import joblib
@@ -12,6 +11,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
+from experiment.base.inventory import Directories, Focus
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
@@ -29,14 +29,15 @@ class UncertaintyQuantification:
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
         self.po = PosteriorIO()
-        self.x_lim, self.y_lim, self.grf = [800, 1150], [300, 700], 1  # TODO: defines this by passing a model
+        fc = Focus()
+        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
         self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
 
         # Directories & files paths
-        self.cwd = os.getcwd()
-        self.main_dir = os.path.dirname(self.cwd)
+        md = Directories()
+        self.main_dir = md.main_dir
 
-        self.grid_dir = jp(self.main_dir, 'grid', 'parameters')
+        self.grid_dir = md.grid_dir
         self.mplot.wdir = self.grid_dir
 
         self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)

@@ -9,6 +9,7 @@ from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
+from experiment.base.inventory import GridDimensions
 from experiment.toolbox.filesio import datread
 
 
@@ -44,7 +45,8 @@ def sgsim(model_ws, grid_dir):
 
     # %% Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
-    Discretize(project=pjt, dx=10, dy=10, xo=0, yo=0, x_lim=1500, y_lim=1000)
+    gd = GridDimensions()
+    Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
 
     # Get sgems grid centers coordinates:
     x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx/2

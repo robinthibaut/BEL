@@ -1,7 +1,7 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 import math
 import operator
-import os
 from functools import reduce
 from os.path import join as jp
 
@@ -12,6 +12,7 @@ from flopy.export import vtk as vtk_flow
 
 import experiment.grid.meshio as mops
 import experiment.toolbox.filesio as fops
+from experiment.base.inventory import Directories, Wels
 
 
 def order_vertices(vertices):
@@ -33,9 +34,10 @@ def order_vertices(vertices):
 
 class ModelVTK:
     def __init__(self, folder):
+        md = Directories()
         self.rn = folder
-        self.bdir = os.path.dirname(os.getcwd())
-        self.results_dir = jp(self.bdir, 'hydro', 'results', self.rn)
+        self.bdir = md.main_dir
+        self.results_dir = jp(md.hydro_res_dir, self.rn)
         self.vtk_dir = jp(self.results_dir, 'vtk')
         fops.dirmaker(self.vtk_dir)
 
@@ -304,10 +306,9 @@ class ModelVTK:
     # %% Export wells objects as vtk
 
     def wels_vtk(self):
-        pw = np.load(jp(self.bdir, 'grid', 'parameters', 'pw.npy'), allow_pickle=True)[0, :2].tolist()
-        iw = np.load(jp(self.bdir, 'grid', 'parameters', 'iw.npy'), allow_pickle=True)[:, :2].tolist()
+        wbd = Wels().wels_data
 
-        wels = np.concatenate((iw, [pw]), axis=0)
+        wels = np.array([wbd[o]['coordinates'] for o in wbd])
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
 
         # Export wels as VTK points

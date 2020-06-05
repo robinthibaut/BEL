@@ -23,6 +23,7 @@ from sklearn.cross_decomposition import CCA
 import experiment.goggles.visualization as plot
 import experiment.processing.examples as dops
 import experiment.toolbox.filesio as fops
+from experiment.base.inventory import Directories, Focus
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
@@ -41,13 +42,15 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
     """
 
-    x_lim, y_lim, grf = [800, 1150], [300, 700], 1  # Grid geometry
+    fc = Focus()
+    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
     mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate Plot instance
 
     # Directories
-    res_dir = jp('..', 'hydro', 'results')  # Results folders of the hydro simulations
-    bel_dir = jp('..', 'bel', 'forecasts')  # Directory in which to load forecasts
+    md = Directories()
+    res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
+    bel_dir = md.forecasts_dir  # Directory in which to load forecasts
 
     # Parse test_roots
     if isinstance(test_roots, (list, tuple)):
