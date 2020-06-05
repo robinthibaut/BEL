@@ -65,11 +65,11 @@ def simulation(folder=None):
 
 def main():
     pool = mp.Pool(mp.cpu_count()-1)
-    pool.map(simulation, np.zeros(300))
+    pool.map(simulation, np.zeros(1000))
 
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('simulation')
+    main()
     end = time.time()
     print((end-start)/60)
