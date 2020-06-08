@@ -24,16 +24,17 @@ from sklearn.cross_decomposition import CCA
 import experiment.goggles.visualization as plot
 import experiment.processing.examples as dops
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories, Focus
+from experiment.base.inventory import Directories, Focus, Wels
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=None):
+def bel(n_training=300, n_test=5, wel_perm=None, new_dir=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
+    :param wel_perm: List of injection wels used to make prediction
     :param test_roots: Folder paths containing outputs to be predicted
     :param n_training: Number of samples used to train the model
     :param n_test: Number of samples on which to perform prediction
@@ -45,7 +46,13 @@ def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=Non
     fc = Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate Plot instance
+
+    # Wels data
+    wels = Wels()
+    if wel_perm is not None:
+        wels.permutation = wel_perm
+
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_perm=wel_perm)  # Initiate Plot instance
 
     # Directories
     md = Directories()
@@ -105,8 +112,7 @@ def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=Non
     # Subdivide d in an arbitrary number of time steps.
     tc = dops.d_process(tc0=tc0, n_time_steps=250)  # tc has shape (n_sim, n_wels, n_time_steps),
     # with n_sim = n_training + n_test
-    if permutation is not None:  # Work with wel permutation
-        tc = tc[:, permutation, :]
+    tc = tc[:, wels.permutation, :]  # Select wels
     # Plot d
     mp.curves(tc=tc, sdir=fig_data_dir)
     mp.curves_i(tc=tc, sdir=fig_data_dir)
