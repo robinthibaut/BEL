@@ -129,14 +129,14 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
 
 class Plot:
 
-    def __init__(self, x_lim=None, y_lim=None, grf=None, wel_perm=None):
+    def __init__(self, x_lim=None, y_lim=None, grf=None, wel_comb=None):
 
         md = Directories()
         focus = Focus()
         self.wels = Wels()
 
-        if wel_perm is not None:
-            self.wels.permutation = wel_perm
+        if wel_comb is not None:
+            self.wels.combination = wel_comb
 
         if y_lim is None:
             self.ylim = focus.y_range
@@ -269,7 +269,7 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            permutation = self.wels.permutation
+            permutation = self.wels.combination
             wbd = self.wels.wels_data[permutation]
             pwl = wbd['pumping0']['coordinates']
             plt.plot(pwl[0], pwl[1], 'wo', label='pw')

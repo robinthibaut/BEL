@@ -29,12 +29,12 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=300, n_test=5, wel_perm=None, new_dir=None, test_roots=None):
+def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
-    :param wel_perm: List of injection wels used to make prediction
+    :param wel_comb: List of injection wels used to make prediction
     :param test_roots: Folder paths containing outputs to be predicted
     :param n_training: Number of samples used to train the model
     :param n_test: Number of samples on which to perform prediction
@@ -49,10 +49,10 @@ def bel(n_training=300, n_test=5, wel_perm=None, new_dir=None, test_roots=None):
 
     # Wels data
     wels = Wels()
-    if wel_perm is not None:
-        wels.permutation = wel_perm
+    if wel_comb is not None:
+        wels.combination = wel_comb
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_perm=wel_perm)  # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wel_comb)  # Initiate Plot instance
 
     # Directories
     md = Directories()
@@ -75,6 +75,9 @@ def bel(n_training=300, n_test=5, wel_perm=None, new_dir=None, test_roots=None):
     if new_dir is not None:  # If a new_dir is provided, it assumes that a roots.dat file exist in that folder.
         with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
             roots = f.read().splitlines()
+    if n_test == 1:  # if only one root is studied
+        new_dir = '_'.join([test_roots[0], ''.join(list(map(str, wels.combination)))])  # sub-directory for forecasts
+        roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         roots = None
@@ -112,7 +115,7 @@ def bel(n_training=300, n_test=5, wel_perm=None, new_dir=None, test_roots=None):
     # Subdivide d in an arbitrary number of time steps.
     tc = dops.d_process(tc0=tc0, n_time_steps=250)  # tc has shape (n_sim, n_wels, n_time_steps),
     # with n_sim = n_training + n_test
-    tc = tc[:, wels.permutation, :]  # Select wels
+    tc = tc[:, wels.combination, :]  # Select wels
     # Plot d
     mp.curves(tc=tc, sdir=fig_data_dir)
     mp.curves_i(tc=tc, sdir=fig_data_dir)

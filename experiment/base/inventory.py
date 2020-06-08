@@ -87,7 +87,7 @@ class Wels:
              'rates': [0, 24, 0]}
     }
 
-    permutation = np.arange(1, len(wels_data))  # Injection wels in use for prediction (default: all)
+    combination = np.arange(1, len(wels_data) + 1)  # Injection wels in use for prediction (default: all)
 
 
 @dataclass

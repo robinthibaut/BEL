@@ -1,10 +1,24 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import shutil
+import itertools
 from experiment.processing import decomposition as dcp
 from experiment.bel.forecast_error import UncertaintyQuantification
+from experiment.base.inventory import Wels
+
+
+def main():
+    wels = Wels()
+
+    perm = wels.combination
+
+    belperm = itertools.permutations(perm, 2)
+
+
+
 
 if __name__ == '__main__':
+
     try:
         sf = dcp.bel(test_roots='46933e56d83d4ddcaa26fa0cd8a795db')
     except Exception as e:
