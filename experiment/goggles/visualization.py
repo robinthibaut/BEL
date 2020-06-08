@@ -179,7 +179,7 @@ class Plot:
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
-        n_sim, n_wels, nts, _ = tc.shape
+        n_sim, n_wels, nts = tc.shape
         for i in range(n_sim):
             for t in range(n_wels):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
@@ -200,10 +200,10 @@ class Plot:
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
-        n_sim, n_wels, nts, _ = tc.shape
+        n_sim, n_wels, nts = tc.shape
         for t in range(n_wels):
             for i in range(n_sim):
-                plt.plot(tc[i][t][:, 0], tc[i][t][:, 1], color=self.cols[t], linewidth=.2, alpha=0.5)
+                plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=5)
             plt.title('wel #{}'.format(t))
@@ -362,7 +362,7 @@ class Plot:
         """
         bkt, whpa, _ = filesio.load_res(roots=root)
         whpa = whpa.squeeze()
-        self.curves_i(bkt, show=True)
+        # self.curves_i(bkt, show=True)  # This function will not work
 
         plt.plot(whpa[:, 0], whpa[:, 1], 'wo')
         plt.xlim(self.xlim)
