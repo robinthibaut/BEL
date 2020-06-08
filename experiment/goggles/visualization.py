@@ -224,7 +224,7 @@ class Plot:
             y_lim=None,
             cmap='coolwarm',
             colors='white',
-            show_wells=True,
+            show_wells=False,
             title=None,
             fig_file=None,
             show=False):

@@ -43,6 +43,8 @@ def simulation(folder=None):
 
     # Statistical simulation
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
+    # Load previous array:
+    hk_array = np.load(jp(md.hydro_res_dir, '46933e56d83d4ddcaa26fa0cd8a795db', 'hk0.npy'))
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
@@ -71,6 +73,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('lol')
+    simulation('example')
     end = time.time()
     print((end - start) / 60)

@@ -168,7 +168,7 @@ class UncertaintyQuantification:
         # Create a structured grid to estimate kernel density
         # TODO: create a function to copy/paste values on differently refined grids
         # Prepare the Plot instance with right dimensions
-        grf_kd = 2
+        grf_kd = 4
         mpkde = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=grf_kd)
         mpkde.wdir = self.grid_dir
         cell_dim = grf_kd
@@ -185,7 +185,7 @@ class UncertaintyQuantification:
         xyu = xy[inside]  # Create mask
 
         # Perform KDE
-        bw = 1.618  # Arbitrary 'smoothing' parameter
+        bw = 1.  # Arbitrary 'smoothing' parameter
         # Reshape coordinates
         x_stack = np.hstack([vi[:, 0] for vi in self.vertices])
         y_stack = np.hstack([vi[:, 1] for vi in self.vertices])
@@ -248,6 +248,7 @@ class UncertaintyQuantification:
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
+        b_low = np.flipud(b_low)
         # Display result
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
