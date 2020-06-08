@@ -15,3 +15,4 @@ if __name__ == '__main__':
     uq.sample_posterior(sample_n=0, n_posts=500)
     uq.c0(write_vtk=0)
     uq.mhd()
+    uq.kernel_density()

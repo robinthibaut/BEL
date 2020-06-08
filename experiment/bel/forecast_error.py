@@ -233,6 +233,8 @@ class UncertaintyQuantification:
                   fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
                   show=True)
 
+        return z
+
     # %% New approach : stack binary WHPA
     def binary_stack(self):
         """
@@ -257,6 +259,8 @@ class UncertaintyQuantification:
 
         # a measure of the error could be a measure of the area covered by the n samples.
         error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+
+        return error_estimate
 
     #  Let's try Hausdorff...
     def mhd(self):

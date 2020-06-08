@@ -273,7 +273,7 @@ class Plot:
                 if 'pumping' not in i:
                     plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
                              'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                             label='iw{}'.format(i))
+                             label='{}'.format(i))
                 plt.legend(fontsize=8)
 
         # Plot limits
