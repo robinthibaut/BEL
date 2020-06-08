@@ -52,7 +52,7 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     if wel_comb is not None:
         wels.combination = wel_comb
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wel_comb)  # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wels.combination)  # Initiate Plot instance
 
     # Directories
     md = Directories()

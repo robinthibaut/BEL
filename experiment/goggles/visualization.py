@@ -269,7 +269,7 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            comb = list(self.wels.combination)
+            comb = [0] + list(self.wels.combination)
             keys = [list(self.wels.wels_data.keys())[i] for i in comb]
             wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
             pwl = wbd['pumping0']['coordinates']
