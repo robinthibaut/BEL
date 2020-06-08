@@ -87,6 +87,8 @@ class Wels:
              'rates': [0, 24, 0]}
     }
 
+    permutation = np.range(len(wels_data)-1)
+
 
 @dataclass
 class Focus:

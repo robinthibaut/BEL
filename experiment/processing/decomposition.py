@@ -41,6 +41,7 @@ def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=Non
 
     """
 
+    # Load parameters:
     fc = Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
@@ -86,7 +87,7 @@ def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=Non
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
     tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots, test_roots=test_roots)  # Loads the results
 
-    # tc0 = breakthrough curves
+    # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
     # pzs = WHPA
     # roots_ = simulation id
 
@@ -99,11 +100,13 @@ def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=Non
     # h is the matrix of target feature on which PCA will be performed.
     h = np.array([sd.compute(pp) for pp in pzs])
     # Plot all WHPP
-    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
+    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
 
     # Subdivide d in an arbitrary number of time steps.
-    tc = dops.d_process(tc0=tc0, n_time_steps=250)
-
+    tc = dops.d_process(tc0=tc0, n_time_steps=250)  # tc has shape (n_sim, n_wels, n_time_steps),
+    # with n_sim = n_training + n_test
+    if permutation is not None:  # Work with wel permutation
+        tc = tc[:, permutation, :]
     # Plot d
     mp.curves(tc=tc, sdir=fig_data_dir)
     mp.curves_i(tc=tc, sdir=fig_data_dir)
