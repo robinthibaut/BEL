@@ -53,7 +53,7 @@ def simulation(folder=None):
                       hk_array=hk_array, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir)
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on

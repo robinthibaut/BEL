@@ -6,13 +6,13 @@ from experiment.toolbox import filesio
 
 if __name__ == '__main__':
     # VTK
-    # mi = ModelVTK('simulation')
-    # mi.flow_vtk()
-    # mi.transport_vtk()
-    # mi.particles_vtk(path=0)
-    # mi.wels_vtk()
-    myplot = Plot()
-    myplot.check_root(root='46933e56d83d4ddcaa26fa0cd8a795db')
+    mi = ModelVTK('46933e56d83d4ddcaa26fa0cd8a795db')
+    mi.flow_vtk()
+    mi.transport_vtk()
+    mi.particles_vtk(path=0)
+    mi.wels_vtk()
+    # myplot = Plot()
+    # myplot.check_root(root='46933e56d83d4ddcaa26fa0cd8a795db')
 
 
 

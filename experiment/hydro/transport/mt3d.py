@@ -8,9 +8,10 @@ import flopy
 import numpy as np
 
 
-def transport(modflowmodel, exe_name, grid_dir, flag_ucn=False):
+def transport(modflowmodel, exe_name, grid_dir, save_ucn=False):
     """
 
+    :param save_ucn: Flag to save UCN files
     :param grid_dir: Directory containing discretization information
     :param modflowmodel: flopy modflow model object
     :param exe_name: Path to executable file
@@ -80,7 +81,7 @@ def transport(modflowmodel, exe_name, grid_dir, flag_ucn=False):
     ifmtnp = 0
     ifmtrf = 0
     ifmtdp = 0
-    savucn = flag_ucn  # Save concentration array or not
+    savucn = save_ucn  # Save concentration array or not
     nprs = len(tmstp)  # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is
     # specified in terms of total elapsed simulation time or the transport step number. If nprs > 0 results will be
     # saved at the times as specified in timprs; if nprs = 0, results will not be saved except at the end of

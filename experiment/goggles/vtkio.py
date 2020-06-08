@@ -160,6 +160,7 @@ class ModelVTK:
     def particles_vtk(self, path=1):
         """
         Export travelling particles time series in VTP format
+        :param path: Flag to export path's vtk
         :return:
         """
         back_dir = jp(self.results_dir, 'vtk', 'backtrack')
@@ -306,10 +307,12 @@ class ModelVTK:
     # %% Export wells objects as vtk
 
     def wels_vtk(self):
+        """Exports wels coordinates to VTK"""
+
         wbd = Wels().wels_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
-        wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
+        wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z
 
         # Export wels as VTK points
         points = vtk.vtkPoints()  # Points

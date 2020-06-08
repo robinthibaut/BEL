@@ -93,6 +93,6 @@ class Focus:
     """Geometry of the focused area on the main grid, englobing all wells, as to reduce computation time"""
     x_range = [800, 1150]
     y_range = [300, 700]
-    cell_dim = 1
+    cell_dim = 2
 
 

@@ -1,4 +1,5 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 """
 This script pre-processes the data.
 - It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
@@ -28,7 +29,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
+def bel(n_training=300, n_test=5, permutation=None, new_dir=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -85,6 +86,10 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
     tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots, test_roots=test_roots)  # Loads the results
 
+    # tc0 = breakthrough curves
+    # pzs = WHPA
+    # roots_ = simulation id
+
     # Save file roots
     with open(jp(sub_dir, 'roots.dat'), 'w') as f:
         for r in roots_:
@@ -98,7 +103,6 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
 
     # Subdivide d in an arbitrary number of time steps.
     tc = dops.d_process(tc0=tc0, n_time_steps=250)
-    n_wel = len(tc[0])  # Number of injecting wels
 
     # Plot d
     mp.curves(tc=tc, sdir=fig_data_dir)
