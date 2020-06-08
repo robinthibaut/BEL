@@ -54,6 +54,10 @@ def sgsim(model_ws, grid_dir):
     xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
     centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
+    if os.path.exists(jp(model_ws, 'hk0.npy')):
+        hk0 = np.load(jp(model_ws, 'hk0.npy'))
+        return hk0, centers
+
     # %% Display point coordinates and grid
     # pl = Plots(project=pjt)
     # pl.plot_coordinates()

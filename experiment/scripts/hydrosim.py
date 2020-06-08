@@ -36,6 +36,8 @@ def simulation(folder=None):
         res_dir = folder
 
     results_dir = jp(md.hydro_res_dir, res_dir)
+    # reload data in old root:
+    results_dir = jp(md.hydro_res_dir, '46933e56d83d4ddcaa26fa0cd8a795db')
 
     grid_dir = md.grid_dir
     # Generates the result directory
@@ -43,8 +45,7 @@ def simulation(folder=None):
 
     # Statistical simulation
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
-    # Load previous array:
-    hk_array = np.load(jp(md.hydro_res_dir, '46933e56d83d4ddcaa26fa0cd8a795db', 'hk0.npy'))
+
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
@@ -73,6 +74,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('example')
+    simulation('46933e56d83d4ddcaa26fa0cd8a795db')
     end = time.time()
     print((end - start) / 60)
