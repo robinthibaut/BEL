@@ -8,7 +8,6 @@ import numpy as np
 from experiment.base.inventory import Directories, Wels, Focus
 from experiment.toolbox import filesio
 
-plt.close("all")
 plt.style.use('dark_background')
 
 
@@ -225,7 +224,7 @@ class Plot:
             y_lim=None,
             cmap='coolwarm',
             colors='white',
-            show_wells=False,
+            show_wells=True,
             title=None,
             fig_file=None,
             show=False):
@@ -274,7 +273,7 @@ class Plot:
                     plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
                              'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
                              label='{}'.format(i))
-                plt.legend(fontsize=8)
+            plt.legend(fontsize=8)
 
         # Plot limits
         if x_lim is None:
@@ -317,10 +316,10 @@ class Plot:
         plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
-            plt.close()
         if show:
             plt.show()
-            plt.close()
+
+        plt.close()
 
     def h_pca_inverse_plot(self, pca_o, e, vn):
         """

@@ -284,3 +284,5 @@ class UncertaintyQuantification:
                                   show_wells=True,
                                   title=str(np.round(mhds.mean(), 2)),
                                   fig_file=fig)
+
+        return mhds

@@ -12,7 +12,8 @@ if __name__ == '__main__':
     #     shutil.rmtree(sf)
 
     uq = UncertaintyQuantification(study_folder='271f557f-df78-47aa-90ad-20a949ea2a1b')
-    uq.sample_posterior(sample_n=0, n_posts=500)
-    uq.c0(write_vtk=0)
-    uq.mhd()
-    uq.kernel_density()
+    uq.sample_posterior(sample_n=0, n_posts=10)  # Sample posterior
+    uq.c0(write_vtk=0)  # Extract 0 contours
+    mh = uq.mhd()  # Modified Hausdorff
+    eb = uq.binary_stack()  # Binary stack
+    # uq.kernel_density()  # Kernel density
