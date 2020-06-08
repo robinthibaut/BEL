@@ -199,7 +199,7 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
-    tpt = list(map(np.load, bkt_files))  # Re-load transport curves
+    tpt = np.array(list(map(np.load, bkt_files)))  # Re-load transport curves
     sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
 
     return tpt, sd, roots

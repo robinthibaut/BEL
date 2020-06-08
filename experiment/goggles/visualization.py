@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from experiment.base.inventory import Directories, Wels, Focus
+from experiment.toolbox import filesio
 
 
 def d_pca_inverse_plot(v, e, pca_o, vn):
@@ -168,16 +169,16 @@ class Plot:
         v = np.array([c0.allsegs[0][0] for c0 in c0s])
         return v
 
-    def curves(self, tc, n_wel, sdir=None, show=False):
+    def curves(self, tc, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
-        :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
-        :param n_wel: Number of observation points
+        :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
+        n_sim, n_wels, nts = tc.shape
         for i in range(len(tc)):
-            for t in range(n_wel):
+            for t in range(n_wels):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
         plt.grid(linewidth=.3, alpha=.4)
         plt.tick_params(labelsize=5)
@@ -188,16 +189,16 @@ class Plot:
             plt.show()
             plt.close()
 
-    def curves_i(self, tc, n_wel, sdir=None, show=False):
+    def curves_i(self, tc, sdir=None, show=False):
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
         :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
-        :param n_wel: Number of observation points
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
-        for t in range(n_wel):
+        n_sim, n_wels, nts = tc.shape
+        for t in range(n_wels):
             for i in range(len(tc)):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
@@ -348,3 +349,19 @@ class Plot:
         # Displays the explained variance percentage given the number of components
         # print(pco_d.perc_pca_components(nd))
         # print(pco_h.perc_pca_components(nh))
+
+    def check_root(self, root):
+        """
+        Plots raw data of folder 'root'
+        :param root:
+        :return:
+        """
+        bkt, whpa, _ = filesio.load_res(roots=root)
+
+        self.curves(bkt)
+
+        whpa = whpa.squeeze()
+        plt.plot(whpa[:, 0], whpa[:, 1], 'ko')
+        plt.xlim(self.xlim)
+        plt.ylim(self.ylim)
+        plt.show()

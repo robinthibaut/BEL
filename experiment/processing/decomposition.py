@@ -103,8 +103,8 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     n_wel = len(tc[0])  # Number of injecting wels
 
     # Plot d
-    mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
-    mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
+    mp.curves(tc=tc, sdir=fig_data_dir)
+    mp.curves_i(tc=tc, sdir=fig_data_dir)
 
     # %%  PCA
     # PCA is performed with maximum number of components.
