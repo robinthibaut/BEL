@@ -269,8 +269,8 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            permutation = self.wels.combination
-            wbd = self.wels.wels_data[permutation]
+            comb = self.wels.combination
+            wbd = self.wels.wels_data[comb]
             pwl = wbd['pumping0']['coordinates']
             plt.plot(pwl[0], pwl[1], 'wo', label='pw')
             for n, i in enumerate(wbd):

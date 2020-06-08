@@ -11,7 +11,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.base.inventory import Directories, Focus
+from experiment.base.inventory import Directories, Focus, Wels
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
@@ -23,7 +23,7 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, study_folder):
+    def __init__(self, study_folder, wel_comb=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
@@ -31,7 +31,8 @@ class UncertaintyQuantification:
         self.po = PosteriorIO()
         fc = Focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
-        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
+
+        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, wel_comb=wel_comb)
 
         # Directories & files paths
         md = Directories()
