@@ -8,6 +8,8 @@ from os.path import join as jp
 import flopy
 import numpy as np
 
+from experiment.base.inventory import Directories
+
 
 def datread(file=None, start=0, end=None):
     # end must be set to None and NOT -1
@@ -30,8 +32,8 @@ def dirmaker(dird):
     try:
         if not os.path.exists(dird):
             os.makedirs(dird)
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
 
 def load_flow_model(nam_file, exe_name='', model_ws=''):
@@ -132,15 +134,20 @@ def remove_bkt(res_dir):
         shutil.rmtree(roots[index])
 
 
-def load_res(res_dir, n=0, roots=None, test_roots=None):
+def load_res(res_dir=None, n=0, roots=None, test_roots=None):
     """
-    Loads results from main results folder. It assumes the the filter have previously been cleaned.
-    :param test_roots:
-    :param roots:
+    Loads results from main results folder.
+    :param test_roots: Specified roots for testing
+    :param roots: Specified roots for training
     :param res_dir: main directory containing results sub-directories
     :param n: if != 0, will randomly select n sub-folders from res_tree
     :return: tp, sd, roots
     """
+
+    # If no res_dir specified, then uses default
+    if res_dir is None:
+        res_dir = Directories().hydro_res_dir
+
     # TODO: Split this function to generalize and load one feature at a time
     # Using deque to insert desired test directories at the end of the lists.
     # Maybe overkill but fun to use
@@ -186,10 +193,13 @@ def load_res(res_dir, n=0, roots=None, test_roots=None):
                 sd_files = np.array(sd_files)[folders]
                 roots = np.array(roots)[folders]
     else:
+        if not isinstance(roots, (list, tuple)):
+            roots = [roots]
         [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
     tpt = list(map(np.load, bkt_files))  # Re-load transport curves
     sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
+
     return tpt, sd, roots

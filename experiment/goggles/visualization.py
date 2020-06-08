@@ -5,7 +5,7 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiment.base.inventory import Directories, Wels
+from experiment.base.inventory import Directories, Wels, Focus
 
 
 def d_pca_inverse_plot(v, e, pca_o, vn):
@@ -126,19 +126,24 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
 
 class Plot:
 
-    def __init__(self, x_lim=None, y_lim=None, grf=5):
+    def __init__(self, x_lim=None, y_lim=None, grf=None):
 
         md = Directories()
+        focus = Focus()
 
         if y_lim is None:
-            self.ylim = [0, 1000]
+            self.ylim = focus.y_range
         else:
             self.ylim = y_lim
         if x_lim is None:
-            self.xlim = [0, 1500]
+            self.xlim = focus.x_range
         else:
             self.xlim = x_lim
-        self.grf = grf
+        if grf is None:
+            self.grf = focus.cell_dim
+        else:
+            self.grf = grf
+
         self.nrow = int(np.diff(self.ylim) / grf)  # Number of rows
         self.ncol = int(np.diff(self.xlim) / grf)  # Number of columns
         self.x, self.y = np.meshgrid(
