@@ -12,7 +12,6 @@ if __name__ == '__main__':
     # mi.particles_vtk(path=0)
     # mi.wels_vtk()
     myplot = Plot()
-
     myplot.check_root(root='46933e56d83d4ddcaa26fa0cd8a795db')
 
 

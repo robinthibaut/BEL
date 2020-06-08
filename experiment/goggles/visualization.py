@@ -8,6 +8,9 @@ import numpy as np
 from experiment.base.inventory import Directories, Wels, Focus
 from experiment.toolbox import filesio
 
+plt.close("all")
+plt.style.use('dark_background')
+
 
 def d_pca_inverse_plot(v, e, pca_o, vn):
     """
@@ -145,8 +148,8 @@ class Plot:
         else:
             self.grf = grf
 
-        self.nrow = int(np.diff(self.ylim) / grf)  # Number of rows
-        self.ncol = int(np.diff(self.xlim) / grf)  # Number of columns
+        self.nrow = int(np.diff(self.ylim) / self.grf)  # Number of rows
+        self.ncol = int(np.diff(self.xlim) / self.grf)  # Number of columns
         self.x, self.y = np.meshgrid(
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
@@ -172,12 +175,12 @@ class Plot:
     def curves(self, tc, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
-        :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
+        :param tc: Curves with shape (n_sim, n_wels, n_time_steps, 2)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
-        n_sim, n_wels, nts = tc.shape
-        for i in range(len(tc)):
+        n_sim, n_wels, nts, _ = tc.shape
+        for i in range(n_sim):
             for t in range(n_wels):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
         plt.grid(linewidth=.3, alpha=.4)
@@ -193,16 +196,17 @@ class Plot:
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
-        :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+        :param tc: Curves with shape (n_sim, n_wells, n_time_steps, 2)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
-        n_sim, n_wels, nts = tc.shape
+        n_sim, n_wels, nts, _ = tc.shape
         for t in range(n_wels):
-            for i in range(len(tc)):
-                plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
+            for i in range(n_sim):
+                plt.plot(tc[i][t][:, 0], tc[i][t][:, 1], color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=5)
+            plt.title('wel #{}'.format(t))
             if sdir:
                 plt.savefig(jp(sdir, 'curves_{}.png'.format(t)), dpi=300)
                 plt.close()
@@ -357,11 +361,10 @@ class Plot:
         :return:
         """
         bkt, whpa, _ = filesio.load_res(roots=root)
-
-        self.curves(bkt)
-
         whpa = whpa.squeeze()
-        plt.plot(whpa[:, 0], whpa[:, 1], 'ko')
+        self.curves_i(bkt, show=True)
+
+        plt.plot(whpa[:, 0], whpa[:, 1], 'wo')
         plt.xlim(self.xlim)
         plt.ylim(self.ylim)
         plt.show()

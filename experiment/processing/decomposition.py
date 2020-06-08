@@ -27,8 +27,6 @@ from experiment.base.inventory import Directories, Focus
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
-plt.style.use('dark_background')
-
 
 def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     """
