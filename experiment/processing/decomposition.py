@@ -29,7 +29,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
+def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, base=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -57,7 +57,11 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     # Directories
     md = Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
-    bel_dir = md.forecasts_dir  # Directory in which to load forecasts
+    if base is not None:
+        bel_dir = jp(md.forecasts_dir, new_dir)  # Directory in which to load forecasts
+        base_dir = jp(bel_dir, 'base')
+    else:
+        bel_dir = md.forecasts_dir
 
     # Parse test_roots
     if isinstance(test_roots, (list, tuple)):
@@ -72,12 +76,16 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
-    if new_dir is not None:  # If a new_dir is provided, it assumes that a roots.dat file exist in that folder.
-        with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
-            roots = f.read().splitlines()
-    if n_test == 1:  # if only one root is studied
-        new_dir = '_'.join([test_roots[0], ''.join(list(map(str, wels.combination)))])  # sub-directory for forecasts
-        roots = None
+    if base is not None:
+        try:
+            with open(jp(base_dir, 'roots.dat')) as f:
+                roots = f.read().splitlines()
+            if n_test == 1:  # if only one root is studied
+                new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+        except FileNotFoundError:
+            if n_test == 1:  # if only one root is studied
+                new_dir = 'base'  # sub-directory for forecasts
+            # roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         roots = None
@@ -102,15 +110,14 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     # roots_ = simulation id
 
     # Save file roots
-    with open(jp(sub_dir, 'roots.dat'), 'w') as f:
-        for r in roots_:
-            f.write(os.path.basename(r) + '\n')
-
-    # Compute signed distance on pzs.
-    # h is the matrix of target feature on which PCA will be performed.
-    h = np.array([sd.compute(pp) for pp in pzs])
-    # Plot all WHPP
-    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
+    if base is not None and not os.path.exists(jp(base_dir, 'roots.dat')):
+        with open(jp(base_dir, 'roots.dat'), 'w') as f:
+            for r in roots_:
+                f.write(os.path.basename(r) + '\n')
+    else:
+        with open(jp(sub_dir, 'roots.dat'), 'w') as f:
+            for r in roots_:
+                f.write(os.path.basename(r) + '\n')
 
     # Subdivide d in an arbitrary number of time steps.
     tc = dops.d_process(tc0=tc0, n_time_steps=250)  # tc has shape (n_sim, n_wels, n_time_steps),
@@ -125,7 +132,7 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     # We choose an appropriate number of components to keep later on.
 
     # Choose size of training and prediction set
-    n_sim = len(h)  # Number of simulations
+    n_sim = len(tc)  # Number of simulations
     n_obs = n_test  # Number of 'observations' on which the predictions will be made.
     n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
 
@@ -135,9 +142,19 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
 
     # PCA on signed distance
-    h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
-    h_pco.pca_tp(n_training)  # Split into training and prediction
-    h_pc_training, h_pc_prediction = h_pco.pca_transformation()
+    if not os.path.exists(jp(base_dir, 'objects', 'h_pca.pkl')):
+        # Compute signed distance on pzs.
+        # h is the matrix of target feature on which PCA will be performed.
+        h = np.array([sd.compute(pp) for pp in pzs])
+        # Plot all WHPP
+        mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
+        h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
+        h_pco.pca_tp(n_training)  # Split into training and prediction
+        h_pc_training, h_pc_prediction = h_pco.pca_transformation()
+        joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
+    else:
+        h_pco = joblib.load(jp(base_dir, 'objects', 'h_pca.pkl'))
+        h_pc_training, h_pc_prediction = h_pco.pca_transformation()
 
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
@@ -161,9 +178,9 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, test_roots=None):
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
     h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
-    # Save the d and h PC objects.
+    # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
-    joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
+
     # %% CCA
 
     n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
