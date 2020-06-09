@@ -12,7 +12,7 @@ if __name__ == '__main__':
     wels = Wels()
     comb = wels.combination
     belcomb = [list(itertools.combinations(comb, i)) for i in range(2, comb[-1])]
-    belcomb = [item for sublist in belcomb for item in sublist]
+    belcomb = [None] + [item for sublist in belcomb for item in sublist]
 
     for c in belcomb:
         try:
