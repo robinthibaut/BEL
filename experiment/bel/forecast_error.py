@@ -252,6 +252,12 @@ class UncertaintyQuantification:
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
         # Display result
+        self.mplot.whp(self.h_true_obs,
+                       alpha=1,
+                       lw=1,
+                       show_wells=True,
+                       colors='red',
+                       show=False)
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
                   vmin=None,
