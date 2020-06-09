@@ -2,11 +2,14 @@
 
 """
 This script pre-processes the data.
+
 - It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
 do not necessarily share the same time steps - d
+
 - It computes the signed distance field for each particles endpoints file - h
 It then perform PCA keeping all components on both d and h.
-Finally, CCA is performed after selecting an appropriate number of PC to keep.
+
+- Finally, CCA is performed after selecting an appropriate number of PC to keep.
 
 It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
 """
@@ -103,7 +106,6 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
-
         roots = None
 
     obj_dir = jp(sub_dir, 'obj')
@@ -138,7 +140,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     else:
         tc = np.load(tsub)
 
-    # Select wels:
+    # %% Select wels:
     selection = [wc - 1 for wc in wels.combination]
     tc = tc[:, selection, :]
     # Plot d:
@@ -183,8 +185,8 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
         plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
     else:
         h_pco = joblib.load(jp(base_obj, 'h_pca.pkl'))
-        h_pc_training, h_pc_prediction = h_pco.training_pc, h_pco.predict_pc
         nho = h_pco.ncomp
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
