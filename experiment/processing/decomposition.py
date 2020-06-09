@@ -29,7 +29,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, base=None, test_roots=None):
+def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -57,11 +57,16 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, base=None, test_r
     # Directories
     md = Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
-    if base is not None:
-        bel_dir = jp(md.forecasts_dir, new_dir)  # Directory in which to load forecasts
-        base_dir = jp(bel_dir, 'base')
-    else:
-        bel_dir = md.forecasts_dir
+
+    bel_dir = jp(md.forecasts_dir, new_dir)  # Directory in which to load forecasts
+
+    base_dir = jp(bel_dir, 'base')
+
+    base = 1
+    if not os.path.exists(base_dir):
+        fops.dirmaker(base_dir)
+        base = 0
+        bel_dir = base_dir
 
     # Parse test_roots
     if isinstance(test_roots, (list, tuple)):
@@ -76,21 +81,22 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, base=None, test_r
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
-    if base is not None:
+    if base:
         try:
             with open(jp(base_dir, 'roots.dat')) as f:
                 roots = f.read().splitlines()
             if n_test == 1:  # if only one root is studied
                 new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, new_dir)
         except FileNotFoundError:
             if n_test == 1:  # if only one root is studied
-                new_dir = 'base'  # sub-directory for forecasts
+                sub_dir = base_dir
             # roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
+        sub_dir = jp(bel_dir, new_dir)
         roots = None
 
-    sub_dir = jp(bel_dir, new_dir)
     obj_dir = jp(sub_dir, 'objects')
 
     fig_dir = jp(sub_dir, 'figures')
@@ -110,20 +116,17 @@ def bel(n_training=300, n_test=5, wel_comb=None, new_dir=None, base=None, test_r
     # roots_ = simulation id
 
     # Save file roots
-    if base is not None and not os.path.exists(jp(base_dir, 'roots.dat')):
+    if not os.path.exists(jp(base_dir, 'roots.dat')):
         with open(jp(base_dir, 'roots.dat'), 'w') as f:
             for r in roots_:
                 f.write(os.path.basename(r) + '\n')
-    else:
-        with open(jp(sub_dir, 'roots.dat'), 'w') as f:
-            for r in roots_:
-                f.write(os.path.basename(r) + '\n')
 
-    # Subdivide d in an arbitrary number of time steps.
-    tc = dops.d_process(tc0=tc0, n_time_steps=250)  # tc has shape (n_sim, n_wels, n_time_steps),
+    # Subdivide d in an arbitrary number of time steps:
+    tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps),
     # with n_sim = n_training + n_test
-    tc = tc[:, wels.combination, :]  # Select wels
-    # Plot d
+    # Select wels:
+    tc = tc[:, wels.combination, :]
+    # Plot d:
     mp.curves(tc=tc, sdir=fig_data_dir)
     mp.curves_i(tc=tc, sdir=fig_data_dir)
 
