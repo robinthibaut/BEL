@@ -120,7 +120,7 @@ class UncertaintyQuantification:
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         # Plot results
-        ff = jp(self.fig_pred_dir, '{}_{}.png'.format(sample_n, self.cca_operator.n_components))
+        ff = jp(self.fig_pred_dir, '{}_{}.pdf'.format(sample_n, self.cca_operator.n_components))
         self.mplot.whp_prediction(forecasts=self.forecast_posterior,
                                   h_true=self.h_true_obs,
                                   h_pred=self.h_pred,
@@ -235,7 +235,7 @@ class UncertaintyQuantification:
                   vmax=None,
                   cmap='RdGy',
                   colors='red',
-                  fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
+                  fig_file=jp(self.fig_pred_dir, '{}comp.pdf'.format(self.sample_n)),
                   show=True)
 
         return z
@@ -246,8 +246,8 @@ class UncertaintyQuantification:
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=1)  # Initiate SD object
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=1, wel_comb=self.wel_comb)  # Initiate Plot tool
+        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=2)  # Initiate SD object
+        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=2, wel_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
@@ -259,12 +259,19 @@ class UncertaintyQuantification:
         error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
 
         # Display result
+        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+                       alpha=1,
+                       lw=1,
+                       show_wells=False,
+                       colors='red',
+                       show=False)
+
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
                   vmin=None,
                   vmax=None,
                   cmap='RdGy',
-                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
+                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.pdf'.format(self.sample_n)),
                   title=str(error_estimate),
                   show=True)
 
@@ -285,7 +292,7 @@ class UncertaintyQuantification:
         max_pos = np.where(mhds == np.max(mhds))[0][0]
 
         # Plot results
-        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
+        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.pdf'.format(self.sample_n, self.cca_operator.n_components))
         self.mplot.whp_prediction(forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
                                   h_true=self.h_true_obs,
                                   h_pred=self.forecast_posterior[min_pos],
