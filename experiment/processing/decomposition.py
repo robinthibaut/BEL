@@ -96,7 +96,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
                 new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
                 sub_dir = jp(bel_dir, new_dir)
                 if wel_comb is None:
-                    return sub_dir
+                    return base_dir
         except FileNotFoundError:
             sub_dir = base_dir  # Back to the base dir
             roots = None
