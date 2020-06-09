@@ -87,6 +87,8 @@ class Wels:
              'rates': [0, 24, 0]}
     }
 
+    combination = np.arange(1, len(wels_data))  # Injection wels in use for prediction (default: all)
+
 
 @dataclass
 class Focus:

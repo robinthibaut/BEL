@@ -129,10 +129,14 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
 
 class Plot:
 
-    def __init__(self, x_lim=None, y_lim=None, grf=None):
+    def __init__(self, x_lim=None, y_lim=None, grf=None, wel_comb=None):
 
         md = Directories()
         focus = Focus()
+        self.wels = Wels()
+
+        if wel_comb is not None:
+            self.wels.combination = wel_comb
 
         if y_lim is None:
             self.ylim = focus.y_range
@@ -174,7 +178,7 @@ class Plot:
     def curves(self, tc, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
-        :param tc: Curves with shape (n_sim, n_wels, n_time_steps, 2)
+        :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
@@ -195,7 +199,7 @@ class Plot:
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
-        :param tc: Curves with shape (n_sim, n_wells, n_time_steps, 2)
+        :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
@@ -265,7 +269,9 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            wbd = Wels().wels_data
+            comb = [0] + list(self.wels.combination)
+            keys = [list(self.wels.wels_data.keys())[i] for i in comb]
+            wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
             pwl = wbd['pumping0']['coordinates']
             plt.plot(pwl[0], pwl[1], 'wo', label='pw')
             for n, i in enumerate(wbd):
