@@ -49,7 +49,7 @@ class UncertaintyQuantification:
         self.fig_pred_dir = jp(self.bel_dir, 'uq')
 
         # Load objects
-        f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
+        f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
         self.cca_operator, self.d_pco, self.h_pco = list(map(joblib.load, f_names))
 
         # Inspect transformation between physical and PC space
@@ -251,23 +251,19 @@ class UncertaintyQuantification:
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
+
+        # a measure of the error could be a measure of the area covered by the n samples.
+        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+
         # Display result
-        self.mplot.whp(self.h_true_obs,
-                       alpha=1,
-                       lw=1,
-                       show_wells=True,
-                       colors='red',
-                       show=False)
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
                   vmin=None,
                   vmax=None,
                   cmap='RdGy',
                   fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
+                  title=str(error_estimate),
                   show=True)
-
-        # a measure of the error could be a measure of the area covered by the n samples.
-        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
 
         return error_estimate
 
