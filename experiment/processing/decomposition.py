@@ -49,12 +49,10 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
 
     # Wels data
     wels = Wels()
-    if wel_comb is not None:
-        wels.combination = wel_comb
 
     n_sim = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wels.combination)  # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wel_comb)  # Initiate Plot instance
 
     # Directories
     md = Directories()
@@ -62,71 +60,72 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
 
     bel_dir = jp(md.forecasts_dir, new_dir)  # Directory in which to load forecasts
 
-    base_dir = jp(bel_dir, 'base')
+    base_dir = jp(bel_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    base = 1
+    base = 1  # Check if base exists
     if not os.path.exists(base_dir):
         fops.dirmaker(base_dir)
         base = 0
         bel_dir = base_dir
 
     # Parse test_roots
-    if isinstance(test_roots, (list, tuple)):
+    if isinstance(test_roots, (list, tuple)):  # If multiple roots given
         n_test = len(test_roots)
         for f in test_roots:
             if not os.path.exists(jp(res_dir, f)):
                 warnings.warn('Specified folder {} does not exist'.format(jp(res_dir, f)))
-    if isinstance(test_roots, str):
+    if isinstance(test_roots, str):  # If only one root given
         if os.path.exists(jp(res_dir, test_roots)):
             test_roots = [test_roots]
             n_test = 1
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
-    if base:
+    if base:  # If base exists
         try:
-            with open(jp(base_dir, 'roots.dat')) as f:
+            with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
                 roots = f.read().splitlines()
             if n_test == 1:  # if only one root is studied
-                new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+                new_dir = ''.join(list(map(str, wel_comb)))  # sub-directory for forecasts
             sub_dir = jp(bel_dir, new_dir)
         except FileNotFoundError:
-            if n_test == 1:  # if only one root is studied
-                sub_dir = base_dir
+            sub_dir = base_dir  # Back to the base dir
             roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
         roots = None
 
-    obj_dir = jp(sub_dir, 'objects')
+    obj_dir = jp(sub_dir, 'obj')
 
-    fig_dir = jp(sub_dir, 'figures')
-    fig_data_dir = jp(fig_dir, 'Data')
-    fig_pca_dir = jp(fig_dir, 'PCA')
-    fig_cca_dir = jp(fig_dir, 'CCA')
-    fig_pred_dir = jp(fig_dir, 'Predictions')
+    fig_data_dir = jp(sub_dir, 'data')
+    fig_pca_dir = jp(sub_dir, 'pca')
+    fig_cca_dir = jp(sub_dir, 'cca')
+    fig_pred_dir = jp(sub_dir, 'uq')
 
     # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots, test_roots=test_roots)  # Loads the results
-    # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
-    # pzs = WHPA
-    # roots_ = simulation id
-
-    # Save file roots
-    if not os.path.exists(jp(base_dir, 'roots.dat')):
-        with open(jp(base_dir, 'roots.dat'), 'w') as f:
-            for r in roots_:
-                f.write(os.path.basename(r) + '\n')
-
     tsub = jp(base_dir, 'tc.npy')
     if not os.path.exists(tsub):
+        # Loads the results:
+        tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots,
+                                         test_roots=test_roots)
+        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        # pzs = WHPA
+        # roots_ = simulation id
+
         # Subdivide d in an arbitrary number of time steps:
         tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps),
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
+
+        # Save file roots
+        if not os.path.exists(jp(base_dir, 'roots.dat')):
+            with open(jp(base_dir, 'roots.dat'), 'w') as f:
+                for r in roots_:
+                    f.write(os.path.basename(r) + '\n')
+
     else:
         tc = np.load(tsub)
 
