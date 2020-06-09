@@ -42,6 +42,7 @@ class UncertaintyQuantification:
         self.grid_dir = md.grid_dir
         self.mplot.wdir = self.grid_dir
 
+        # TODO: get folders from base model
         self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)
         self.res_dir = jp(self.bel_dir, 'obj')
         self.fig_cca_dir = jp(self.bel_dir, 'cca')

@@ -163,9 +163,13 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
         h = np.array([sd.compute(pp) for pp in pzs])
         # Plot all WHPP
         mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
+        # Initiate h pca object
         h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
-        h_pco.pca_tp(n_training)  # Split into training and prediction
+        # Split into training and prediction
+        h_pco.pca_tp(n_training)
+        # Transform
         h_pco.pca_transformation()
+        # Define number of components to keep
         nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
         # Split
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
