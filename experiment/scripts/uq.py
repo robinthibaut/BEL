@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     for c in belcomb:
         try:
-            sf = dcp.bel(test_roots='46933e56d83d4ddcaa26fa0cd8a795db', wel_comb=c)
+            sf = dcp.bel(test_roots='46933e56d83d4ddcaa26fa0cd8a795db', wel_comb=c, base=1)
         except Exception as e:
             print(e)
             shutil.rmtree(sf)

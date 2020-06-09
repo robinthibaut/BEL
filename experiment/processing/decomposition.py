@@ -29,7 +29,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
+def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -38,9 +38,12 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     :param test_roots: Folder paths containing outputs to be predicted
     :param n_training: Number of samples used to train the model
     :param n_test: Number of samples on which to perform prediction
-    :param new_dir: Name of the forecast directory
+    :param base: Flag for base folder
 
     """
+
+    if base is None:
+        base = 0
 
     # Load parameters:
     fc = Focus()
@@ -82,18 +85,18 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     base_dir = jp(bel_dir, 'base')  # Base directory that will contain target objects and processed data
     base_obj = jp(base_dir, 'obj')
 
-    base = 0  # Check if base exists
     if not os.path.exists(base_dir):
         fops.dirmaker(base_dir)
-        base = 1
         bel_dir = base_dir
 
-    if base:  # If base exists
+    if base:  # If base folder
         try:
             with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
                 roots = f.read().splitlines()
                 new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
                 sub_dir = jp(bel_dir, new_dir)
+                if wel_comb is None:
+                    return sub_dir
         except FileNotFoundError:
             sub_dir = base_dir  # Back to the base dir
             roots = None
