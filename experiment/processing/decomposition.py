@@ -52,6 +52,8 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     if wel_comb is not None:
         wels.combination = wel_comb
 
+    n_sim = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
+
     mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wels.combination)  # Initiate Plot instance
 
     # Directories
@@ -91,7 +93,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
         except FileNotFoundError:
             if n_test == 1:  # if only one root is studied
                 sub_dir = base_dir
-            # roots = None
+            roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
@@ -108,9 +110,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots, test_roots=test_roots)  # Loads the results
-
+    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots, test_roots=test_roots)  # Loads the results
     # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
     # pzs = WHPA
     # roots_ = simulation id
@@ -121,9 +121,15 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
             for r in roots_:
                 f.write(os.path.basename(r) + '\n')
 
-    # Subdivide d in an arbitrary number of time steps:
-    tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps),
-    # with n_sim = n_training + n_test
+    tsub = jp(base_dir, 'tc.npy')
+    if not os.path.exists(tsub):
+        # Subdivide d in an arbitrary number of time steps:
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps),
+        # with n_sim = n_training + n_test
+        np.save(tsub, tc)
+    else:
+        tc = np.load(tsub)
+
     # Select wels:
     tc = tc[:, wels.combination, :]
     # Plot d:
