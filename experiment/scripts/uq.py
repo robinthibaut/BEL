@@ -15,12 +15,11 @@ if __name__ == '__main__':
     belcomb = [None] + [item for sublist in belcomb for item in sublist]  # Flatten and add None to first compute the
     # 'base'
 
-    for c in belcomb:
+    for c in [None]:
         try:
             sf = dcp.bel(test_roots='46933e56d83d4ddcaa26fa0cd8a795db', wel_comb=c, base=1)
         except Exception as e:
             print(e)
-            shutil.rmtree(sf)
 
         uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior

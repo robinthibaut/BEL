@@ -127,7 +127,10 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
         # roots_ = simulation id
 
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps),
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+
+        # tc = np.random.rand(n_sim, 6, 12)
+
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
 
@@ -143,6 +146,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     # %% Select wels:
     selection = [wc - 1 for wc in wels.combination]
     tc = tc[:, selection, :]
+
     # Plot d:
     mp.curves(tc=tc, sdir=fig_data_dir)
     mp.curves_i(tc=tc, sdir=fig_data_dir)

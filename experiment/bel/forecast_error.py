@@ -121,7 +121,7 @@ class UncertaintyQuantification:
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         # Plot results
-        ff = jp(self.fig_pred_dir, '{}_{}.pdf'.format(sample_n, self.cca_operator.n_components))
+        ff = jp(self.fig_pred_dir, '{}_{}.png'.format(sample_n, self.cca_operator.n_components))
         self.mplot.whp_prediction(forecasts=self.forecast_posterior,
                                   h_true=self.h_true_obs,
                                   h_pred=self.h_pred,
@@ -236,7 +236,7 @@ class UncertaintyQuantification:
                   vmax=None,
                   cmap='RdGy',
                   colors='red',
-                  fig_file=jp(self.fig_pred_dir, '{}comp.pdf'.format(self.sample_n)),
+                  fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
                   show=True)
 
         return z
@@ -272,7 +272,7 @@ class UncertaintyQuantification:
                   vmin=None,
                   vmax=None,
                   cmap='RdGy',
-                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.pdf'.format(self.sample_n)),
+                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
                   title=str(error_estimate),
                   show=True)
 
@@ -293,7 +293,7 @@ class UncertaintyQuantification:
         max_pos = np.where(mhds == np.max(mhds))[0][0]
 
         # Plot results
-        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.pdf'.format(self.sample_n, self.cca_operator.n_components))
+        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
         self.mplot.whp_prediction(forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
                                   h_true=self.h_true_obs,
                                   h_pred=self.forecast_posterior[min_pos],
