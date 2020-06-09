@@ -80,6 +80,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
         bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
 
     base_dir = jp(bel_dir, 'base')  # Base directory that will contain target objects and processed data
+    base_obj = jp(base_dir, 'obj')
 
     base = 0  # Check if base exists
     if not os.path.exists(base_dir):
@@ -93,17 +94,16 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
                 roots = f.read().splitlines()
                 new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
                 sub_dir = jp(bel_dir, new_dir)
-                obj_dir = jp(sub_dir, 'obj')
         except FileNotFoundError:
             sub_dir = base_dir  # Back to the base dir
-            obj_dir = jp(base_dir, 'obj')
             roots = None
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
-        obj_dir = jp(sub_dir, 'obj')
+
         roots = None
 
+    obj_dir = jp(sub_dir, 'obj')
     fig_data_dir = jp(sub_dir, 'data')
     fig_pca_dir = jp(sub_dir, 'pca')
     fig_cca_dir = jp(sub_dir, 'cca')
@@ -112,7 +112,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    tsub = jp(base_dir, 'obj', 'tc.npy')
+    tsub = jp(base_obj, 'tc.npy')
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots,
@@ -157,7 +157,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
 
     # PCA on signed distance
-    if not os.path.exists(jp(base_dir, 'obj', 'h_pca.pkl')):
+    if not os.path.exists(jp(base_obj, 'h_pca.pkl')):
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
         h = np.array([sd.compute(pp) for pp in pzs])
@@ -165,25 +165,30 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
         mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
         h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
         h_pco.pca_tp(n_training)  # Split into training and prediction
-        h_pc_training, h_pc_prediction = h_pco.pca_transformation()
-        joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
+        h_pco.pca_transformation()
+        nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
+        # Split
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        # Dump
+        joblib.dump(h_pco, jp(base_obj, 'h_pca.pkl'))
+        # Plot
+        plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+        plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
     else:
-        h_pco = joblib.load(jp(base_dir, 'objects', 'h_pca.pkl'))
-        h_pc_training, h_pc_prediction = h_pco.pca_transformation()
+        h_pco = joblib.load(jp(base_obj, 'h_pca.pkl'))
+        h_pc_training, h_pc_prediction = h_pco.training_pc, h_pco.predict_pc
+        nho = h_pco.ncomp
 
     # TODO: Build a framework to select the number of PC components.
     # Choose number of PCA components to keep.
     # Compares true value with inverse transformation from PCA
     ndo = d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-    nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
 
     # Explained variance plots
     plot.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
 
     # Scores plots
     plot.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
-    plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
     # Assign final n_comp for PCA
     n_d_pc_comp = ndo
@@ -191,7 +196,6 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
 
     # Cut desired number of PC components
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
-    h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
 
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
@@ -202,9 +206,9 @@ def bel(n_training=200, n_test=1, wel_comb=None, new_dir=None, test_roots=None):
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2), tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
-    return new_dir
+    return sub_dir
 

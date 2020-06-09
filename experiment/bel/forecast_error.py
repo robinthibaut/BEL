@@ -43,10 +43,9 @@ class UncertaintyQuantification:
         self.mplot.wdir = self.grid_dir
 
         self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)
-        self.res_dir = jp(self.bel_dir, 'objects')
-        self.fig_dir = jp(self.bel_dir, 'figures')
-        self.fig_cca_dir = jp(self.fig_dir, 'CCA')
-        self.fig_pred_dir = jp(self.fig_dir, 'Predictions')
+        self.res_dir = jp(self.bel_dir, 'obj')
+        self.fig_cca_dir = jp(self.bel_dir, 'cca')
+        self.fig_pred_dir = jp(self.bel_dir, 'predictions')
 
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))

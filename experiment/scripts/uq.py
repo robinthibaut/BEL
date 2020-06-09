@@ -9,10 +9,11 @@ from experiment.base.inventory import Wels
 
 if __name__ == '__main__':
 
-    wels = Wels()
-    comb = wels.combination
-    belcomb = [list(itertools.combinations(comb, i)) for i in range(2, comb[-1])]
-    belcomb = [None] + [item for sublist in belcomb for item in sublist]
+    wels = Wels()  # Load wels data from base
+    comb = wels.combination  # Get default combination (all)
+    belcomb = [list(itertools.combinations(comb, i)) for i in range(2, comb[-1])]  # Get all possible wel combinations
+    belcomb = [None] + [item for sublist in belcomb for item in sublist]  # Flatten and add None to first compute the
+    # 'base'
 
     for c in belcomb:
         try:

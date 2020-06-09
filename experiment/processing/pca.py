@@ -10,7 +10,7 @@ from sklearn.decomposition import PCA
 
 
 class PCAIO:
-
+    # TODO: add properties
     def __init__(self, name, raw_data, directory=None):
         """
 
