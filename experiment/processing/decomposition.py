@@ -46,7 +46,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     """
 
     if base is None:
-        base = 0
+        base = 1
 
     # Load parameters:
     fc = Focus()
@@ -108,16 +108,20 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
         sub_dir = jp(bel_dir, new_dir)
         roots = None
 
+    # %% Folders
     obj_dir = jp(sub_dir, 'obj')
     fig_data_dir = jp(sub_dir, 'data')
     fig_pca_dir = jp(sub_dir, 'pca')
     fig_cca_dir = jp(sub_dir, 'cca')
     fig_pred_dir = jp(sub_dir, 'uq')
+    # TODO: pass them to next class
+
+    # %%
 
     # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    tsub = jp(base_obj, 'tc.npy')
+    tsub = jp(base_obj, 'tc.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots,

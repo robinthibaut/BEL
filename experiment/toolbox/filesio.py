@@ -180,7 +180,7 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
                         shutil.rmtree(r)
                 except TypeError:
                     pass
-        if n:
+        if n:  # Random choices
             nt = len(test_roots)
             if nt:
                 folders = np.random.choice(np.arange(len(roots)-nt), n-nt)  # Randomly selects n folders
