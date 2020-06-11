@@ -9,6 +9,9 @@ from experiment.base.inventory import Directories, Wels
 
 
 def combinator(combi):
+    """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
+    'None' will indicate to use the original combination.
+    """
     cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1])]  # Get all possible wel combinations
     cb = [None] + [item for sublist in cb for item in sublist]  # Flatten and add None to first compute the
     # 'base'
@@ -16,6 +19,7 @@ def combinator(combi):
 
 
 def scan_root(root):
+    """Takes a root name and performs decomposition and UQ with all wels combinations"""
     wels = Wels()  # Load wels data from base
     comb = wels.combination  # Get default combination (all)
     belcomb = [list(itertools.combinations(comb, i)) for i in range(1, comb[-1])]  # Get all possible wel combinations
@@ -31,13 +35,13 @@ def scan_root(root):
         uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
         uq.c0(write_vtk=0)  # Extract 0 contours
-        mh = uq.mhd()  # Modified Hausdorff
-        eb = uq.binary_stack()  # Binary stack
+        uq.mhd()  # Modified Hausdorff
+        uq.binary_stack()  # Binary stack
         # uq.kernel_density()  # Kernel density
 
 
 def scan_roots():
-
+    """Scan all roots and perform decomposition"""
     md = Directories.hydro_res_dir
     roots = os.listdir(md)  # List all roots
 

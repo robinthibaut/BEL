@@ -1,7 +1,14 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 """
-Forecast error analysis
+Forecast error analysis.
+
+- quantifying uncertainty
+- assessing uncertainty
+- modeling uncertainty
+- realistic assessment of uncertainty.
+
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 50
 """
 
 import os

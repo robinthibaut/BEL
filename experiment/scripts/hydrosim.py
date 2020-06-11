@@ -1,5 +1,21 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+"""
+
+In a Bayesian framework: the prior consists of all possibilities
+imagined by a human modeler, possibly aided by computers, then, the posterior includes
+only those possibilities that cannot be falsified with data as modeled in the likelihood.
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 49
+
+If simpler models can be run more frequently
+when uncertainty is a critical objective (such as in forecasts), then simpler models may
+be preferred if the difference between a simple model and a complex model is small com
+pared to all other uncertainties in the model.
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 52
+
+"""
+
+
 import multiprocessing as mp
 import shutil
 import time
