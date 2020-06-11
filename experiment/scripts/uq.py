@@ -40,15 +40,13 @@ def scan_root(root):
             print(ex)
 
 
-def scan_roots():
+def scan_roots(roots_):
     """Scan all roots and perform decomposition"""
-    md = Directories.hydro_res_dir
-    roots = os.listdir(md)  # List all roots
 
-    for r in roots:
+    for r_ in roots_:
         try:
 
-            sf = dcp.bel(test_roots=r, wel_comb=None)
+            sf = dcp.bel(test_roots=r_, wel_comb=None)
 
             uq = UncertaintyQuantification(study_folder=sf, wel_comb=None)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -84,11 +82,20 @@ def value_info(root):
 
 
 if __name__ == '__main__':
-    scan_roots()
-
+    # TODO restructure BEL to have more control on root picking
+    # TODO there is a strange WHPA in the lot
     md = Directories.hydro_res_dir
-    roots = os.listdir(md)  # List all roots
+    roots = os.listdir(md)[:100]  # List 100 roots
 
+    try:
+        roots.remove('0128284351704e91a8521cfc8c535df8')
+    except ValueError:
+        pass
+
+    # Perform base decomposition
+    scan_roots(roots)
+
+    # Perform all wel combinations
     for r in roots:
         scan_root(r)
 
