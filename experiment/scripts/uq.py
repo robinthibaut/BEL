@@ -32,7 +32,7 @@ def scan_root(root):
         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
         uq.c0(write_vtk=0)  # Extract 0 contours
         mh = uq.mhd()  # Modified Hausdorff
-        # eb = uq.binary_stack()  # Binary stack
+        eb = uq.binary_stack()  # Binary stack
         # uq.kernel_density()  # Kernel density
 
 
@@ -57,5 +57,5 @@ def scan_roots():
 
 
 if __name__ == '__main__':
-    scan_roots()
+    scan_root('0128284351704e91a8521cfc8c535df8')
 

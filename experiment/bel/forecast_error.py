@@ -276,7 +276,8 @@ class UncertaintyQuantification:
                   title=str(error_estimate),
                   show=True)
 
-        return error_estimate
+        # Save result
+        np.save(jp(self.fig_pred_dir, 'bin'), b_low)
 
     #  Let's try Hausdorff...
     def mhd(self):
@@ -301,4 +302,5 @@ class UncertaintyQuantification:
                                   title=str(np.round(mhds.mean(), 2)),
                                   fig_file=fig)
 
-        return mhds
+        # Save mhd
+        np.save(jp(self.fig_pred_dir, 'haus'), mhds)
