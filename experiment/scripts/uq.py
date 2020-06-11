@@ -31,15 +31,15 @@ def scan_root(root):
     for c in belcomb:
         try:
             sf = dcp.bel(test_roots=root, wel_comb=c, base=1)
-        except Exception as e:
-            print(e)
 
-        uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
-        uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-        uq.c0(write_vtk=0)  # Extract 0 contours
-        uq.mhd()  # Modified Hausdorff
-        uq.binary_stack()  # Binary stack
-        # uq.kernel_density()  # Kernel density
+            uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
+            uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+            uq.c0(write_vtk=0)  # Extract 0 contours
+            uq.mhd()  # Modified Hausdorff
+            uq.binary_stack()  # Binary stack
+            # uq.kernel_density()  # Kernel density
+        except Exception as ex:
+            print(ex)
 
 
 def scan_roots():
@@ -58,8 +58,8 @@ def scan_roots():
             # mh = uq.mhd()  # Modified Hausdorff
             # eb = uq.binary_stack()  # Binary stack
             # uq.kernel_density()  # Kernel density
-        except Exception as e:
-            print(e)
+        except Exception as ex:
+            print(ex)
 
 
 if __name__ == '__main__':
@@ -74,15 +74,18 @@ if __name__ == '__main__':
         fmhd = os.path.join(droot, e, 'uq', 'haus.npy')
         mhd = np.mean(np.load(fmhd))  # Load MHD
         for w in wid:  # Check for each wel
-            if w in e: # If wel w is used
+            if w in e:  # If wel w is used
                 idw = int(w)-1
                 wm[idw] += mhd  # Add mean of MHD
                 cid[idw] += 1
 
     plt.plot(wm, 'wo')
     plt.title('Summed MHD for each wel')
-    plt.xlabel('Wel id')
+    plt.xlabel('Wel ID')
+    plt.xticks(np.arange(0, 7), wid)
     plt.ylabel('MHD summed mean value')
+    plt.grid(alpha=0.2)
+    plt.savefig(os.path.join(droot, 'wel_value.png'), dpi=300)
     plt.show()
 
 
