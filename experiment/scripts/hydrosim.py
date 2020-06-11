@@ -53,7 +53,7 @@ def simulation(folder=None):
 
     results_dir = jp(md.hydro_res_dir, res_dir)
     # reload data in old root:
-    # results_dir = jp(md.hydro_res_dir, '46933e56d83d4ddcaa26fa0cd8a795db')
+    results_dir = jp(md.hydro_res_dir, '0128284351704e91a8521cfc8c535df8')
 
     grid_dir = md.grid_dir
     # Generates the result directory

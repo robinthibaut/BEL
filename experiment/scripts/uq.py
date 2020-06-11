@@ -3,6 +3,8 @@
 import os
 import shutil
 import itertools
+import numpy as np
+import matplotlib.pyplot as plt
 from experiment.processing import decomposition as dcp
 from experiment.bel.forecast_error import UncertaintyQuantification
 from experiment.base.inventory import Directories, Wels
@@ -61,5 +63,29 @@ def scan_roots():
 
 
 if __name__ == '__main__':
-    scan_root('0128284351704e91a8521cfc8c535df8')
+    # scan_root('0128284351704e91a8521cfc8c535df8')
+
+    droot = os.path.join(Directories.forecasts_dir, '0128284351704e91a8521cfc8c535df8')
+    duq = os.listdir(droot)  # Folders of combinations
+    wid = list(map(str, range(1, 7)))  # Wel identifiers (n)
+    wm = np.zeros(len(wid))  # Summed MHD when well i appears
+    cid = np.copy(wm)  # Number of times each wel appears
+    for e in duq:
+        fmhd = os.path.join(droot, e, 'uq', 'haus.npy')
+        mhd = np.mean(np.load(fmhd))  # Load MHD
+        for w in wid:  # Check for each wel
+            if w in e: # If wel w is used
+                idw = int(w)-1
+                wm[idw] += mhd  # Add mean of MHD
+                cid[idw] += 1
+
+    plt.plot(wm, 'wo')
+    plt.title('Summed MHD for each wel')
+    plt.xlabel('Wel id')
+    plt.ylabel('MHD summed mean value')
+    plt.show()
+
+
+
+
 
