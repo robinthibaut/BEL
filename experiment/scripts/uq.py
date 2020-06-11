@@ -27,7 +27,6 @@ def scan_root(root):
             sf = dcp.bel(test_roots=root, wel_comb=c, base=1)
         except Exception as e:
             print(e)
-            shutil.rmtree(sf)
 
         uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -38,13 +37,9 @@ def scan_root(root):
 
 
 def scan_roots():
-    wels = Wels()  # Load wels data from base
-    comb = wels.combination  # Get default combination (all)
-
-    belcomb = combinator(comb)
 
     md = Directories.hydro_res_dir
-    roots = os.listdir(md)
+    roots = os.listdir(md)  # List all roots
 
     for r in roots[:10]:
         try:
@@ -53,8 +48,8 @@ def scan_roots():
 
             uq = UncertaintyQuantification(study_folder=sf, wel_comb=None)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-            uq.c0(write_vtk=0)  # Extract 0 contours
-            mh = uq.mhd()  # Modified Hausdorff
+            # uq.c0(write_vtk=0)  # Extract 0 contours
+            # mh = uq.mhd()  # Modified Hausdorff
             # eb = uq.binary_stack()  # Binary stack
             # uq.kernel_density()  # Kernel density
         except Exception as e:
