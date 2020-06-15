@@ -32,7 +32,45 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None, test_roots=None):
+def roots_pca(roots, h_pca_obj, n_test=1):
+
+    # Load parameters:
+    fc = Focus()
+    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
+    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+
+    # Loads the results:
+    _, pzs, roots_ = fops.load_res(roots=roots)
+
+    # %%  PCA
+    # PCA is performed with maximum number of components.
+    # We choose an appropriate number of components to keep later on.
+
+    # Choose size of training and prediction set
+    n_sim = len(pzs)  # Number of simulations
+    n_obs = n_test  # Number of 'observations' on which the predictions will be made.
+    n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
+
+    # PCA on signed distance
+    # Compute signed distance on pzs.
+    # h is the matrix of target feature on which PCA will be performed.
+    h = np.array([sd.compute(pp) for pp in pzs])
+    # Plot all WHPP
+    # Initiate h pca object
+    h_pco = PCAIO(name='h', raw_data=h, directory=os.path.dirname(h_pca_obj))
+    # Split into training and prediction
+    h_pco.pca_tp(n_training)
+    # Transform
+    h_pco.pca_transformation()
+    # Define number of components to keep
+    nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
+    # Split
+    h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+    # Dump
+    joblib.dump(h_pco, h_pca_obj)
+
+
+def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None, test_roots=None, target_pca=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -108,8 +146,8 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
             roots = training_roots
             new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
             sub_dir = jp(bel_dir, new_dir)
-            if wel_comb is None:
-                return base_dir
+            # if wel_comb is None:
+            #     return base_dir
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
@@ -177,34 +215,39 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
     d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
 
     # PCA on signed distance
-    if not os.path.exists(jp(base_obj, 'h_pca.pkl')):
-        # Compute signed distance on pzs.
-        # h is the matrix of target feature on which PCA will be performed.
-        h = np.array([sd.compute(pp) for pp in pzs])
-        # Plot all WHPP
-        # mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
-        mp.whp_prediction(forecasts=h,
-                          h_true=h[-1],
-                          h_pred=None,
-                          show_wells=True,
-                          fig_file=jp(fig_data_dir, 'all_whpa.png'))
-        # Initiate h pca object
-        h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
-        # Split into training and prediction
-        h_pco.pca_tp(n_training)
-        # Transform
-        h_pco.pca_transformation()
-        # Define number of components to keep
-        nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
-        # Split
-        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
-        # Dump
-        joblib.dump(h_pco, jp(base_obj, 'h_pca.pkl'))
-        # Plot
-        plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
-        plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
+    if target_pca is None:
+        if not os.path.exists(jp(base_obj, 'h_pca.pkl')):
+            # Compute signed distance on pzs.
+            # h is the matrix of target feature on which PCA will be performed.
+            h = np.array([sd.compute(pp) for pp in pzs])
+            # Plot all WHPP
+            # mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
+            mp.whp_prediction(forecasts=h,
+                              h_true=h[-1],
+                              h_pred=None,
+                              show_wells=True,
+                              fig_file=jp(fig_data_dir, 'all_whpa.png'))
+            # Initiate h pca object
+            h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
+            # Split into training and prediction
+            h_pco.pca_tp(n_training)
+            # Transform
+            h_pco.pca_transformation()
+            # Define number of components to keep
+            nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
+            # Split
+            h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+            # Dump
+            joblib.dump(h_pco, jp(base_obj, 'h_pca.pkl'))
+            # Plot
+            plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+            plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
+        else:
+            h_pco = joblib.load(jp(base_obj, 'h_pca.pkl'))
+            nho = h_pco.ncomp
+            h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
     else:
-        h_pco = joblib.load(jp(base_obj, 'h_pca.pkl'))
+        h_pco = joblib.load(target_pca)
         nho = h_pco.ncomp
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 

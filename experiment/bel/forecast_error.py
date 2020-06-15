@@ -32,7 +32,7 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, study_folder, wel_comb=None):
+    def __init__(self, study_folder, base_dir=None, wel_comb=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
@@ -53,7 +53,10 @@ class UncertaintyQuantification:
 
         # TODO: get folders from base model
         self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)
-        self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
+        if base_dir is None:
+            self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
+        else:
+            self.base_dir = base_dir
         self.res_dir = jp(self.bel_dir, 'obj')
         self.fig_cca_dir = jp(self.bel_dir, 'cca')
         self.fig_pred_dir = jp(self.bel_dir, 'uq')
