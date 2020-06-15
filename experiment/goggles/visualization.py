@@ -175,13 +175,16 @@ class Plot:
         v = np.array([c0.allsegs[0][0] for c0 in c0s])
         return v
 
-    def curves(self, tc, sdir=None, show=False):
+    def curves(self, tc, title=None, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
         :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
+        if title is None:
+            title = 'curves'
+
         n_sim, n_wels, nts = tc.shape
         for i in range(n_sim):
             for t in range(n_wels):
@@ -189,13 +192,13 @@ class Plot:
         plt.grid(linewidth=.3, alpha=.4)
         plt.tick_params(labelsize=5)
         if sdir:
-            plt.savefig(jp(sdir, 'curves.png'), dpi=300)
+            plt.savefig(jp(sdir, f'{title}.png'), dpi=300)
             plt.close()
         if show:
             plt.show()
             plt.close()
 
-    def curves_i(self, tc, sdir=None, show=False):
+    def curves_i(self, tc, title=None, sdir=None, show=False):
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
@@ -203,15 +206,17 @@ class Plot:
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
+        if title is None:
+            title = 'curves'
         n_sim, n_wels, nts = tc.shape
         for t in range(n_wels):
             for i in range(n_sim):
                 plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=5)
-            plt.title('wel #{}'.format(t))
+            plt.title(f'wel #{t+1}')
             if sdir:
-                plt.savefig(jp(sdir, 'curves_{}.png'.format(t)), dpi=300)
+                plt.savefig(jp(sdir, f'{title}_{t+1}.png'), dpi=300)
                 plt.close()
             if show:
                 plt.show()
