@@ -41,7 +41,10 @@ def scan_root(root):
 
 
 def scan_roots(roots_):
-    """Scan all roots and perform decomposition"""
+    """Scan all roots and perform base decomposition"""
+
+    if not isinstance(roots_, (list, tuple, np.array)):
+        roots_ = [roots_]
 
     for r_ in roots_:
         try:
@@ -84,21 +87,22 @@ def value_info(root):
 if __name__ == '__main__':
     # TODO restructure BEL to have more control on root picking
     # TODO there is a strange WHPA in the lot
-    md = Directories.hydro_res_dir
-    roots = os.listdir(md)[:100]  # List 100 roots
+    # md = Directories.hydro_res_dir
+    # roots = os.listdir(md)[:100]  # List 100 roots
+    #
+    # try:
+    #     roots.remove('0128284351704e91a8521cfc8c535df8')
+    # except ValueError:
+    #     pass
+    #
+    # # Perform base decomposition
+    # scan_roots(roots)
+    #
+    # # Perform all wel combinations
+    # for r in roots:
+    #     scan_root(r)
 
-    try:
-        roots.remove('0128284351704e91a8521cfc8c535df8')
-    except ValueError:
-        pass
-
-    # Perform base decomposition
-    scan_roots(roots)
-
-    # Perform all wel combinations
-    for r in roots:
-        scan_root(r)
-
+    scan_root('0128284351704e91a8521cfc8c535df8')
 
 
 

@@ -151,12 +151,9 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
     selection = [wc - 1 for wc in wels.combination]
     tc = tc[:, selection, :]
 
-    # Plot training d:
-    mp.curves(tc=tc, sdir=fig_data_dir)
-    mp.curves_i(tc=tc, sdir=fig_data_dir)
-    # Plot observation d:
-    mp.curves(tc=[tc[-1]], sdir=fig_data_dir, title='obs')
-    mp.curves_i(tc=[tc[-1]], sdir=fig_data_dir, title='obs')
+    # Plot d:
+    mp.curves(tc=tc, sdir=fig_data_dir, highlight=[n_sim-1])
+    mp.curves_i(tc=tc, sdir=fig_data_dir, highlight=[n_sim-1])
 
     # %%  PCA
     # PCA is performed with maximum number of components.
@@ -180,7 +177,8 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
         # Plot all WHPP
         # mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=False)
         mp.whp_prediction(forecasts=h,
-                          h_true=pzs[-1],
+                          h_true=h[-1],
+                          h_pred=None,
                           show_wells=True,
                           fig_file=jp(fig_data_dir, 'all_whpa.png'))
         # Initiate h pca object
