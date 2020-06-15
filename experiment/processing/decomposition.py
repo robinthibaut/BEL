@@ -32,7 +32,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
+def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -93,16 +93,23 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, test_roots=None):
         bel_dir = base_dir
 
     if base:  # If base folder
-        try:
-            with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
-                roots = f.read().splitlines()
-                new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
-                sub_dir = jp(bel_dir, new_dir)
-                if wel_comb is None:
-                    return base_dir
-        except FileNotFoundError:
-            sub_dir = base_dir  # Back to the base dir
-            roots = None
+        if training_roots is None:
+            try:
+                with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
+                    roots = f.read().splitlines()
+                    new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+                    sub_dir = jp(bel_dir, new_dir)
+                    if wel_comb is None:
+                        return base_dir
+            except FileNotFoundError:
+                sub_dir = base_dir  # Back to the base dir
+                roots = None
+        else:
+            roots = training_roots
+            new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, new_dir)
+            if wel_comb is None:
+                return base_dir
     else:  # Otherwise we start from 0.
         new_dir = str(uuid.uuid4())  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
