@@ -20,7 +20,7 @@ def combinator(combi):
     return cb
 
 
-def scan_root(root):
+def scan_root(training, obs):
     """Takes a root name and performs decomposition and UQ with all wels combinations"""
     wels = Wels()  # Load wels data from base
     comb = wels.combination  # Get default combination (all)
@@ -28,7 +28,7 @@ def scan_root(root):
 
     for c in belcomb:
         try:
-            sf = dcp.bel(test_roots=root, wel_comb=c)
+            sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c)
 
             uq = UncertaintyQuantification(study_folder=sf, wel_comb=c)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -40,16 +40,16 @@ def scan_root(root):
             print(ex)
 
 
-def scan_roots(roots, roots_):
+def scan_roots(training, obs):
     """Scan all roots and perform base decomposition"""
 
-    if not isinstance(roots_, (list, tuple, np.array)):
-        roots_ = [roots_]
+    if not isinstance(obs, (list, tuple, np.array)):
+        obs = [obs]
 
-    for r_ in roots_:
+    for r_ in obs:
         try:
 
-            sf = dcp.bel(training_roots=roots, test_roots=r_, wel_comb=None)
+            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=None)
 
             uq = UncertaintyQuantification(study_folder=sf, wel_comb=None)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -90,14 +90,14 @@ if __name__ == '__main__':
     md = Directories.hydro_res_dir
     roots_training = os.listdir(md)[:200]  # List 100 roots
 
-    roots_os = os.listdir(md)[200:300]
+    roots_obs = os.listdir(md)[200:300]
 
     # Perform base decomposition
-    scan_roots(roots)
+    scan_roots(training=roots_training, obs=roots_obs)
 
     # Perform all wel combinations
-    for r in roots:
-        scan_root(r)
+    for r in roots_obs:
+        scan_root(training=roots_training, obs=roots_obs)
 
     scan_root('0128284351704e91a8521cfc8c535df8')
 
