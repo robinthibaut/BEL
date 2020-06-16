@@ -77,7 +77,6 @@ class UncertaintyQuantification:
         d_pc_training, d_pc_prediction = self.d_pco.pca_refresh(dnc0)
 
         h_pc_training, h_pc_prediction = self.h_pco.pca_refresh(hnc0)
-        # h_pc_prediction = np.load(jp(self.res_dir, 'hppc.npy'))
 
         # CCA plots
         d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)

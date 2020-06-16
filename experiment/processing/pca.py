@@ -5,6 +5,8 @@
 Collection of functions to use the PCA class from scikit-learn.
 """
 
+import os
+import joblib
 import numpy as np
 from sklearn.decomposition import PCA
 
@@ -124,8 +126,6 @@ class PCAIO:
         else:
             return pc_training
 
-
-
     def pc_random(self, n_posts):
         """
         Randomly selects PC components from the original training matrix dtp
@@ -150,3 +150,8 @@ class PCAIO:
         inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
 
         return inv
+
+    def reset_(self):
+        self.predict_pc = None
+        self.predict_physical = None
+        joblib.dump(self, os.path.join(self.directory, f'{self.name}_pca.pkl'))
