@@ -102,7 +102,7 @@ if __name__ == '__main__':
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    # dcp.roots_pca(roots=roots_training, h_pca_obj=obj)
+    # dcp.base_pca(roots=roots_training, h_pca_obj=obj)
 
     # Perform base decomposition on the m roots
     scan_roots(training=roots_training, obs=roots_obs, target_pca=obj)
