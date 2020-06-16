@@ -21,31 +21,6 @@ def combinator(combi):
     return cb
 
 
-def scan_root(training, obs, target_pca=None):
-    """Takes a root name and performs decomposition and UQ with all wels combinations"""
-    wels = Wels()  # Load wels data from base
-    comb = wels.combination  # Get default combination (all)
-    belcomb = combinator(comb)
-
-    if target_pca is not None:
-        base_dir = target_pca
-    else:
-        base_dir = None
-
-    for c in belcomb:
-        try:
-            sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, target_pca=target_pca)
-
-            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
-            uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-            uq.c0(write_vtk=0)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
-            # uq.binary_stack()  # Binary stack
-            # uq.kernel_density()  # Kernel density
-        except Exception as ex:
-            print(ex)
-
-
 def scan_roots(training, obs, target_pca=None):
     """Scan all roots and perform base decomposition"""
 
@@ -57,14 +32,31 @@ def scan_roots(training, obs, target_pca=None):
     else:
         base_dir = None
 
-    for r_ in obs:
+    # for r_ in obs:
+    #     try:
+    #
+    #         sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=None, target_pca=target_pca)
+    #
+    #         uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
+    #         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+    #
+    #     except Exception as ex:
+    #         print(ex)
+
+    wels = Wels()  # Load wels data from base
+    comb = wels.combination  # Get default combination (all)
+    belcomb = combinator(comb)
+
+    for c in belcomb:
         try:
+            sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, target_pca=target_pca)
 
-            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=None, target_pca=target_pca)
-
-            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
+            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-
+            uq.c0(write_vtk=0)  # Extract 0 contours
+            uq.mhd()  # Modified Hausdorff
+            # uq.binary_stack()  # Binary stack
+            # uq.kernel_density()  # Kernel density
         except Exception as ex:
             print(ex)
 
@@ -100,20 +92,17 @@ if __name__ == '__main__':
     # TODO there is a strange WHPA in the lot
     md = Directories.hydro_res_dir
 
-    roots_training = os.listdir(md)[:200]  # List 100 roots
-    roots_obs = os.listdir(md)[200:300]
+    roots_training = os.listdir(md)[:200]  # List of n training roots
+    roots_obs = os.listdir(md)[200:300]  # List of m observation roots
 
+    # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(Directories.forecasts_dir, 'base_')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
     # dcp.roots_pca(roots=roots_training, h_pca_obj=obj)
 
-    # Perform base decomposition
+    # Perform base decomposition on the m roots
     scan_roots(training=roots_training, obs=roots_obs, target_pca=obj)
-
-    # Perform all wel combinations
-    for r in roots_obs:
-        scan_root(training=roots_training, obs=roots_obs, target_pca=obj)
 
 
 
