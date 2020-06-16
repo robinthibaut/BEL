@@ -72,7 +72,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
+def bel(wel_comb=None, training_roots=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -171,7 +171,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
-    nho = h_pco.ncomp
+    nho = h_pco.ncomp  # Number of components to keep
     # Load
     _, pzs, _ = fops.load_res(roots=test_roots, h=True)
     # Compute WHPA
@@ -181,6 +181,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
     else:
+        # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
     # Plot

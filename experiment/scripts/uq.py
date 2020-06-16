@@ -1,7 +1,7 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
-import shutil
+import joblib
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,33 +33,19 @@ def scan_roots(training, obs, base_dir=None):
         base_dir = None
 
     comb = Wels.combination  # Get default combination (all)
-    belcomb = combinator(comb)
+    belcomb = combinator(comb)  # Get all possible combinations
 
-    for r_ in obs:
-        for c in belcomb:
-            # try:
-
+    for r_ in obs:  # For each observation root
+        for c in belcomb:  # For each wel combination
+            # PCA decomposition + CCA
             sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, base_dir=base_dir)
+            # Uncertainty analysis
             uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
-
-            # except Exception as ex:
-            #     print(ex)
-
-    # for c in belcomb:
-    #     try:
-    #         sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, base_dir=base_dir)
-    #
-    #         uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
-    #         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-    #         uq.c0(write_vtk=0)  # Extract 0 contours
-    #         uq.mhd()  # Modified Hausdorff
-    #         # uq.binary_stack()  # Binary stack
-    #         # uq.kernel_density()  # Kernel density
-    #     except Exception as ex:
-    #         print(ex)
+        # Resets the target PCA object' predictions to None before moving on to the next root
+        joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
 
 def value_info(root):
@@ -89,7 +75,6 @@ def value_info(root):
 
 
 if __name__ == '__main__':
-    # TODO restructure BEL to have more control on root picking
     # TODO there is a strange WHPA in the lot
     md = Directories.hydro_res_dir
 
