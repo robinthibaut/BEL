@@ -46,8 +46,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
-        # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-        d_pco.ncomp = 50
+        d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
