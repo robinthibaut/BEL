@@ -154,8 +154,9 @@ def bel(wel_comb=None, training_roots=None, test_roots=None):
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, directory=obj_dir)
     d_pco.pca_training_transformation()
-    d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+    # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
+    d_pco.ncomp = 50
     ndo = d_pco.ncomp
     # Load test
     tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots, d=True)
