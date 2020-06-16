@@ -134,7 +134,7 @@ def remove_bkt(res_dir):
         shutil.rmtree(roots[index])
 
 
-def load_res(res_dir=None, n=0, roots=None, test_roots=None):
+def load_res(res_dir=None, roots=None, test_roots=None, d=False, h=False):
     """
     Loads results from main results folder.
     :param test_roots: Specified roots for testing
@@ -148,65 +148,31 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
     if res_dir is None:
         res_dir = Directories.hydro_res_dir
 
-    # TODO: Split this function to generalize and load one feature at a time
-    # Using deque to insert desired test directories at the end of the lists.
-    # Maybe overkill but fun to use
-    if test_roots is None:
-        test_roots = []
-
-    bkt_files = deque()  # Breakthrough curves files
-    sd_files = deque()  # Signed-distance files
-    hk_files = deque()  # Hydraulic conductivity files
+    bkt_files = []  # Breakthrough curves files
+    sd_files = []  # Signed-distance files
+    hk_files = []  # Hydraulic conductivity files
     # r=root, d=directories, f = files
-    if roots is None:
-        roots = deque()
-        for r, d, f in os.walk(res_dir, topdown=False):
-            # Adds the data files to the lists, which will be loaded later
-            if 'bkt.npy' in f and 'pz.npy' in f and 'hk0.npy' in f:
-                if os.path.basename(r) not in test_roots:
-                    bkt_files.appendleft(jp(r, 'bkt.npy'))
-                    sd_files.appendleft(jp(r, 'pz.npy'))
-                    hk_files.appendleft(jp(r, 'hk0.npy'))
-                    roots.appendleft(r)
-                else:
-                    bkt_files.append(jp(r, 'bkt.npy'))
-                    sd_files.append(jp(r, 'pz.npy'))
-                    hk_files.append(jp(r, 'hk0.npy'))
-                    roots.append(r)
-
-            else:  # If one of the files is missing, deletes the sub-folder
-                try:
-                    if r != res_dir and 'vtk' not in r:  # Make sure to not delete the main results directory !
-                        shutil.rmtree(r)
-                except TypeError:
-                    pass
-        if n:  # Random choices
-            nt = len(test_roots)
-            if nt:
-                folders = np.random.choice(np.arange(len(roots)-nt), n-nt)  # Randomly selects n folders
-                bkt_files = np.concatenate((np.array(bkt_files)[folders], list(bkt_files)[-nt:]))
-                sd_files = np.concatenate((np.array(sd_files)[folders], list(sd_files)[-nt:]))
-                roots = np.concatenate((np.array(roots)[folders], list(roots)[-nt:]))
-            else:
-                folders = np.random.choice(np.arange(len(roots)), n)  # Randomly selects n folders
-                bkt_files = np.array(bkt_files)[folders]
-                sd_files = np.array(sd_files)[folders]
-                roots = np.array(roots)[folders]
 
     if roots is None and test_roots is not None:
         if not isinstance(test_roots, (list, tuple)):
             roots = [test_roots]
-        [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
-        [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
-        [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
+        else:
+            roots = test_roots
     else:
         if not isinstance(roots, (list, tuple)):
             roots = [roots]
-        [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
-        [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
-        [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
 
-    tpt = list(map(np.load, bkt_files))  # Re-load transport curves
-    sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
+    [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
+    [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
+    [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
+
+    if d:
+        tpt = list(map(np.load, bkt_files))  # Re-load transport curves
+    else:
+        tpt = None
+    if h:
+        sd = np.array(list(map(np.load, sd_files)))  # Load signed distance
+    else:
+        sd = None
 
     return tpt, sd, roots

@@ -33,10 +33,10 @@ from experiment.processing.pca import PCAIO
 
 
 def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
-    # Loads the results:
-    tc0, pzs, _ = fops.load_res(roots=roots)
 
     if d_pca_obj is not None:
+        # Loads the results:
+        tc0, _, _ = fops.load_res(roots=roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -51,6 +51,8 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         joblib.dump(d_pco, d_pca_obj)
 
     if h_pca_obj is not None:
+        # Loads the results:
+        _, pzs, _ = fops.load_res(roots=roots, h=True)
         # Load parameters:
         x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
         sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
@@ -123,7 +125,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
     tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots)
+        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -155,7 +157,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
     # PCA on transport curves
     ndo = d_pco.ncomp
     # Load test
-    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots)
+    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
     tcp = tcp[:, selection, :]
@@ -171,7 +173,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp
     # Load
-    _, pzs, _ = fops.load_res(roots=test_roots)
+    _, pzs, _ = fops.load_res(roots=test_roots, h=True)
     # Compute WHPA
     h = np.array([sd.compute(pp) for pp in pzs])
     h_pco.pca_test_transformation(h)
