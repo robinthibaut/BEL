@@ -146,7 +146,7 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
 
     # If no res_dir specified, then uses default
     if res_dir is None:
-        res_dir = Directories().hydro_res_dir
+        res_dir = Directories.hydro_res_dir
 
     # TODO: Split this function to generalize and load one feature at a time
     # Using deque to insert desired test directories at the end of the lists.
@@ -195,6 +195,7 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
     else:
         if not isinstance(roots, (list, tuple)):
             roots = [roots]
+        roots = roots + test_roots
         [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]

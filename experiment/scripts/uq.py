@@ -15,7 +15,7 @@ def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
     'None' will indicate to use the original combination.
     """
-    cb = [list(itertools.combinations(combi, i)) for i in range(1, combi)]  # Get all possible wel combinations
+    cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1]+1)]  # Get all possible wel combinations
     cb = [item for sublist in cb for item in sublist]  # Flatten and add None to first compute the
     # 'base'
     return cb
@@ -32,33 +32,36 @@ def scan_roots(training, obs, target_pca=None):
     else:
         base_dir = None
 
-    # for r_ in obs:
-    #     try:
-    #
-    #         sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=None, target_pca=target_pca)
-    #
-    #         uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
-    #         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-    #
-    #     except Exception as ex:
-    #         print(ex)
-
-    wels = Wels()  # Load wels data from base
-    comb = wels.combination  # Get default combination (all)
+    comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)
 
-    for c in belcomb:
-        try:
-            sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, target_pca=target_pca)
+    for r_ in obs:
+        for c in belcomb:
+            try:
 
-            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
-            uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-            uq.c0(write_vtk=0)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
-            # uq.binary_stack()  # Binary stack
-            # uq.kernel_density()  # Kernel density
-        except Exception as ex:
-            print(ex)
+                sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, target_pca=target_pca)
+
+                uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
+                uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+
+                uq.c0(write_vtk=0)  # Extract 0 contours
+                uq.mhd()  # Modified Hausdorff
+
+            except Exception as ex:
+                print(ex)
+
+    # for c in belcomb:
+    #     try:
+    #         sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, target_pca=target_pca)
+    #
+    #         uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
+    #         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+    #         uq.c0(write_vtk=0)  # Extract 0 contours
+    #         uq.mhd()  # Modified Hausdorff
+    #         # uq.binary_stack()  # Binary stack
+    #         # uq.kernel_density()  # Kernel density
+    #     except Exception as ex:
+    #         print(ex)
 
 
 def value_info(root):
@@ -96,7 +99,7 @@ if __name__ == '__main__':
     roots_obs = os.listdir(md)[200:300]  # List of m observation roots
 
     # Perform PCA on target (whpa) and store the object in a base folder
-    obj_path = os.path.join(Directories.forecasts_dir, 'base_')
+    obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
     # dcp.roots_pca(roots=roots_training, h_pca_obj=obj)

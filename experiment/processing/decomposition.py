@@ -35,8 +35,7 @@ from experiment.processing.pca import PCAIO
 def roots_pca(roots, h_pca_obj, n_test=1):
 
     # Load parameters:
-    fc = Focus()
-    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
+    x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     # Loads the results:
@@ -84,30 +83,21 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     """
 
     # Load parameters:
-    fc = Focus()
-    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
+    x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
-
-    # Wels data
-    wels = Wels()
 
     n_sim = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
 
     if wel_comb is not None:
-        wels.combination = wel_comb
+        Wels.combination = wel_comb
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=wels.combination)  # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=Wels.combination)  # Initiate Plot instance
 
     # Directories
     md = Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
     # Parse test_roots
-    if isinstance(test_roots, (list, tuple)):  # If multiple roots given
-        n_test = len(test_roots)  # TODO: fix when multiple test roots
-        for f in test_roots:
-            if not os.path.exists(jp(res_dir, f)):
-                warnings.warn('Specified folder {} does not exist'.format(jp(res_dir, f)))
     if isinstance(test_roots, str):  # If only one root given
         if os.path.exists(jp(res_dir, test_roots)):
             test_roots = [test_roots]
@@ -115,30 +105,12 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
-    if n_test > 1:
-        bel_dir = md.forecasts_dir  # Directory in which to load forecasts
-    else:
-        bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
+    bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    if not os.path.exists(base_dir):
-        fops.dirmaker(base_dir)
-        bel_dir = base_dir
-
-    if training_roots is None:
-        try:
-            with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
-                roots = f.read().splitlines()
-                new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
-                sub_dir = jp(bel_dir, new_dir)
-        except FileNotFoundError:
-            sub_dir = base_dir  # Back to the base dir
-            roots = None
-    else:
-        roots = training_roots
-        new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
-        sub_dir = jp(bel_dir, new_dir)
+    new_dir = ''.join(list(map(str, Wels.combination)))  # sub-directory for forecasts
+    sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
     obj_dir = jp(sub_dir, 'obj')
@@ -148,15 +120,15 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     fig_pred_dir = jp(sub_dir, 'uq')
     # TODO: pass them to next class
 
-    # %%
+    # %% Creates directories
 
-    # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    tsub = jp(base_dir, 'tc.npy')  # Refined breakthrough curves data file
+    tsub = jp(obj_dir, 'tc.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots,
+        tc0, pzs, roots_ = fops.load_res(res_dir=res_dir,
+                                         roots=training_roots,
                                          test_roots=test_roots)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
         # pzs = WHPA
@@ -171,14 +143,14 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
         # Save file roots
         if not os.path.exists(jp(base_dir, 'roots.dat')):
             with open(jp(base_dir, 'roots.dat'), 'w') as f:
-                for r in roots_:
+                for r in roots_[:-n_test]:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + '\n')
 
     else:
         tc = np.load(tsub)
 
     # %% Select wels:
-    selection = [wc - 1 for wc in wels.combination]
+    selection = [wc - 1 for wc in Wels.combination]
     tc = tc[:, selection, :]
 
     # Plot d:
