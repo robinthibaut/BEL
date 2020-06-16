@@ -158,7 +158,7 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
     sd_files = deque()  # Signed-distance files
     hk_files = deque()  # Hydraulic conductivity files
     # r=root, d=directories, f = files
-    if not roots:
+    if roots is None:
         roots = deque()
         for r, d, f in os.walk(res_dir, topdown=False):
             # Adds the data files to the lists, which will be loaded later
@@ -192,10 +192,16 @@ def load_res(res_dir=None, n=0, roots=None, test_roots=None):
                 bkt_files = np.array(bkt_files)[folders]
                 sd_files = np.array(sd_files)[folders]
                 roots = np.array(roots)[folders]
+
+    if roots is None and test_roots is not None:
+        if not isinstance(test_roots, (list, tuple)):
+            roots = [test_roots]
+        [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
+        [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
+        [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]
     else:
         if not isinstance(roots, (list, tuple)):
             roots = [roots]
-        roots = roots + test_roots
         [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
         [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]
         [hk_files.append(jp(res_dir, r, 'hk0.npy')) for r in roots]

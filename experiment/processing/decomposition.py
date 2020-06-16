@@ -128,8 +128,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, pzs, roots_ = fops.load_res(res_dir=res_dir,
-                                         roots=training_roots,
-                                         test_roots=test_roots)
+                                         roots=training_roots)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
