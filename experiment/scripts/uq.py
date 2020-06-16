@@ -15,8 +15,8 @@ def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
     'None' will indicate to use the original combination.
     """
-    cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1])]  # Get all possible wel combinations
-    cb = [None] + [item for sublist in cb for item in sublist]  # Flatten and add None to first compute the
+    cb = [list(itertools.combinations(combi, i)) for i in range(1, combi)]  # Get all possible wel combinations
+    cb = [item for sublist in cb for item in sublist]  # Flatten and add None to first compute the
     # 'base'
     return cb
 

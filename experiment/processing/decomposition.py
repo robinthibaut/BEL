@@ -70,7 +70,7 @@ def roots_pca(roots, h_pca_obj, n_test=1):
     joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None, test_roots=None, target_pca=None):
+def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots=None, target_pca=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -82,9 +82,6 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
     :param base: Flag for base folder
 
     """
-
-    if base is None:
-        base = 1
 
     # Load parameters:
     fc = Focus()
@@ -123,35 +120,25 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
     else:
         bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
 
-    base_dir = jp(bel_dir, 'base')  # Base directory that will contain target objects and processed data
-    base_obj = jp(base_dir, 'obj')
+    base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
     if not os.path.exists(base_dir):
         fops.dirmaker(base_dir)
         bel_dir = base_dir
 
-    if base:  # If base folder
-        if training_roots is None:
-            try:
-                with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
-                    roots = f.read().splitlines()
-                    new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
-                    sub_dir = jp(bel_dir, new_dir)
-                    if wel_comb is None:
-                        return base_dir
-            except FileNotFoundError:
-                sub_dir = base_dir  # Back to the base dir
-                roots = None
-        else:
-            roots = training_roots
-            new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
-            sub_dir = jp(bel_dir, new_dir)
-            # if wel_comb is None:
-            #     return base_dir
-    else:  # Otherwise we start from 0.
-        new_dir = str(uuid.uuid4())  # sub-directory for forecasts
+    if training_roots is None:
+        try:
+            with open(jp(base_dir, 'roots.dat')) as f:  # Load roots (training data + test)
+                roots = f.read().splitlines()
+                new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
+                sub_dir = jp(bel_dir, new_dir)
+        except FileNotFoundError:
+            sub_dir = base_dir  # Back to the base dir
+            roots = None
+    else:
+        roots = training_roots
+        new_dir = ''.join(list(map(str, wels.combination)))  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
-        roots = None
 
     # %% Folders
     obj_dir = jp(sub_dir, 'obj')
@@ -166,7 +153,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
     # Creates directories
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    tsub = jp(base_obj, 'tc.npy')  # Refined breakthrough curves data file
+    tsub = jp(base_dir, 'tc.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n_sim, roots=roots,
@@ -177,8 +164,6 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
 
         # Subdivide d in an arbitrary number of time steps:
         tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
-
-        # tc = np.random.rand(n_sim, 6, 12)
 
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
@@ -216,7 +201,7 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
 
     # PCA on signed distance
     if target_pca is None:
-        if not os.path.exists(jp(base_obj, 'h_pca.pkl')):
+        if not os.path.exists(jp(base_dir, 'h_pca.pkl')):
             # Compute signed distance on pzs.
             # h is the matrix of target feature on which PCA will be performed.
             h = np.array([sd.compute(pp) for pp in pzs])
@@ -238,12 +223,17 @@ def bel(n_training=200, n_test=1, wel_comb=None, base=None, training_roots=None,
             # Split
             h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
             # Dump
-            joblib.dump(h_pco, jp(base_obj, 'h_pca.pkl'))
+            joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
             # Plot
-            plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
-            plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
+            plot.explained_variance(h_pco.operator,
+                                    n_comp=nho,
+                                    fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+            plot.pca_scores(h_pc_training,
+                            h_pc_prediction,
+                            n_comp=nho,
+                            fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
         else:
-            h_pco = joblib.load(jp(base_obj, 'h_pca.pkl'))
+            h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
             nho = h_pco.ncomp
             h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
     else:
