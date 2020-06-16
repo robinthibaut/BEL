@@ -75,11 +75,9 @@ class PCAIO:
         """
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
         # Transform prediction data into principal components
-        if self.predict_physical:
-            pc_prediction = self.operator.transform(self.predict_physical)
-            self.predict_pc = pc_prediction
-        else:
-            pc_prediction = []
+
+        pc_prediction = self.operator.transform(self.predict_physical)
+        self.predict_pc = pc_prediction
 
         return pc_prediction
 
