@@ -121,7 +121,7 @@ class UncertaintyQuantification:
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.d_pc_obs = self.d_pco.predict_pc[sample_n]
-        self.shape = self.h_pco.raw_data.shape
+        self.shape = self.h_pco.shape
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 

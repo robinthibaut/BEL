@@ -21,6 +21,8 @@ class PCAIO:
         self.directory = directory
         self.name = name  # str, name of the object
 
+        self.shape = training.shape
+
         self.operator = None  # PCA operator
         self.ncomp = None  # Number of components
 
