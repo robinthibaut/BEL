@@ -70,23 +70,19 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
+def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
     :param wel_comb: List of injection wels used to make prediction
     :param test_roots: Folder paths containing outputs to be predicted
-    :param n_training: Number of samples used to train the model
-    :param n_test: Number of samples on which to perform prediction
 
     """
 
     # Load parameters:
     x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
-
-    n_sim = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
 
     if wel_comb is not None:
         Wels.combination = wel_comb
@@ -101,7 +97,6 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     if isinstance(test_roots, str):  # If only one root given
         if os.path.exists(jp(res_dir, test_roots)):
             test_roots = [test_roots]
-            n_test = 1
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
@@ -169,8 +164,8 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
     # Plot d:
-    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[n_sim-1])
-    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[n_sim-1])
+    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))

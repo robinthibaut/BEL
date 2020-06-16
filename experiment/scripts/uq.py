@@ -21,14 +21,14 @@ def combinator(combi):
     return cb
 
 
-def scan_roots(training, obs, target_pca=None):
+def scan_roots(training, obs, base_dir=None):
     """Scan all roots and perform base decomposition"""
 
     if not isinstance(obs, (list, tuple, np.array)):
         obs = [obs]
 
-    if target_pca is not None:
-        base_dir = target_pca
+    if base_dir is not None:
+        base_dir = base_dir
     else:
         base_dir = None
 
@@ -39,7 +39,7 @@ def scan_roots(training, obs, target_pca=None):
         for c in belcomb:
             try:
 
-                sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, target_pca=target_pca)
+                sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, base_dir=base_dir)
 
                 uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
                 uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -52,7 +52,7 @@ def scan_roots(training, obs, target_pca=None):
 
     # for c in belcomb:
     #     try:
-    #         sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, target_pca=target_pca)
+    #         sf = dcp.bel(training_roots=training, test_roots=obs, wel_comb=c, base_dir=base_dir)
     #
     #         uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
     #         uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
@@ -102,10 +102,10 @@ if __name__ == '__main__':
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    dcp.base_pca(roots=roots_training, h_pca_obj=obj)
+    # dcp.base_pca(roots=roots_training, h_pca_obj=obj)
 
     # Perform base decomposition on the m roots
-    scan_roots(training=roots_training, obs=roots_obs, target_pca=obj)
+    scan_roots(training=roots_training, obs=roots_obs, base_dir=obj_path)
 
 
 
