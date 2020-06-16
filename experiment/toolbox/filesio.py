@@ -140,7 +140,6 @@ def load_res(res_dir=None, roots=None, test_roots=None, d=False, h=False):
     :param test_roots: Specified roots for testing
     :param roots: Specified roots for training
     :param res_dir: main directory containing results sub-directories
-    :param n: if != 0, will randomly select n sub-folders from res_tree
     :return: tp, sd, roots
     """
 

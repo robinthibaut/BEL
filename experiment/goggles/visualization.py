@@ -349,7 +349,7 @@ class Plot:
         :param vn: Number of components to inverse-transform.
         :return:
         """
-        shape = pca_o.raw_data.shape
+        shape = pca_o.shape
         v_pc = pca_o.training_pc
         v_pred = (np.dot(v_pc[e, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
         self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)

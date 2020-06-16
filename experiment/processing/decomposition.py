@@ -175,9 +175,13 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, base_dir=None):
     # Load
     _, pzs, _ = fops.load_res(roots=test_roots, h=True)
     # Compute WHPA
-    h = np.array([sd.compute(pp) for pp in pzs])
-    h_pco.pca_test_transformation(h)
-    h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+    if h_pco.predict_pc is None:
+        h = np.array([sd.compute(pp) for pp in pzs])
+        h_pco.pca_test_transformation(h)
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
+    else:
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
     # Plot
     plot.explained_variance(h_pco.operator,

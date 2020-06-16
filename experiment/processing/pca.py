@@ -103,22 +103,28 @@ class PCAIO:
 
         return evr[n_c - 1]
 
-    def pca_refresh(self, n_comp):
+    def pca_refresh(self, n_comp=None):
         """
         Given a number of components to keep, returns the PC array with the corresponding shape.
         :param n_comp:
         :return:
         """
 
-        self.ncomp = n_comp  # Assign the number of components in the class for later use
+        if n_comp is not None:
+            self.ncomp = n_comp  # Assign the number of components in the class for later use
 
         pc_training = self.training_pc.copy()  # Reloads the original training components
-        pc_training = pc_training[:, :n_comp]  # Cut
+        pc_training = pc_training[:, :self.ncomp]  # Cut
 
-        pc_prediction = self.predict_pc.copy()  # Reloads the original test components
-        pc_prediction = pc_prediction[:, :n_comp]  # Cut
+        if self.predict_pc is not None:
+            pc_prediction = self.predict_pc.copy()  # Reloads the original test components
+            pc_prediction = pc_prediction[:, :self.ncomp]  # Cut
+            return pc_training, pc_prediction
 
-        return pc_training, pc_prediction
+        else:
+            return pc_training
+
+
 
     def pc_random(self, n_posts):
         """

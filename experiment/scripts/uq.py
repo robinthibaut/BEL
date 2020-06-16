@@ -37,18 +37,16 @@ def scan_roots(training, obs, base_dir=None):
 
     for r_ in obs:
         for c in belcomb:
-            try:
+            # try:
 
-                sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, base_dir=base_dir)
+            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, base_dir=base_dir)
+            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
+            uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+            uq.c0(write_vtk=0)  # Extract 0 contours
+            uq.mhd()  # Modified Hausdorff
 
-                uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=None)
-                uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
-
-                uq.c0(write_vtk=0)  # Extract 0 contours
-                uq.mhd()  # Modified Hausdorff
-
-            except Exception as ex:
-                print(ex)
+            # except Exception as ex:
+            #     print(ex)
 
     # for c in belcomb:
     #     try:
@@ -102,7 +100,7 @@ if __name__ == '__main__':
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    dcp.base_pca(roots=roots_training, h_pca_obj=obj)
+    # dcp.base_pca(roots=roots_training, h_pca_obj=obj)
 
     # Perform base decomposition on the m roots
     scan_roots(training=roots_training, obs=roots_obs, base_dir=obj_path)
