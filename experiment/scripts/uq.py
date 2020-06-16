@@ -21,7 +21,7 @@ def combinator(combi):
     return cb
 
 
-def scan_roots(training, obs, base_dir=None):
+def scan_roots(training, obs, combinations, base_dir=None):
     """Scan all roots and perform base decomposition"""
 
     if not isinstance(obs, (list, tuple, np.array)):
@@ -32,18 +32,19 @@ def scan_roots(training, obs, base_dir=None):
     else:
         base_dir = None
 
-    comb = Wels.combination  # Get default combination (all)
-    belcomb = combinator(comb)  # Get all possible combinations
+    # Resets the target PCA object' predictions to None before starting
+    joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
     for r_ in obs:  # For each observation root
-        for c in belcomb:  # For each wel combination
+        for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c, base_dir=base_dir)
+            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
             uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
+
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
@@ -86,9 +87,10 @@ if __name__ == '__main__':
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
     # dcp.base_pca(roots=roots_training, h_pca_obj=obj)
-
+    comb = Wels.combination  # Get default combination (all)
+    belcomb = combinator(comb)  # Get all possible combinations
     # Perform base decomposition on the m roots
-    scan_roots(training=roots_training, obs=roots_obs, base_dir=obj_path)
+    scan_roots(training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
 
 
 

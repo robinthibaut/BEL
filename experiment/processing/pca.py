@@ -155,3 +155,4 @@ class PCAIO:
         self.predict_pc = None
         self.predict_physical = None
         joblib.dump(self, os.path.join(self.directory, f'{self.name}_pca.pkl'))
+        print(f'Target properties reset to {self.predict_pc}')
