@@ -125,11 +125,10 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load training data
-    tsub = jp(obj_dir, 'tc.npy')  # Refined breakthrough curves data file
+    tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.load_res(res_dir=res_dir,
-                                         roots=training_roots)
+        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -153,24 +152,25 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     # %%  PCA
     # PCA is performed with maximum number of components.
     # We choose an appropriate number of components to keep later on.
+
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, directory=obj_dir)
     d_pco.pca_training_transformation()
     d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-    # Dump
-    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
     # PCA on transport curves
     ndo = d_pco.ncomp
-    # Load
+    # Load test
     tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
+    tcp = tcp[:, selection, :]
     d_pco.pca_test_transformation(tcp)  # Performs transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Performs transformation on training curves
+    # Save the d PC object.
+    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
     # Plot d:
     mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[n_sim-1])
     mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[n_sim-1])
-
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
@@ -194,23 +194,12 @@ def bel(n_training=200, n_test=1, wel_comb=None, training_roots=None, test_roots
     # Compares true value with inverse transformation from PCA
     # Explained variance plots
     plot.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-
     # Scores plots
     plot.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
 
-    # Assign final n_comp for PCA
-    n_d_pc_comp = ndo
-    n_h_pc_comp = nho
-
-    # Cut desired number of PC components
-    d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
-
-    # Save the d PC object.
-    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
-
     # %% CCA
 
-    n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
+    n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
