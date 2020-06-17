@@ -15,5 +15,5 @@ if __name__ == '__main__':
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.shape)
 
-    mplot.whp(h_training, show=True)
-    
+    mplot.whp(h_training, show=True,
+              fig_file=os.path.join(Directories.forecasts_dir, 'base', 'whpa_training.png'))

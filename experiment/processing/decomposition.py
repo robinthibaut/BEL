@@ -71,8 +71,9 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
                 mp.whp([e],
                        lw=1,
                        fig_file=jp(os.path.dirname(h_pca_obj), ''.join((r[i], '.png'))))
+                np.save(jp(os.path.dirname(h_pca_obj), ''.join((r[i], '.npy'))), e)
 
-            return
+            # return
 
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, directory=os.path.dirname(h_pca_obj))
