@@ -6,11 +6,11 @@ from experiment.toolbox import filesio
 
 if __name__ == '__main__':
     # VTK
-    mi = ModelVTK('0128284351704e91a8521cfc8c535df8')
+    mi = ModelVTK('6623dd4fb5014a978d59b9acb03946d2')
     mi.flow_vtk()
     mi.transport_vtk()
     mi.conc_vtk()
-    # mi.particles_vtk(path=0)
+    mi.particles_vtk(path=1)
     mi.wels_vtk()
 
 

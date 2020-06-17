@@ -276,6 +276,10 @@ class Plot:
         # Plot results
         if h is None:
             h = []
+
+        if not isinstance(h, (list, tuple, np.array)):
+            h = np.array(h)
+
         for z in h:  # h is the n square WHPA matrix
             plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
@@ -312,7 +316,6 @@ class Plot:
 
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
-            plt.close()
 
         if show:
             plt.show()
@@ -336,7 +339,6 @@ class Plot:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
-            plt.close()
         if show:
             plt.show()
             plt.close()

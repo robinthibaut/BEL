@@ -32,7 +32,7 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
+def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
 
     if d_pca_obj is not None:
         # Loads the results:
@@ -52,7 +52,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
 
     if h_pca_obj is not None:
         # Loads the results:
-        _, pzs, _ = fops.load_res(roots=roots, h=True)
+        _, pzs, r = fops.load_res(roots=roots, h=True)
         # Load parameters:
         x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
         sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
@@ -61,7 +61,17 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
         h = np.array([sd.compute(pp) for pp in pzs])
-        # Plot all WHPP
+
+        if check:
+            # Load parameters:
+            x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=Wels.combination)  # Initiate Plot instance
+
+            for i, e in enumerate(h):
+                mp.whp(e, fig_file=jp(os.path.dirname(h_pca_obj), ''.join((r[i], '.png'))))
+
+            return
+
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, directory=os.path.dirname(h_pca_obj))
         # Transform
@@ -72,7 +82,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(wel_comb=None, training_roots=None, test_roots=None):
+def bel(wel_comb=None, training_roots=None, test_roots=None, check=False):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -178,6 +188,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None):
     # Compute WHPA
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
+        np.save(jp(base_dir, ''.join((test_roots[0], '_whpa'))), h)
         h_pco.pca_test_transformation(h)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))

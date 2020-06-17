@@ -9,8 +9,8 @@ only those possibilities that cannot be falsified with data as modeled in the li
 
 If simpler models can be run more frequently
 when uncertainty is a critical objective (such as in forecasts), then simpler models may
-be preferred if the difference between a simple model and a complex model is small com
-pared to all other uncertainties in the model.
+be preferred if the difference between a simple model and a complex model is small
+compared to all other uncertainties in the model.
 - Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 52
 
 """
@@ -53,7 +53,7 @@ def simulation(folder=None):
 
     results_dir = jp(md.hydro_res_dir, res_dir)
     # reload data in old root:
-    results_dir = jp(md.hydro_res_dir, '0128284351704e91a8521cfc8c535df8')
+    results_dir = jp(md.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
 
     grid_dir = md.grid_dir
     # Generates the result directory
@@ -90,6 +90,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('0128284351704e91a8521cfc8c535df8')
+    simulation('6623dd4fb5014a978d59b9acb03946d2')
     end = time.time()
     print((end - start) / 60)
