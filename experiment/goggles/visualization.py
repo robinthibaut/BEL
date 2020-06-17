@@ -277,9 +277,6 @@ class Plot:
         if h is None:
             h = []
 
-        if not isinstance(h, (list, tuple, np.array)):
-            h = np.array(h)
-
         for z in h:  # h is the n square WHPA matrix
             plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
@@ -319,7 +316,8 @@ class Plot:
 
         if show:
             plt.show()
-            plt.close()
+
+        plt.close()
 
     def whp_prediction(self,
                        forecasts,
@@ -341,7 +339,7 @@ class Plot:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
         if show:
             plt.show()
-            plt.close()
+        plt.close()
 
     def h_pca_inverse_plot(self, pca_o, e, vn):
         """
