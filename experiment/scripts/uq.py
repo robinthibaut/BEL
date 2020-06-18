@@ -86,12 +86,12 @@ if __name__ == '__main__':
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=True)
+    # dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
 
-    # comb = Wels.combination  # Get default combination (all)
-    # belcomb = combinator(comb)  # Get all possible combinations
-    # # Perform base decomposition on the m roots
-    # scan_roots(training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
+    comb = Wels.combination  # Get default combination (all)
+    belcomb = combinator(comb)  # Get all possible combinations
+    # Perform base decomposition on the m roots
+    scan_roots(training=roots_training, obs=roots_obs, combinations=[belcomb[-1]], base_dir=obj_path)
 
 
 
