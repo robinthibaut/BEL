@@ -45,6 +45,8 @@ def scan_roots(training, obs, combinations, base_dir=None):
             uq.sample_posterior(n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
+            uq.binary_stack()
+            uq.kernel_density()
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
@@ -96,7 +98,7 @@ if __name__ == '__main__':
     comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
     # Perform base decomposition on the m roots
-    scan_roots(training=roots_training, obs=[roots_obs[0]], combinations=[belcomb[0]], base_dir=obj_path)
+    scan_roots(training=roots_training, obs=[roots_obs[0]], combinations=belcomb, base_dir=obj_path)
 
 
 

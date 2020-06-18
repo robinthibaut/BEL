@@ -132,13 +132,12 @@ class ModelVTK:
 
         ugrid.SetPoints(points)  # Set points
 
-        # Initiate array and give it a name
-        concArray = vtk.vtkDoubleArray()
-        concArray.SetName("conc")
-
         for i in range(1, 7):  # For eaxh injecting well
             conc_dir = jp(self.results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
             fops.dirmaker(conc_dir)
+            # Initiate array and give it a name
+            concArray = vtk.vtkDoubleArray()
+            concArray.SetName(f"conc{i}")
             for j in range(self.concs.shape[1]):  # For each time step
                 # Set array
                 array = np.fliplr(conc0[i - 1, j]).reshape(-1)
