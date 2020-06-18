@@ -357,7 +357,7 @@ class Plot:
         v_pc = pca_o.training_pc
         v_pred = (np.dot(v_pc[e, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
         self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)
-        self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=True)
+        self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=False)
 
         if fig_file is not None:
             plt.savefig(fig_file, dpi=300)
