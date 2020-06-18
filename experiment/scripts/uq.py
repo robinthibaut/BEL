@@ -53,7 +53,7 @@ def value_info(root):
 
     droot = os.path.join(Directories.forecasts_dir, root)
     duq = os.listdir(droot)  # Folders of combinations
-    wid = list(map(str, range(1, 7)))  # Wel identifiers (n)
+    wid = list(map(str, Wels.combination))  # Wel identifiers (n)
     wm = np.zeros(len(wid))  # Summed MHD when well i appears
     cid = np.copy(wm)  # Number of times each wel appears
     for e in duq:
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # belcomb = combinator(comb)  # Get all possible combinations
     # # Perform base decomposition on the m roots
     # scan_roots(training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
-    #
+
 
 
 

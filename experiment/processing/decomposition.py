@@ -85,7 +85,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(wel_comb=None, training_roots=None, test_roots=None, check=False):
+def bel(wel_comb=None, training_roots=None, test_roots=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
