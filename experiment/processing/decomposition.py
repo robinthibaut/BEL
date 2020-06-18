@@ -43,7 +43,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
         tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
         # with n_sim = n_training + n_test
         # PCA on transport curves
-        d_pco = PCAIO(name='d', training=tc, directory=os.path.dirname(d_pca_obj))
+        d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
         d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
         # Dump
@@ -75,7 +75,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
             # return
 
         # Initiate h pca object
-        h_pco = PCAIO(name='h', training=h, directory=os.path.dirname(h_pca_obj))
+        h_pco = PCAIO(name='h', training=h, roots=roots, directory=os.path.dirname(h_pca_obj))
         # Transform
         h_pco.pca_training_transformation()
         # Define number of components to keep

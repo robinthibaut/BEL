@@ -41,6 +41,7 @@ def scan_roots(training, obs, combinations, base_dir=None):
             sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
+            uq.control()  # Compare PCA recoveries
             uq.sample_posterior(n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    # dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
+    dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
 
     comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations

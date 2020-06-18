@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 
 class PCAIO:
     # TODO: add properties
-    def __init__(self, name, training, directory=None):
+    def __init__(self, name, training, roots=None, directory=None):
         """
 
         :param name: name of the parameter on which to perform operations
@@ -22,6 +22,7 @@ class PCAIO:
         """
         self.directory = directory
         self.name = name  # str, name of the object
+        self.roots = roots  # Name of training roots
 
         self.shape = training.shape
 

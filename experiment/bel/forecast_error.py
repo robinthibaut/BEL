@@ -69,9 +69,6 @@ class UncertaintyQuantification:
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.ncomp
         hnc0 = self.h_pco.ncomp
-        # print(d_pco.perc_pca_components(dnc0))
-        # print(h_pco.perc_pca_components(hnc0))
-        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc0, hnc0)
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
@@ -97,6 +94,14 @@ class UncertaintyQuantification:
 
         # Contours
         self.vertices = None
+
+    def control(self, dnc=None, hnc=None):
+        if dnc is None:
+            dnc = self.d_pco.ncomp
+        if hnc is None:
+            hnc = self.h_pco.ncomp
+        # Checking
+        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc, hnc)
 
     # %% Random sample from the posterior
     def sample_posterior(self, sample_n=None, n_posts=None):
