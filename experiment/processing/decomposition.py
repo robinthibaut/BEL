@@ -191,13 +191,13 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # Compute WHPA
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
-        np.save(jp(base_dir, ''.join((test_roots[0], '_whpa'))), h)
         h_pco.pca_test_transformation(h)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
+        np.save(jp(fig_dir, ''.join((test_roots[0], '_whpa'))), h)
         ff = jp(fig_dir, f'{test_roots[0]}.png')
         h_training = h_pco.training_physical.reshape(h_pco.shape)
         mp.whp(h_training, alpha=.2, show=False)
