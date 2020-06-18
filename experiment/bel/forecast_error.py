@@ -74,7 +74,7 @@ class UncertaintyQuantification:
         self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc0, hnc0)
 
         # Cut desired number of PC components
-        d_pc_training, d_pc_prediction = self.d_pco.pca_refresh(dnc0)
+        d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
 
         h_pc_training, h_pc_prediction = self.h_pco.pca_refresh(hnc0)
 
@@ -82,20 +82,18 @@ class UncertaintyQuantification:
         d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-        cca_plot(self.cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+        cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
                  sdir=self.fig_cca_dir)
 
         # Sampling
         self.n_training = len(d_pc_training)
-        self.n_test = len(d_pc_prediction)
         self.sample_n = 0
         self.n_posts = 500
         self.forecast_posterior = None
-        self.d_pc_obs = None
-        self.h_true_obs = None
+        self.h_true_obs = None  # True h in physical space
         self.shape = None
-        self.h_pc_true_pred = None
-        self.h_pred = None
+        self.h_pc_true_pred = None  # CCA predicted 'true' h PC
+        self.h_pred = None  # 'true' h in physical space
 
         # Contours
         self.vertices = None
@@ -110,8 +108,6 @@ class UncertaintyQuantification:
         """
         if sample_n is not None:
             self.sample_n = sample_n
-        else:
-            self.sample_n = 0
 
         if n_posts is not None:
             self.n_posts = n_posts
@@ -124,20 +120,18 @@ class UncertaintyQuantification:
                                                         add_comp=0)
         # Get the true array of the prediction
         # Prediction set - PCA space
-        self.d_pc_obs = self.d_pco.predict_pc[sample_n]
         self.shape = self.h_pco.shape
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
-
         # Predicting the function based for a certain number of 'observations'
-        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_obs[:self.d_pco.ncomp].reshape(1, -1))
+        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
         # Going back to the original function dimension and reshape.
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         # Plot results
-        ff = jp(self.fig_pred_dir, '{}_{}.png'.format(sample_n, self.cca_operator.n_components))
+        ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
         h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
-        self.mplot.whp(h_training, alpha=.01, colors='b', show=False)
+        self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
         self.mplot.whp_prediction(forecasts=self.forecast_posterior,
                                   h_true=self.h_true_obs,
                                   h_pred=self.h_pred,
