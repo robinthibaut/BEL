@@ -110,6 +110,9 @@ class UncertaintyQuantification:
         """
         if sample_n is not None:
             self.sample_n = sample_n
+        else:
+            self.sample_n = 0
+
         if n_posts is not None:
             self.n_posts = n_posts
 
@@ -133,6 +136,8 @@ class UncertaintyQuantification:
 
         # Plot results
         ff = jp(self.fig_pred_dir, '{}_{}.png'.format(sample_n, self.cca_operator.n_components))
+        h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
+        self.mplot.whp(h_training, alpha=.01, colors='b', show=False)
         self.mplot.whp_prediction(forecasts=self.forecast_posterior,
                                   h_true=self.h_true_obs,
                                   h_pred=self.h_pred,

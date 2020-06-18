@@ -33,7 +33,6 @@ from experiment.processing.pca import PCAIO
 
 
 def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
-
     if d_pca_obj is not None:
         # Loads the results:
         tc0, _, _ = fops.load_res(roots=roots, d=True)
@@ -85,7 +84,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(wel_comb=None, training_roots=None, test_roots=None):
+def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -195,6 +194,12 @@ def bel(wel_comb=None, training_roots=None, test_roots=None):
         h_pco.pca_test_transformation(h)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
+
+        ff = jp(base_dir, f'{test_roots[0]}.png')
+        h_training = h_pco.training_physical.reshape(h_pco.shape)
+        mp.whp(h_training, alpha=.2, show=False)
+        mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
+
     else:
         # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
@@ -225,4 +230,3 @@ def bel(wel_comb=None, training_roots=None, test_roots=None):
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
     return sub_dir
-

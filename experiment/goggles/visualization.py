@@ -157,7 +157,6 @@ class Plot:
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
         self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
-        np.random.shuffle(self.cols)
 
     def contours_vertices(self, arrays, c=0):
         """
@@ -313,11 +312,10 @@ class Plot:
 
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
-
+            plt.close()
         if show:
             plt.show()
-
-        plt.close()
+            plt.close()
 
     def whp_prediction(self,
                        forecasts,
@@ -337,9 +335,10 @@ class Plot:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
             plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.close()
         if show:
             plt.show()
-        plt.close()
+            plt.close()
 
     def h_pca_inverse_plot(self, pca_o, e, vn):
         """

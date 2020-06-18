@@ -16,7 +16,7 @@ def combinator(combi):
     'None' will indicate to use the original combination.
     """
     cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1]+1)]  # Get all possible wel combinations
-    cb = [item for sublist in cb for item in sublist]  # Flatten and add None to first compute the
+    cb = [item for sublist in cb for item in sublist][::-1]  # Flatten and add None to first compute the
     # 'base'
     return cb
 
@@ -41,7 +41,7 @@ def scan_roots(training, obs, combinations, base_dir=None):
             sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
-            uq.sample_posterior(sample_n=0, n_posts=500)  # Sample posterior
+            uq.sample_posterior(n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
 
@@ -82,16 +82,20 @@ if __name__ == '__main__':
     roots_training = os.listdir(md)[:200]  # List of n training roots
     roots_obs = os.listdir(md)[200:300]  # List of m observation roots
 
+    pres = '6623dd4fb5014a978d59b9acb03946d2'
+    idx = roots_training.index(pres)
+    roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    # dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
+    dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
 
     comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
     # Perform base decomposition on the m roots
-    scan_roots(training=roots_training, obs=roots_obs, combinations=[belcomb[-1]], base_dir=obj_path)
+    scan_roots(training=roots_training, obs=roots_obs, combinations=[belcomb[0]], base_dir=obj_path)
 
 
 
