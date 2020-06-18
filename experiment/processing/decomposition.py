@@ -65,12 +65,13 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
             # Load parameters:
             x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
             mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=Wels.combination)  # Initiate Plot instance
-
+            fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
+            fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
                 mp.whp([e],
                        lw=1,
-                       fig_file=jp(os.path.dirname(h_pca_obj), 'roots_whpa', ''.join((r[i], '.png'))))
-                np.save(jp(os.path.dirname(h_pca_obj), 'roots_whpa', ''.join((r[i], '.npy'))), e)
+                       fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
+                np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
 
             # return
 
@@ -195,7 +196,9 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
-        ff = jp(base_dir, f'{test_roots[0]}.png')
+        fig_dir = jp(base_dir, 'roots_whpa')
+        fops.dirmaker(fig_dir)
+        ff = jp(fig_dir, f'{test_roots[0]}.png')
         h_training = h_pco.training_physical.reshape(h_pco.shape)
         mp.whp(h_training, alpha=.2, show=False)
         mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
