@@ -41,7 +41,7 @@ def scan_roots(training, obs, combinations, base_dir=None):
             sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
-            uq.control()  # Compare PCA recoveries
+            # uq.control()  # Compare PCA recoveries
             uq.sample_posterior(n_posts=500)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
@@ -97,6 +97,10 @@ if __name__ == '__main__':
 
     comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
+
+    sa = belcomb.index((5, 6))
+    belcomb = belcomb[sa:]
+
     # Perform base decomposition on the m roots
     scan_roots(training=roots_training, obs=[roots_obs[0]], combinations=belcomb, base_dir=obj_path)
 
