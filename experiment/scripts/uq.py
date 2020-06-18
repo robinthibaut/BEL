@@ -6,6 +6,7 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from experiment.toolbox import filesio
+from experiment.goggles.visualization import Plot
 from experiment.processing import decomposition as dcp
 from experiment.bel.forecast_error import UncertaintyQuantification
 from experiment.base.inventory import Directories, Wels
@@ -68,18 +69,19 @@ def value_info(root):
                 wm[idw] += mhd  # Add mean of MHD
                 cid[idw] += 1
 
-    plt.plot(wm, 'wo')
-    plt.title('Value of information for each wel')
-    plt.xlabel('Wel ID')
+    colors = Plot().cols
+    for i, m in enumerate(wm):
+        plt.plot(i, m, f'{colors[i]}o')
+    plt.title('Value of information for each well')
+    plt.xlabel('Well ID')
     plt.xticks(np.arange(0, 7), wid)
     plt.ylabel('MHD summed mean value')
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(droot, 'wel_value.png'), dpi=300)
+    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_well_value.png'), dpi=300)
     plt.show()
 
 
-if __name__ == '__main__':
-    # TODO there is a strange WHPA in the lot
+def main():
     md = Directories.hydro_res_dir
 
     roots_training = os.listdir(md)[:200]  # List of n training roots
@@ -98,11 +100,17 @@ if __name__ == '__main__':
     comb = Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
 
-    sa = belcomb.index((5, 6))
-    belcomb = belcomb[sa:]
+    # sa = belcomb.index((5, 6))
+    # belcomb = belcomb[sa:]
 
     # Perform base decomposition on the m roots
     scan_roots(training=roots_training, obs=[roots_obs[0]], combinations=belcomb, base_dir=obj_path)
+
+
+if __name__ == '__main__':
+    value_info('6623dd4fb5014a978d59b9acb03946d2')
+
+
 
 
 
