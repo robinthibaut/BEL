@@ -4,6 +4,7 @@ from os.path import join as jp
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 from experiment.base.inventory import Directories, Wels, Focus
 from experiment.toolbox import filesio
@@ -108,7 +109,7 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
         comp_n = i
-        plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
+        # plt.plot(d[comp_n], h[comp_n], 'w+', markersize=3, markerfacecolor='w', alpha=.25)
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
@@ -116,20 +117,51 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
-            plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-                     'o', markersize=4.5, alpha=.7,
-                     label='{}'.format(sample_n))
+            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=True)
+            # sns.kdeplot(d[comp_n], h[comp_n], cmap=cmap, n_levels=30, shade=True)
 
-        plt.grid('w', linewidth=.3, alpha=.4)
-        plt.tick_params(labelsize=8)
-        plt.title(round(cca_coefficient[i], 4))
-        plt.legend(fontsize=5)
+            g = sns.jointplot(d[comp_n], h[comp_n],
+                              cmap=cmap, n_levels=30, shade=True,
+                              kind='kde')
+            g.plot_joint(plt.scatter, c='w', marker='+', s=2, alpha=.7)
+            plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+                     'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
+                     label='{}'.format(sample_n))
+        # plt.grid('w', linewidth=.3, alpha=.4)
+        # plt.tick_params(labelsize=8)
+        # plt.title(round(cca_coefficient[i], 4))
         if sdir:
             plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
             plt.close()
         if show:
             plt.show()
             plt.close()
+
+    # # CCA plots for each observation:
+    # for i in range(cca_operator.n_components):
+    #     comp_n = i
+    #     plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
+    #     for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
+    #         d_obs = d_pc_prediction[sample_n]
+    #         h_obs = h_pc_prediction[sample_n]
+    #         d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
+    #                                                                     h_obs.reshape(1, -1))
+    #         d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+    #
+    #         plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+    #                  'o', markersize=4.5, alpha=.7,
+    #                  label='{}'.format(sample_n))
+    #
+    #     plt.grid('w', linewidth=.3, alpha=.4)
+    #     plt.tick_params(labelsize=8)
+    #     plt.title(round(cca_coefficient[i], 4))
+    #     plt.legend(fontsize=5)
+    #     if sdir:
+    #         plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
+    #         plt.close()
+    #     if show:
+    #         plt.show()
+    #         plt.close()
 
 
 class Plot:
