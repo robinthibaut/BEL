@@ -73,25 +73,29 @@ def value_info(root):
 
     colors = Plot().cols
     # Plot histogram
-
     for i, m in enumerate(wm):
-        plt.hist(m, bins=24, color=f'{colors[i]}', alpha=.2)
-    plt.title('MHD distribution')
-    plt.xlabel('MHD')
-    plt.ylabel('Hits')
+        sns.kdeplot(m, color=f'{colors[i]}', shade=True, linewidth=2)
+    plt.title('Summed MHD distribution for each well')
+    plt.xlabel('Summed MHD')
+    plt.ylabel('KDE')
+    plt.legend(wid)
     plt.grid(alpha=0.2)
-    # plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_well_value.png'), dpi=300)
+    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_hist.png'), dpi=300)
     plt.show()
 
-    #  Plot mean
+    # Plot
+    # mode
     for i, m in enumerate(wm):
-        plt.plot(i, np.mean(m, axis=0), f'{colors[i]}o')
+        count, values = np.histogram(m)
+        idm = np.argmax(count)
+        mode = values[idm]
+        plt.plot(i, mode, f'{colors[i]}o')
     plt.title('Value of information for each well')
     plt.xlabel('Well ID')
     plt.xticks(np.arange(0, 7), wid)
-    plt.ylabel('MHD summed mean value')
+    plt.ylabel('MHD mode value')
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_well_value.png'), dpi=300)
+    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300)
     plt.show()
 
 
