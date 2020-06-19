@@ -98,3 +98,7 @@ class Focus:
     cell_dim = 4
 
 
+@dataclass
+class Forecast:
+    n_posts = 500
+

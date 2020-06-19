@@ -20,7 +20,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.base.inventory import Directories, Focus, Wels
+from experiment.base.inventory import Directories, Focus, Wels, Forecast
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
@@ -85,7 +85,7 @@ class UncertaintyQuantification:
         # Sampling
         self.n_training = len(d_pc_training)
         self.sample_n = 0
-        self.n_posts = 500
+        self.n_posts = Forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
         self.shape = None
