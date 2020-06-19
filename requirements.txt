@@ -1,6 +1,6 @@
-ortools~=7.5.7466
+ortools
 scikit-fmm~=2019.1.30
-scikit-learn~=0.22.2.post1
+scikit-learn
 matplotlib~=3.2.0
 scipy~=1.4.1
 numpy~=1.18.1
