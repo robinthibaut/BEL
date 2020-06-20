@@ -80,8 +80,8 @@ class UncertaintyQuantification:
         d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-        cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
-                 sdir=self.fig_cca_dir)
+        # cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
+        #          sdir=self.fig_cca_dir)
 
         # Sampling
         self.n_training = len(d_pc_training)

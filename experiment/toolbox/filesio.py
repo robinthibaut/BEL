@@ -8,7 +8,7 @@ from os.path import join as jp
 import flopy
 import numpy as np
 
-from experiment.base.inventory import Directories
+from experiment.base.inventory import MySetup
 
 
 def datread(file=None, start=0, end=None):
@@ -145,7 +145,7 @@ def load_res(res_dir=None, roots=None, test_roots=None, d=False, h=False):
 
     # If no res_dir specified, then uses default
     if res_dir is None:
-        res_dir = Directories.hydro_res_dir
+        res_dir = MySetup.Directories.hydro_res_dir
 
     bkt_files = []  # Breakthrough curves files
     sd_files = []  # Signed-distance files

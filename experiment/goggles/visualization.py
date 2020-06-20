@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from experiment.base.inventory import Directories, Wels, Focus
+from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 
 plt.style.use('dark_background')
@@ -167,9 +167,9 @@ class Plot:
 
     def __init__(self, x_lim=None, y_lim=None, grf=None, wel_comb=None):
 
-        md = Directories()
-        focus = Focus()
-        self.wels = Wels()
+        md = MySetup.Directories()
+        focus = MySetup.Focus()
+        self.wels = MySetup.Wels()
 
         if wel_comb is not None:
             self.wels.combination = wel_comb
@@ -409,7 +409,7 @@ class Plot:
 
         for n_compare, r in enumerate(pco_h.roots):
 
-            fig_dir = jp(Directories.forecasts_dir, 'base', 'control')
+            fig_dir = jp(MySetup.Directories.forecasts_dir, 'base', 'control')
             filesio.dirmaker(fig_dir)
 
             fig_file = jp(fig_dir, r)

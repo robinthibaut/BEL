@@ -100,20 +100,32 @@ def value_info(root):
 
 
 def main():
+
+    if os.uname().nodename == 'MacBook-Pro.local':
+        MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project/experiment/hydro/results'
+        root_file = '/Users/robin/OneDrive - UGent/Project/experiment/bel/forecasts/base/roots.dat'
+    else:
+        root_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat')
+
     md = MySetup.Directories.hydro_res_dir
 
-    roots_training = os.listdir(md)[:200]  # List of n training roots
-    roots_obs = os.listdir(md)[200:300]  # List of m observation roots
+    # listme = os.listdir(md)
+    # folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
 
-    pres = '6623dd4fb5014a978d59b9acb03946d2'
-    idx = roots_training.index(pres)
-    roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+    # roots_training = folders[:200]  # List of n training roots
+    # roots_obs = folders[200:300]  # List of m observation roots
+    # pres = '6623dd4fb5014a978d59b9acb03946d2'
+    # idx = roots_training.index(pres)
+    # roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+
+    roots_training = [item for sublist in filesio.datread(root_file) for item in sublist]
+    roots_obs = ['6623dd4fb5014a978d59b9acb03946d2']
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    # dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
+    dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
 
     comb = MySetup.Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
@@ -122,12 +134,12 @@ def main():
     # belcomb = belcomb[sa:]
 
     # Perform base decomposition on the m roots
-    scan_roots(base=MySetup, training=roots_training, obs=roots_obs[1:11], combinations=belcomb, base_dir=obj_path)
+    scan_roots(base=MySetup, training=roots_training, obs=roots_obs, combinations=[belcomb[0]], base_dir=obj_path)
 
 
 if __name__ == '__main__':
-
-    value_info('6623dd4fb5014a978d59b9acb03946d2')
+    main()
+    # value_info('6623dd4fb5014a978d59b9acb03946d2')
 
 
 
