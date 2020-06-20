@@ -94,7 +94,6 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     plt.ylabel('Component scores')
     plt.tick_params(labelsize=6)
     plt.legend(fontsize=3)
-    plt.show()
 
     if fig_file:
         plt.savefig(fig_file, dpi=300)
