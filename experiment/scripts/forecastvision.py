@@ -5,8 +5,20 @@ import joblib
 import numpy as np
 from experiment.toolbox import utils
 from experiment.toolbox.filesio import load_res
-from experiment.goggles.visualization import Plot, cca_plot
+from experiment.goggles.visualization import Plot, cca_plot, pca_scores
 from experiment.base.inventory import MySetup
+
+
+def pca_vision(res_dir):
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+    # Load object
+    for f in folders:
+        pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
+        d_pco = joblib.load(pcaf)
+
+        pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=None, show=True)
 
 
 def cca_vision(res_dir):
@@ -35,22 +47,28 @@ def cca_vision(res_dir):
              sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
 
-if __name__ == '__main__':
-    # x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
-    # mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-    #
-    # fobj = os.path.join(Directories.forecasts_dir, 'base', 'h_pca.pkl')
-    # h = joblib.load(fobj)
-    # h_training = h.training_physical.reshape(h.shape)
-    #
-    # mplot.whp(h_training, show=True,
-    #           fig_file=os.path.join(Directories.forecasts_dir, 'base', 'whpa_training.png'))
-
-    comb = MySetup.Wels.combination  # Get default combination (all)
-
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2')
+def plot_cca(res_dir):
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
     for f in folders:
-        cca_vision(os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', f, 'obj'))
+        cca_vision(os.path.join(MySetup.Directories.forecasts_dir, res_dir, f, 'obj'))
+
+
+def plot_whpa():
+    x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
+    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+
+    fobj = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
+    h = joblib.load(fobj)
+    h_training = h.training_physical.reshape(h.shape)
+
+    mplot.whp(h_training, show=True,
+              fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
+
+
+if __name__ == '__main__':
+    pca_vision('6623dd4fb5014a978d59b9acb03946d2')
+
+

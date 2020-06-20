@@ -5,6 +5,7 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from scipy.interpolate import make_interp_spline, BSpline
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
@@ -72,15 +73,28 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     # Scores plot
     plt.grid(alpha=0.2)
     ut = n_comp
-    plt.xticks(np.arange(ut), fontsize=8)
-    plt.plot(training.T[:ut], 'wo', markersize=1, alpha=0.2)  # Plot all training scores
+    plt.xticks(np.arange(0, ut, 5), fontsize=8)
+    plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)  # Plot all training scores
+    cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+    sns.kdeplot(np.arange(1, ut+1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+    plt.xlim(0.5, ut)  # Define x lim
     for sample_n in range(len(prediction)):
         pc_obs = prediction[sample_n]
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
                  'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                  label=str(sample_n))
+
+        xnew = np.linspace(0, ut, 100)
+        spl = make_interp_spline(np.arange(0, ut), pc_obs.T[:ut], k=3)  # type: BSpline
+        power_smooth = spl(xnew)
+        plt.plot(xnew, power_smooth, 'y', linewidth=.3, alpha=.5)
+
+    plt.title('PCA scores plot')
+    plt.xlabel('Component id')
+    plt.ylabel('Component scores')
     plt.tick_params(labelsize=6)
     plt.legend(fontsize=3)
+    plt.show()
 
     if fig_file:
         plt.savefig(fig_file, dpi=300)
