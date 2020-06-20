@@ -11,7 +11,7 @@ from experiment.toolbox import filesio
 from experiment.goggles.visualization import Plot
 from experiment.processing import decomposition as dcp
 from experiment.bel.forecast_error import UncertaintyQuantification
-from experiment.base.inventory import Directories, Wels, Forecast
+from experiment.base.inventory import MySetup
 
 
 def combinator(combi):
@@ -23,7 +23,7 @@ def combinator(combi):
     return cb
 
 
-def scan_roots(training, obs, combinations, base_dir=None):
+def scan_roots(base, training, obs, combinations, base_dir=None):
     """Scan all roots and perform base decomposition"""
 
     if not isinstance(obs, (list, tuple, np.array)):
@@ -40,11 +40,11 @@ def scan_roots(training, obs, combinations, base_dir=None):
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel(training_roots=training, test_roots=r_, wel_comb=c)
+            sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
-            uq = UncertaintyQuantification(study_folder=sf, base_dir=base_dir, wel_comb=c)
+            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c)
             # uq.control()  # Compare PCA recoveries
-            uq.sample_posterior(n_posts=Forecast.n_posts)  # Sample posterior
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
@@ -56,10 +56,10 @@ def scan_roots(training, obs, combinations, base_dir=None):
 
 def value_info(root):
 
-    droot = os.path.join(Directories.forecasts_dir, root)  # Starting point = root folder in forecast directory
+    droot = os.path.join(MySetup.Directories.forecasts_dir, root)  # Starting point = root folder in forecast directory
     duq = os.listdir(droot)  # Folders of combinations
-    wid = list(map(str, Wels.combination))  # Wel identifiers (n)
-    wm = np.zeros((len(wid), Forecast.n_posts))  # Summed MHD when well i appears
+    wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
+    wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
     cid = np.copy(wm)  # Number of times each wel appears
     for e in duq:  # For each subfolder in the main folder
         fmhd = os.path.join(droot, e, 'uq', 'haus.npy')
@@ -80,7 +80,7 @@ def value_info(root):
     plt.ylabel('KDE')
     plt.legend(wid)
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_hist.png'), dpi=300)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_hist.png'), dpi=300)
     plt.show()
 
     # Plot
@@ -95,12 +95,12 @@ def value_info(root):
     plt.xticks(np.arange(0, 7), wid)
     plt.ylabel('MHD mode value')
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300)
     plt.show()
 
 
 def main():
-    md = Directories.hydro_res_dir
+    md = MySetup.Directories.hydro_res_dir
 
     roots_training = os.listdir(md)[:200]  # List of n training roots
     roots_obs = os.listdir(md)[200:300]  # List of m observation roots
@@ -110,22 +110,23 @@ def main():
     roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
 
     # Perform PCA on target (whpa) and store the object in a base folder
-    obj_path = os.path.join(Directories.forecasts_dir, 'base')
+    obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
     # dcp.base_pca(roots=roots_training, h_pca_obj=obj, check=False)
 
-    comb = Wels.combination  # Get default combination (all)
+    comb = MySetup.Wels.combination  # Get default combination (all)
     belcomb = combinator(comb)  # Get all possible combinations
 
     # sa = belcomb.index((5, 6))
     # belcomb = belcomb[sa:]
 
     # Perform base decomposition on the m roots
-    scan_roots(training=roots_training, obs=roots_obs[1:11], combinations=belcomb, base_dir=obj_path)
+    scan_roots(base=MySetup, training=roots_training, obs=roots_obs[1:11], combinations=belcomb, base_dir=obj_path)
 
 
 if __name__ == '__main__':
+
     value_info('6623dd4fb5014a978d59b9acb03946d2')
 
 

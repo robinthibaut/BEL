@@ -25,7 +25,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories
+from experiment.base.inventory import MySetup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -37,8 +37,7 @@ def simulation(folder=None):
     if folder is 0:
         folder = None
     # Directories
-    md = Directories()
-    main_dir = md.main_dir
+    main_dir = MySetup.Directories.main_dir
     exe_loc = jp(main_dir, 'hydro', 'exe')  # EXE directory
     # EXE files directory.
     exe_name_mf = jp(exe_loc, 'mf2005.exe')
@@ -51,11 +50,11 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(md.hydro_res_dir, res_dir)
+    results_dir = jp(MySetup.Directories.hydro_res_dir, res_dir)
     # reload data in old root:
-    results_dir = jp(md.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
+    results_dir = jp(MySetup.Directories.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
 
-    grid_dir = md.grid_dir
+    grid_dir = MySetup.Directories.grid_dir
     # Generates the result directory
     fops.dirmaker(results_dir)
 

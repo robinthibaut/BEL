@@ -20,7 +20,6 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.base.inventory import Directories, Focus, Wels, Forecast
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
@@ -32,20 +31,23 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, study_folder, base_dir=None, wel_comb=None):
+    def __init__(self, base, study_folder, base_dir=None, wel_comb=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
+
+        self.base = base
+
         self.po = PosteriorIO()
-        fc = Focus()
+        fc = self.base.Focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
         self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, wel_comb=self.wel_comb)
 
         # Directories & files paths
-        md = Directories()
+        md = self.base.Directories()
         self.main_dir = md.main_dir
 
         self.grid_dir = md.grid_dir
@@ -84,7 +86,7 @@ class UncertaintyQuantification:
         # Sampling
         self.n_training = len(d_pc_training)
         self.sample_n = 0
-        self.n_posts = Forecast.n_posts
+        self.n_posts = self.base.Forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
         self.shape = None

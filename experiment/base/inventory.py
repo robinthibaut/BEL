@@ -11,94 +11,90 @@ from os.path import dirname, join
 import numpy as np
 
 
-@dataclass
-class Directories:
-    """Define main directories"""
-    main_dir = dirname(dirname(os.path.abspath(__file__)))
+class MySetup:
+    @dataclass
+    class Directories:
+        """Define main directories"""
+        main_dir = dirname(dirname(os.path.abspath(__file__)))
 
-    hydro_res_dir = join(main_dir, 'hydro', 'results')
-    forecasts_dir = join(main_dir, 'bel', 'forecasts')
-    grid_dir = join(main_dir, 'grid', 'parameters')
+        hydro_res_dir = join(main_dir, 'hydro', 'results')
+        forecasts_dir = join(main_dir, 'bel', 'forecasts')
+        grid_dir = join(main_dir, 'grid', 'parameters')
 
+    @dataclass
+    class FileNames:
+        """Class to keep track of important file names"""
+        pass
 
-@dataclass
-class FileNames:
-    """Class to keep track of important file names"""
-    pass
+    @dataclass
+    class GridDimensions:
+        """Class for keeping track of grid dimensions"""
+        x_lim: float = 1500
+        y_lim: float = 1000
+        z_lim: float = 1
 
+        dx: float = 10  # Block x-dimension
+        dy: float = 10  # Block y-dimension
+        dz: float = 10  # Block z-dimension
 
-@dataclass
-class GridDimensions:
-    """Class for keeping track of grid dimensions"""
-    x_lim: float = 1500
-    y_lim: float = 1000
-    z_lim: float = 1
+        xo: float = 0
+        yo: float = 0
+        zo: float = 0
 
-    dx: float = 10  # Block x-dimension
-    dy: float = 10  # Block y-dimension
-    dz: float = 10  # Block z-dimension
+        nrow: int = y_lim // dy  # Number of rows
+        ncol: int = x_lim // dx  # Number of columns
+        nlay: int = 1  # Number of layers
 
-    xo: float = 0
-    yo: float = 0
-    zo: float = 0
+        # Refinement parameters around the pumping wel.
+        r_params = np.array(
+            [[9, 150],  # 150 meters from the pumping wel coordinates, grid cells will have dimensions 9x9
+             [8, 100],
+             [7, 90],
+             [6, 80],
+             [5, 70],
+             [4, 60],
+             [3, 50],
+             [2.5, 40],
+             [2, 30],
+             [1.5, 20],
+             [1, 10]])  # 10 meters from the pumping wel coordinates, grid cells will have dimensions 1*1
 
-    nrow: int = y_lim // dy  # Number of rows
-    ncol: int = x_lim // dx  # Number of columns
-    nlay: int = 1  # Number of layers
+    @dataclass
+    class Wels:
+        """Wels coordinates"""
+        wels_data = {
+            'pumping0':
+                {'coordinates': [1000, 500],
+                 'rates': [-1000, -1000, -1000]},
+            'injection0':
+                {'coordinates': [950, 450],
+                 'rates': [0, 24, 0]},
+            'injection1':
+                {'coordinates': [930, 560],
+                 'rates': [0, 24, 0]},
+            'injection2':
+                {'coordinates': [900, 505],
+                 'rates': [0, 24, 0]},
+            'injection3':
+                {'coordinates': [1068, 515],
+                 'rates': [0, 24, 0]},
+            'injection4':
+                {'coordinates': [1030, 580],
+                 'rates': [0, 24, 0]},
+            'injection5':
+                {'coordinates': [1050, 470],
+                 'rates': [0, 24, 0]}
+        }
 
-    # Refinement parameters around the pumping wel.
-    r_params = np.array([[9, 150],  # 150 meters from the pumping wel coordinates, grid cells will have dimensions 9x9
-                         [8, 100],
-                         [7, 90],
-                         [6, 80],
-                         [5, 70],
-                         [4, 60],
-                         [3, 50],
-                         [2.5, 40],
-                         [2, 30],
-                         [1.5, 20],
-                         [1, 10]])  # 10 meters from the pumping wel coordinates, grid cells will have dimensions 1*1
+        combination = np.arange(1, len(wels_data))  # Injection wels in use for prediction (default: all)
 
+    @dataclass
+    class Focus:
+        """Geometry of the focused area on the main grid, englobing all wells, as to reduce computation time"""
+        x_range = [800, 1150]
+        y_range = [300, 700]
+        cell_dim = 4
 
-@dataclass
-class Wels:
-    """Wels coordinates"""
-    wels_data = {
-        'pumping0':
-            {'coordinates': [1000, 500],
-             'rates': [-1000, -1000, -1000]},
-        'injection0':
-            {'coordinates': [950, 450],
-             'rates': [0, 24, 0]},
-        'injection1':
-            {'coordinates': [930, 560],
-             'rates': [0, 24, 0]},
-        'injection2':
-            {'coordinates': [900, 505],
-             'rates': [0, 24, 0]},
-        'injection3':
-            {'coordinates': [1068, 515],
-             'rates': [0, 24, 0]},
-        'injection4':
-            {'coordinates': [1030, 580],
-             'rates': [0, 24, 0]},
-        'injection5':
-            {'coordinates': [1050, 470],
-             'rates': [0, 24, 0]}
-    }
-
-    combination = np.arange(1, len(wels_data))  # Injection wels in use for prediction (default: all)
-
-
-@dataclass
-class Focus:
-    """Geometry of the focused area on the main grid, englobing all wells, as to reduce computation time"""
-    x_range = [800, 1150]
-    y_range = [300, 700]
-    cell_dim = 4
-
-
-@dataclass
-class Forecast:
-    n_posts = 500
-
+    @dataclass
+    class Forecast:
+        n_posts = 500

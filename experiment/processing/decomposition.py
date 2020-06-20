@@ -27,12 +27,11 @@ from sklearn.cross_decomposition import CCA
 import experiment.goggles.visualization as plot
 import experiment.processing.examples as dops
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories, Focus, Wels
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
+def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
     if d_pca_obj is not None:
         # Loads the results:
         tc0, _, _ = fops.load_res(roots=roots, d=True)
@@ -49,11 +48,12 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
+
     if h_pca_obj is not None:
         # Loads the results:
         _, pzs, r = fops.load_res(roots=roots, h=True)
         # Load parameters:
-        x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
         sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
         # PCA on signed distance
@@ -63,8 +63,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
 
         if check:
             # Load parameters:
-            x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=Wels.combination)  # Initiate Plot instance
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
@@ -85,7 +84,7 @@ def base_pca(roots, d_pca_obj=None, h_pca_obj=None, check=False):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
+def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -96,16 +95,16 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     """
 
     # Load parameters:
-    x_lim, y_lim, grf = Focus.x_range, Focus.y_range, Focus.cell_dim
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if wel_comb is not None:
-        Wels.combination = wel_comb
+        base.Wels.combination = wel_comb
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=Wels.combination)  # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
 
     # Directories
-    md = Directories()
+    md = base.Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
     # Parse test_roots
@@ -119,7 +118,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    new_dir = ''.join(list(map(str, Wels.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.Wels.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -156,7 +155,7 @@ def bel(wel_comb=None, training_roots=None, test_roots=None, **kwargs):
                 f.write(os.path.basename(r) + '\n')
 
     # %% Select wels:
-    selection = [wc - 1 for wc in Wels.combination]
+    selection = [wc - 1 for wc in base.Wels.combination]
     tc = tc[:, selection, :]
 
     # %%  PCA

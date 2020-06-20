@@ -5,11 +5,11 @@ import joblib
 import numpy as np
 from experiment.toolbox.filesio import load_res
 from experiment.goggles.visualization import Plot, cca_plot
-from experiment.base.inventory import Directories, Focus
+from experiment.base.inventory import MySetup
 
 
 def cca_vision(res_dir):
-    base_dir = os.path.join(Directories.forecasts_dir, 'base')
+    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     # Load objects
     f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
     cca_operator, d_pco = list(map(joblib.load, f_names))
@@ -45,4 +45,4 @@ if __name__ == '__main__':
     # mplot.whp(h_training, show=True,
     #           fig_file=os.path.join(Directories.forecasts_dir, 'base', 'whpa_training.png'))
 
-    cca_vision(os.path.join(Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', '123456', 'obj'))
+    cca_vision(os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', '123456', 'obj'))
