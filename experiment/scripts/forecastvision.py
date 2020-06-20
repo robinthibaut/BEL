@@ -3,6 +3,7 @@
 import os
 import joblib
 import numpy as np
+from experiment.toolbox import utils
 from experiment.toolbox.filesio import load_res
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.base.inventory import MySetup
@@ -45,4 +46,11 @@ if __name__ == '__main__':
     # mplot.whp(h_training, show=True,
     #           fig_file=os.path.join(Directories.forecasts_dir, 'base', 'whpa_training.png'))
 
-    cca_vision(os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', '123456', 'obj'))
+    comb = MySetup.Wels.combination  # Get default combination (all)
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2')
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda f: os.path.isdir(os.path.join(subdir, f)), listme))
+
+    for f in folders:
+        cca_vision(os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', f, 'obj'))
