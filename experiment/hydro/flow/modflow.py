@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import experiment.grid.meshio as mops
-from experiment.base import inventory
+from experiment.base.inventory import MySetup
 
 
 def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
@@ -50,7 +50,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     lenuni = 2  # Distance units = meters
 
-    gd = inventory.GridDimensions()
+    gd = MySetup.GridDimensions()
 
     x_lim = gd.x_lim
     y_lim = gd.y_lim
@@ -64,7 +64,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     nlay = gd.nlay  # Number of layers
 
     # Refinement
-    wcd = inventory.Wels()
+    wcd = MySetup.Wels()
     pw_d = wcd.wels_data['pumping0']
     # Point around which refinement will occur
     pt = pw_d['coordinates']

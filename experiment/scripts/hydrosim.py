@@ -20,6 +20,7 @@ import multiprocessing as mp
 import shutil
 import time
 import uuid
+import os
 from os.path import join as jp
 
 import numpy as np
@@ -38,11 +39,17 @@ def simulation(folder=None):
         folder = None
     # Directories
     main_dir = MySetup.Directories.main_dir
-    exe_loc = jp(main_dir, 'hydro', 'exe')  # EXE directory
+    exe_loc = jp(main_dir, 'hydro', 'exe')  #
+    # directory
     # EXE files directory.
-    exe_name_mf = jp(exe_loc, 'mf2005.exe')
-    exe_name_mt = jp(exe_loc, 'mt3d.exe')
-    exe_name_mp = jp(exe_loc, 'mp7.exe')
+    if os.uname().nodename == 'MacBook-Pro.local':
+        exe_name_mf = jp(exe_loc, 'mf2005')
+        exe_name_mt = jp(exe_loc, 'mt3d')
+        exe_name_mp = jp(exe_loc, 'mp7')
+    else:
+        exe_name_mf = jp(exe_loc, 'mf2005.exe')
+        exe_name_mt = jp(exe_loc, 'mt3d.exe')
+        exe_name_mp = jp(exe_loc, 'mp7.exe')
 
     if not folder:
         # Main results directory.
@@ -89,6 +96,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('6623dd4fb5014a978d59b9acb03946d2')
+    simulation('macos')
     end = time.time()
     print((end - start) / 60)

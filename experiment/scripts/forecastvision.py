@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     subdir = os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2')
     listme = os.listdir(subdir)
-    folders = list(filter(lambda f: os.path.isdir(os.path.join(subdir, f)), listme))
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
     for f in folders:
         cca_vision(os.path.join(MySetup.Directories.forecasts_dir, '6623dd4fb5014a978d59b9acb03946d2', f, 'obj'))
