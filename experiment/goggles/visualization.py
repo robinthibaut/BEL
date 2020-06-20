@@ -72,7 +72,7 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     """
     # Scores plot
     plt.grid(alpha=0.2)
-    ut = n_comp
+    ut = n_comp + 1
     plt.xticks(np.arange(0, ut, 5), fontsize=8)
     plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)  # Plot all training scores
     cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)

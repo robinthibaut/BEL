@@ -18,7 +18,9 @@ def pca_vision(res_dir):
         pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
         d_pco = joblib.load(pcaf)
 
-        pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=None, show=True)
+        fig_file = os.path.join(subdir, f, 'pca', 'd_scores.png')
+
+        pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
 
 
 def cca_vision(res_dir):
