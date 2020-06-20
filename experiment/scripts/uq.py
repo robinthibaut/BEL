@@ -84,6 +84,7 @@ def value_info(root):
     plt.xlabel('Well ID')
     plt.xticks(np.arange(0, 7), wid)
     plt.ylabel('MHD mode value')
+    plt.legend(wid)
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300)
     plt.show()
@@ -114,7 +115,7 @@ def main():
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
     obj = os.path.join(obj_path, 'h_pca.pkl')
-    # dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
+    dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
 
     comb = MySetup.Wels.combination  # Get default combination (all)
     belcomb = utils.combinator(comb)  # Get all possible combinations
@@ -127,5 +128,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     value_info('6623dd4fb5014a978d59b9acb03946d2')

@@ -44,7 +44,7 @@ def simulation(folder=None):
     # EXE files directory.
     if os.uname().nodename == 'MacBook-Pro.local':
         exe_name_mf = jp(exe_loc, 'mf2005')
-        exe_name_mt = jp(exe_loc, 'mt3d')
+        exe_name_mt = jp(exe_loc, 'mt3dms')
         exe_name_mp = jp(exe_loc, 'mp7')
     else:
         exe_name_mf = jp(exe_loc, 'mf2005.exe')
