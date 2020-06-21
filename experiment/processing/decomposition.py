@@ -206,20 +206,6 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
         # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
-    # Plot
-    plot.explained_variance(h_pco.operator,
-                            n_comp=nho,
-                            fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
-    plot.pca_scores(h_pc_training,
-                    h_pc_prediction,
-                    n_comp=nho,
-                    fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
-
-    # Compares true value with inverse transformation from PCA
-    # Explained variance plots
-    plot.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    # Scores plots
-    plot.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
 
     # %% CCA
 

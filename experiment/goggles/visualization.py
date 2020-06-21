@@ -44,7 +44,7 @@ def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
     :param show:
     :return:
     """
-    plt.grid(alpha=0.2)
+    plt.grid(alpha=0.1)
     if not n_comp:
         n_comp = pca.n_components_
     plt.xticks(np.arange(n_comp), fontsize=xfs)

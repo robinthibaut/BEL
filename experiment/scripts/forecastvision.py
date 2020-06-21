@@ -5,7 +5,7 @@ import joblib
 import numpy as np
 from experiment.toolbox import utils
 from experiment.toolbox.filesio import load_res
-from experiment.goggles.visualization import Plot, cca_plot, pca_scores
+from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
 from experiment.base.inventory import MySetup
 
 
@@ -16,24 +16,32 @@ def pca_vision(res_dir, d=True, h=False):
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
     if d:
         for f in folders:
+            dfig = os.path.join(subdir, f, 'pca')
             # For d only
             pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
             d_pco = joblib.load(pcaf)
-            fig_file = os.path.join(subdir, f, 'pca', 'd_scores.png')
+            fig_file = os.path.join(dfig, 'd_scores.png')
             pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
+            # Explained variance plots
+            fig_file = os.path.join(dfig, 'd_exvar.png')
+            explained_variance(d_pco.operator, n_comp=d_pco.ncomp, fig_file=fig_file)
     if h:
+        hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
         # Load h pickle
-        pcaf = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
+        pcaf = os.path.join(hbase, 'h_pca.pkl')
         h_pco = joblib.load(pcaf)
         # Load npy whpa prediction
-        prediction = np.load(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', f'{res_dir}.npy'))
+        prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{res_dir}.npy'))
         # Transform and split
         h_pco.pca_test_transformation(prediction)
         nho = h_pco.ncomp
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Plot
-        fig_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', 'h_scores.png')
+        fig_file = os.path.join(hbase, 'roots_whpa', 'h_scores.png')
         pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=nho, fig_file=fig_file)
+        # Explained variance plots
+        fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
+        explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
 
 
 def cca_vision(res_dir):
