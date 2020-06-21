@@ -9,21 +9,36 @@ from experiment.goggles.visualization import Plot, cca_plot, pca_scores
 from experiment.base.inventory import MySetup
 
 
-def pca_vision(res_dir):
+def pca_vision(res_dir, d=True, h=False):
+    """ Loads PCA pickles and plot scores for all folders """
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
-    # Load object
-    for f in folders:
-        pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
-        d_pco = joblib.load(pcaf)
-
-        fig_file = os.path.join(subdir, f, 'pca', 'd_scores.png')
-
-        pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
+    if d:
+        for f in folders:
+            # For d only
+            pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
+            d_pco = joblib.load(pcaf)
+            fig_file = os.path.join(subdir, f, 'pca', 'd_scores.png')
+            pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
+    if h:
+        for f in folders:
+            # Load h pickle
+            pcaf = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
+            h_pco = joblib.load(pcaf)
+            # Load npy whpa prediction
+            prediction = np.load(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', f'{f}.npy'))
+            # Transform and split
+            h_pco.pca_test_transformation(prediction)
+            nho = h_pco.ncomp
+            h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+            # Plot
+            fig_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', 'h_scores.png')
+            pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=nho, fig_file=fig_file)
 
 
 def cca_vision(res_dir):
+    """Loads CCA pickles and plots components for all folders"""
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     # Load objects
     f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
@@ -50,6 +65,7 @@ def cca_vision(res_dir):
 
 
 def plot_cca(res_dir):
+    """On top of cca_vision"""
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
@@ -59,6 +75,7 @@ def plot_cca(res_dir):
 
 
 def plot_whpa():
+    """Loads target pickle and plots all training WHPA"""
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 

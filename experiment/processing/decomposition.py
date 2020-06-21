@@ -196,7 +196,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
 
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
-        np.save(jp(fig_dir, test_roots[0]), h)
+        np.save(jp(fig_dir, test_roots[0]), h)  # Save the prediction WHPA
         ff = jp(fig_dir, f'{test_roots[0]}.png')
         h_training = h_pco.training_physical.reshape(h_pco.shape)
         mp.whp(h_training, alpha=.2, show=False)

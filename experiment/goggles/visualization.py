@@ -84,7 +84,7 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
                  'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                  label=str(sample_n))
 
-        xnew = np.linspace(1, ut, 300)
+        xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut+1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
         plt.plot(xnew-1, power_smooth, 'y', linewidth=.3, alpha=.5)
@@ -93,7 +93,6 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     plt.xlabel('Component id')
     plt.ylabel('Component scores')
     plt.tick_params(labelsize=6)
-    plt.legend('Prediction', fontsize=3)
 
     if fig_file:
         plt.savefig(fig_file, dpi=300)
