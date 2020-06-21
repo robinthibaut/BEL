@@ -129,7 +129,7 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
-            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=True)
+            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.9, reverse=True)
             g = sns.jointplot(d[comp_n], h[comp_n],
                               cmap=cmap, n_levels=60, shade=True,
                               kind='kde')

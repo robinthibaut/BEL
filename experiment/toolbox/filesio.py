@@ -23,6 +23,17 @@ def datread(file=None, start=0, end=None):
     return op
 
 
+def folder_reset(folder):
+    """Deletes files out of folder"""
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
 def dirmaker(dird):
     """
     Given a folder path, check if it exists, and if not, creates it

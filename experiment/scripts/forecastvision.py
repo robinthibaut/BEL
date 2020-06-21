@@ -4,9 +4,23 @@ import os
 import joblib
 import numpy as np
 from experiment.toolbox import utils
-from experiment.toolbox.filesio import load_res
+from experiment.toolbox.filesio import load_res, folder_reset
 from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
 from experiment.base.inventory import MySetup
+
+
+def empty_figs(res_dir):
+    """ Empties figure folders """
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
+    for f in folders:
+        # pca
+        folder_reset(os.path.join(subdir, f, 'pca'))
+
+        # cca
+        folder_reset(os.path.join(subdir, f, 'cca'))
 
 
 def pca_vision(res_dir, d=True, h=False):
@@ -95,6 +109,8 @@ def plot_whpa():
 
 
 if __name__ == '__main__':
-    pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=False, h=True)
+    empty_figs('6623dd4fb5014a978d59b9acb03946d2')
+    cca_vision('6623dd4fb5014a978d59b9acb03946d2')
+    pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
 
 
