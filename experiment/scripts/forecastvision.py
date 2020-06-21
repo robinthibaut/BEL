@@ -22,19 +22,18 @@ def pca_vision(res_dir, d=True, h=False):
             fig_file = os.path.join(subdir, f, 'pca', 'd_scores.png')
             pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
     if h:
-        for f in folders:
-            # Load h pickle
-            pcaf = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
-            h_pco = joblib.load(pcaf)
-            # Load npy whpa prediction
-            prediction = np.load(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', f'{f}.npy'))
-            # Transform and split
-            h_pco.pca_test_transformation(prediction)
-            nho = h_pco.ncomp
-            h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
-            # Plot
-            fig_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', 'h_scores.png')
-            pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=nho, fig_file=fig_file)
+        # Load h pickle
+        pcaf = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
+        h_pco = joblib.load(pcaf)
+        # Load npy whpa prediction
+        prediction = np.load(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', f'{res_dir}.npy'))
+        # Transform and split
+        h_pco.pca_test_transformation(prediction)
+        nho = h_pco.ncomp
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        # Plot
+        fig_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots_whpa', 'h_scores.png')
+        pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=nho, fig_file=fig_file)
 
 
 def cca_vision(res_dir):
@@ -88,6 +87,6 @@ def plot_whpa():
 
 
 if __name__ == '__main__':
-    pca_vision('6623dd4fb5014a978d59b9acb03946d2')
+    pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=False, h=True)
 
 
