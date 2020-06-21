@@ -58,31 +58,39 @@ def pca_vision(res_dir, d=True, h=False):
         explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
 
 
-def cca_vision(res_dir):
+def cca_vision(root_dir):
     """Loads CCA pickles and plots components for all folders"""
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root_dir)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    # Load objects
-    f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
-    cca_operator, d_pco = list(map(joblib.load, f_names))
-    h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 
-    h_pred = np.load(os.path.join(base_dir, 'roots_whpa', '6623dd4fb5014a978d59b9acb03946d2.npy'))
+    for f in folders:
+        res_dir = os.path.join(subdir, f, 'obj')
+        # Load objects
+        f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+        cca_operator, d_pco = list(map(joblib.load, f_names))
+        h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 
-    # Inspect transformation between physical and PC space
-    dnc0 = d_pco.ncomp
-    hnc0 = h_pco.ncomp
+        h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root_dir}.npy'))
 
-    # Cut desired number of PC components
-    d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-    h_pco.pca_test_transformation(h_pred)
-    h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
+        # Inspect transformation between physical and PC space
+        dnc0 = d_pco.ncomp
+        hnc0 = h_pco.ncomp
 
-    # CCA plots
-    d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
-    d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+        # Cut desired number of PC components
+        d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
+        h_pco.pca_test_transformation(h_pred)
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
-    cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
-             sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+        # CCA plots
+        d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
+        d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+
+        cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+                 sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
 
 def plot_cca(res_dir):
