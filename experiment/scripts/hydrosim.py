@@ -26,7 +26,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import MySetup
+from experiment.base.inventory import Machine, MySetup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -42,7 +42,7 @@ def simulation(folder=None):
     exe_loc = jp(main_dir, 'hydro', 'exe')  #
     # directory
     # EXE files directory.
-    if os.uname().nodename == 'MacBook-Pro.local':
+    if Machine.computer == 'MacBook-Pro.local':
         exe_name_mf = jp(exe_loc, 'mf2005')
         exe_name_mt = jp(exe_loc, 'mt3dms')
         exe_name_mp = jp(exe_loc, 'mp7')
