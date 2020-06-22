@@ -93,16 +93,6 @@ def cca_vision(root_dir):
                  sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
 
-def plot_cca(res_dir):
-    """On top of cca_vision"""
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
-    listme = os.listdir(subdir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
-
-    for f in folders:
-        cca_vision(os.path.join(MySetup.Directories.forecasts_dir, res_dir, f, 'obj'))
-
-
 def plot_whpa():
     """Loads target pickle and plots all training WHPA"""
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
@@ -116,9 +106,29 @@ def plot_whpa():
               fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
 
 
+def plot_h_pc_ba(root):
+    x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
+    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
+
+    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    fobj = os.path.join(base_dir, 'h_pca.pkl')
+    h_pco = joblib.load(fobj)
+    hnc0 = h_pco.ncomp
+
+    h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+
+    # Cut desired number of PC components
+    # d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
+    h_pco.pca_test_transformation(h_pred)
+    h_pco.pca_refresh(hnc0)
+
+    mplot.h_pca_inverse_plot(h_pco, h_pco.ncomp, training=True, fig_dir=os.path.join(base_dir, 'control'))
+
+
 if __name__ == '__main__':
-    empty_figs('6623dd4fb5014a978d59b9acb03946d2')
-    cca_vision('6623dd4fb5014a978d59b9acb03946d2')
-    pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
+    plot_h_pc_ba('6623dd4fb5014a978d59b9acb03946d2')
+    # empty_figs('6623dd4fb5014a978d59b9acb03946d2')
+    # cca_vision('6623dd4fb5014a978d59b9acb03946d2')
+    # pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
 
 

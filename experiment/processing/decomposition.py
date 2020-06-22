@@ -174,7 +174,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
     tcp = tcp[:, selection, :]
-    d_pco.pca_test_transformation(tcp)  # Performs transformation on testing curves
+    d_pco.pca_test_transformation(tcp, test_roots=test_roots)  # Performs transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Performs transformation on training curves
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
@@ -190,7 +190,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # Compute WHPA
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
-        h_pco.pca_test_transformation(h)
+        h_pco.pca_test_transformation(h, test_roots=test_roots)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 

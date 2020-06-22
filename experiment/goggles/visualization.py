@@ -13,27 +13,6 @@ from experiment.toolbox import filesio
 plt.style.use('dark_background')
 
 
-def d_pca_inverse_plot(v, e, pca_o, vn, fig_file=None, show=False):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation
-    :param v: Original, untransformed data array
-    :param e: Sample number on which the test is performed
-    :param pca_o: data PCA operator
-    :param vn: Number of components to inverse-transform the data
-    :return:
-    """
-    v_pc = pca_o.transform(v)
-    v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-    plt.plot(v[e], 'r', alpha=.8)
-    plt.plot(v_pred, 'c', alpha=.8)
-    if fig_file is not None:
-        plt.savefig(fig_file, dpi=300)
-        plt.close()
-    if show:
-        plt.show()
-        plt.close()
-
-
 def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
     """
     PCA explained variance plot
@@ -76,7 +55,7 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     plt.xticks(np.arange(0, ut, 5), fontsize=8)
     plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)  # Plot all training scores
     cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
-    sns.kdeplot(np.arange(1, ut+1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+    sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
     plt.xlim(0.5, ut)  # Define x lim
     for sample_n in range(len(prediction)):
         pc_obs = prediction[sample_n]
@@ -85,9 +64,9 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
                  label=str(sample_n))
 
         xnew = np.linspace(1, ut, 200)
-        spl = make_interp_spline(np.arange(1, ut+1), pc_obs.T[:ut], k=3)  # type: BSpline
+        spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew-1, power_smooth, 'y', linewidth=.3, alpha=.5)
+        plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
     plt.title('PCA scores')
     plt.xlabel('Component id')
@@ -390,20 +369,20 @@ class Plot:
             plt.show()
             plt.close()
 
-    def h_pca_inverse_plot(self, pca_o, e, vn, fig_file=None, show=False):
+    @staticmethod
+    def d_pca_inverse_plot(v, e, pca_o, vn, fig_file=None, show=False):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
+        :param v: Original, untransformed data array
         :param e: Sample number on which the test is performed
-        :param pca_o: signed distance PCA operator
-        :param vn: Number of components to inverse-transform.
+        :param pca_o: data PCA operator
+        :param vn: Number of components to inverse-transform the data
         :return:
         """
-        shape = pca_o.shape
-        v_pc = pca_o.training_pc
-        v_pred = (np.dot(v_pc[e, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
-        self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)
-        self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=False)
-
+        v_pc = pca_o.transform(v)
+        v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+        plt.plot(v[e], 'r', alpha=.8)
+        plt.plot(v_pred, 'c', alpha=.8)
         if fig_file is not None:
             plt.savefig(fig_file, dpi=300)
             plt.close()
@@ -411,7 +390,31 @@ class Plot:
             plt.show()
             plt.close()
 
-    def pca_inverse_compare(self, pco_d, pco_h, nd=None, nh=None, show=False):
+    def h_pca_inverse_plot(self, pca_o, vn, training=True, fig_dir=None, show=False):
+        """
+        Plot used to compare the reproduction of the original physical space after PCA transformation
+        :param pca_o: signed distance PCA operator
+        :param vn: Number of components to inverse-transform.
+        :return:
+        """
+        shape = pca_o.shape
+
+        if training:
+            v_pc = pca_o.training_pc
+            roots = pca_o.roots
+        else:
+            v_pc = pca_o.predict_pc
+            roots = pca_o.test_roots
+
+        for i, r in enumerate(roots):
+            v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1)
+            self.whp(h=pca_o.training_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+            if fig_dir is not None:
+                plt.savefig(jp(fig_dir, f'{r}.png'), dpi=300)
+                plt.close()
+
+    def pca_inverse_compare(self, pco_d=None, pco_h=None, nd=None, nh=None, show=False):
         """
         Plots original data and recovered data by PCA inverse transformation given a number of components
         :param pco_h: PCA object for h
@@ -422,22 +425,23 @@ class Plot:
         """
 
         for n_compare, r in enumerate(pco_h.roots):
-
             fig_dir = jp(MySetup.Directories.forecasts_dir, 'base', 'control')
             filesio.dirmaker(fig_dir)
 
             fig_file = jp(fig_dir, r)
 
-            d_pca_inverse_plot(pco_d.training_physical,
-                               n_compare,
-                               pco_d.operator,
-                               nd,
-                               fig_file=''.join((fig_file, '_d')), show=show)
+            if pco_d is not None:
+                self.d_pca_inverse_plot(pco_d.training_physical,
+                                        n_compare,
+                                        pco_d.operator,
+                                        nd,
+                                        fig_file=''.join((fig_file, '_d')), show=show)
 
-            self.h_pca_inverse_plot(pco_h,
-                                    n_compare,
-                                    nh,
-                                    fig_file=''.join((fig_file, '_h')), show=show)
+            if pco_h is not None:
+                self.h_pca_inverse_plot(pco_h,
+                                        n_compare,
+                                        nh,
+                                        fig_file=''.join((fig_file, '_h')), show=show)
 
         # Displays the explained variance percentage given the number of components
         # print(pco_d.perc_pca_components(nd))

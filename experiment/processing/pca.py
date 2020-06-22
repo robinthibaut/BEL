@@ -34,6 +34,7 @@ class PCAIO:
         self.n_training = len(self.training_physical)  # Number of training data
         self.training_pc = None  # Training set - PCA space
 
+        self.test_roots = None
         self.predict_physical = None  # Prediction set - physical space
         self.predict_pc = None  # Prediction set - PCA space
 
@@ -72,12 +73,14 @@ class PCAIO:
 
         return pc_training
 
-    def pca_test_transformation(self, test):
+    def pca_test_transformation(self, test, test_roots):
         """
         Instantiate the PCA object and transforms both training and test data.
         Depending on the value of the load parameter, it will create a new one or load a previously computed one.
         :return: PC training, PC test
         """
+        self.test_roots = test_roots
+
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
         # Transform prediction data into principal components
 

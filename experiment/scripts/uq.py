@@ -92,7 +92,7 @@ def value_info(root):
 
 def main():
     if os.uname().nodename == 'MacBook-Pro.local':
-        MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project/experiment/hydro/results'
+        MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
         root_file = '/Users/robin/OneDrive - UGent/Project/experiment/bel/forecasts/base/roots.dat'
     else:
         root_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat')
@@ -120,13 +120,10 @@ def main():
     comb = MySetup.Wels.combination  # Get default combination (all)
     belcomb = utils.combinator(comb)  # Get all possible combinations
 
-    # sa = belcomb.index((5, 6))
-    # belcomb = belcomb[sa:]
-
     # Perform base decomposition on the m roots
     scan_roots(base=MySetup, training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
 
 
 if __name__ == '__main__':
-    # main()
-    value_info('6623dd4fb5014a978d59b9acb03946d2')
+    main()
+    # value_info('6623dd4fb5014a978d59b9acb03946d2')
