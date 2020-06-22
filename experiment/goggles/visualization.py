@@ -363,7 +363,7 @@ class Plot:
         if h_pred is not None:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.savefig(fig_file, bbox_inches='tight', dpi=100)
             plt.close()
         if show:
             plt.show()
@@ -386,7 +386,7 @@ class Plot:
             roots = pca_o.test_roots
 
         for i, r in enumerate(roots):
-            v_pred = np.dot(v_pc[i, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+            v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
             if training:
                 plt.plot(pca_o.training_physical[i], 'r', alpha=.8)
             else:

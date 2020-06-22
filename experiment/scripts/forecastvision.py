@@ -135,9 +135,9 @@ def plot_pc_ba(root):
         d_pco.pca_refresh(dnc0)
         setattr(d_pco, 'test_roots', [root])
         mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
-                                 fig_dir=os.path.join(os.path.dirname(res_dir), 'pca', f'{f}.png'))
+                                 fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
         mplot.d_pca_inverse_plot(d_pco, dnc0, training=False,
-                                 fig_dir=os.path.join(os.path.dirname(res_dir), 'pca', f'{f}.png'))
+                                 fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
 
 
 if __name__ == '__main__':
