@@ -112,15 +112,15 @@ def plot_pc_ba(root):
 
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     fobj = os.path.join(base_dir, 'h_pca.pkl')
-    h_pco = joblib.load(fobj)
-    hnc0 = h_pco.ncomp
-    # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
-
-    h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
-    # Cut desired number of PC components
-    h_pco.pca_test_transformation(h_pred, test_roots=[root])
-    h_pco.pca_refresh(hnc0)
-    mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=os.path.join(base_dir, 'control'))
+    # h_pco = joblib.load(fobj)
+    # hnc0 = h_pco.ncomp
+    # # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
+    #
+    # h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+    # # Cut desired number of PC components
+    # h_pco.pca_test_transformation(h_pred, test_roots=[root])
+    # h_pco.pca_refresh(hnc0)
+    # mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=os.path.join(base_dir, 'control'))
 
     # d
     subdir = os.path.join(MySetup.Directories.forecasts_dir, root)

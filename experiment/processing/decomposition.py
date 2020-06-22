@@ -163,7 +163,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # We choose an appropriate number of components to keep later on.
 
     # PCA on transport curves
-    d_pco = PCAIO(name='d', training=tc, directory=obj_dir)
+    d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.pca_training_transformation()
     # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves

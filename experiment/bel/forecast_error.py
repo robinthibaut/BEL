@@ -96,14 +96,6 @@ class UncertaintyQuantification:
         # Contours
         self.vertices = None
 
-    def control(self, dnc=None, hnc=None):
-        if dnc is None:
-            dnc = self.d_pco.ncomp
-        if hnc is None:
-            hnc = self.h_pco.ncomp
-        # Checking
-        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc, hnc)
-
     # %% Random sample from the posterior
     def sample_posterior(self, sample_n=None, n_posts=None):
         """
