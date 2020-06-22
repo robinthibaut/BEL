@@ -12,7 +12,6 @@ from flopy.export import vtk as vtk_flow
 
 import experiment.grid.meshio as mops
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories, Wels
 
 
 def order_vertices(vertices):
@@ -33,8 +32,9 @@ def order_vertices(vertices):
 
 
 class ModelVTK:
-    def __init__(self, folder):
-        md = Directories()
+    def __init__(self, base, folder):
+        self.base = base
+        md = self.base.Directories()
         self.rn = folder
         self.bdir = md.main_dir
         self.results_dir = jp(md.hydro_res_dir, self.rn)
@@ -42,23 +42,29 @@ class ModelVTK:
         fops.dirmaker(self.vtk_dir)
 
         # %% Load flow model
-        m_load = jp(self.results_dir, 'whpa.nam')
-        self.flow_model = fops.load_flow_model(m_load, model_ws=self.results_dir)
-        delr = self.flow_model.modelgrid.delr  # thicknesses along rows
-        delc = self.flow_model.modelgrid.delc  # thicknesses along column
-        # xyz_vertices = self.flow_model.modelgrid.xyzvertices
-        # blocks2d = mops.blocks_from_rc(delc, delr)
-        self.blocks = mops.blocks_from_rc_3d(delc, delr)
-        # blocks3d = self.blocks.reshape(-1, 3)
+        try:
+            m_load = jp(self.results_dir, 'whpa.nam')
+            self.flow_model = fops.load_flow_model(m_load, model_ws=self.results_dir)
+            delr = self.flow_model.modelgrid.delr  # thicknesses along rows
+            delc = self.flow_model.modelgrid.delc  # thicknesses along column
+            # xyz_vertices = self.flow_model.modelgrid.xyzvertices
+            # blocks2d = mops.blocks_from_rc(delc, delr)
+            self.blocks = mops.blocks_from_rc_3d(delc, delr)
+            # blocks3d = self.blocks.reshape(-1, 3)
+        except Exception as e:
+            print(e)
 
-        # Transport model
-        mt_load = jp(self.results_dir, 'whpa.mtnam')
-        self.transport_model = fops.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
-        ucn_files = [jp(self.results_dir, 'MT3D00{}.UCN'.format(i)) for i in
-                     range(1, 7)]  # Files containing concentration
-        ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
-        self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
-        self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
+        try:
+            # Transport model
+            mt_load = jp(self.results_dir, 'whpa.mtnam')
+            self.transport_model = fops.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
+            ucn_files = [jp(self.results_dir, 'MT3D00{}.UCN'.format(i)) for i in
+                         range(1, 7)]  # Files containing concentration
+            ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
+            self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
+            self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
+        except Exception as e:
+            print(e)
 
     def flow_vtk(self):
         """
@@ -308,7 +314,7 @@ class ModelVTK:
     def wels_vtk(self):
         """Exports wels coordinates to VTK"""
 
-        wbd = Wels().wels_data
+        wbd = self.base.Wels().wels_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z
