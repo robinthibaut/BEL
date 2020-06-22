@@ -1,15 +1,32 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+"""
+
+In a Bayesian framework: the prior consists of all possibilities
+imagined by a human modeler, possibly aided by computers, then, the posterior includes
+only those possibilities that cannot be falsified with data as modeled in the likelihood.
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 49
+
+If simpler models can be run more frequently
+when uncertainty is a critical objective (such as in forecasts), then simpler models may
+be preferred if the difference between a simple model and a complex model is small
+compared to all other uncertainties in the model.
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 52
+
+"""
+
+
 import multiprocessing as mp
 import shutil
 import time
 import uuid
+import os
 from os.path import join as jp
 
 import numpy as np
 
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories
+from experiment.base.inventory import MySetup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -21,13 +38,18 @@ def simulation(folder=None):
     if folder is 0:
         folder = None
     # Directories
-    md = Directories()
-    main_dir = md.main_dir
-    exe_loc = jp(main_dir, 'hydro', 'exe')  # EXE directory
+    main_dir = MySetup.Directories.main_dir
+    exe_loc = jp(main_dir, 'hydro', 'exe')  #
+    # directory
     # EXE files directory.
-    exe_name_mf = jp(exe_loc, 'mf2005.exe')
-    exe_name_mt = jp(exe_loc, 'mt3d.exe')
-    exe_name_mp = jp(exe_loc, 'mp7.exe')
+    if os.uname().nodename == 'MacBook-Pro.local':
+        exe_name_mf = jp(exe_loc, 'mf2005')
+        exe_name_mt = jp(exe_loc, 'mt3dms')
+        exe_name_mp = jp(exe_loc, 'mp7')
+    else:
+        exe_name_mf = jp(exe_loc, 'mf2005.exe')
+        exe_name_mt = jp(exe_loc, 'mt3d.exe')
+        exe_name_mp = jp(exe_loc, 'mp7.exe')
 
     if not folder:
         # Main results directory.
@@ -35,14 +57,17 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(md.hydro_res_dir, res_dir)
+    results_dir = jp(MySetup.Directories.hydro_res_dir, res_dir)
+    # reload data in old root:
+    results_dir = jp(MySetup.Directories.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
 
-    grid_dir = md.grid_dir
+    grid_dir = MySetup.Directories.grid_dir
     # Generates the result directory
     fops.dirmaker(results_dir)
 
     # Statistical simulation
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
+
     # Run Flow
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
@@ -50,7 +75,7 @@ def simulation(folder=None):
                       hk_array=hk_array, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir)
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on
@@ -71,6 +96,6 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('lol')
+    simulation('macos')
     end = time.time()
     print((end - start) / 60)

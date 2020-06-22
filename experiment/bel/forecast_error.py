@@ -1,8 +1,17 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 """
-Forecast error analysis
+Forecast error analysis.
+
+- quantifying uncertainty
+- assessing uncertainty
+- modeling uncertainty
+- realistic assessment of uncertainty.
+
+- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 50
 """
 
+import os
 from os.path import join as jp
 
 import joblib
@@ -11,7 +20,6 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.base.inventory import Directories, Focus
 from experiment.goggles.visualization import Plot, cca_plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
@@ -23,65 +31,78 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, study_folder):
+    def __init__(self, base, study_folder, base_dir=None, wel_comb=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
+
+        self.base = base
+
         self.po = PosteriorIO()
-        fc = Focus()
+        fc = self.base.Focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
-        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)
+
+        self.wel_comb = wel_comb
+        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, wel_comb=self.wel_comb)
 
         # Directories & files paths
-        md = Directories()
+        md = self.base.Directories()
         self.main_dir = md.main_dir
 
         self.grid_dir = md.grid_dir
         self.mplot.wdir = self.grid_dir
 
+        # TODO: get folders from base model
         self.bel_dir = jp(self.main_dir, 'bel', 'forecasts', study_folder)
-        self.res_dir = jp(self.bel_dir, 'objects')
-        self.fig_dir = jp(self.bel_dir, 'figures')
-        self.fig_cca_dir = jp(self.fig_dir, 'CCA')
-        self.fig_pred_dir = jp(self.fig_dir, 'Predictions')
+        if base_dir is None:
+            self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
+        else:
+            self.base_dir = base_dir
+        self.res_dir = jp(self.bel_dir, 'obj')
+        self.fig_cca_dir = jp(self.bel_dir, 'cca')
+        self.fig_pred_dir = jp(self.bel_dir, 'uq')
 
         # Load objects
-        f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca', 'h_pca']))
-        self.cca_operator, self.d_pco, self.h_pco = list(map(joblib.load, f_names))
+        f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+        self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
+        self.h_pco = joblib.load(jp(self.base_dir, 'h_pca.pkl'))
 
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.ncomp
         hnc0 = self.h_pco.ncomp
-        # print(d_pco.perc_pca_components(dnc0))
-        # print(h_pco.perc_pca_components(hnc0))
-        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc0, hnc0)
 
         # Cut desired number of PC components
-        d_pc_training, d_pc_prediction = self.d_pco.pca_refresh(dnc0)
+        d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
         h_pc_training, h_pc_prediction = self.h_pco.pca_refresh(hnc0)
 
         # CCA plots
         d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-        cca_plot(self.cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
-                 sdir=self.fig_cca_dir)
+        # cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
+        #          sdir=self.fig_cca_dir)
 
         # Sampling
         self.n_training = len(d_pc_training)
-        self.n_test = len(d_pc_prediction)
         self.sample_n = 0
-        self.n_posts = 500
+        self.n_posts = self.base.Forecast.n_posts
         self.forecast_posterior = None
-        self.d_pc_obs = None
-        self.h_true_obs = None
+        self.h_true_obs = None  # True h in physical space
         self.shape = None
-        self.h_pc_true_pred = None
-        self.h_pred = None
+        self.h_pc_true_pred = None  # CCA predicted 'true' h PC
+        self.h_pred = None  # 'true' h in physical space
 
         # Contours
         self.vertices = None
+
+    def control(self, dnc=None, hnc=None):
+        if dnc is None:
+            dnc = self.d_pco.ncomp
+        if hnc is None:
+            hnc = self.h_pco.ncomp
+        # Checking
+        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc, hnc)
 
     # %% Random sample from the posterior
     def sample_posterior(self, sample_n=None, n_posts=None):
@@ -93,6 +114,7 @@ class UncertaintyQuantification:
         """
         if sample_n is not None:
             self.sample_n = sample_n
+
         if n_posts is not None:
             self.n_posts = n_posts
 
@@ -104,18 +126,18 @@ class UncertaintyQuantification:
                                                         add_comp=0)
         # Get the true array of the prediction
         # Prediction set - PCA space
-        self.d_pc_obs = self.d_pco.predict_pc[sample_n]
-        self.shape = self.h_pco.raw_data.shape
+        self.shape = self.h_pco.shape
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
-
         # Predicting the function based for a certain number of 'observations'
-        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_obs[:self.d_pco.ncomp].reshape(1, -1))
+        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
         # Going back to the original function dimension and reshape.
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         # Plot results
-        ff = jp(self.fig_pred_dir, '{}_{}.png'.format(sample_n, self.cca_operator.n_components))
+        ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
+        h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
+        self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
         self.mplot.whp_prediction(forecasts=self.forecast_posterior,
                                   h_true=self.h_true_obs,
                                   h_pred=self.h_pred,
@@ -168,7 +190,7 @@ class UncertaintyQuantification:
         # Create a structured grid to estimate kernel density
         # TODO: create a function to copy/paste values on differently refined grids
         # Prepare the Plot instance with right dimensions
-        grf_kd = 2
+        grf_kd = 4
         mpkde = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=grf_kd)
         mpkde.wdir = self.grid_dir
         cell_dim = grf_kd
@@ -185,7 +207,7 @@ class UncertaintyQuantification:
         xyu = xy[inside]  # Create mask
 
         # Perform KDE
-        bw = 1.618  # Arbitrary 'smoothing' parameter
+        bw = 1.  # Arbitrary 'smoothing' parameter
         # Reshape coordinates
         x_stack = np.hstack([vi[:, 0] for vi in self.vertices])
         y_stack = np.hstack([vi[:, 1] for vi in self.vertices])
@@ -233,30 +255,45 @@ class UncertaintyQuantification:
                   fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
                   show=True)
 
+        return z
+
     # %% New approach : stack binary WHPA
     def binary_stack(self):
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate Plot tool
+        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, wel_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
+        b_low = np.flipud(b_low)
+
+        # a measure of the error could be a measure of the area covered by the n samples.
+        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+
         # Display result
+        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+                       alpha=1,
+                       lw=1,
+                       show_wells=False,
+                       colors='red',
+                       show=False)
+
         mpbin.whp(bkg_field_array=b_low,
                   show_wells=True,
                   vmin=None,
                   vmax=None,
                   cmap='RdGy',
                   fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
+                  title=str(error_estimate),
                   show=True)
 
-        # a measure of the error could be a measure of the area covered by the n samples.
-        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+        # Save result
+        np.save(jp(self.fig_pred_dir, 'bin'), b_low)
 
     #  Let's try Hausdorff...
     def mhd(self):
@@ -280,3 +317,6 @@ class UncertaintyQuantification:
                                   show_wells=True,
                                   title=str(np.round(mhds.mean(), 2)),
                                   fig_file=fig)
+
+        # Save mhd
+        np.save(jp(self.fig_pred_dir, 'haus'), mhds)

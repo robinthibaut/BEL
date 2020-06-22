@@ -148,7 +148,7 @@ class PosteriorIO:
                        d_pc_training,
                        d_rotations,
                        d_cca_prediction)
-        shp = pca_h.raw_data.shape  # Original shape
+        shp = pca_h.shape  # Original shape
         # n_posts = 500  # Number of estimates sampled from the distribution.
         # Draw n_posts random samples from the multivariate normal distribution :
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,

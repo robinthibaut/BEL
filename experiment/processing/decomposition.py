@@ -1,11 +1,15 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
+
 """
 This script pre-processes the data.
+
 - It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
 do not necessarily share the same time steps - d
+
 - It computes the signed distance field for each particles endpoints file - h
 It then perform PCA keeping all components on both d and h.
-Finally, CCA is performed after selecting an appropriate number of PC to keep.
+
+- Finally, CCA is performed after selecting an appropriate number of PC to keep.
 
 It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
 """
@@ -23,136 +27,189 @@ from sklearn.cross_decomposition import CCA
 import experiment.goggles.visualization as plot
 import experiment.processing.examples as dops
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Directories, Focus
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
-plt.style.use('dark_background')
+
+def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
+    if d_pca_obj is not None:
+        # Loads the results:
+        tc0, _, _ = fops.load_res(roots=roots, d=True)
+        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        # pzs = WHPA
+        # roots_ = simulation id
+        # Subdivide d in an arbitrary number of time steps:
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+        # with n_sim = n_training + n_test
+        # PCA on transport curves
+        d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
+        d_pco.pca_training_transformation()
+        d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+        # Dump
+        joblib.dump(d_pco, d_pca_obj)
+
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
+
+    if h_pca_obj is not None:
+        # Loads the results:
+        _, pzs, r = fops.load_res(roots=roots, h=True)
+        # Load parameters:
+        sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+
+        # PCA on signed distance
+        # Compute signed distance on pzs.
+        # h is the matrix of target feature on which PCA will be performed.
+        h = np.array([sd.compute(pp) for pp in pzs])
+
+        if check:
+            # Load parameters:
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
+            fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
+            fops.dirmaker(fig_dir)
+            for i, e in enumerate(h):
+                mp.whp([e],
+                       lw=1,
+                       fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
+                np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
+
+            # return
+
+        # Initiate h pca object
+        h_pco = PCAIO(name='h', training=h, roots=roots, directory=os.path.dirname(h_pca_obj))
+        # Transform
+        h_pco.pca_training_transformation()
+        # Define number of components to keep
+        h_pco.n_pca_components(.98)  # Number of components for signed distance
+        # Dump
+        joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
+def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
+    :param wel_comb: List of injection wels used to make prediction
     :param test_roots: Folder paths containing outputs to be predicted
-    :param n_training: Number of samples used to train the model
-    :param n_test: Number of samples on which to perform prediction
-    :param new_dir: Name of the forecast directory
 
     """
 
-    fc = Focus()
-    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
+    # Load parameters:
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate Plot instance
+
+    if wel_comb is not None:
+        base.Wels.combination = wel_comb
+
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
 
     # Directories
-    md = Directories()
+    md = base.Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
-    bel_dir = md.forecasts_dir  # Directory in which to load forecasts
 
     # Parse test_roots
-    if isinstance(test_roots, (list, tuple)):
-        n_test = len(test_roots)
-        for f in test_roots:
-            if not os.path.exists(jp(res_dir, f)):
-                warnings.warn('Specified folder {} does not exist'.format(jp(res_dir, f)))
-    if isinstance(test_roots, str):
+    if isinstance(test_roots, str):  # If only one root given
         if os.path.exists(jp(res_dir, test_roots)):
             test_roots = [test_roots]
-            n_test = 1
         else:
             warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
 
-    if new_dir is not None:  # If a new_dir is provided, it assumes that a roots.dat file exist in that folder.
-        with open(jp(bel_dir, new_dir, 'roots.dat')) as f:
-            roots = f.read().splitlines()
-    else:  # Otherwise we start from 0.
-        new_dir = str(uuid.uuid4())  # sub-directory for forecasts
-        roots = None
+    bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
 
+    base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
+
+    new_dir = ''.join(list(map(str, base.Wels.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
-    obj_dir = jp(sub_dir, 'objects')
 
-    fig_dir = jp(sub_dir, 'figures')
-    fig_data_dir = jp(fig_dir, 'Data')
-    fig_pca_dir = jp(fig_dir, 'PCA')
-    fig_cca_dir = jp(fig_dir, 'CCA')
-    fig_pred_dir = jp(fig_dir, 'Predictions')
+    # %% Folders
+    obj_dir = jp(sub_dir, 'obj')
+    fig_data_dir = jp(sub_dir, 'data')
+    fig_pca_dir = jp(sub_dir, 'pca')
+    fig_cca_dir = jp(sub_dir, 'cca')
+    fig_pred_dir = jp(sub_dir, 'uq')
+    # TODO: pass them to next class
 
-    # Creates directories
+    # %% Creates directories
+
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
-    n = n_training + n_test  # Total number of simulations to load, only has effect if NO roots file is loaded.
-    tc0, pzs, roots_ = fops.load_res(res_dir=res_dir, n=n, roots=roots, test_roots=test_roots)  # Loads the results
+    # Load training data
+    tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
+    if not os.path.exists(tsub):
+        # Loads the results:
+        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
+        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        # pzs = WHPA
+        # roots_ = simulation id
+        # Subdivide d in an arbitrary number of time steps:
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+        # with n_sim = n_training + n_test
+        np.save(tsub, tc)
+        # Save file roots
+    else:
+        tc = np.load(tsub)
 
-    # Save file roots
-    with open(jp(sub_dir, 'roots.dat'), 'w') as f:
-        for r in roots_:
-            f.write(os.path.basename(r) + '\n')
+    if not os.path.exists(jp(base_dir, 'roots.dat')):
+        with open(jp(base_dir, 'roots.dat'), 'w') as f:
+            for r in training_roots:  # Saves roots name until test roots
+                f.write(os.path.basename(r) + '\n')
 
-    # Compute signed distance on pzs.
-    # h is the matrix of target feature on which PCA will be performed.
-    h = np.array([sd.compute(pp) for pp in pzs])
-    # Plot all WHPP
-    mp.whp(h, fig_file=jp(fig_data_dir, 'all_whpa.png'), show=True)
-
-    # Subdivide d in an arbitrary number of time steps.
-    tc = dops.d_process(tc0=tc0, n_time_steps=250)
-    n_wel = len(tc[0])  # Number of injecting wels
-
-    # Plot d
-    mp.curves(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
-    mp.curves_i(tc=tc, n_wel=n_wel, sdir=fig_data_dir)
+    # %% Select wels:
+    selection = [wc - 1 for wc in base.Wels.combination]
+    tc = tc[:, selection, :]
 
     # %%  PCA
     # PCA is performed with maximum number of components.
     # We choose an appropriate number of components to keep later on.
 
-    # Choose size of training and prediction set
-    n_sim = len(h)  # Number of simulations
-    n_obs = n_test  # Number of 'observations' on which the predictions will be made.
-    n_training = n_sim - n_obs  # number of synthetic data that will be used for constructing our prediction model
-
     # PCA on transport curves
-    d_pco = PCAIO(name='d', raw_data=tc, directory=obj_dir)
-    d_pco.pca_tp(n_training)  # Split into training and prediction
-    d_pc_training, d_pc_prediction = d_pco.pca_transformation()  # Performs transformation
+    d_pco = PCAIO(name='d', training=tc, directory=obj_dir)
+    d_pco.pca_training_transformation()
+    # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+    # PCA on transport curves
+    d_pco.ncomp = 50
+    ndo = d_pco.ncomp
+    # Load test
+    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots, d=True)
+    # Subdivide d in an arbitrary number of time steps:
+    tcp = dops.d_process(tc0=tc0, n_time_steps=200)
+    tcp = tcp[:, selection, :]
+    d_pco.pca_test_transformation(tcp)  # Performs transformation on testing curves
+    d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Performs transformation on training curves
+    # Save the d PC object.
+    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
+    # Plot d:
+    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # PCA on signed distance
-    h_pco = PCAIO(name='h', raw_data=h, directory=obj_dir)
-    h_pco.pca_tp(n_training)  # Split into training and prediction
-    h_pc_training, h_pc_prediction = h_pco.pca_transformation()
+    h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
+    nho = h_pco.ncomp  # Number of components to keep
+    # Load
+    _, pzs, _ = fops.load_res(roots=test_roots, h=True)
+    # Compute WHPA
+    if h_pco.predict_pc is None:
+        h = np.array([sd.compute(pp) for pp in pzs])
+        h_pco.pca_test_transformation(h)
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
-    # TODO: Build a framework to select the number of PC components.
-    # Choose number of PCA components to keep.
-    # Compares true value with inverse transformation from PCA
-    ndo = d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-    nho = h_pco.n_pca_components(.98)  # Number of components for signed distance
+        fig_dir = jp(base_dir, 'roots_whpa')
+        fops.dirmaker(fig_dir)
+        np.save(jp(fig_dir, test_roots[0]), h)  # Save the prediction WHPA
+        ff = jp(fig_dir, f'{test_roots[0]}.png')
+        h_training = h_pco.training_physical.reshape(h_pco.shape)
+        mp.whp(h_training, alpha=.2, show=False)
+        mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
 
-    # Explained variance plots
-    plot.explained_variance(d_pco.operator, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_exvar.png'), show=True)
-    plot.explained_variance(h_pco.operator, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_exvar.png'), show=True)
+    else:
+        # Cut components
+        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
-    # Scores plots
-    plot.pca_scores(d_pc_training, d_pc_prediction, n_comp=ndo, fig_file=jp(fig_pca_dir, 'd_scores.png'), show=True)
-    plot.pca_scores(h_pc_training, h_pc_prediction, n_comp=nho, fig_file=jp(fig_pca_dir, 'h_scores.png'), show=True)
 
-    # Assign final n_comp for PCA
-    n_d_pc_comp = ndo
-    n_h_pc_comp = nho
-
-    # Cut desired number of PC components
-    d_pc_training, d_pc_prediction = d_pco.pca_refresh(n_d_pc_comp)
-    h_pc_training, h_pc_prediction = h_pco.pca_refresh(n_h_pc_comp)
-
-    # Save the d and h PC objects.
-    joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
-    joblib.dump(h_pco, jp(obj_dir, 'h_pca.pkl'))
     # %% CCA
 
-    n_comp_cca = min(n_d_pc_comp, n_h_pc_comp)  # Number of CCA components is chosen as the min number of PC
+    n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
@@ -160,5 +217,4 @@ def bel(n_training=300, n_test=5, new_dir=None, test_roots=None):
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
-    return new_dir
-
+    return sub_dir

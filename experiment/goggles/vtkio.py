@@ -132,13 +132,12 @@ class ModelVTK:
 
         ugrid.SetPoints(points)  # Set points
 
-        # Initiate array and give it a name
-        concArray = vtk.vtkDoubleArray()
-        concArray.SetName("conc")
-
         for i in range(1, 7):  # For eaxh injecting well
             conc_dir = jp(self.results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
             fops.dirmaker(conc_dir)
+            # Initiate array and give it a name
+            concArray = vtk.vtkDoubleArray()
+            concArray.SetName(f"conc{i}")
             for j in range(self.concs.shape[1]):  # For each time step
                 # Set array
                 array = np.fliplr(conc0[i - 1, j]).reshape(-1)
@@ -160,6 +159,7 @@ class ModelVTK:
     def particles_vtk(self, path=1):
         """
         Export travelling particles time series in VTP format
+        :param path: Flag to export path's vtk
         :return:
         """
         back_dir = jp(self.results_dir, 'vtk', 'backtrack')
@@ -306,10 +306,12 @@ class ModelVTK:
     # %% Export wells objects as vtk
 
     def wels_vtk(self):
+        """Exports wels coordinates to VTK"""
+
         wbd = Wels().wels_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
-        wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)
+        wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z
 
         # Export wels as VTK points
         points = vtk.vtkPoints()  # Points
