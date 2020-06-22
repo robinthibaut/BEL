@@ -370,25 +370,34 @@ class Plot:
             plt.close()
 
     @staticmethod
-    def d_pca_inverse_plot(v, e, pca_o, vn, fig_file=None, show=False):
+    def d_pca_inverse_plot(pca_o, vn, training=True, fig_dir=None, show=False):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
-        :param v: Original, untransformed data array
-        :param e: Sample number on which the test is performed
         :param pca_o: data PCA operator
         :param vn: Number of components to inverse-transform the data
         :return:
         """
-        v_pc = pca_o.transform(v)
-        v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-        plt.plot(v[e], 'r', alpha=.8)
-        plt.plot(v_pred, 'c', alpha=.8)
-        if fig_file is not None:
-            plt.savefig(fig_file, dpi=300)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
+
+        if training:
+            v_pc = pca_o.training_pc
+            roots = pca_o.roots
+        else:
+            v_pc = pca_o.predict_pc
+            roots = pca_o.test_roots
+
+        for i, r in enumerate(roots):
+            v_pred = np.dot(v_pc[i, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
+            if training:
+                plt.plot(pca_o.training_physical[i], 'r', alpha=.8)
+            else:
+                plt.plot(pca_o.predict_physical[i], 'r', alpha=.8)
+            plt.plot(v_pred, 'c', alpha=.8)
+            if fig_dir is not None:
+                plt.savefig(jp(fig_dir, f'{r}_d.png'), dpi=300)
+                plt.close()
+            if show:
+                plt.show()
+                plt.close()
 
     def h_pca_inverse_plot(self, pca_o, vn, training=True, fig_dir=None, show=False):
         """
@@ -409,9 +418,15 @@ class Plot:
         for i, r in enumerate(roots):
             v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
             self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1)
-            self.whp(h=pca_o.training_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+            if training:
+                self.whp(h=pca_o.training_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+            else:
+                self.whp(h=pca_o.predict_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
             if fig_dir is not None:
-                plt.savefig(jp(fig_dir, f'{r}.png'), dpi=300)
+                plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300)
+                plt.close()
+            if show:
+                plt.show()
                 plt.close()
 
     def pca_inverse_compare(self, pco_d=None, pco_h=None, nd=None, nh=None, show=False):
