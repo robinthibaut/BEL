@@ -18,7 +18,7 @@ def transform(f):
     Transforms the values of the statistical_simulation simulations into meaningful data
     """
 
-    k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    k_mean = np.log10(np.random.uniform(1.4, 2))  # Hydraulic conductivity mean between x and y in m/d.
     k_std = 0.4
 
     ff = f * k_std + k_mean
