@@ -70,7 +70,7 @@ def value_info(root):
     plt.ylabel('KDE')
     plt.legend(wid)
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_hist.png'), dpi=300)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_hist.png'), dpi=300, transparent=True)
     plt.show()
 
     # Plot
@@ -86,7 +86,7 @@ def value_info(root):
     plt.ylabel('MHD mode value')
     plt.legend(wid)
     plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300, transparent=True)
     plt.show()
 
 
