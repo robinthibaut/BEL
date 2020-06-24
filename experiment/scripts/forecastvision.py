@@ -58,12 +58,19 @@ def pca_vision(res_dir, d=True, h=False):
         explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
 
 
-def cca_vision(root_dir):
+def cca_vision(root_dir, folders=None):
     """Loads CCA pickles and plots components for all folders"""
 
     subdir = os.path.join(MySetup.Directories.forecasts_dir, root_dir)
-    listme = os.listdir(subdir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
+    if folders is None:
+        listme = os.listdir(subdir)
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+    else:
+        if not isinstance(folders, (list, tuple)):
+            folders = [folders]
+        else:
+            folders = folders
 
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
 
@@ -150,8 +157,8 @@ def plot_pc_ba(root, data=False, target=False):
 if __name__ == '__main__':
     # plot_pc_ba('6623dd4fb5014a978d59b9acb03946d2', target=True)
     # empty_figs('6623dd4fb5014a978d59b9acb03946d2')
-    plot_whpa('6623dd4fb5014a978d59b9acb03946d2')
-    # cca_vision('6623dd4fb5014a978d59b9acb03946d2')
+    # plot_whpa('6623dd4fb5014a978d59b9acb03946d2')
+    cca_vision('6623dd4fb5014a978d59b9acb03946d2', '123456')
     # pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
 
 
