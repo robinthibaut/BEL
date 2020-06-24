@@ -121,7 +121,7 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
         plt.xlabel('d')
         plt.ylabel('h')
         plt.subplots_adjust(top=0.9)
-        g.fig.suptitle(round(cca_coefficient[i], 4))
+        g.fig.suptitle(f'{i} - {round(cca_coefficient[i], 4)}')
         if sdir:
             plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()

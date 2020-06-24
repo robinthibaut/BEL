@@ -93,8 +93,9 @@ def cca_vision(root_dir):
                  sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
 
-def plot_whpa():
+def plot_whpa(root=None):
     """Loads target pickle and plots all training WHPA"""
+    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
@@ -102,7 +103,11 @@ def plot_whpa():
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.shape)
 
-    mplot.whp(h_training, show=True,
+    mplot.whp(h_training)
+
+    if root is not None:
+        h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+        mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
               fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
 
 
@@ -145,8 +150,8 @@ def plot_pc_ba(root, data=False, target=False):
 if __name__ == '__main__':
     # plot_pc_ba('6623dd4fb5014a978d59b9acb03946d2', target=True)
     # empty_figs('6623dd4fb5014a978d59b9acb03946d2')
-    plot_whpa()
-    cca_vision('6623dd4fb5014a978d59b9acb03946d2')
-    pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
+    plot_whpa('6623dd4fb5014a978d59b9acb03946d2')
+    # cca_vision('6623dd4fb5014a978d59b9acb03946d2')
+    # pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
 
 
