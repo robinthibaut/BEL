@@ -39,7 +39,7 @@ def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
         plt.close()
 
 
-def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
+def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=False):
     """
     PCA scores plot, displays scores of observations above those of training.
     :param training: Training scores
@@ -57,31 +57,37 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     # Ticks
     plt.xticks(np.arange(0, ut, 5), fontsize=8)
     # Plot all training scores
-    plt.plot(training.T[:ut], '+w', markersize=3, alpha=0.5)
+    plt.plot(training.T[:ut], 'ow', markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
     # Choose seaborn cmap
-    cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+    cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
+    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
     # KDE plot
     sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
     plt.xlim(0.5, ut)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
+
         pc_obs = prediction[sample_n]
-        plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'o', markersize=4, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-                 label=str(sample_n))
-        # plt.plot(pc_obs.T[:ut],  # Plot observations scores
-        #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-        #          label=str(sample_n))
+
         # Crete beautiful spline to follow prediction scores
         xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
+        plt.plot(xnew - 1, power_smooth, 'y', linewidth=0.8, alpha=.5)
+        # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
-    plt.title('PCA scores')
-    plt.xlabel('Component id')
-    plt.ylabel('Component scores')
+        plt.plot(pc_obs.T[:ut],  # Plot observations scores
+                 'ko', markersize=4, markeredgecolor='y', markeredgewidth=.4, alpha=.8,
+                 label=str(sample_n))
+        # plt.plot(pc_obs.T[:ut],  # Plot observations scores
+        #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+        #          label=str(sample_n))
+
+    if labels:
+        plt.title('PCA scores')
+        plt.xlabel('Component id')
+        plt.ylabel('Component scores')
     plt.tick_params(labelsize=6)
 
     if fig_file:

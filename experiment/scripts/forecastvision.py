@@ -40,7 +40,11 @@ def pca_vision(res_dir, d=True, h=False, folders=None):
             pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
             d_pco = joblib.load(pcaf)
             fig_file = os.path.join(dfig, 'd_scores.png')
-            pca_scores(training=d_pco.training_pc, prediction=d_pco.predict_pc, n_comp=d_pco.ncomp, fig_file=fig_file)
+            pca_scores(training=d_pco.training_pc,
+                       prediction=d_pco.predict_pc,
+                       n_comp=d_pco.ncomp,
+                       labels=False,
+                       fig_file=fig_file)
             # Explained variance plots
             fig_file = os.path.join(dfig, 'd_exvar.png')
             explained_variance(d_pco.operator, n_comp=d_pco.ncomp, fig_file=fig_file)
@@ -57,7 +61,11 @@ def pca_vision(res_dir, d=True, h=False, folders=None):
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Plot
         fig_file = os.path.join(hbase, 'roots_whpa', 'h_scores.png')
-        pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=nho, fig_file=fig_file)
+        pca_scores(training=h_pc_training,
+                   prediction=h_pc_prediction,
+                   n_comp=nho,
+                   labels=False,
+                   fig_file=fig_file)
         # Explained variance plots
         fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
         explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
@@ -120,7 +128,7 @@ def plot_whpa(root=None):
     if root is not None:
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
         mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
-              fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
+                  fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
 
 
 def plot_pc_ba(root, data=False, target=False):
@@ -167,5 +175,3 @@ if __name__ == '__main__':
     # plot_whpa(sample)
     # cca_vision(sample, '123456')
     pca_vision(sample, d=True, h=True, folders=default)
-
-
