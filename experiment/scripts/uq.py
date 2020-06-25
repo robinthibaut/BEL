@@ -90,30 +90,45 @@ def value_info(root):
     plt.show()
 
 
-def main():
+def main(swap=False):
+    """
+    I. First, defines the roots for training from simulations in the hydro directory.
+    II. Define one 'observation' root.
+    III. Perform PCA decomposition on the training targets and store the otput in the 'base' folder,
+    as to avoid recomputing it every time.
+    IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification
+    """
+
     if os.uname().nodename == 'MacBook-Pro.local':
         MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
         root_file = '/Users/robin/OneDrive - UGent/Project/experiment/bel/forecasts/base/roots.dat'
     else:
+        # Reads in root files (contains uuid of training roots)
         root_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat')
 
-    # md = MySetup.Directories.hydro_res_dir
+    def swap_root(pres):
+        """Selects roots from main folder and swap if necessary"""
+        md = MySetup.Directories.hydro_res_dir
+        listme = os.listdir(md)
+        folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
+        r_training = folders[:200]  # List of n training roots
+        r_obs = folders[200:300]  # List of m observation roots
 
-    # listme = os.listdir(md)
-    # folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
+        idx = r_training.index(pres)
+        r_obs[0], r_training[idx] = r_training[idx], r_obs[0]
 
-    # roots_training = folders[:200]  # List of n training roots
-    # roots_obs = folders[200:300]  # List of m observation roots
-    # pres = '6623dd4fb5014a978d59b9acb03946d2'
-    # idx = roots_training.index(pres)
-    # roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+    if swap:
+        swap_root('6623dd4fb5014a978d59b9acb03946d2')
 
+    # root_file gives in a list of lists, flatten it:
     roots_training = [item for sublist in filesio.datread(root_file) for item in sublist]
+    # Specify 'observation' root:
     roots_obs = ['6623dd4fb5014a978d59b9acb03946d2']
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     filesio.dirmaker(obj_path)
+    # Creates main target PCA object
     obj = os.path.join(obj_path, 'h_pca.pkl')
     dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
 
@@ -125,5 +140,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     value_info('6623dd4fb5014a978d59b9acb03946d2')
