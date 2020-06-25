@@ -13,7 +13,7 @@ from experiment.toolbox import filesio
 plt.style.use('dark_background')
 
 
-def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
+def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
     """
     PCA explained variance plot
     :param pca: PCA operator
@@ -27,14 +27,16 @@ def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
     if not n_comp:
         n_comp = pca.n_components_
 
-    kwargs = {'cumulative': True}
-    sns.distplot(pca.explained_variance_ratio_[:n_comp], hist_kws=kwargs, kde_kws=kwargs)
-
-    plt.xticks(np.arange(n_comp), fontsize=xfs)
+    # plt.xticks(np.arange(n_comp), fontsize=xfs)
+    ny = len(np.where(np.cumsum(pca.explained_variance_ratio_) < thr)[0])
+    cum = np.cumsum(pca.explained_variance_ratio_[:n_comp])*100
+    yticks = np.append(cum[:ny], cum[-1])
+    plt.yticks(yticks)
+    plt.bar(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100, color='m', alpha=.1)
     plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
     plt.xlabel('Components number')
-    plt.ylabel('Cumulated explained variance')
+    plt.ylabel('Cumulative explained variance (%)')
     if fig_file:
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()

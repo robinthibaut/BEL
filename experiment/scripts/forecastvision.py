@@ -49,7 +49,7 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
             # Explained variance plots
             if exvar:
                 fig_file = os.path.join(dfig, 'd_exvar.png')
-                explained_variance(d_pco.operator, n_comp=d_pco.ncomp, fig_file=fig_file)
+                explained_variance(d_pco.operator, n_comp=d_pco.ncomp, thr=.9, fig_file=fig_file)
     if h:
         hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
         # Load h pickle
@@ -72,7 +72,7 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
-            explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
+            explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
 
 
 def cca_vision(root_dir, folders=None):
