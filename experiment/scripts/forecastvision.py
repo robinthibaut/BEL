@@ -23,11 +23,16 @@ def empty_figs(res_dir):
         folder_reset(os.path.join(subdir, f, 'cca'))
 
 
-def pca_vision(res_dir, d=True, h=False):
+def pca_vision(res_dir, d=True, h=False, folders=None):
     """ Loads PCA pickles and plot scores for all folders """
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
-    listme = os.listdir(subdir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+    if folders is None:
+        listme = os.listdir(subdir)
+        folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
+    else:
+        if not isinstance(folders, (list, tuple)):
+            folders = [folders]
+
     if d:
         for f in folders:
             dfig = os.path.join(subdir, f, 'pca')
@@ -155,10 +160,12 @@ def plot_pc_ba(root, data=False, target=False):
 
 
 if __name__ == '__main__':
-    # plot_pc_ba('6623dd4fb5014a978d59b9acb03946d2', target=True)
-    # empty_figs('6623dd4fb5014a978d59b9acb03946d2')
-    # plot_whpa('6623dd4fb5014a978d59b9acb03946d2')
-    cca_vision('6623dd4fb5014a978d59b9acb03946d2', '123456')
-    # pca_vision('6623dd4fb5014a978d59b9acb03946d2', d=True, h=True)
+    sample = '6623dd4fb5014a978d59b9acb03946d2'
+    default = ['123456']
+    # plot_pc_ba(sample, target=True)
+    # empty_figs(sample)
+    # plot_whpa(sample)
+    # cca_vision(sample, '123456')
+    pca_vision(sample, d=True, h=True, folders=default)
 
 

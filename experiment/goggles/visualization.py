@@ -50,19 +50,30 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     :return:
     """
     # Scores plot
+    # Grid
     plt.grid(alpha=0.2)
+    # Number of components to keep
     ut = n_comp
+    # Ticks
     plt.xticks(np.arange(0, ut, 5), fontsize=8)
-    plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)  # Plot all training scores
+    # Plot all training scores
+    plt.plot(training.T[:ut], '+w', markersize=3, alpha=0.5)
+    # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
+    # Choose seaborn cmap
     cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+    # KDE plot
     sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
-    plt.xlim(0.5, ut)  # Define x lim
+    plt.xlim(0.5, ut)  # Define x limits [start, end]
+    # For each sample used for prediction:
     for sample_n in range(len(prediction)):
         pc_obs = prediction[sample_n]
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+                 'o', markersize=4, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                  label=str(sample_n))
-
+        # plt.plot(pc_obs.T[:ut],  # Plot observations scores
+        #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+        #          label=str(sample_n))
+        # Crete beautiful spline to follow prediction scores
         xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
