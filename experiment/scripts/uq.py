@@ -32,7 +32,6 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c)
-            # uq.control()  # Compare PCA recoveries
             uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
@@ -90,7 +89,7 @@ def value_info(root):
     plt.show()
 
 
-def main(swap=False):
+def main(flag_base=False, swap=False):
     """
     I. First, defines the roots for training from simulations in the hydro directory.
     II. Define one 'observation' root.
@@ -127,10 +126,11 @@ def main(swap=False):
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    filesio.dirmaker(obj_path)
-    # Creates main target PCA object
-    obj = os.path.join(obj_path, 'h_pca.pkl')
-    dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
+    fb = filesio.dirmaker(obj_path)
+    if flag_base and fb:
+        # Creates main target PCA object
+        obj = os.path.join(obj_path, 'h_pca.pkl')
+        dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
 
     comb = MySetup.Wels.combination  # Get default combination (all)
     belcomb = utils.combinator(comb)  # Get all possible combinations
@@ -140,5 +140,5 @@ def main(swap=False):
 
 
 if __name__ == '__main__':
-    # main()
+    main()
     value_info('6623dd4fb5014a978d59b9acb03946d2')

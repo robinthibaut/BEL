@@ -386,7 +386,7 @@ class Plot:
         if h_pred is not None:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
-            plt.savefig(fig_file, bbox_inches='tight', dpi=100, transparent=True)
+            plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
