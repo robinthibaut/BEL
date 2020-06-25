@@ -61,6 +61,26 @@ def value_info(root):
                 cid[idw] += 1
 
     colors = Plot().cols
+
+    # Plot
+    # mode
+    modes = []
+    for i, m in enumerate(wm):
+        count, values = np.histogram(m)
+        idm = np.argmax(count)
+        mode = values[idm]
+        modes.append(mode)
+
+    modes = np.array(modes)
+    modes -= np.mean(modes)
+    plt.bar(np.arange(1, 7), -modes, color=colors)
+    plt.title('Value of information of each well')
+    plt.xlabel('Well ID')
+    plt.ylabel('Opposite deviation from mode\'s mean')
+    plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300, transparent=True)
+    plt.show()
+
     # Plot histogram
     for i, m in enumerate(wm):
         sns.kdeplot(m, color=f'{colors[i]}', shade=True, linewidth=2)
@@ -72,21 +92,8 @@ def value_info(root):
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_hist.png'), dpi=300, transparent=True)
     plt.show()
 
-    # Plot
-    # mode
-    for i, m in enumerate(wm):
-        count, values = np.histogram(m)
-        idm = np.argmax(count)
-        mode = values[idm]
-        plt.plot(i, mode, f'{colors[i]}o')
-    plt.title('Value of information for each well')
-    plt.xlabel('Well ID')
-    plt.xticks(np.arange(0, 7), wid)
-    plt.ylabel('MHD mode value')
-    plt.legend(wid)
-    plt.grid(alpha=0.2)
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_well_mode.png'), dpi=300, transparent=True)
-    plt.show()
+
+
 
 
 def main(flag_base=False, swap=False):
@@ -140,5 +147,5 @@ def main(flag_base=False, swap=False):
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     value_info('6623dd4fb5014a978d59b9acb03946d2')

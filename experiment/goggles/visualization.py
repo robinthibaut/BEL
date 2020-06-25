@@ -26,11 +26,15 @@ def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
     plt.grid(alpha=0.1)
     if not n_comp:
         n_comp = pca.n_components_
+
+    kwargs = {'cumulative': True}
+    sns.distplot(pca.explained_variance_ratio_[:n_comp], hist_kws=kwargs, kde_kws=kwargs)
+
     plt.xticks(np.arange(n_comp), fontsize=xfs)
-    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]),
+    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
-    plt.xlabel('Number of components')
-    plt.ylabel('Explained variance')
+    plt.xlabel('Components number')
+    plt.ylabel('Cumulated explained variance')
     if fig_file:
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()

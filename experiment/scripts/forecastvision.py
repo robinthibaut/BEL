@@ -23,7 +23,7 @@ def empty_figs(res_dir):
         folder_reset(os.path.join(subdir, f, 'cca'))
 
 
-def pca_vision(res_dir, d=True, h=False, folders=None):
+def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
     """ Loads PCA pickles and plot scores for all folders """
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
@@ -40,14 +40,16 @@ def pca_vision(res_dir, d=True, h=False, folders=None):
             pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
             d_pco = joblib.load(pcaf)
             fig_file = os.path.join(dfig, 'd_scores.png')
-            pca_scores(training=d_pco.training_pc,
-                       prediction=d_pco.predict_pc,
-                       n_comp=d_pco.ncomp,
-                       labels=False,
-                       fig_file=fig_file)
+            if scores:
+                pca_scores(training=d_pco.training_pc,
+                           prediction=d_pco.predict_pc,
+                           n_comp=d_pco.ncomp,
+                           labels=False,
+                           fig_file=fig_file)
             # Explained variance plots
-            fig_file = os.path.join(dfig, 'd_exvar.png')
-            explained_variance(d_pco.operator, n_comp=d_pco.ncomp, fig_file=fig_file)
+            if exvar:
+                fig_file = os.path.join(dfig, 'd_exvar.png')
+                explained_variance(d_pco.operator, n_comp=d_pco.ncomp, fig_file=fig_file)
     if h:
         hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
         # Load h pickle
@@ -61,14 +63,16 @@ def pca_vision(res_dir, d=True, h=False, folders=None):
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Plot
         fig_file = os.path.join(hbase, 'roots_whpa', 'h_scores.png')
-        pca_scores(training=h_pc_training,
-                   prediction=h_pc_prediction,
-                   n_comp=nho,
-                   labels=False,
-                   fig_file=fig_file)
+        if scores:
+            pca_scores(training=h_pc_training,
+                       prediction=h_pc_prediction,
+                       n_comp=nho,
+                       labels=False,
+                       fig_file=fig_file)
         # Explained variance plots
-        fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
-        explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
+        if exvar:
+            fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
+            explained_variance(h_pco.operator, n_comp=h_pco.ncomp, fig_file=fig_file)
 
 
 def cca_vision(root_dir, folders=None):
@@ -174,4 +178,4 @@ if __name__ == '__main__':
     # empty_figs(sample)
     # plot_whpa(sample)
     # cca_vision(sample, folders=default)
-    pca_vision(sample, d=True, h=True, folders=default)
+    pca_vision(sample, d=True, h=True, scores=False, folders=default)
