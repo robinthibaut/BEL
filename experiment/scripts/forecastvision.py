@@ -173,5 +173,5 @@ if __name__ == '__main__':
     # plot_pc_ba(sample, target=True)
     # empty_figs(sample)
     # plot_whpa(sample)
-    # cca_vision(sample, '123456')
+    # cca_vision(sample, folders=default)
     pca_vision(sample, d=True, h=True, folders=default)

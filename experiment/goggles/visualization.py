@@ -60,7 +60,8 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
     plt.plot(training.T[:ut], 'ow', markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
     # Choose seaborn cmap
-    cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
+    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
+    cmap = sns.cubehelix_palette(8, start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
     # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
     # KDE plot
     sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
@@ -119,8 +120,10 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
         comp_n = i
         # plt.plot(d[comp_n], h[comp_n], 'w+', markersize=3, markerfacecolor='w', alpha=.25)
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
+            # Extract from sample
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
+            # Transform to CCA space
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
@@ -130,6 +133,9 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
                               cmap=cmap, n_levels=80, shade=True,
                               kind='kde')
             g.plot_joint(plt.scatter, c='w', marker='+', s=2, alpha=.7)
+            # add 'arrows' at observation location
+            g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1)
+            g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0)
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
