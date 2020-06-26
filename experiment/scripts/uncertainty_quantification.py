@@ -93,9 +93,6 @@ def value_info(root):
     plt.show()
 
 
-
-
-
 def main(flag_base=False, swap=False):
     """
     I. First, defines the roots for training from simulations in the hydro directory.

@@ -20,7 +20,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.goggles.visualization import Plot, cca_plot
+from experiment.goggles.visualization import Plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
@@ -74,14 +74,7 @@ class UncertaintyQuantification:
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
-        h_pc_training, h_pc_prediction = self.h_pco.pca_refresh(hnc0)
-
-        # CCA plots
-        d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
-        d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-
-        # cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
-        #          sdir=self.fig_cca_dir)
+        self.h_pco.pca_refresh(hnc0)
 
         # Sampling
         self.n_training = len(d_pc_training)
