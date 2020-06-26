@@ -1,5 +1,18 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+"""
+The one-class SVM aims to fit a minimal volume
+hypersphere around the samples in {d(1), d(2),…, d(L)}.
+Any dobs that falls outside of this hypersphere is classified
+as being inconsistent with the prior.
+
+A one-class SVM using a Gaussian kernel is then trained
+in functional space, and the decision boundary is
+identified. If the observed data falls within this boundary,
+then the prior is classified as being consistent with dobs.
+"""
+
+
 import os
 import joblib
 import numpy as np
@@ -62,16 +75,14 @@ y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
 plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='#ff7f00')
-plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r)
+plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r, alpha=.9)
 cbar = plt.colorbar()
 cbar.set_label('Distance to boundary')
 a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='darkred')
-b = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange')
+b = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange', alpha=.9)
 plt.plot(dataset[:, 0], dataset[:, 1], 'wo', markersize=3, markeredgecolor='k')
 plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor='k')
 plt.xlabel('First PC score')
 plt.ylabel('Second PC score')
-
-plt.savefig()
 
 plt.show()
