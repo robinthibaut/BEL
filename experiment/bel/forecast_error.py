@@ -111,7 +111,7 @@ class UncertaintyQuantification:
                                             add_comp=0)
         if save_target_pc:
             fname = os.path.join(self.fig_pred_dir, f'{self.n_posts}_target_pc.npy')
-            np.save(fname)
+            np.save(fname, forecast_pc)
 
         # Generate forecast in the initial dimension and reshape.
         self.forecast_posterior = self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,

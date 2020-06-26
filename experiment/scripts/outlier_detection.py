@@ -17,10 +17,6 @@ import os
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from experiment.toolbox import utils
-from experiment.toolbox.filesio import load_res, folder_reset
-from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
 from experiment.base.inventory import MySetup
 
 from sklearn import svm
@@ -40,7 +36,6 @@ def svm1(res_dir, d=True, h=False, folders=None):
     if d:
 
         for f in folders:
-            dfig = os.path.join(subdir, f, 'pca')
             # For d only
             pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
             d_pco = joblib.load(pcaf)

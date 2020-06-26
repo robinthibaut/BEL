@@ -18,6 +18,9 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
     if not isinstance(obs, (list, tuple, np.array)):
         obs = [obs]
 
+    if not isinstance(combinations, (list, tuple, np.array)):
+        combinations = [combinations]
+
     if base_dir is not None:
         base_dir = base_dir
     else:
@@ -33,8 +36,8 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c)
             uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
-            uq.c0(write_vtk=0)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
+            # uq.c0(write_vtk=0)  # Extract 0 contours
+            # uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
             # uq.kernel_density()
 
@@ -93,7 +96,7 @@ def value_info(root):
     plt.show()
 
 
-def main(flag_base=False, swap=False):
+def main(comb=None, flag_base=False, swap=False):
     """
     I. First, defines the roots for training from simulations in the hydro directory.
     II. Define one 'observation' root.
@@ -136,13 +139,16 @@ def main(flag_base=False, swap=False):
         obj = os.path.join(obj_path, 'h_pca.pkl')
         dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
 
-    comb = MySetup.Wels.combination  # Get default combination (all)
-    belcomb = utils.combinator(comb)  # Get all possible combinations
+    if comb is None:
+        comb = MySetup.Wels.combination  # Get default combination (all)
+        belcomb = utils.combinator(comb)  # Get all possible combinations
+    else:
+        belcomb = comb
 
     # Perform base decomposition on the m roots
     scan_roots(base=MySetup, training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
 
 
 if __name__ == '__main__':
-    # main()
-    value_info('6623dd4fb5014a978d59b9acb03946d2')
+    main(comb='123456')
+    # value_info('6623dd4fb5014a978d59b9acb03946d2')
