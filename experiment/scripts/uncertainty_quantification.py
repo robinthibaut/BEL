@@ -32,7 +32,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()

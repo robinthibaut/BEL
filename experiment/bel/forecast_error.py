@@ -90,7 +90,7 @@ class UncertaintyQuantification:
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None):
+    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
         """
         Extracts n random samples from the posterior
         :param sample_n: Sample identifier
@@ -103,12 +103,20 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
-        self.forecast_posterior = self.po.random_sample(sample_n=self.sample_n,
-                                                        pca_d=self.d_pco,
-                                                        pca_h=self.h_pco,
-                                                        cca_obj=self.cca_operator,
-                                                        n_posts=self.n_posts,
-                                                        add_comp=0)
+        forecast_pc = self.po.random_sample(sample_n=self.sample_n,
+                                            pca_d=self.d_pco,
+                                            pca_h=self.h_pco,
+                                            cca_obj=self.cca_operator,
+                                            n_posts=self.n_posts,
+                                            add_comp=0)
+        if save_target_pc:
+            fname = os.path.join(self.fig_pred_dir, f'{self.n_posts}_target_pc.npy')
+            np.save(fname)
+
+        # Generate forecast in the initial dimension and reshape.
+        self.forecast_posterior = self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
+                                                                                     self.h_pco.shape[1],
+                                                                                     self.h_pco.shape[2]))
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.shape

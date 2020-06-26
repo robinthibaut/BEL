@@ -148,8 +148,7 @@ class PosteriorIO:
                        d_pc_training,
                        d_rotations,
                        d_cca_prediction)
-        shp = pca_h.shape  # Original shape
-        # n_posts = 500  # Number of estimates sampled from the distribution.
+
         # Draw n_posts random samples from the multivariate normal distribution :
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
@@ -169,7 +168,7 @@ class PosteriorIO:
             rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Add them
 
-        # Generate forecast in the initial dimension and reshape.
-        forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+        # # Generate forecast in the initial dimension and reshape.
+        # forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
 
-        return forecast_
+        return h_pca_reverse
