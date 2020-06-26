@@ -56,20 +56,22 @@ xx, yy = np.meshgrid(np.linspace(0.8, 2.2, 200),
 # support vectors (points on the decision boundary).
 
 # define outlier/anomaly detection methods to be compared
-algorithm = svm.OneClassSVM(nu=0.05, kernel="rbf", gamma="scale")
+algorithm = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma="scale")
 algorithm.fit(dataset)
 y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
 plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='#ff7f00')
 plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r)
-plt.colorbar()
+cbar = plt.colorbar()
+cbar.set_label('Distance to boundary')
 a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='darkred')
-plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange')
+b = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange')
 plt.plot(dataset[:, 0], dataset[:, 1], 'wo', markersize=3, markeredgecolor='k')
 plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor='k')
-# plt.xlim(1, 2)
-# plt.ylim(1, 2)
-plt.xticks(())
-plt.yticks(())
+plt.xlabel('First PC score')
+plt.ylabel('Second PC score')
+
+plt.savefig()
+
 plt.show()
