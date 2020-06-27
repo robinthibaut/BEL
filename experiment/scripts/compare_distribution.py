@@ -8,6 +8,7 @@ import seaborn as sns
 from scipy import stats
 from experiment.base.inventory import MySetup
 
+plt.style.use('dark_background')
 
 def dists(res_dir, folders=None):
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
@@ -63,7 +64,7 @@ wm = [h1, hp1]
 colors = ['blue', 'orange']
 
 for i, m in enumerate(wm):
-    sns.kdeplot(m, shade=True, linewidth=2)
+    sns.kdeplot(m, shade=True, linewidth=1)
 kde = stats.gaussian_kde(hp1)  # Compute the Gaussian KDE
 idx = np.max(kde.pdf(hp1))  # Get the index of the maximum
 plt.vlines(tpc1, 0, idx, color='red')
@@ -72,15 +73,16 @@ plt.xlabel('First PC score')
 plt.ylabel('KDE')
 plt.legend(['Prior', 'Posterior', 'True target'])
 plt.grid(alpha=0.2)
-# plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{sample}_hist.png'), dpi=300, transparent=True)
+plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, sample, default[0], 'uq', f'{sample}_pc1_dist.png'),
+            dpi=300, transparent=True)
 plt.show()
 
-sns.distplot(h1, bins=12, kde=False)
-sns.distplot(hp1, bins=12, kde=False)
-plt.title('First PC distribution of target prior and posterior')
-plt.xlabel('First PC score')
-plt.ylabel('Count')
-plt.legend(['Prior', 'Posterior'])
-plt.grid(alpha=0.2)
-# plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{sample}_hist.png'), dpi=300, transparent=True)
-plt.show()
+# sns.distplot(h1, bins=12, kde=False)
+# sns.distplot(hp1, bins=12, kde=False)
+# plt.title('First PC distribution of target prior and posterior')
+# plt.xlabel('First PC score')
+# plt.ylabel('Count')
+# plt.legend(['Prior', 'Posterior'])
+# plt.grid(alpha=0.2)
+# # plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{sample}_hist.png'), dpi=300, transparent=True)
+# plt.show()
