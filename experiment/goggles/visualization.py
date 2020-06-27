@@ -67,10 +67,10 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
     # Choose seaborn cmap
     # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
-    cmap = sns.cubehelix_palette(8, start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
+    # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
     # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
     # KDE plot
-    sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+    # sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
     plt.xlim(0.5, ut)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
@@ -81,11 +81,11 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
         xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew - 1, power_smooth, 'y', linewidth=0.8, alpha=.5)
+        plt.plot(xnew - 1, power_smooth, 'darkcyan', linewidth=1.2, alpha=.5)
         # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'ko', markersize=4, markeredgecolor='y', markeredgewidth=.4, alpha=.8,
+                 'ko', markersize=3, markeredgecolor='w', markeredgewidth=.4, alpha=.8,
                  label=str(sample_n))
         # plt.plot(pc_obs.T[:ut],  # Plot observations scores
         #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,

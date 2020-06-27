@@ -178,4 +178,4 @@ if __name__ == '__main__':
     # empty_figs(sample)
     # plot_whpa(sample)
     # cca_vision(sample, folders=default)
-    pca_vision(sample, d=True, h=True, scores=False, folders=default)
+    pca_vision(sample, d=True, h=False, exvar=False, scores=True, folders=default)
