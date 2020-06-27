@@ -21,6 +21,7 @@ from experiment.base.inventory import MySetup
 
 from sklearn import svm
 
+plt.style.use('dark_background')
 
 def svm1(res_dir, d=True, h=False, folders=None):
     """ Loads PCA pickles and plot scores for all folders """
@@ -69,15 +70,19 @@ algorithm.fit(dataset)
 y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
-plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='#ff7f00')
-plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r, alpha=.9)
+a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='#ff7f00')
+b = plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r, alpha=.9)
 cbar = plt.colorbar()
 cbar.set_label('Distance to boundary')
-a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='darkred')
-b = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange', alpha=.9)
-plt.plot(dataset[:, 0], dataset[:, 1], 'wo', markersize=3, markeredgecolor='k')
-plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor='k')
+c = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='darkred')
+# plt.clabel(c, inline=1, fontsize=10)
+c.collections[0].set_label('Learned boundary')
+d = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange', alpha=.9)
+e = plt.plot(dataset[:, 0], dataset[:, 1], 'wo', markersize=3, markeredgecolor='k', label='Training')
+f = plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor='k', label='Observation')
 plt.xlabel('First PC score')
 plt.ylabel('Second PC score')
-
+plt.legend(loc='upper left', fontsize=8)
+plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, sample, default[0], 'pca', f'{sample}_pc1_outlier.png'),
+            dpi=300, transparent=True)
 plt.show()
