@@ -4,6 +4,7 @@ import os
 import joblib
 import numpy as np
 import seaborn as sns
+import pandas as pd
 import matplotlib.pyplot as plt
 from experiment.toolbox import filesio, utils
 from experiment.goggles.visualization import Plot
@@ -94,6 +95,47 @@ def value_info(root):
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_hist.png'), dpi=300, transparent=True)
     plt.show()
+    #%%
+    ids = np.array(np.concatenate([np.ones(wm.shape[1])*i for i in range(1, 7)]), dtype='int')
+    master = wm.flatten()
+
+    data = np.concatenate([[master], [ids]], axis=0)
+
+    master_x = pd.DataFrame(data=data.T, columns=['MHD', 'well'])
+    master_x['well'] = np.array(ids)
+    g = sns.FacetGrid(master_x,  # the dataframe to pull from
+                      row="well",
+                      hue="well",
+                      aspect=10,  # aspect * height = width
+                      height=1.5,  # height of each subplot
+                      palette=colors  # google colors
+                      )
+
+    g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
+    g.map(plt.axhline, y=0, lw=4)
+    for ax in g.axes:
+        ax[0].set_xlim((320, 420))
+    # g.map(plt.grid, 'MHD')
+
+    def label(x, color, label):
+        ax = plt.gca()  # get the axes of the current object
+        ax.text(0, .2,  # location of text
+                label,  # text label
+                fontweight="bold", color=color, size=20,  # text attributes
+                ha="left", va="center",  # alignment specifications
+                transform=ax.transAxes)  # specify axes of transformation)
+    g.map(label, "MHD")  # the function counts as a plotting object!
+
+    sns.set(style="dark", rc={"axes.facecolor": (0, 0, 0, 0)})
+    g.fig.subplots_adjust(hspace=-.25)
+
+    g.set_titles("")  # set title to blank
+    g.set_xlabels(color="white")
+    g.set_xticklabels(color='white', fontsize=14)
+    g.set(yticks=[])  # set y ticks to blank
+    g.despine(bottom=True, left=True)  # remove 'spines'
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{root}_facet.png'), dpi=300, transparent=True)
+    plt.show()
 
 
 def main(comb=None, flag_base=False, swap=False):
@@ -150,5 +192,5 @@ def main(comb=None, flag_base=False, swap=False):
 
 
 if __name__ == '__main__':
-    main(comb='123456')
-    # value_info('6623dd4fb5014a978d59b9acb03946d2')
+    # main(comb='123456')
+    value_info('6623dd4fb5014a978d59b9acb03946d2')

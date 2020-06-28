@@ -81,11 +81,11 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
         xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew - 1, power_smooth, 'darkcyan', linewidth=1.2, alpha=.5)
+        plt.plot(xnew - 1, power_smooth, 'red', linewidth=1.2, alpha=.9)
         # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'ko', markersize=3, markeredgecolor='w', markeredgewidth=.4, alpha=.8,
+                 'ro', markersize=3, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
                  label=str(sample_n))
         # plt.plot(pc_obs.T[:ut],  # Plot observations scores
         #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
