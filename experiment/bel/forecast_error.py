@@ -31,11 +31,17 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, base, study_folder, base_dir=None, wel_comb=None):
+    def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
+
+        if seed is not None:
+            np.random.seed(seed)
+            self.seed = seed
+        else:
+            self.seed = None
 
         self.base = base
 

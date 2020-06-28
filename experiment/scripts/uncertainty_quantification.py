@@ -35,7 +35,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             # PCA decomposition + CCA
             sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
             # Uncertainty analysis
-            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c)
+            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
             # uq.c0(write_vtk=0)  # Extract 0 contours
             # uq.mhd()  # Modified Hausdorff
@@ -192,5 +192,5 @@ def main(comb=None, flag_base=False, swap=False):
 
 
 if __name__ == '__main__':
-    # main(comb='123456')
-    value_info('6623dd4fb5014a978d59b9acb03946d2')
+    main(comb=[[1, 2, 3, 4, 5, 6]])
+    # value_info('6623dd4fb5014a978d59b9acb03946d2')

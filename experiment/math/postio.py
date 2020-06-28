@@ -124,10 +124,9 @@ class PosteriorIO:
         """
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
-        h_pc_training, h_pc_prediction = pca_h.pca_refresh(pca_h.ncomp)
+        h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
 
         d_pc_obs = d_pc_prediction[sample_n]  # observation data for prediction sample
-        h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
 
         d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
@@ -139,7 +138,7 @@ class PosteriorIO:
         d_rotations = cca_obj.x_rotations_
 
         # Project observed data into canonical space.
-        d_cca_prediction, _ = cca_obj.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
         d_cca_prediction = d_cca_prediction.T
 
         # Estimate the posterior mean and covariance (Tarantola)
