@@ -3,6 +3,8 @@
 import os
 import joblib
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 from experiment.toolbox import utils
 from experiment.toolbox.filesio import load_res, folder_reset
 from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
@@ -113,9 +115,18 @@ def cca_vision(root_dir, folders=None):
         d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-        cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
-                 sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+        cca_coefficient = np.corrcoef(d_cca_training, h_cca_training,).diagonal(offset=cca_operator.n_components)
 
+        # cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+        #          sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+
+        sns.lineplot(data=cca_coefficient)
+        plt.grid(alpha=.2, linewidth=.5)
+        plt.title('Decrease of CCA correlation coefficient with component number')
+        plt.ylabel('Correlation coefficient')
+        plt.xlabel('Component number')
+        plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
+        plt.show()
 
 def plot_whpa(root=None):
     """Loads target pickle and plots all training WHPA"""
@@ -177,5 +188,5 @@ if __name__ == '__main__':
     # plot_pc_ba(sample, target=True)
     # empty_figs(sample)
     # plot_whpa(sample)
-    # cca_vision(sample, folders=default)
-    pca_vision(sample, d=True, h=False, exvar=False, scores=True, folders=default)
+    cca_vision(sample, folders=default)
+    # pca_vision(sample, d=True, h=False, exvar=False, scores=True, folders=default)
