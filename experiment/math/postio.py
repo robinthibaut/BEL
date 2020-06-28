@@ -83,10 +83,12 @@ class PosteriorIO:
         # Modeling error due to deviations from theory
         d_ls_predicted = g @ h_cca_training_gaussian  # (n_components_CCA, n_training)
         d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=1).reshape(-1, 1)  # (n_comp_CCA, 1)
-        d_modeling_error = d_cca_training \
-                           - d_ls_predicted \
-                           - repmat(d_modeling_mean_error, 1, np.size(d_cca_training, axis=1))
+        d_modeling_error = \
+            d_cca_training \
+            - d_ls_predicted \
+            - repmat(d_modeling_mean_error, 1, np.size(d_cca_training, axis=1))
         # (n_comp_CCA, n_training)
+
         # Information about the covariance of the posterior distribution.
         d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # (n_comp_CCA, n_comp_CCA)
 
