@@ -65,7 +65,8 @@ xx, yy = np.meshgrid(np.linspace(0.8, 2.2, 200),
 # support vectors (points on the decision boundary).
 
 # define outlier/anomaly detection methods to be compared
-algorithm = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma="scale")
+algorithm = svm.OneClassSVM(nu=0.01, kernel="rbf", gamma="scale")
+# algorithm = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma="scale")
 algorithm.fit(dataset)
 y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])

@@ -188,5 +188,5 @@ if __name__ == '__main__':
     # plot_pc_ba(sample, target=True)
     # empty_figs(sample)
     # plot_whpa(sample)
-    cca_vision(sample, folders=default)
-    # pca_vision(sample, d=True, h=False, exvar=False, scores=True, folders=default)
+    # cca_vision(sample, folders=default)
+    pca_vision(sample, d=False, h=True, exvar=False, scores=True, folders=default)
