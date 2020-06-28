@@ -10,6 +10,7 @@ from experiment.base.inventory import MySetup
 
 plt.style.use('dark_background')
 
+
 def dists(res_dir, folders=None):
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
@@ -32,7 +33,6 @@ def dists(res_dir, folders=None):
 
 sample = '6623dd4fb5014a978d59b9acb03946d2'
 default = ['123456']
-
 
 # %% Load target post PC
 

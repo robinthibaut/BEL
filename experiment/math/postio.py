@@ -94,15 +94,18 @@ class PosteriorIO:
         h_mean = np.row_stack(np.mean(h_cca_training_gaussian, axis=1))  # (n_comp_CCA, 1)
         h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
 
-        h_mean_posterior = h_mean \
-                           + h_cov_operator @ g.T \
-                           @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                           @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # (n_comp_CCA, 1)
+        h_mean_posterior = \
+            h_mean \
+            + h_cov_operator @ g.T \
+            @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+            @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # (n_comp_CCA, 1)
+
         # h posterior covariance
-        h_posterior_covariance = h_cov_operator \
-                                 - (h_cov_operator @ g.T) \
-                                 @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                                 @ g @ h_cov_operator
+        h_posterior_covariance = \
+            h_cov_operator \
+            - (h_cov_operator @ g.T) \
+            @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+            @ g @ h_cov_operator
 
         h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
