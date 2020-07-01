@@ -18,7 +18,7 @@ def transform(f):
     Transforms the values of the statistical_simulation simulations into meaningful data
     """
 
-    k_mean = np.log10(np.random.uniform(1.4, 2))  # Hydraulic conductivity mean between x and y in m/d.
+    k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
     k_std = 0.4
 
     ff = f * k_std + k_mean
@@ -26,7 +26,7 @@ def transform(f):
     return 10 ** ff
 
 
-def sgsim(model_ws, grid_dir):
+def sgsim(model_ws, grid_dir, wells_hk=None):
     # %% Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
@@ -38,7 +38,11 @@ def sgsim(model_ws, grid_dir):
 
     hd = PointSet(project=pjt, pointset_path=file_path)
 
-    hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+    if wells_hk is None:
+        hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+    else:
+        hku = wells_hk
+
     hd.dataframe['hd'] = hku
 
     hd.export_01('hd')  # Exports modified dataset in binary
@@ -83,6 +87,12 @@ def sgsim(model_ws, grid_dir):
 
     matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
+
+    # Rescale matrix from -1 to 1
+    matrix -= np.min(matrix)
+    matrix /= np.max(matrix)
+    matrix *= 2
+    matrix -= 1
 
     tf = np.vectorize(transform)  # Transform values to log10
     matrix = tf(matrix)  # Apply function to results

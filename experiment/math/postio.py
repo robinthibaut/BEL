@@ -83,10 +83,12 @@ class PosteriorIO:
         # Modeling error due to deviations from theory
         d_ls_predicted = g @ h_cca_training_gaussian  # (n_components_CCA, n_training)
         d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=1).reshape(-1, 1)  # (n_comp_CCA, 1)
-        d_modeling_error = d_cca_training \
-                           - d_ls_predicted \
-                           - repmat(d_modeling_mean_error, 1, np.size(d_cca_training, axis=1))
+        d_modeling_error = \
+            d_cca_training \
+            - d_ls_predicted \
+            - repmat(d_modeling_mean_error, 1, np.size(d_cca_training, axis=1))
         # (n_comp_CCA, n_training)
+
         # Information about the covariance of the posterior distribution.
         d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # (n_comp_CCA, n_comp_CCA)
 
@@ -94,15 +96,18 @@ class PosteriorIO:
         h_mean = np.row_stack(np.mean(h_cca_training_gaussian, axis=1))  # (n_comp_CCA, 1)
         h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
 
-        h_mean_posterior = h_mean \
-                           + h_cov_operator @ g.T \
-                           @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                           @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # (n_comp_CCA, 1)
+        h_mean_posterior = \
+            h_mean \
+            + h_cov_operator @ g.T \
+            @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+            @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # (n_comp_CCA, 1)
+
         # h posterior covariance
-        h_posterior_covariance = h_cov_operator \
-                                 - (h_cov_operator @ g.T) \
-                                 @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-                                 @ g @ h_cov_operator
+        h_posterior_covariance = \
+            h_cov_operator \
+            - (h_cov_operator @ g.T) \
+            @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+            @ g @ h_cov_operator
 
         h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
@@ -124,10 +129,9 @@ class PosteriorIO:
         """
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
-        h_pc_training, h_pc_prediction = pca_h.pca_refresh(pca_h.ncomp)
+        h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
 
         d_pc_obs = d_pc_prediction[sample_n]  # observation data for prediction sample
-        h_pc_obs = h_pc_prediction[sample_n]  # target for prediction sample
 
         d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
@@ -139,7 +143,7 @@ class PosteriorIO:
         d_rotations = cca_obj.x_rotations_
 
         # Project observed data into canonical space.
-        d_cca_prediction, _ = cca_obj.transform(d_pc_obs.reshape(1, -1), h_pc_obs.reshape(1, -1))
+        d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
         d_cca_prediction = d_cca_prediction.T
 
         # Estimate the posterior mean and covariance (Tarantola)
@@ -148,8 +152,7 @@ class PosteriorIO:
                        d_pc_training,
                        d_rotations,
                        d_cca_prediction)
-        shp = pca_h.shape  # Original shape
-        # n_posts = 500  # Number of estimates sampled from the distribution.
+
         # Draw n_posts random samples from the multivariate normal distribution :
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
@@ -169,7 +172,7 @@ class PosteriorIO:
             rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Add them
 
-        # Generate forecast in the initial dimension and reshape.
-        forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+        # # Generate forecast in the initial dimension and reshape.
+        # forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
 
-        return forecast_
+        return h_pca_reverse

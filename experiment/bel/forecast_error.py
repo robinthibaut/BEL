@@ -20,7 +20,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.goggles.visualization import Plot, cca_plot
+from experiment.goggles.visualization import Plot
 from experiment.math.hausdorff import modified_distance
 from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
@@ -31,11 +31,17 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, base, study_folder, base_dir=None, wel_comb=None):
+    def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
         """
 
         :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
         """
+
+        if seed is not None:
+            np.random.seed(seed)
+            self.seed = seed
+        else:
+            self.seed = None
 
         self.base = base
 
@@ -74,14 +80,7 @@ class UncertaintyQuantification:
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
-        h_pc_training, h_pc_prediction = self.h_pco.pca_refresh(hnc0)
-
-        # CCA plots
-        d_cca_training, h_cca_training = self.cca_operator.transform(d_pc_training, h_pc_training)
-        d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-
-        # cca_plot(self.cca_operator, d_cca_training, h_cca_training, self.d_pc_prediction, h_pc_prediction,
-        #          sdir=self.fig_cca_dir)
+        self.h_pco.pca_refresh(hnc0)
 
         # Sampling
         self.n_training = len(d_pc_training)
@@ -96,16 +95,8 @@ class UncertaintyQuantification:
         # Contours
         self.vertices = None
 
-    def control(self, dnc=None, hnc=None):
-        if dnc is None:
-            dnc = self.d_pco.ncomp
-        if hnc is None:
-            hnc = self.h_pco.ncomp
-        # Checking
-        self.mplot.pca_inverse_compare(self.d_pco, self.h_pco, dnc, hnc)
-
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None):
+    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
         """
         Extracts n random samples from the posterior
         :param sample_n: Sample identifier
@@ -118,12 +109,20 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
-        self.forecast_posterior = self.po.random_sample(sample_n=self.sample_n,
-                                                        pca_d=self.d_pco,
-                                                        pca_h=self.h_pco,
-                                                        cca_obj=self.cca_operator,
-                                                        n_posts=self.n_posts,
-                                                        add_comp=0)
+        forecast_pc = self.po.random_sample(sample_n=self.sample_n,
+                                            pca_d=self.d_pco,
+                                            pca_h=self.h_pco,
+                                            cca_obj=self.cca_operator,
+                                            n_posts=self.n_posts,
+                                            add_comp=0)
+        if save_target_pc:
+            fname = os.path.join(self.fig_pred_dir, f'{self.n_posts}_target_pc.npy')
+            np.save(fname, forecast_pc)
+
+        # Generate forecast in the initial dimension and reshape.
+        self.forecast_posterior = self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
+                                                                                     self.h_pco.shape[1],
+                                                                                     self.h_pco.shape[2]))
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.shape

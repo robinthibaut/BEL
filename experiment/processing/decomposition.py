@@ -32,6 +32,15 @@ from experiment.processing.pca import PCAIO
 
 
 def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
+    """
+    Initiate BEL by performing PCA on the training targets or features.
+    :param base: Class: Base
+    :param roots: list:
+    :param d_pca_obj:
+    :param h_pca_obj:
+    :param check: bool: Flag to plot
+    :return:
+    """
     if d_pca_obj is not None:
         # Loads the results:
         tc0, _, _ = fops.load_res(roots=roots, d=True)
@@ -89,8 +98,10 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
-    :param wel_comb: List of injection wels used to make prediction
-    :param test_roots: Folder paths containing outputs to be predicted
+    :param training_roots: list: List containing the uuid's of training roots
+    :param base: Class: Base class object containing global constants.
+    :param wel_comb: list: List of injection wels used to make prediction
+    :param test_roots: list: Folder paths containing outputs to be predicted
 
     """
 
@@ -163,7 +174,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # We choose an appropriate number of components to keep later on.
 
     # PCA on transport curves
-    d_pco = PCAIO(name='d', training=tc, directory=obj_dir)
+    d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.pca_training_transformation()
     # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
@@ -174,7 +185,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
     tcp = tcp[:, selection, :]
-    d_pco.pca_test_transformation(tcp)  # Performs transformation on testing curves
+    d_pco.pca_test_transformation(tcp, test_roots=test_roots)  # Performs transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Performs transformation on training curves
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
@@ -185,20 +196,21 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
-    # Load
+    # Load whpa
     _, pzs, _ = fops.load_res(roots=test_roots, h=True)
     # Compute WHPA
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
-        h_pco.pca_test_transformation(h)
+        h_pco.pca_test_transformation(h, test_roots=test_roots)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_roots[0]), h)  # Save the prediction WHPA
-        ff = jp(fig_dir, f'{test_roots[0]}.png')
+        ff = jp(fig_dir, f'{test_roots[0]}.png')  # figure name
         h_training = h_pco.training_physical.reshape(h_pco.shape)
+        # Plots target training + prediction
         mp.whp(h_training, alpha=.2, show=False)
         mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
 
@@ -206,9 +218,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
         # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
-
     # %% CCA
-
     n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
     # components between d and h.
     float_epsilon = np.finfo(float).eps

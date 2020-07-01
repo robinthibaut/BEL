@@ -43,8 +43,12 @@ def dirmaker(dird):
     try:
         if not os.path.exists(dird):
             os.makedirs(dird)
+            return 0
+        else:
+            return 1
     except Exception as e:
         print(e)
+        return 0
 
 
 def load_flow_model(nam_file, exe_name='', model_ws=''):

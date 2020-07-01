@@ -13,28 +13,7 @@ from experiment.toolbox import filesio
 plt.style.use('dark_background')
 
 
-def d_pca_inverse_plot(v, e, pca_o, vn, fig_file=None, show=False):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation
-    :param v: Original, untransformed data array
-    :param e: Sample number on which the test is performed
-    :param pca_o: data PCA operator
-    :param vn: Number of components to inverse-transform the data
-    :return:
-    """
-    v_pc = pca_o.transform(v)
-    v_pred = np.dot(v_pc[e, :vn], pca_o.components_[:vn, :]) + pca_o.mean_
-    plt.plot(v[e], 'r', alpha=.8)
-    plt.plot(v_pred, 'c', alpha=.8)
-    if fig_file is not None:
-        plt.savefig(fig_file, dpi=300)
-        plt.close()
-    if show:
-        plt.show()
-        plt.close()
-
-
-def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
+def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
     """
     PCA explained variance plot
     :param pca: PCA operator
@@ -47,20 +26,26 @@ def explained_variance(pca, n_comp=0, xfs=2, fig_file=None, show=False):
     plt.grid(alpha=0.1)
     if not n_comp:
         n_comp = pca.n_components_
-    plt.xticks(np.arange(n_comp), fontsize=xfs)
-    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]),
+
+    # plt.xticks(np.arange(n_comp), fontsize=xfs)
+    ny = len(np.where(np.cumsum(pca.explained_variance_ratio_) < thr)[0])
+    cum = np.cumsum(pca.explained_variance_ratio_[:n_comp])*100
+    yticks = np.append(cum[:ny], cum[-1])
+    plt.yticks(yticks)
+    plt.bar(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100, color='m', alpha=.1)
+    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
-    plt.xlabel('Number of components')
-    plt.ylabel('Explained variance')
+    plt.xlabel('Components number')
+    plt.ylabel('Cumulative explained variance (%)')
     if fig_file:
-        plt.savefig(fig_file, dpi=300)
+        plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
         plt.show()
         plt.close()
 
 
-def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
+def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=False):
     """
     PCA scores plot, displays scores of observations above those of training.
     :param training: Training scores
@@ -71,31 +56,49 @@ def pca_scores(training, prediction, n_comp, fig_file=None, show=False):
     :return:
     """
     # Scores plot
+    # Grid
     plt.grid(alpha=0.2)
+    # Number of components to keep
     ut = n_comp
+    # Ticks
     plt.xticks(np.arange(0, ut, 5), fontsize=8)
-    plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)  # Plot all training scores
-    cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
-    sns.kdeplot(np.arange(1, ut+1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
-    plt.xlim(0.5, ut)  # Define x lim
+    # Plot all training scores
+    plt.plot(training.T[:ut], 'ow', markersize=3, alpha=0.05)
+    # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
+    # Choose seaborn cmap
+    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
+    # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
+    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+    # KDE plot
+    # sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+    plt.xlim(0.5, ut)  # Define x limits [start, end]
+    # For each sample used for prediction:
     for sample_n in range(len(prediction)):
+
         pc_obs = prediction[sample_n]
-        plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-                 label=str(sample_n))
 
+        # Crete beautiful spline to follow prediction scores
         xnew = np.linspace(1, ut, 200)
-        spl = make_interp_spline(np.arange(1, ut+1), pc_obs.T[:ut], k=3)  # type: BSpline
+        spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew-1, power_smooth, 'y', linewidth=.3, alpha=.5)
+        plt.plot(xnew - 1, power_smooth, 'red', linewidth=1.2, alpha=.9)
+        # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
-    plt.title('PCA scores')
-    plt.xlabel('Component id')
-    plt.ylabel('Component scores')
+        plt.plot(pc_obs.T[:ut],  # Plot observations scores
+                 'ro', markersize=3, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+                 label=str(sample_n))
+        # plt.plot(pc_obs.T[:ut],  # Plot observations scores
+        #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+        #          label=str(sample_n))
+
+    if labels:
+        plt.title('PCA scores')
+        plt.xlabel('Component id')
+        plt.ylabel('Component scores')
     plt.tick_params(labelsize=6)
 
     if fig_file:
-        plt.savefig(fig_file, dpi=300)
+        plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
         plt.show()
@@ -123,8 +126,10 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
         comp_n = i
         # plt.plot(d[comp_n], h[comp_n], 'w+', markersize=3, markerfacecolor='w', alpha=.25)
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
+            # Extract from sample
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
+            # Transform to CCA space
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
@@ -134,6 +139,9 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
                               cmap=cmap, n_levels=80, shade=True,
                               kind='kde')
             g.plot_joint(plt.scatter, c='w', marker='+', s=2, alpha=.7)
+            # add 'arrows' at observation location
+            g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1)
+            g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0)
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
@@ -142,9 +150,9 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
         plt.xlabel('d')
         plt.ylabel('h')
         plt.subplots_adjust(top=0.9)
-        g.fig.suptitle(round(cca_coefficient[i], 4))
+        g.fig.suptitle(f'{i} - {round(cca_coefficient[i], 4)}')
         if sdir:
-            plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
+            plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -245,7 +253,7 @@ class Plot:
         plt.grid(linewidth=.3, alpha=.4)
         plt.tick_params(labelsize=5)
         if sdir:
-            plt.savefig(jp(sdir, f'{title}.png'), dpi=300)
+            plt.savefig(jp(sdir, f'{title}.png'), dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -273,7 +281,7 @@ class Plot:
             plt.tick_params(labelsize=5)
             plt.title(f'wel #{t + 1}')
             if sdir:
-                plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300)
+                plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -361,7 +369,7 @@ class Plot:
         plt.tick_params(labelsize=5)
 
         if fig_file:
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -384,34 +392,73 @@ class Plot:
         if h_pred is not None:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300)
+            plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
             plt.close()
 
-    def h_pca_inverse_plot(self, pca_o, e, vn, fig_file=None, show=False):
+    @staticmethod
+    def d_pca_inverse_plot(pca_o, vn, training=True, fig_dir=None, show=False):
         """
         Plot used to compare the reproduction of the original physical space after PCA transformation
-        :param e: Sample number on which the test is performed
+        :param pca_o: data PCA operator
+        :param vn: Number of components to inverse-transform the data
+        :return:
+        """
+
+        if training:
+            v_pc = pca_o.training_pc
+            roots = pca_o.roots
+        else:
+            v_pc = pca_o.predict_pc
+            roots = pca_o.test_roots
+
+        for i, r in enumerate(roots):
+            v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
+            if training:
+                plt.plot(pca_o.training_physical[i], 'r', alpha=.8)
+            else:
+                plt.plot(pca_o.predict_physical[i], 'r', alpha=.8)
+            plt.plot(v_pred, 'c', alpha=.8)
+            if fig_dir is not None:
+                plt.savefig(jp(fig_dir, f'{r}_d.png'), dpi=100, transparent=True)
+                plt.close()
+            if show:
+                plt.show()
+                plt.close()
+
+    def h_pca_inverse_plot(self, pca_o, vn, training=True, fig_dir=None, show=False):
+        """
+        Plot used to compare the reproduction of the original physical space after PCA transformation
         :param pca_o: signed distance PCA operator
         :param vn: Number of components to inverse-transform.
         :return:
         """
         shape = pca_o.shape
-        v_pc = pca_o.training_pc
-        v_pred = (np.dot(v_pc[e, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
-        self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1, show=False)
-        self.whp(h=pca_o.training_physical[e].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1, show=False)
 
-        if fig_file is not None:
-            plt.savefig(fig_file, dpi=300)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
+        if training:
+            v_pc = pca_o.training_pc
+            roots = pca_o.roots
+        else:
+            v_pc = pca_o.predict_pc
+            roots = pca_o.test_roots
 
-    def pca_inverse_compare(self, pco_d, pco_h, nd=None, nh=None, show=False):
+        for i, r in enumerate(roots):
+            v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1)
+            if training:
+                self.whp(h=pca_o.training_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+            else:
+                self.whp(h=pca_o.predict_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+            if fig_dir is not None:
+                plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300, transparent=True)
+                plt.close()
+            if show:
+                plt.show()
+                plt.close()
+
+    def pca_inverse_compare(self, pco_d=None, pco_h=None, nd=None, nh=None, show=False):
         """
         Plots original data and recovered data by PCA inverse transformation given a number of components
         :param pco_h: PCA object for h
@@ -422,22 +469,23 @@ class Plot:
         """
 
         for n_compare, r in enumerate(pco_h.roots):
-
             fig_dir = jp(MySetup.Directories.forecasts_dir, 'base', 'control')
             filesio.dirmaker(fig_dir)
 
             fig_file = jp(fig_dir, r)
 
-            d_pca_inverse_plot(pco_d.training_physical,
-                               n_compare,
-                               pco_d.operator,
-                               nd,
-                               fig_file=''.join((fig_file, '_d')), show=show)
+            if pco_d is not None:
+                self.d_pca_inverse_plot(pco_d.training_physical,
+                                        n_compare,
+                                        pco_d.operator,
+                                        nd,
+                                        fig_file=''.join((fig_file, '_d')), show=show)
 
-            self.h_pca_inverse_plot(pco_h,
-                                    n_compare,
-                                    nh,
-                                    fig_file=''.join((fig_file, '_h')), show=show)
+            if pco_h is not None:
+                self.h_pca_inverse_plot(pco_h,
+                                        n_compare,
+                                        nh,
+                                        fig_file=''.join((fig_file, '_h')), show=show)
 
         # Displays the explained variance percentage given the number of components
         # print(pco_d.perc_pca_components(nd))
