@@ -88,6 +88,12 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
+    # Rescale matrix from -1 to 1
+    matrix -= np.min(matrix)
+    matrix /= np.max(matrix)
+    matrix *= 2
+    matrix -= 1
+
     tf = np.vectorize(transform)  # Transform values to log10
     matrix = tf(matrix)  # Apply function to results
 
