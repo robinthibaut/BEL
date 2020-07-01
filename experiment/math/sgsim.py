@@ -26,7 +26,7 @@ def transform(f):
     return 10 ** ff
 
 
-def sgsim(model_ws, grid_dir):
+def sgsim(model_ws, grid_dir, wells_hk=None):
     # %% Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
@@ -38,7 +38,11 @@ def sgsim(model_ws, grid_dir):
 
     hd = PointSet(project=pjt, pointset_path=file_path)
 
-    hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+    if wells_hk is None:
+        hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+    else:
+        hku = wells_hk
+
     hd.dataframe['hd'] = hku
 
     hd.export_01('hd')  # Exports modified dataset in binary

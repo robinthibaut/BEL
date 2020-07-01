@@ -192,5 +192,5 @@ def main(comb=None, flag_base=False, swap=False):
 
 
 if __name__ == '__main__':
-    main(comb=[[1, 2, 3, 4, 5, 6]])
+    main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]])
     # value_info('6623dd4fb5014a978d59b9acb03946d2')
