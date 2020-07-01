@@ -297,9 +297,11 @@ class UncertaintyQuantification:
     #  Let's try Hausdorff...
     def mhd(self):
         """Computes the modified Hausdorff distance"""
-
+        n_cut = self.h_pco.ncomp
+        v_h_true_cut = \
+            self.h_pco.inverse_transform(self.h_pco.predict_pc[:n_cut]).reshape((self.shape[1], self.shape[2]))
         # Delineation vertices of the true array
-        v_h_true = self.mplot.contours_vertices(self.h_true_obs)[0]
+        v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
         # Compute MHD between the true vertices and the n sampled vertices
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
@@ -311,7 +313,7 @@ class UncertaintyQuantification:
         # Plot results
         fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
         self.mplot.whp_prediction(forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
-                                  h_true=self.h_true_obs,
+                                  h_true=v_h_true_cut,
                                   h_pred=self.forecast_posterior[min_pos],
                                   show_wells=True,
                                   title=str(np.round(mhds.mean(), 2)),
