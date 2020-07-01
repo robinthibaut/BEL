@@ -13,39 +13,6 @@ from experiment.bel.forecast_error import UncertaintyQuantification
 from experiment.base.inventory import MySetup
 
 
-def scan_roots(base, training, obs, combinations, base_dir=None):
-    """Scan all roots and perform base decomposition"""
-
-    if not isinstance(obs, (list, tuple, np.array)):
-        obs = [obs]
-
-    if not isinstance(combinations, (list, tuple, np.array)):
-        combinations = [combinations]
-
-    if base_dir is not None:
-        base_dir = base_dir
-    else:
-        base_dir = None
-
-    # Resets the target PCA object' predictions to None before starting
-    joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
-
-    for r_ in obs:  # For each observation root
-        for c in combinations:  # For each wel combination
-            # PCA decomposition + CCA
-            sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
-            # Uncertainty analysis
-            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
-            # uq.c0(write_vtk=0)  # Extract 0 contours
-            # uq.mhd()  # Modified Hausdorff
-            # uq.binary_stack()
-            # uq.kernel_density()
-
-        # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
-
-
 def value_info(root):
     droot = os.path.join(MySetup.Directories.forecasts_dir, root)  # Starting point = root folder in forecast directory
     listit = os.listdir(droot)
@@ -149,29 +116,20 @@ def main(comb=None, flag_base=False, swap=False):
 
     if os.uname().nodename == 'MacBook-Pro.local':
         MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
-        root_file = '/Users/robin/OneDrive - UGent/Project/experiment/bel/forecasts/base/roots.dat'
-    else:
-        # Reads in root files (contains uuid of training roots)
-        root_file = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat')
+
+    md = MySetup.Directories.hydro_res_dir
+    listme = os.listdir(md)
+    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
+    roots_training = folders[:200]  # List of n training roots
+    roots_obs = folders[200:250]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap if necessary"""
-        md = MySetup.Directories.hydro_res_dir
-        listme = os.listdir(md)
-        folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-        r_training = folders[:200]  # List of n training roots
-        r_obs = folders[200:300]  # List of m observation roots
-
-        idx = r_training.index(pres)
-        r_obs[0], r_training[idx] = r_training[idx], r_obs[0]
+        idx = roots_training.index(pres)
+        roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
 
     if swap:
         swap_root('6623dd4fb5014a978d59b9acb03946d2')
-
-    # root_file gives in a list of lists, flatten it:
-    roots_training = [item for sublist in filesio.datread(root_file) for item in sublist]
-    # Specify 'observation' root:
-    roots_obs = ['6623dd4fb5014a978d59b9acb03946d2']
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
@@ -191,6 +149,47 @@ def main(comb=None, flag_base=False, swap=False):
     scan_roots(base=MySetup, training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
 
 
+def scan_roots(base, training, obs, combinations, base_dir=None):
+    """
+    Scan all roots and perform base decomposition
+    :param base: Base class (inventory)
+    :param training: list: List of uuid of each root for training
+    :param obs: list: List of uuid of each root for observation
+    :param combinations: list: List of wells combinations, e.g. [[1, 2, 3, 4, 5, 6]]
+    :param base_dir: str: Path to the base directory containing training roots uuid file
+    :return:
+    """
+
+    if not isinstance(obs, (list, tuple, np.array)):
+        obs = [obs]
+
+    if not isinstance(combinations, (list, tuple, np.array)):
+        combinations = [combinations]
+
+    if base_dir is not None:
+        base_dir = base_dir
+    else:
+        base_dir = None
+
+    # Resets the target PCA object' predictions to None before starting
+    joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
+
+    for r_ in obs:  # For each observation root
+        for c in combinations:  # For each wel combination
+            # PCA decomposition + CCA
+            sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
+            # Uncertainty analysis
+            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
+            uq.c0(write_vtk=0)  # Extract 0 contours
+            uq.mhd()  # Modified Hausdorff
+            # uq.binary_stack()
+            # uq.kernel_density()
+
+        # Resets the target PCA object' predictions to None before moving on to the next root
+        joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
+
+
 if __name__ == '__main__':
-    main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]])
+    main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True, swap=True)
     # value_info('6623dd4fb5014a978d59b9acb03946d2')
