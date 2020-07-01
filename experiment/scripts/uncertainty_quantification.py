@@ -18,96 +18,90 @@ def value_info(root):
     if not isinstance(root, (list, tuple)):
         root = [root]
 
+    wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
+    wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
+
     for r in root:
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
-        listit = os.listdir(droot)
-        duq = list(filter(lambda f: os.path.isdir(os.path.join(droot, f)), listit))  # Folders of combinations
-
-        wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
-        wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
-        cid = np.copy(wm)  # Number of times each wel appears
-        for e in duq:  # For each subfolder in the main folder
+        for e in wid:  # For each subfolder in the main folder
             fmhd = os.path.join(droot, e, 'uq', 'haus.npy')
             mhd = np.load(fmhd)  # Load MHD
             # mhd = np.mean(np.load(fmhd))  # Load MHD
-            for w in wid:  # Check for each wel
-                if w in e:  # If wel w is used
-                    idw = int(w) - 1  # -1 to respect 0 index
-                    wm[idw] += mhd  # Add mean of MHD
-                    cid[idw] += 1
+            idw = int(e) - 1  # -1 to respect 0 index
+            wm[idw] += mhd  # Add mean of MHD
 
-        colors = Plot().cols
+    colors = Plot().cols
 
-        # Plot
-        # mode
-        modes = []
-        for i, m in enumerate(wm):
-            count, values = np.histogram(m)
-            idm = np.argmax(count)
-            mode = values[idm]
-            modes.append(mode)
+    # Plot
+    # mode
+    modes = []
+    for i, m in enumerate(wm):
+        count, values = np.histogram(m)
+        idm = np.argmax(count)
+        mode = values[idm]
+        modes.append(mode)
 
-        modes = np.array(modes)
-        modes -= np.mean(modes)
-        plt.bar(np.arange(1, 7), -modes, color=colors)
-        plt.title('Value of information of each well')
-        plt.xlabel('Well ID')
-        plt.ylabel('Opposite deviation from mode\'s mean')
-        plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
-        plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{r}_well_mode.png'), dpi=300, transparent=True)
-        plt.show()
+    modes = np.array(modes)
+    modes -= np.mean(modes)
+    plt.bar(np.arange(1, 7), -modes, color=colors)
+    plt.title('Value of information of each well')
+    plt.xlabel('Well ID')
+    plt.ylabel('Opposite deviation from mode\'s mean')
+    plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.png'), dpi=300, transparent=True)
+    plt.show()
 
-        # Plot histogram
-        for i, m in enumerate(wm):
-            sns.kdeplot(m, color=f'{colors[i]}', shade=True, linewidth=2)
-        plt.title('Summed MHD distribution for each well')
-        plt.xlabel('Summed MHD')
-        plt.ylabel('KDE')
-        plt.legend(wid)
-        plt.grid(alpha=0.2)
-        plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{r}_hist.png'), dpi=300, transparent=True)
-        plt.show()
-        #%%
-        ids = np.array(np.concatenate([np.ones(wm.shape[1])*i for i in range(1, 7)]), dtype='int')
-        master = wm.flatten()
+    # Plot histogram
+    for i, m in enumerate(wm):
+        sns.kdeplot(m, color=f'{colors[i]}', shade=True, linewidth=2)
+    plt.title('Summed MHD distribution for each well')
+    plt.xlabel('Summed MHD')
+    plt.ylabel('KDE')
+    plt.legend(wid)
+    plt.grid(alpha=0.2)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
+    plt.show()
+    #%%
+    ids = np.array(np.concatenate([np.ones(wm.shape[1])*i for i in range(1, 7)]), dtype='int')
+    master = wm.flatten()
 
-        data = np.concatenate([[master], [ids]], axis=0)
+    data = np.concatenate([[master], [ids]], axis=0)
 
-        master_x = pd.DataFrame(data=data.T, columns=['MHD', 'well'])
-        master_x['well'] = np.array(ids)
-        g = sns.FacetGrid(master_x,  # the dataframe to pull from
-                          row="well",
-                          hue="well",
-                          aspect=10,  # aspect * height = width
-                          height=1.5,  # height of each subplot
-                          palette=colors  # google colors
-                          )
+    master_x = pd.DataFrame(data=data.T, columns=['MHD', 'well'])
+    master_x['well'] = np.array(ids)
+    g = sns.FacetGrid(master_x,  # the dataframe to pull from
+                      row="well",
+                      hue="well",
+                      aspect=3,  # aspect * height = width
+                      height=1.5,  # height of each subplot
+                      palette=colors  # google colors
+                      )
 
-        g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
-        g.map(plt.axhline, y=0, lw=4)
-        for ax in g.axes:
-            ax[0].set_xlim((320, 420))
-        # g.map(plt.grid, 'MHD')
+    g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
+    g.map(plt.axhline, y=0, lw=4)
+    for ax in g.axes:
+        ax[0].set_xlim((600, 900))
+    # g.map(plt.grid, 'MHD')
 
-        def label(x, color, label):
-            ax = plt.gca()  # get the axes of the current object
-            ax.text(0, .2,  # location of text
-                    label,  # text label
-                    fontweight="bold", color=color, size=20,  # text attributes
-                    ha="left", va="center",  # alignment specifications
-                    transform=ax.transAxes)  # specify axes of transformation)
-        g.map(label, "MHD")  # the function counts as a plotting object!
+    def label(x, color, label):
+        ax = plt.gca()  # get the axes of the current object
+        ax.text(0, .2,  # location of text
+                label,  # text label
+                fontweight="bold", color=color, size=20,  # text attributes
+                ha="left", va="center",  # alignment specifications
+                transform=ax.transAxes)  # specify axes of transformation)
+    g.map(label, "MHD")  # the function counts as a plotting object!
 
-        sns.set(style="dark", rc={"axes.facecolor": (0, 0, 0, 0)})
-        g.fig.subplots_adjust(hspace=-.25)
+    sns.set(style="dark", rc={"axes.facecolor": (0, 0, 0, 0)})
+    g.fig.subplots_adjust(hspace=-.25)
 
-        g.set_titles("")  # set title to blank
-        g.set_xlabels(color="white")
-        g.set_xticklabels(color='white', fontsize=14)
-        g.set(yticks=[])  # set y ticks to blank
-        g.despine(bottom=True, left=True)  # remove 'spines'
-        plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{r}_facet.png'), dpi=300, transparent=True)
-        plt.show()
+    g.set_titles("")  # set title to blank
+    g.set_xlabels(color="white")
+    g.set_xticklabels(color='white', fontsize=14)
+    g.set(yticks=[])  # set y ticks to blank
+    g.despine(bottom=True, left=True)  # remove 'spines'
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'facet.png'), dpi=300, transparent=True)
+    plt.show()
 
 
 def main(comb=None, flag_base=False, swap=False):
@@ -198,5 +192,9 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True, swap=True)
-    value_info(ro)
+    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True, swap=True)
+    forecast_dir = MySetup.Directories.forecasts_dir
+    listit = os.listdir(forecast_dir)
+    listit.remove('base')
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    value_info(duq)
