@@ -9,4 +9,5 @@ sklearn
 vtk
 pandas
 seaborn
+pysgems
 flopy
