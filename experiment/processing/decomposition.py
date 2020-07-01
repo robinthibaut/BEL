@@ -165,7 +165,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
             for r in training_roots:  # Saves roots name until test roots
                 f.write(os.path.basename(r) + '\n')
 
-    # %% Select wels:
+    # %% Select wells:
     selection = [wc - 1 for wc in base.Wels.combination]
     tc = tc[:, selection, :]
 
@@ -223,7 +223,7 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 2), tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 

@@ -26,7 +26,17 @@ def empty_figs(res_dir):
 
 
 def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
-    """ Loads PCA pickles and plot scores for all folders """
+    """
+    Loads PCA pickles and plot scores for all folders
+    :param res_dir:
+    :param d:
+    :param h:
+    :param scores:
+    :param exvar:
+    :param folders:
+    :return:
+    """
+
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)
@@ -78,7 +88,12 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
 
 
 def cca_vision(root_dir, folders=None):
-    """Loads CCA pickles and plots components for all folders"""
+    """
+    Loads CCA pickles and plots components for all folders
+    :param root_dir:
+    :param folders:
+    :return:
+    """
 
     subdir = os.path.join(MySetup.Directories.forecasts_dir, root_dir)
 
@@ -128,8 +143,14 @@ def cca_vision(root_dir, folders=None):
         plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
         plt.show()
 
+
 def plot_whpa(root=None):
-    """Loads target pickle and plots all training WHPA"""
+    """
+    Loads target pickle and plots all training WHPA
+    :param root:
+    :return:
+    """
+
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
@@ -147,6 +168,13 @@ def plot_whpa(root=None):
 
 
 def plot_pc_ba(root, data=False, target=False):
+    """
+
+    :param root:
+    :param data:
+    :param target:
+    :return:
+    """
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 

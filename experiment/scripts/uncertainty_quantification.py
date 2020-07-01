@@ -14,7 +14,6 @@ from experiment.base.inventory import MySetup
 
 
 def value_info(root):
-
     if not isinstance(root, (list, tuple)):
         root = [root]
 
@@ -41,6 +40,7 @@ def value_info(root):
         mode = values[idm]
         modes.append(mode)
 
+    # TODO: Put visualization methods in proper folder
     modes = np.array(modes)
     modes -= np.mean(modes)
     plt.bar(np.arange(1, 7), -modes, color=colors)
@@ -61,8 +61,8 @@ def value_info(root):
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
     plt.show()
-    #%%
-    ids = np.array(np.concatenate([np.ones(wm.shape[1])*i for i in range(1, 7)]), dtype='int')
+    # %% Facet histograms
+    ids = np.array(np.concatenate([np.ones(wm.shape[1]) * i for i in range(1, 7)]), dtype='int')
     master = wm.flatten()
 
     data = np.concatenate([[master], [ids]], axis=0)
@@ -81,6 +81,7 @@ def value_info(root):
     g.map(plt.axhline, y=0, lw=4)
     for ax in g.axes:
         ax[0].set_xlim((600, 900))
+
     # g.map(plt.grid, 'MHD')
 
     def label(x, color, label):
@@ -90,6 +91,7 @@ def value_info(root):
                 fontweight="bold", color=color, size=20,  # text attributes
                 ha="left", va="center",  # alignment specifications
                 transform=ax.transAxes)  # specify axes of transformation)
+
     g.map(label, "MHD")  # the function counts as a plotting object!
 
     sns.set(style="dark", rc={"axes.facecolor": (0, 0, 0, 0)})
