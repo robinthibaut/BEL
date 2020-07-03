@@ -2,7 +2,7 @@
 
 import os
 from os.path import join as jp
-
+from experiment.base.inventory import Machine
 from experiment.base.inventory import MySetup
 import experiment.toolbox.filesio as fops
 
@@ -16,6 +16,7 @@ def cleanup():
             fops.keep_essential(r)
             fops.remove_bkt(r)
     fops.remove_incomplete(res_tree)
+
 
 if __name__ == '__main__':
     cleanup()

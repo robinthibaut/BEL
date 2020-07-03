@@ -142,7 +142,7 @@ def main(comb=None, flag_base=False, to_swap=None):
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     fb = filesio.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base and fb:
+    if flag_base and not fb:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
         dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
@@ -201,9 +201,9 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
 
 
 if __name__ == '__main__':
-    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True, swap=True)
-    forecast_dir = MySetup.Directories.forecasts_dir
-    listit = os.listdir(forecast_dir)
-    listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    value_info(duq)
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True)
+    # forecast_dir = MySetup.Directories.forecasts_dir
+    # listit = os.listdir(forecast_dir)
+    # listit.remove('base')
+    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    # value_info(duq)
