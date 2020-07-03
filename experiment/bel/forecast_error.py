@@ -99,8 +99,9 @@ class UncertaintyQuantification:
     def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
         """
         Extracts n random samples from the posterior
-        :param sample_n: Sample identifier
-        :param n_posts: Desired number of samples
+        :param save_target_pc: bool:
+        :param sample_n: int: Sample identifier
+        :param n_posts: int: Desired number of samples
         :return:
         """
         if sample_n is not None:

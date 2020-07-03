@@ -28,12 +28,12 @@ def empty_figs(res_dir):
 def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
     """
     Loads PCA pickles and plot scores for all folders
-    :param res_dir:
-    :param d:
-    :param h:
-    :param scores:
-    :param exvar:
-    :param folders:
+    :param res_dir: str:
+    :param d: bool:
+    :param h: bool:
+    :param scores: bool:
+    :param exvar: bool:
+    :param folders: list:
     :return:
     """
 
@@ -211,6 +211,7 @@ def plot_pc_ba(root, data=False, target=False):
 
 
 if __name__ == '__main__':
+    # TODO: Adapt for several observations
     sample = '6623dd4fb5014a978d59b9acb03946d2'
     default = ['123456']
     # plot_pc_ba(sample, target=True)
