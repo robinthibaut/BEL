@@ -15,7 +15,8 @@ class PCAIO:
     # TODO: add properties
     def __init__(self, name, training=None, roots=None, directory=None):
         """
-
+        Given a set of training data and one observation (optional), performs necessary dimension reduction
+        and transformations.
         :param name: str: name of the dataset (e.g. 'data', 'target'...)
         :param training: np.array: Training dataset
         :param roots: list: List containing uuid of training roots
@@ -56,18 +57,19 @@ class PCAIO:
 
         return pc_training
 
-    def pca_test_transformation(self, test, test_roots):
+    def pca_test_transformation(self, test, test_root):
         """
         Transforms observation to PC scores.
         :param test: np.array: Observation array
-        :param test_roots:
-        :return:
+        :param test_root: list: List containing observation id (str)
+        :return: np.array: Observation PC
         """
-        self.test_root = test_roots
+        self.test_root = test_root
 
+        # Flattened array
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
-        # Transform prediction data into principal components
 
+        # Transform prediction data into principal components
         pc_prediction = self.operator.transform(self.predict_physical)
         self.predict_pc = pc_prediction
 
@@ -77,6 +79,7 @@ class PCAIO:
         """
         Given an explained variance percentage, returns the number of components
         necessary to obtain that level.
+        :param perc: float: Percentage between 0 and 1
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
         nc = len(np.where(evr <= perc)[0])
@@ -88,6 +91,7 @@ class PCAIO:
     def perc_pca_components(self, n_c):
         """
         Returns the explained variance percentage given a number of components n_c.
+        :param n_c: int: Number of conponents to keep
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
 
@@ -96,7 +100,7 @@ class PCAIO:
     def pca_refresh(self, n_comp=None):
         """
         Given a number of components to keep, returns the PC array with the corresponding shape.
-        :param n_comp:
+        :param n_comp: int: Number of components
         :return:
         """
 
@@ -117,6 +121,8 @@ class PCAIO:
     def pc_random(self, n_posts):
         """
         Randomly selects PC components from the original training matrix dtp
+        :param n_posts: int: Number of random PC to use
+        :return np.array: Random scores
         """
         r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the training array
         score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
@@ -127,20 +133,27 @@ class PCAIO:
 
         return np.array(test)
 
-    def inverse_transform(self, pc_to_invert):
+    def inverse_transform(self, pc_to_invert, n_comp=None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
-        :param pc_to_invert: PC array
+        :param pc_to_invert: np.array: PC array to back-transform to physical space
+        :param n_comp: int: Number of components to back-transform with
         :return: Back transformed array
         """
+        if n_comp is None:
+            n_comp = self.ncomp
         # TODO: double check
-        inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
+        inv = np.dot(pc_to_invert, self.operator.components_[:n_comp, :]) + self.operator.mean_
 
         return inv
 
     def reset_(self):
+        """
+        Deletes (resets) the observation properties
+        """
         self.predict_pc = None
         self.predict_physical = None
+        # Re-dumps pca object
         joblib.dump(self, os.path.join(self.directory, f'{self.name}_pca.pkl'))
         print(f'Target properties reset to {self.predict_pc}')

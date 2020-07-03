@@ -70,7 +70,7 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
         # Load npy whpa prediction
         prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{res_dir}.npy'))
         # Transform and split
-        h_pco.pca_test_transformation(prediction, test_roots=[res_dir])
+        h_pco.pca_test_transformation(prediction, test_root=[res_dir])
         nho = h_pco.ncomp
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Plot
@@ -123,7 +123,7 @@ def cca_vision(root_dir, folders=None):
 
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-        h_pco.pca_test_transformation(h_pred, test_roots=[root_dir])
+        h_pco.pca_test_transformation(h_pred, test_root=[root_dir])
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
         # CCA plots
@@ -187,7 +187,7 @@ def plot_pc_ba(root, data=False, target=False):
 
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
         # Cut desired number of PC components
-        h_pco.pca_test_transformation(h_pred, test_roots=[root])
+        h_pco.pca_test_transformation(h_pred, test_root=[root])
         h_pco.pca_refresh(hnc0)
         mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=os.path.join(base_dir, 'control'))
 

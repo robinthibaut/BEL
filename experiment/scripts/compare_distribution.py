@@ -52,7 +52,7 @@ h1 = h_pco.training_pc[:, 0]
 
 prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{sample}.npy'))
 # Transform and split
-h_pco.pca_test_transformation(prediction, test_roots=[sample])
+h_pco.pca_test_transformation(prediction, test_root=[sample])
 nho = h_pco.ncomp
 _, h_pc_prediction = h_pco.pca_refresh(nho)
 

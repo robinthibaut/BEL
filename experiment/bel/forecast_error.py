@@ -34,7 +34,11 @@ class UncertaintyQuantification:
     def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
         """
 
-        :param study_folder: Name of the folder in the 'forecast' directory on which UQ will be performed.
+        :param base: class: Base object (inventory)
+        :param study_folder: str: Name of the root uuid in the 'forecast' directory on which UQ will be performed
+        :param base_dir: str: Path to base directory
+        :param wel_comb: list: List of data source combinations
+        :param seed: int: Seed
         """
 
         if seed is not None:
@@ -84,7 +88,8 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
-        self.sample_n = 0
+        self.sample_n = 0  # This class used to take into account multiple observations, now this parameter remains
+        # fixed to 0.
         self.n_posts = self.base.Forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
@@ -99,9 +104,9 @@ class UncertaintyQuantification:
     def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
         """
         Extracts n random samples from the posterior
-        :param save_target_pc: bool:
         :param sample_n: int: Sample identifier
         :param n_posts: int: Desired number of samples
+        :param save_target_pc: bool: Flag to save the observation target PC
         :return:
         """
         if sample_n is not None:
@@ -110,6 +115,7 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
+        # Extract n random sample (target pc's). The posterior distribution is computed within the below method.
         forecast_pc = self.po.random_sample(sample_n=self.sample_n,
                                             pca_d=self.d_pco,
                                             pca_h=self.h_pco,
@@ -148,7 +154,7 @@ class UncertaintyQuantification:
     def c0(self, write_vtk=1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
-        :param write_vtk: Boolean flag to export VTK files
+        :param write_vtk: bool: Flag to export VTK files
         """
         self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
         if write_vtk:
@@ -159,18 +165,18 @@ class UncertaintyQuantification:
                 points = vtk.vtkPoints()
                 [points.InsertNextPoint(np.insert(c, 2, 0)) for c in v]
                 # Create a polydata to store everything in
-                polyData = vtk.vtkPolyData()
+                poly_data = vtk.vtkPolyData()
                 # Add the points to the dataset
-                polyData.SetPoints(points)
+                poly_data.SetPoints(points)
                 # Create a cell array to store the lines in and add the lines to it
                 cells = vtk.vtkCellArray()
                 cells.InsertNextCell(nv)
                 [cells.InsertCellPoint(k) for k in range(nv)]
                 # Add the lines to the dataset
-                polyData.SetLines(cells)
+                poly_data.SetLines(cells)
                 # Export
                 writer = vtk.vtkXMLPolyDataWriter()
-                writer.SetInputData(polyData)
+                writer.SetInputData(poly_data)
 
                 writer.SetFileName(jp(vdir, 'forecast_posterior_{}.vtp'.format(i)))
                 writer.Write()
@@ -297,7 +303,7 @@ class UncertaintyQuantification:
 
     #  Let's try Hausdorff...
     def mhd(self):
-        """Computes the modified Hausdorff distance"""
+        """Computes the Modified Hausdorff Distance"""
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.ncomp
