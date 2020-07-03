@@ -308,7 +308,7 @@ class UncertaintyQuantification:
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.ncomp
         v_h_true_cut = \
-            self.h_pco.inverse_transform(self.h_pco.predict_pc[:n_cut]).reshape((self.shape[1], self.shape[2]))
+            self.h_pco.inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
         # Delineation vertices of the true array
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 

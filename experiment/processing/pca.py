@@ -144,7 +144,7 @@ class PCAIO:
         if n_comp is None:
             n_comp = self.ncomp
         # TODO: double check
-        inv = np.dot(pc_to_invert, self.operator.components_[:n_comp, :]) + self.operator.mean_
+        inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
 
         return inv
 
