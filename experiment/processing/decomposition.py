@@ -93,15 +93,15 @@ def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
         joblib.dump(h_pco, h_pca_obj)
 
 
-def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
+def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
     :param training_roots: list: List containing the uuid's of training roots
-    :param base: Class: Base class object containing global constants.
-    :param wel_comb: list: List of injection wels used to make prediction
-    :param test_roots: list: Folder paths containing outputs to be predicted
+    :param base: class: Base class object containing global constants.
+    :param wel_comb: list: List of injection wells used to make prediction
+    :param test_root: list: Folder paths containing outputs to be predicted
 
     """
 
@@ -112,20 +112,21 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     if wel_comb is not None:
         base.Wels.combination = wel_comb
 
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
+    # Initiate Plot instance
+    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
 
     # Directories
     md = base.Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
-    # Parse test_roots
-    if isinstance(test_roots, str):  # If only one root given
-        if os.path.exists(jp(res_dir, test_roots)):
-            test_roots = [test_roots]
+    # Parse test_root
+    if isinstance(test_root, str):  # If only one root given
+        if os.path.exists(jp(res_dir, test_root)):
+            test_root = [test_root]
         else:
-            warnings.warn('Specified folder {} does not exist'.format(test_roots[0]))
+            warnings.warn('Specified folder {} does not exist'.format(test_root[0]))
 
-    bel_dir = jp(md.forecasts_dir, test_roots[0])  # Directory in which to load forecasts
+    bel_dir = jp(md.forecasts_dir, test_root[0])  # Directory in which to load forecasts
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
@@ -133,12 +134,12 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
+    # TODO: pass them to next class, or save the paths globally
     obj_dir = jp(sub_dir, 'obj')
     fig_data_dir = jp(sub_dir, 'data')
     fig_pca_dir = jp(sub_dir, 'pca')
     fig_cca_dir = jp(sub_dir, 'cca')
     fig_pred_dir = jp(sub_dir, 'uq')
-    # TODO: pass them to next class
 
     # %% Creates directories
 
@@ -150,17 +151,17 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
         # Loads the results:
         tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
-        # pzs = WHPA
-        # roots_ = simulation id
+        # pzs = WHPA's
+        # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
         # Save file roots
     else:
         tc = np.load(tsub)
 
-    if not os.path.exists(jp(base_dir, 'roots.dat')):
+    if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
         with open(jp(base_dir, 'roots.dat'), 'w') as f:
             for r in training_roots:  # Saves roots name until test roots
                 f.write(os.path.basename(r) + '\n')
@@ -180,35 +181,32 @@ def bel(base, wel_comb=None, training_roots=None, test_roots=None, **kwargs):
     # PCA on transport curves
     d_pco.ncomp = 50
     ndo = d_pco.ncomp
-    # Load test
-    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_roots, d=True)
+    # Load observation (test_root)
+    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
-    tcp = tcp[:, selection, :]
-    d_pco.pca_test_transformation(tcp, test_roots=test_roots)  # Performs transformation on testing curves
-    d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Performs transformation on training curves
+    tcp = tcp[:, selection, :]  # Extract desired observation
+    d_pco.pca_test_transformation(tcp, test_roots=test_root)  # Perform transformation on testing curves
+    d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
-    # Plot d:
-    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
-    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
     # Load whpa
-    _, pzs, _ = fops.load_res(roots=test_roots, h=True)
+    _, pzs, _ = fops.load_res(roots=test_root, h=True)
     # Compute WHPA
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
-        h_pco.pca_test_transformation(h, test_roots=test_roots)
+        h_pco.pca_test_transformation(h, test_roots=test_root)
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
-        np.save(jp(fig_dir, test_roots[0]), h)  # Save the prediction WHPA
-        ff = jp(fig_dir, f'{test_roots[0]}.png')  # figure name
+        np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
+        ff = jp(fig_dir, f'{test_root[0]}.png')  # figure name
         h_training = h_pco.training_physical.reshape(h_pco.shape)
         # Plots target training + prediction
         mp.whp(h_training, alpha=.2, show=False)

@@ -1,14 +1,23 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
-from experiment.base.inventory import MySetup
+import numpy as np
+from experiment.base.inventory import MySetup as base
 from experiment.goggles.vtkio import ModelVTK
 from experiment.goggles.visualization import Plot
 from experiment.toolbox import filesio
 
 if __name__ == '__main__':
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
+    # Initiate Plot instance
+    mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
+
+    # Plot d:
+    # mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+    # mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+
     # VTK
-    MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/test'
-    mi = ModelVTK(base=MySetup, folder='macos')
+    base.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/test'
+    mi = ModelVTK(base=base, folder='macos')
     mi.flow_vtk()
     # mi.transport_vtk()
     # mi.conc_vtk()

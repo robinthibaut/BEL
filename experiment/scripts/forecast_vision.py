@@ -203,7 +203,7 @@ def plot_pc_ba(root, data=False, target=False):
             d_pco = joblib.load(os.path.join(res_dir, 'd_pca.pkl'))
             dnc0 = d_pco.ncomp
             d_pco.pca_refresh(dnc0)
-            setattr(d_pco, 'test_roots', [root])
+            setattr(d_pco, 'test_root', [root])
             mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
                                      fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
             mplot.d_pca_inverse_plot(d_pco, dnc0, training=False,

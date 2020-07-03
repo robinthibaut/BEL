@@ -13,54 +13,37 @@ from sklearn.decomposition import PCA
 
 class PCAIO:
     # TODO: add properties
-    def __init__(self, name, training, roots=None, directory=None):
+    def __init__(self, name, training=None, roots=None, directory=None):
         """
 
-        :param name: name of the parameter on which to perform operations
-        :param training: Training dataset
-
+        :param name: str: name of the dataset (e.g. 'data', 'target'...)
+        :param training: np.array: Training dataset
+        :param roots: list: List containing uuid of training roots
+        :param directory: str: Path to the folder in which to save the pickle
         """
+
         self.directory = directory
         self.name = name  # str, name of the object
         self.roots = roots  # Name of training roots
 
-        self.shape = training.shape
+        self.shape = training.shape  # Shape of dataset
 
-        self.operator = None  # PCA operator
-        self.ncomp = None  # Number of components
+        self.operator = None  # PCA operator (scikit-learn instance)
+        self.ncomp = None  # Number of components to keep
 
-        # Training set - physical space
+        # Training set - physical space - flattened array
         self.training_physical = np.array([item for sublist in training for item in sublist]).reshape(len(training), -1)
-        self.n_training = len(self.training_physical)  # Number of training data
-        self.training_pc = None  # Training set - PCA space
+        self.n_training = len(self.training_physical)  # Number of training samples
+        self.training_pc = None  # Training PCA scores
 
-        self.test_roots = None
-        self.predict_physical = None  # Prediction set - physical space
-        self.predict_pc = None  # Prediction set - PCA space
-
-    # def pca_tp(self, n_training):
-    #     """
-    #     Given an arbitrary size of training data, splits the original array accordingly.
-    #     The data used for prediction are after the training slice, i.e. the n_training last elements of the raw data
-    #     :param n_training:
-    #     :return: training, test
-    #     """
-    #     self.n_training = n_training
-    #     # Flattens the array
-    #     d_original = np.array([item for sublist in self.raw_data for item in sublist]).reshape(len(self.raw_data), -1)
-    #     # Splits into training and test according to chosen n_training.
-    #     d_t = d_original[:self.n_training]
-    #     self.training_physical = d_t
-    #     d_p = d_original[self.n_training:]
-    #     self.predict_physical = d_p
-    #
-    #     return d_t, d_p
+        self.test_root = None  # List containing uuid of observation
+        self.predict_physical = None  # Observation set - physical space
+        self.predict_pc = None  # Observation PCA scores
 
     def pca_training_transformation(self):
         """
-        Instantiate the PCA object and transforms both training and test data.
-        Depending on the value of the load parameter, it will create a new one or load a previously computed one.
-        :return: PC training, PC test
+        Instantiate the PCA object and transforms training data to scores.
+        :return: np.array: PC training
         """
 
         pca_operator = PCA()
@@ -75,11 +58,12 @@ class PCAIO:
 
     def pca_test_transformation(self, test, test_roots):
         """
-        Instantiate the PCA object and transforms both training and test data.
-        Depending on the value of the load parameter, it will create a new one or load a previously computed one.
-        :return: PC training, PC test
+        Transforms observation to PC scores.
+        :param test: np.array: Observation array
+        :param test_roots:
+        :return:
         """
-        self.test_roots = test_roots
+        self.test_root = test_roots
 
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
         # Transform prediction data into principal components

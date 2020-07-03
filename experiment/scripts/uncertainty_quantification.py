@@ -14,35 +14,39 @@ from experiment.base.inventory import MySetup
 
 
 def value_info(root):
+    """
+    Computes the combined value of information for n observations
+    :param root: list: List containing the roots whose wells contributions will be taken into account.
+    :return:
+    """
     if not isinstance(root, (list, tuple)):
         root = [root]
 
     wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
 
-    for r in root:
+    for r in root:  # For each root
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
-        for e in wid:  # For each subfolder in the main folder
-            fmhd = os.path.join(droot, e, 'uq', 'haus.npy')
+        for e in wid:  # For each subfolder (well) in the main folder
+            fmhd = os.path.join(droot, e, 'uq', 'haus.npy')  # Get the MHD file
             mhd = np.load(fmhd)  # Load MHD
-            # mhd = np.mean(np.load(fmhd))  # Load MHD
-            idw = int(e) - 1  # -1 to respect 0 index
-            wm[idw] += mhd  # Add mean of MHD
+            idw = int(e) - 1  # -1 to respect 0 index (Well index)
+            wm[idw] += mhd  # Add MHD at each well
 
-    colors = Plot().cols
+    colors = Plot().cols  # Get default colors from visualization class
 
-    # Plot
-    # mode
-    modes = []
-    for i, m in enumerate(wm):
+    modes = []  # Get MHD corresponding to each well's mode
+    for i, m in enumerate(wm):  # For each well, look up its MHD distribution
         count, values = np.histogram(m)
         idm = np.argmax(count)
         mode = values[idm]
         modes.append(mode)
 
     # TODO: Put visualization methods in proper folder
-    modes = np.array(modes)
+    modes = np.array(modes)  # Scale modes
     modes -= np.mean(modes)
+
+    # Bar plot
     plt.bar(np.arange(1, 7), -modes, color=colors)
     plt.title('Value of information of each well')
     plt.xlabel('Well ID')
@@ -61,6 +65,7 @@ def value_info(root):
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
     plt.show()
+
     # %% Facet histograms
     ids = np.array(np.concatenate([np.ones(wm.shape[1]) * i for i in range(1, 7)]), dtype='int')
     master = wm.flatten()
@@ -81,8 +86,6 @@ def value_info(root):
     g.map(plt.axhline, y=0, lw=4)
     for ax in g.axes:
         ax[0].set_xlim((600, 900))
-
-    # g.map(plt.grid, 'MHD')
 
     def label(x, color, label):
         ax = plt.gca()  # get the axes of the current object
@@ -106,13 +109,17 @@ def value_info(root):
     plt.show()
 
 
-def main(comb=None, flag_base=False, swap=False):
+def main(comb=None, flag_base=False, to_swap=None):
     """
     I. First, defines the roots for training from simulations in the hydro directory.
     II. Define one 'observation' root.
     III. Perform PCA decomposition on the training targets and store the otput in the 'base' folder,
     as to avoid recomputing it every time.
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification
+    :param comb: list: List of well IDs
+    :param flag_base: bool: Recompute base PCA on target
+    :param to_swap: list: List of roots to swap from training to observations.
+    :return: list: List of training roots, list: List of observation roots
     """
 
     if os.uname().nodename == 'MacBook-Pro.local':
@@ -129,12 +136,12 @@ def main(comb=None, flag_base=False, swap=False):
         idx = roots_training.index(pres)
         roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
 
-    if swap:
-        swap_root('6623dd4fb5014a978d59b9acb03946d2')
+    if to_swap is not None:
+        [swap_root(ts) for ts in to_swap]
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    fb = filesio.dirmaker(obj_path)
+    fb = filesio.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base and fb:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
@@ -180,7 +187,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel(base=base, training_roots=training, test_roots=r_, wel_comb=c)
+            sf = dcp.bel(base=base, training_roots=training, test_root=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior

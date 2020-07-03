@@ -287,6 +287,7 @@ class Plot:
                 plt.show()
                 plt.close()
 
+
     def whp(self,
             h=None,
             alpha=0.4,
@@ -412,7 +413,7 @@ class Plot:
             roots = pca_o.roots
         else:
             v_pc = pca_o.predict_pc
-            roots = pca_o.test_roots
+            roots = pca_o.test_root
 
         for i, r in enumerate(roots):
             v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
@@ -442,7 +443,7 @@ class Plot:
             roots = pca_o.roots
         else:
             v_pc = pca_o.predict_pc
-            roots = pca_o.test_roots
+            roots = pca_o.test_root
 
         for i, r in enumerate(roots):
             v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
