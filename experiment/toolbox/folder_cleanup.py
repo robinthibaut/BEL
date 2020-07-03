@@ -11,11 +11,11 @@ def cleanup():
     # cwd = os.getcwd()
     res_tree = MySetup.Directories.hydro_res_dir
     # r=root, d=directories, f = files
-    for r, _, _ in os.walk(res_tree, topdown=False):
+    for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.keep_essential(r)
             fops.remove_bkt(r)
-    fops.remove_incomplete(res_tree)
+            fops.remove_incomplete(r)
 
 
 if __name__ == '__main__':

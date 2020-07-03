@@ -87,7 +87,7 @@ def remove_incomplete(res_tree):
     """
     for r, d, f in os.walk(res_tree, topdown=False):
         # Adds the data files to the lists, which will be loaded later
-        if 'bkt.npy' not in f and 'hk.npy' not in f and 'pz.npy' not in f and r != res_tree:
+        if 'bkt.npy' not in f or 'hk.npy' not in f or 'pz.npy' not in f:
             shutil.rmtree(r)
 
 
