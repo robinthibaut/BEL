@@ -109,7 +109,7 @@ def value_info(root):
     plt.show()
 
 
-def main(comb=None, flag_base=False, to_swap=None):
+def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     """
     I. First, defines the roots for training from simulations in the hydro directory.
     II. Define one 'observation' root.
@@ -129,7 +129,9 @@ def main(comb=None, flag_base=False, to_swap=None):
     listme = os.listdir(md)
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
     roots_training = folders[:200]  # List of n training roots
-    roots_obs = folders[200:250]  # List of m observation roots
+
+    if roots_obs is None:
+        roots_obs = folders[200:250]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap if necessary"""
@@ -190,9 +192,9 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_root=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
-            uq.c0(write_vtk=0)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
+            # uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
+            # uq.c0(write_vtk=0)  # Extract 0 contours
+            # uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
             # uq.kernel_density()
 
@@ -201,7 +203,8 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True)
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True,
+                  roots_obs=['0cdb57a1b5dc4277b962d0bb289dbd48'])
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')

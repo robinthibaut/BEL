@@ -10,18 +10,16 @@ if __name__ == '__main__':
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     # Initiate Plot instance
     mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
-
     # Plot d:
     # mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
     # mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # VTK
-    base.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/test'
-    mi = ModelVTK(base=base, folder='macos')
+    mi = ModelVTK(base=base, folder='6b74bd7dcf054d3aa89caff21aec9196')
     mi.flow_vtk()
-    # mi.transport_vtk()
-    # mi.conc_vtk()
-    # mi.particles_vtk(path=1)
+    mi.transport_vtk()
+    mi.conc_vtk()
+    mi.particles_vtk(path=1)
     mi.wels_vtk()
 
 
