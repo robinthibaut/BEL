@@ -18,7 +18,7 @@ mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
 
 # def ng_boost(res_dir, folder=None):
 
-res_dir, folder = '0cdb57a1b5dc4277b962d0bb289dbd48', '123456'
+res_dir, folder = '6623dd4fb5014a978d59b9acb03946d2', '123456'
 
 subdir = os.path.join(base.Directories.forecasts_dir, res_dir)
 
@@ -40,7 +40,8 @@ prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{res_dir}.npy'))
 h_pco.pca_test_transformation(prediction, test_root=[res_dir])
 nho = h_pco.ncomp
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
-nhco = 38
+
+nhco = 37
 
 my_pcs = []
 # Try this NGboost
@@ -60,7 +61,7 @@ for i, d in enumerate(my_pcs):
 random_samples = random_samples.reshape(n_samples, nhco)
 
 # Generate forecast in the initial dimension and reshape.
-forecast_posterior = h_pco.inverse_transform(random_samples).reshape((n_samples,
+forecast_posterior = h_pco.inverse_transform(random_samples[:, :15]).reshape((n_samples,
                                                                       h_pco.shape[1],
                                                                       h_pco.shape[2]))
 mplot.whp(h=forecast_posterior, show_wells=True, show=True)

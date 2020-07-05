@@ -29,7 +29,7 @@ class MySetup:
         if Machine.computer == 'we13c420':
             hydro_res_dir = join(main_dir, 'hydro', 'results')
         if Machine.computer == 'MacBook-Pro.local':
-            hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/backup'
+            hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
         if Machine.computer == 'Yippee-Ki-yay-PC':
             hydro_res_dir = 'C:/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
 

@@ -123,7 +123,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     """
 
     if os.uname().nodename == 'MacBook-Pro.local':
-        MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
+        MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/backup'
 
     md = MySetup.Directories.hydro_res_dir
     listme = os.listdir(md)
@@ -184,7 +184,10 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
         base_dir = None
 
     # Resets the target PCA object' predictions to None before starting
-    joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
+    try:
+        joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
+    except FileNotFoundError:
+        pass
 
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
@@ -204,7 +207,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
 
 if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True,
-                  roots_obs=['0cdb57a1b5dc4277b962d0bb289dbd48'])
+                  roots_obs=['6623dd4fb5014a978d59b9acb03946d2'])
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')
