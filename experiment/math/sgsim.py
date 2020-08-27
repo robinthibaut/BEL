@@ -52,8 +52,8 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
 
     # Get sgems grid centers coordinates:
-    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx/2
-    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy/2
+    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
+    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy / 2
     xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
     centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
@@ -91,12 +91,12 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     p = 1
     matrix -= np.min(matrix)
     matrix /= np.max(matrix)
-    matrix *= p*2
+    matrix *= p * 2
     matrix -= p
 
-    k_mean = np.random.uniform(0.7, 1.2)  # Hydraulic conductivity mean between x and y in m/d.
-    print(f'hk mean={10**k_mean}')
-    k_std = 0.4
+    k_mean = np.random.uniform(0.5, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    print(f'hk mean={10 ** k_mean}')
+    k_std = 1
 
     tf = np.vectorize(transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
@@ -104,12 +104,12 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
-    import matplotlib.pyplot as plt
-    extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
-    plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
-    plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
-    plt.colorbar()
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
+    # plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+    # plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
+    # plt.colorbar()
+    # plt.show()
 
     np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
 
