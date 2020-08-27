@@ -13,13 +13,12 @@ from experiment.base.inventory import MySetup
 from experiment.toolbox.filesio import datread
 
 
-def transform(f):
+def transform(f, k_mean, k_std):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data
+    :param: f: float: Simulation output
+    :param: k_mean: float: Desired mean for the Hk field
     """
-
-    k_mean = np.random.uniform(1, 2)  # Hydraulic conductivity mean between x and y in m/d.
-    k_std = 0.4
 
     ff = f * k_std + k_mean
 
@@ -39,7 +38,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     hd = PointSet(project=pjt, pointset_path=file_path)
 
     if wells_hk is None:
-        hku = 1.  #  + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+        hku = 2. + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
     else:
         hku = wells_hk
 
@@ -88,23 +87,29 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-    # Rescale matrix from -1 to 1
+    # Rescale matrix from -p to p
+    p = 1
     matrix -= np.min(matrix)
     matrix /= np.max(matrix)
-    matrix *= 2
-    matrix -= 1
+    matrix *= p*2
+    matrix -= p
 
-    tf = np.vectorize(transform)  # Transform values to log10
-    matrix = tf(matrix)  # Apply function to results
+    k_mean = np.random.uniform(0.7, 1.2)  # Hydraulic conductivity mean between x and y in m/d.
+    print(f'hk mean={10**k_mean}')
+    k_std = 0.4
+
+    tf = np.vectorize(transform)  # Transform values from log10
+    matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
     matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
-    # extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
-    # plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
-    # plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
-    # plt.colorbar()
-    # plt.show()
+    import matplotlib.pyplot as plt
+    extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
+    plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+    plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
+    plt.colorbar()
+    plt.show()
 
     np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
 
