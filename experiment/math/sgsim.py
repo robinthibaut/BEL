@@ -94,7 +94,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     matrix *= p * 2
     matrix -= p
 
-    k_mean = np.random.uniform(0.5, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    k_mean = np.random.uniform(1.5, 2)  # Hydraulic conductivity mean between x and y in m/d.
     print(f'hk mean={10 ** k_mean}')
     k_std = 1
 
