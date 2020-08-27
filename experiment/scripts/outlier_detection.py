@@ -12,7 +12,6 @@ identified. If the observed data falls within this boundary,
 then the prior is classified as being consistent with dobs.
 """
 
-
 import os
 import joblib
 import numpy as np
@@ -22,6 +21,7 @@ from experiment.base.inventory import MySetup
 from sklearn import svm
 
 plt.style.use('dark_background')
+
 
 def svm1(res_dir, d=True, h=False, folders=None):
     """ Loads PCA pickles and plot scores for all folders """
@@ -54,7 +54,6 @@ dataset = np.concatenate([dpc.training_pc[:, :2], dpc.predict_pc[:, :2]], axis=0
 dataset -= np.min(dataset)
 dataset /= np.max(dataset)
 dataset += 1
-
 
 xx, yy = np.meshgrid(np.linspace(0.8, 2.2, 200),
                      np.linspace(0.8, 2.2, 200))

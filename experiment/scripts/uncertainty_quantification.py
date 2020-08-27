@@ -119,6 +119,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     :param comb: list: List of well IDs
     :param flag_base: bool: Recompute base PCA on target
     :param to_swap: list: List of roots to swap from training to observations.
+    :param roots_obs: list: List of roots considered as observations.
     :return: list: List of training roots, list: List of observation roots
     """
 
@@ -164,7 +165,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 def scan_roots(base, training, obs, combinations, base_dir=None):
     """
     Scan all roots and perform base decomposition
-    :param base: Base class (inventory)
+    :param base: class: Base class (inventory)
     :param training: list: List of uuid of each root for training
     :param obs: list: List of uuid of each root for observation
     :param combinations: list: List of wells combinations, e.g. [[1, 2, 3, 4, 5, 6]]
@@ -206,7 +207,8 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], flag_base=True,
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  flag_base=True,
                   roots_obs=['6623dd4fb5014a978d59b9acb03946d2'])
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)

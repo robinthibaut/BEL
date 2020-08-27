@@ -9,11 +9,10 @@
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/issues" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/old_scripts" />
       <excludeFolder url="file://$MODULE_DIR$/experiment/bel/forecasts" />
-      <excludeFolder url="file://$MODULE_DIR$/experiment/hydro/results" />
       <excludeFolder url="file://$MODULE_DIR$/experiment/misc" />
       <excludeFolder url="file://$MODULE_DIR$/figures" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (ML)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (BEL)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">

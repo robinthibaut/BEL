@@ -101,11 +101,11 @@ class MySetup:
                  'rates': [0, 24, 0]}
         }
 
-        combination = np.arange(1, len(wels_data))  # Injection wels in use for prediction (default: all)
+        combination = np.arange(1, len(wels_data))  # Injection wells in use for prediction (default: all)
 
     @dataclass
     class Focus:
-        """Geometry of the focused area on the main grid, englobing all wells, as to reduce computation time"""
+        """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
         cell_dim = 4
