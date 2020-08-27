@@ -18,7 +18,7 @@ def transform(f):
     Transforms the values of the statistical_simulation simulations into meaningful data
     """
 
-    k_mean = np.random.uniform(-2, .7)  # Hydraulic conductivity mean between x and y in m/d.
+    k_mean = np.random.uniform(1, 2)  # Hydraulic conductivity mean between x and y in m/d.
     k_std = 0.4
 
     ff = f * k_std + k_mean
@@ -39,7 +39,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     hd = PointSet(project=pjt, pointset_path=file_path)
 
     if wells_hk is None:
-        hku = 1 + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+        hku = 1.  #  + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
     else:
         hku = wells_hk
 
