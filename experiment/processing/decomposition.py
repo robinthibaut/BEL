@@ -191,6 +191,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
+    # Plot curves
     mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
     mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 

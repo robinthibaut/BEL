@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # VTK
-    mi = ModelVTK(base=base, folder='6b74bd7dcf054d3aa89caff21aec9196')
+    mi = ModelVTK(base=base, folder='0a5fe077cc6b4cebb9ef10f07e8f61af')
     mi.flow_vtk()
     mi.transport_vtk()
     mi.conc_vtk()
