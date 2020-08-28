@@ -303,7 +303,10 @@ class UncertaintyQuantification:
 
     #  Let's try Hausdorff...
     def mhd(self):
-        """Computes the Modified Hausdorff Distance"""
+        """
+        Computes the Modified Hausdorff Distance between the true WHPA, that has been recovered from its n
+        first PCA components to allow good comparison.
+        """
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.ncomp
