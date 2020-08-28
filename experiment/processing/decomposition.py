@@ -34,7 +34,7 @@ from experiment.processing.pca import PCAIO
 def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
     """
     Initiate BEL by performing PCA on the training targets or features.
-    :param base: Class: Base
+    :param base: class: Base class object
     :param roots: list:
     :param d_pca_obj:
     :param h_pca_obj:
