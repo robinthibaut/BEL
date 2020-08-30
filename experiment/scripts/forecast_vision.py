@@ -212,10 +212,10 @@ def plot_pc_ba(root, data=False, target=False):
 
 if __name__ == '__main__':
     # TODO: Adapt for several observations
-    sample = '6623dd4fb5014a978d59b9acb03946d2'
+    sample = '0a5fe077cc6b4cebb9ef10f07e8f61af'
     default = ['123456']
     # plot_pc_ba(sample, target=True)
     # empty_figs(sample)
     # plot_whpa(sample)
     # cca_vision(sample, folders=default)
-    pca_vision(sample, d=False, h=True, exvar=False, scores=True, folders=default)
+    # pca_vision(sample, d=True, h=True, exvar=False, scores=True, folders=default)

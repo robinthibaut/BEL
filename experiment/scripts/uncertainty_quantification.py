@@ -140,9 +140,9 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_root=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
-            # uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
-            # uq.c0(write_vtk=0)  # Extract 0 contours
-            # uq.mhd()  # Modified Hausdorff
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
+            uq.c0(write_vtk=0)  # Extract 0 contours
+            uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
             # uq.kernel_density()
 
@@ -211,7 +211,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
                   flag_base=True,
-                  roots_obs=['6623dd4fb5014a978d59b9acb03946d2'])
+                  roots_obs=['0a5fe077cc6b4cebb9ef10f07e8f61af'])
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')
