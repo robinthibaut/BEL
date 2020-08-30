@@ -12,7 +12,7 @@ x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
 mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
 
 tc0, sd, r = fops.load_res(res_dir=base.Directories.hydro_res_dir,
-                           roots=['0a5fe077cc6b4cebb9ef10f07e8f61af'],
+                           roots=['1d596ce96cbd4b1681bc4423253f40e2'],
                            d=True, h=True)
 
 for i, w in enumerate(base.Wels.combination):
