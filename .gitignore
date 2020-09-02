@@ -1,7 +1,4 @@
 .idea
-/bel/hydro/results/
-/bel/forecasts/
-/bel/misc/
 *.png
 *.pdf
 *.ucn

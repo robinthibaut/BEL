@@ -9,7 +9,6 @@
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/comparison_post" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/issues" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/old_scripts" />
-      <excludeFolder url="file://$MODULE_DIR$/experiment/bel/forecasts" />
       <excludeFolder url="file://$MODULE_DIR$/experiment/misc" />
       <excludeFolder url="file://$MODULE_DIR$/figures" />
     </content>
