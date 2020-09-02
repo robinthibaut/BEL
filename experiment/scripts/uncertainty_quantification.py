@@ -167,9 +167,6 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
     """
 
-    # if os.uname().nodename == 'MacBook-Pro.local':
-    #     MySetup.Directories.hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/backup'
-
     # Results location
     md = MySetup.Directories.hydro_res_dir
     listme = os.listdir(md)
@@ -178,7 +175,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     roots_training = folders[:200]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[200:250]  # List of m observation roots
+        roots_obs = folders[200:210]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
@@ -211,7 +208,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
                   flag_base=True,
-                  roots_obs=['0a5fe077cc6b4cebb9ef10f07e8f61af'])
+                  roots_obs=None)
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')

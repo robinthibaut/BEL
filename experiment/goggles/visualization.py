@@ -29,11 +29,11 @@ def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
 
     # plt.xticks(np.arange(n_comp), fontsize=xfs)
     ny = len(np.where(np.cumsum(pca.explained_variance_ratio_) < thr)[0])
-    cum = np.cumsum(pca.explained_variance_ratio_[:n_comp])*100
+    cum = np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks)
-    plt.bar(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100, color='m', alpha=.1)
-    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp])*100,
+    plt.bar(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100, color='m', alpha=.1)
+    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
     plt.xlabel('Components number')
     plt.ylabel('Cumulative explained variance (%)')
@@ -74,7 +74,6 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
     plt.xlim(0.5, ut)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
-
         pc_obs = prediction[sample_n]
 
         # Crete beautiful spline to follow prediction scores
@@ -229,13 +228,14 @@ class Plot:
         c0s = [plt.contour(self.x, self.y, f, [c]) for f in arrays]
         plt.close()  # Close plots
         # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
-        v = np.array([c0.allsegs[0][0] for c0 in c0s])
+        v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
 
     def curves(self, tc, highlight=None, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
         :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
+        :param highlight: list: List of indices of curves to highlight in the plot
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
@@ -264,6 +264,7 @@ class Plot:
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
         :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
+        :param highlight: list: List of indices of curves to highlight in the plot
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
@@ -287,7 +288,6 @@ class Plot:
                 plt.show()
                 plt.close()
 
-
     def whp(self,
             h=None,
             alpha=0.4,
@@ -304,20 +304,20 @@ class Plot:
             fig_file=None,
             show=False):
         """
-        Produces the WHPA plot, that is the zero-contour of the signed distance array.
-        It assumes that well information can be loaded from pw.npy and iw.npy.
-        I should change this.
-        :param show_wells: whether to plot well coordinates or not
-        :param cmap: colormap for the background array
-        :param vmax: max value to plot for the background array
-        :param vmin: max value to plot for the background array
-        :param bkg_field_array: 2D array whose values will be plotted on the grid
-        :param h: Array containing grids of values whose 0 contour will be computed and plotted
-        :param alpha: opacity of the 0 contour lines
-        :param lw: Line width
-        :param colors: Line color
-        :param fig_file:
-        :param show:
+        Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
+
+        :param title: str: plot title
+        :param show_wells: bool: whether to plot well coordinates or not
+        :param cmap: str: colormap name for the background array
+        :param vmax: float: max value to plot for the background array
+        :param vmin: float: max value to plot for the background array
+        :param bkg_field_array: np.array: 2D array whose values will be plotted on the grid
+        :param h: np.array: Array containing grids of values whose 0 contour will be computed and plotted
+        :param alpha: float: opacity of the 0 contour lines
+        :param lw: float: Line width
+        :param colors: str: Line color
+        :param fig_file: str:
+        :param show: bool:
         :param x_lim: [x_min, x_max]
         :param y_lim: [y_min, y_max]
         """
@@ -344,6 +344,7 @@ class Plot:
             comb = [0] + list(self.wels.combination)
             keys = [list(self.wels.wels_data.keys())[i] for i in comb]
             wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
+            # Get pumping well coordinates
             pwl = wbd['pumping0']['coordinates']
             plt.plot(pwl[0], pwl[1], 'wo', label='pw')
             for n, i in enumerate(wbd):
@@ -386,10 +387,14 @@ class Plot:
                        title=None,
                        show=False):
 
-        self.whp(h=forecasts, show_wells=show_wells, bkg_field_array=bkg_field_array, title=title)
+        self.whp(h=forecasts,
+                 show_wells=show_wells,
+                 bkg_field_array=bkg_field_array,
+                 title=title)
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
-        # Plot true h predicted
+
+        # Plot 'true' h predicted
         if h_pred is not None:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
@@ -402,9 +407,14 @@ class Plot:
     @staticmethod
     def d_pca_inverse_plot(pca_o, vn, training=True, fig_dir=None, show=False):
         """
-        Plot used to compare the reproduction of the original physical space after PCA transformation
+
+        Plot used to compare the reproduction of the original physical space after PCA transformation.
+
         :param pca_o: data PCA operator
-        :param vn: Number of components to inverse-transform the data
+        :param vn: Number of components to keep while inverse-transforming the data
+        :param training: bool:
+        :param fig_dir: str:
+        :param show: bool:
         :return:
         """
 
@@ -431,11 +441,17 @@ class Plot:
 
     def h_pca_inverse_plot(self, pca_o, vn, training=True, fig_dir=None, show=False):
         """
+
         Plot used to compare the reproduction of the original physical space after PCA transformation
+
         :param pca_o: signed distance PCA operator
-        :param vn: Number of components to inverse-transform.
+        :param vn: Number of components to keep while inverse-transforming the data
+        :param training: bool:
+        :param fig_dir: str:
+        :param show: bool:
         :return:
         """
+
         shape = pca_o.shape
 
         if training:

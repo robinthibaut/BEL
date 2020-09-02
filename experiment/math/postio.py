@@ -1,7 +1,6 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import numpy as np
-from numpy.matlib import repmat
 
 from experiment.processing.predictions import TargetIO
 
@@ -86,7 +85,7 @@ class PosteriorIO:
         d_modeling_error = \
             d_cca_training \
             - d_ls_predicted \
-            - repmat(d_modeling_mean_error, 1, np.size(d_cca_training, axis=1))
+            - np.tile(d_modeling_mean_error, (1, np.size(d_cca_training, axis=1)))
         # (n_comp_CCA, n_training)
 
         # Information about the covariance of the posterior distribution.
