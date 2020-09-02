@@ -24,7 +24,7 @@ class MySetup:
         main_dir = dirname(dirname(os.path.abspath(__file__)))
 
         print(f'Working on {Machine.computer}')
-        hydro_res_dir = join(main_dir, 'hydro', 'results')
+        hydro_res_dir = join(main_dir, 'storage', 'forwards')
 
         # In future version I'll put the data under VCS and push to GitHub
         # if Machine.computer == 'MacBook-Pro.local':
@@ -34,7 +34,7 @@ class MySetup:
         # else:
         #     hydro_res_dir = join(main_dir, 'hydro', 'results')
 
-        forecasts_dir = join(main_dir, 'bel', 'forecasts')
+        forecasts_dir = join(main_dir, 'storage', 'forecasts')
         grid_dir = join(main_dir, 'grid', 'parameters')
 
     @dataclass
