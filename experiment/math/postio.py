@@ -126,6 +126,7 @@ class PosteriorIO:
         :param add_comp: Flag to add remaining components
         :return:
         """
+
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
         h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
