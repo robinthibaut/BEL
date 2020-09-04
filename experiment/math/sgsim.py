@@ -38,7 +38,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     hd = PointSet(project=pjt, pointset_path=file_path)
 
     if wells_hk is None:
-        hku = 2. + np.random.rand(len(hd.dataframe))  # Fix hard data values at wels location
+        hku = 2. + np.random.rand(len(hd.dataframe))  # Fix hard data values at wells location
     else:
         hku = wells_hk
 
@@ -96,7 +96,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
 
     k_mean = np.random.uniform(1.5, 2)  # Hydraulic conductivity mean between x and y in m/d.
     print(f'hk mean={10 ** k_mean}')
-    k_std = 1
+    k_std = 1  # Log value of the standard deviation
 
     tf = np.vectorize(transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
