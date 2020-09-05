@@ -16,6 +16,7 @@ def cleanup():
             fops.keep_essential(r)
             fops.remove_bkt(r)
             fops.remove_incomplete(r)
+    print('Folders cleaned up')
 
 
 if __name__ == '__main__':
