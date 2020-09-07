@@ -147,14 +147,14 @@ class UncertaintyQuantification:
 
         # Plot results
         # TODO: This shouldn't be here
-        ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
-        h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
-        self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
-        self.mplot.whp_prediction(forecasts=self.forecast_posterior,
-                                  h_true=self.h_true_obs,
-                                  h_pred=self.h_pred,
-                                  show_wells=True,
-                                  fig_file=ff)
+        # ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
+        # h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
+        # self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
+        # self.mplot.whp_prediction(forecasts=self.forecast_posterior,
+        #                           h_true=self.h_true_obs,
+        #                           h_pred=self.h_pred,
+        #                           show_wells=True,
+        #                           fig_file=ff)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
@@ -253,19 +253,19 @@ class UncertaintyQuantification:
         z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
         # Plot KDE
-        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-                       alpha=1,
-                       lw=1,
-                       show_wells=True,
-                       colors='red',
-                       show=False)
-        mpkde.whp(bkg_field_array=z,
-                  vmin=None,
-                  vmax=None,
-                  cmap='RdGy',
-                  colors='red',
-                  fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
-                  show=True)
+        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+        #                alpha=1,
+        #                lw=1,
+        #                show_wells=True,
+        #                colors='red',
+        #                show=False)
+        # mpkde.whp(bkg_field_array=z,
+        #           vmin=None,
+        #           vmax=None,
+        #           cmap='RdGy',
+        #           colors='red',
+        #           fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
+        #           show=True)
 
         return z
 
@@ -285,24 +285,24 @@ class UncertaintyQuantification:
         b_low = np.flipud(b_low)
 
         # a measure of the error could be a measure of the area covered by the n samples.
-        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+        # error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
 
         # Display result
-        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-                       alpha=1,
-                       lw=1,
-                       show_wells=False,
-                       colors='red',
-                       show=False)
-
-        mpbin.whp(bkg_field_array=b_low,
-                  show_wells=True,
-                  vmin=None,
-                  vmax=None,
-                  cmap='RdGy',
-                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
-                  title=str(error_estimate),
-                  show=True)
+        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+        #                alpha=1,
+        #                lw=1,
+        #                show_wells=False,
+        #                colors='red',
+        #                show=False)
+        #
+        # mpbin.whp(bkg_field_array=b_low,
+        #           show_wells=True,
+        #           vmin=None,
+        #           vmax=None,
+        #           cmap='RdGy',
+        #           fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
+        #           title=str(error_estimate),
+        #           show=True)
 
         # Save result
         np.save(jp(self.fig_pred_dir, 'bin'), b_low)
@@ -327,18 +327,18 @@ class UncertaintyQuantification:
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
 
         # Identify the closest and farthest results
-        min_pos = np.where(mhds == np.min(mhds))[0][0]
+        # min_pos = np.where(mhds == np.min(mhds))[0][0]
         # max_pos = np.where(mhds == np.max(mhds))[0][0]
 
         # Plot results
-        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
-        self.mplot.whp_prediction(  # forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
-            forecasts=None,
-            h_true=v_h_true_cut,
-            h_pred=self.forecast_posterior[min_pos],
-            show_wells=True,
-            title=str(np.round(mhds.mean(), 2)),
-            fig_file=fig)
+        # fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
+        # self.mplot.whp_prediction(  # forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
+        #     forecasts=None,
+        #     h_true=v_h_true_cut,
+        #     h_pred=self.forecast_posterior[min_pos],
+        #     show_wells=True,
+        #     title=str(np.round(mhds.mean(), 2)),
+        #     fig_file=fig)
 
         # Save mhd
         np.save(jp(self.fig_pred_dir, 'haus'), mhds)
