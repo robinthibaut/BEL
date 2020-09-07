@@ -109,7 +109,7 @@ class MySetup:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
-        cell_dim = 4
+        cell_dim = 4  # Defines cell dimensions for the signed distance computation.
 
     @dataclass
     class Forecast:

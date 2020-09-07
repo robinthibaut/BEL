@@ -210,12 +210,17 @@ def plot_pc_ba(root, data=False, target=False):
                                      fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
 
 
+def main(samples):
+    for sample in samples:
+        plot_pc_ba(sample, data=True, target=True)
+        empty_figs(sample)
+        plot_whpa(sample)
+        cca_vision(sample, folders=None)
+        pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=None)
+
+
 if __name__ == '__main__':
     # TODO: Adapt for several observations
-    sample = '0a5fe077cc6b4cebb9ef10f07e8f61af'
-    default = ['123456']
-    # plot_pc_ba(sample, target=True)
-    # empty_figs(sample)
-    # plot_whpa(sample)
-    # cca_vision(sample, folders=default)
-    # pca_vision(sample, d=True, h=True, exvar=False, scores=True, folders=default)
+    forwards = '0a5fe077cc6b4cebb9ef10f07e8f61af'
+
+

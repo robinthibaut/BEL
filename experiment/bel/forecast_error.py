@@ -31,7 +31,12 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
+    def __init__(self,
+                 base,
+                 study_folder,
+                 base_dir=None,
+                 wel_comb=None,
+                 seed=None):
         """
 
         :param base: class: Base object (inventory)

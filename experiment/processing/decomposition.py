@@ -31,11 +31,19 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
+def base_pca(base,
+             base_dir,
+             roots,
+             test_roots,
+             d_pca_obj=None,
+             h_pca_obj=None,
+             check=False):
     """
     Initiate BEL by performing PCA on the training targets or features.
     :param base: class: Base class object
+    :param base_dir: str: Base directory path
     :param roots: list:
+    :param test_roots: list:
     :param d_pca_obj:
     :param h_pca_obj:
     :param check: bool: Flag to plot
@@ -84,13 +92,23 @@ def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
             # return
 
         # Initiate h pca object
-        h_pco = PCAIO(name='h', training=h, roots=roots, directory=os.path.dirname(h_pca_obj))
+        h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
         h_pco.pca_training_transformation()
         # Define number of components to keep
         h_pco.n_pca_components(.98)  # Number of components for signed distance
         # Dump
         joblib.dump(h_pco, h_pca_obj)
+
+        if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
+            with open(jp(base_dir, 'roots.dat'), 'w') as f:
+                for r in roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r) + '\n')
+
+        if not os.path.exists(jp(base_dir, 'test_roots.dat')):  # Save roots id's in a dat file
+            with open(jp(base_dir, 'test_roots.dat'), 'w') as f:
+                for r in test_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r) + '\n')
 
 
 def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
@@ -101,7 +119,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
     :param wel_comb: list: List of injection wells used to make prediction
-    :param test_root: list: Folder paths containing outputs to be predicted
+    :param test_root: list: Folder path containing output to be predicted
 
     """
 
@@ -160,11 +178,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
         # Save file roots
     else:
         tc = np.load(tsub)
-
-    if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
-        with open(jp(base_dir, 'roots.dat'), 'w') as f:
-            for r in training_roots:  # Saves roots name until test roots
-                f.write(os.path.basename(r) + '\n')
 
     # %% Select wells:
     selection = [wc - 1 for wc in base.Wels.combination]
