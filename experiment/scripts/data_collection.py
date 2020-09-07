@@ -35,7 +35,7 @@ from experiment.math.sgsim import sgsim
 
 
 def simulation(folder=None):
-    if folder is 0:
+    if folder == 0:
         folder = None
     # Directories
     main_dir = MySetup.Directories.main_dir
@@ -75,7 +75,7 @@ def simulation(folder=None):
                       hk_array=hk_array, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on
@@ -97,7 +97,7 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('illustration')
-    # main()
+    # simulation('illustration')
+    main()
     end = time.time()
     print((end - start) / 60)
