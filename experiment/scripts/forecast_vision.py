@@ -257,7 +257,6 @@ def main(samples):
 
 
 if __name__ == '__main__':
-    # TODO: Adapt for several observations
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     main(test_roots)
