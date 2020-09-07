@@ -7,3 +7,6 @@
 *.hds
 *.list
 *.iml
+*.vtk
+*.vtp
+*.vtu

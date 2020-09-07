@@ -17,7 +17,7 @@ def datread(file=None, start=0, end=None):
     with open(file, 'r') as fr:
         lines = np.copy(fr.readlines())[start:end]
         try:
-            op = np.array([list(map(float, line.split())) for line in lines])
+            op = np.array([list(map(float, line.split())) for line in lines], dtype=object)
         except ValueError:
             op = [line.split() for line in lines]
     return op

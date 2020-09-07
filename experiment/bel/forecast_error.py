@@ -31,7 +31,12 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
+    def __init__(self,
+                 base,
+                 study_folder,
+                 base_dir=None,
+                 wel_comb=None,
+                 seed=None):
         """
 
         :param base: class: Base object (inventory)
@@ -115,7 +120,8 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
-        # Extract n random sample (target pc's). The posterior distribution is computed within the below method.
+        # Extract n random sample (target pc's).
+        # The posterior distribution is computed within the method below.
         forecast_pc = self.po.random_sample(sample_n=self.sample_n,
                                             pca_d=self.d_pco,
                                             pca_h=self.h_pco,
@@ -127,9 +133,8 @@ class UncertaintyQuantification:
             np.save(fname, forecast_pc)
 
         # Generate forecast in the initial dimension and reshape.
-        self.forecast_posterior = self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
-                                                                                     self.h_pco.shape[1],
-                                                                                     self.h_pco.shape[2]))
+        self.forecast_posterior = \
+            self.h_pco.inverse_transform(forecast_pc).reshape((n_posts, self.h_pco.shape[1], self.h_pco.shape[2]))
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.shape
@@ -141,6 +146,7 @@ class UncertaintyQuantification:
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         # Plot results
+        # TODO: This shouldn't be here
         ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
         h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
         self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
@@ -304,12 +310,13 @@ class UncertaintyQuantification:
     #  Let's try Hausdorff...
     def mhd(self):
         """
-        Computes the Modified Hausdorff Distance between the true WHPA, that has been recovered from its n
-        first PCA components to allow good comparison.
+        Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA
+        components to allow proper comparison.
         """
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
-        n_cut = self.h_pco.ncomp
+        n_cut = self.h_pco.ncomp  # Number of components to keep
+        # Inverse transform and reshape
         v_h_true_cut = \
             self.h_pco.inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
@@ -321,16 +328,17 @@ class UncertaintyQuantification:
 
         # Identify the closest and farthest results
         min_pos = np.where(mhds == np.min(mhds))[0][0]
-        max_pos = np.where(mhds == np.max(mhds))[0][0]
+        # max_pos = np.where(mhds == np.max(mhds))[0][0]
 
         # Plot results
         fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
-        self.mplot.whp_prediction(forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
-                                  h_true=v_h_true_cut,
-                                  h_pred=self.forecast_posterior[min_pos],
-                                  show_wells=True,
-                                  title=str(np.round(mhds.mean(), 2)),
-                                  fig_file=fig)
+        self.mplot.whp_prediction(  # forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
+            forecasts=None,
+            h_true=v_h_true_cut,
+            h_pred=self.forecast_posterior[min_pos],
+            show_wells=True,
+            title=str(np.round(mhds.mean(), 2)),
+            fig_file=fig)
 
         # Save mhd
         np.save(jp(self.fig_pred_dir, 'haus'), mhds)

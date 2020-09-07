@@ -160,7 +160,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
     :param comb: list: List of well IDs
-    :param flag_base: bool: Recompute base PCA on target
+    :param flag_base: bool: Recompute base PCA on target if True
     :param to_swap: list: List of roots to swap from training to observations.
     :param roots_obs: list: List of roots considered as observations.
     :return: list: List of training roots, list: List of observation roots
@@ -172,10 +172,10 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-    roots_training = folders[:200]  # List of n training roots
+    roots_training = folders[:250]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[200:210]  # List of m observation roots
+        roots_obs = folders[250:300]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
@@ -191,7 +191,12 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     if flag_base and not fb:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
-        dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
+        dcp.base_pca(base=MySetup,
+                     base_dir=obj_path,
+                     roots=roots_training,
+                     test_roots=roots_obs,
+                     h_pca_obj=obj,
+                     check=False)
 
     if comb is None:
         comb = MySetup.Wels.combination  # Get default combination (all)
@@ -206,9 +211,9 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6]],
-                  flag_base=False,
-                  roots_obs=['0a5fe077cc6b4cebb9ef10f07e8f61af'])
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  flag_base=True,
+                  roots_obs=None)
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')
