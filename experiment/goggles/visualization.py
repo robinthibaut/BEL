@@ -1,5 +1,6 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+import os
 from os.path import join as jp
 
 import matplotlib.pyplot as plt
@@ -38,6 +39,7 @@ def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
     plt.xlabel('Components number')
     plt.ylabel('Cumulative explained variance (%)')
     if fig_file:
+        filesio.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -97,6 +99,7 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
     plt.tick_params(labelsize=6)
 
     if fig_file:
+        filesio.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -151,6 +154,7 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
         plt.subplots_adjust(top=0.9)
         g.fig.suptitle(f'{i} - {round(cca_coefficient[i], 4)}')
         if sdir:
+            filesio.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
@@ -253,6 +257,7 @@ class Plot:
         plt.grid(linewidth=.3, alpha=.4)
         plt.tick_params(labelsize=5)
         if sdir:
+            filesio.dirmaker(sdir)
             plt.savefig(jp(sdir, f'{title}.png'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -282,6 +287,7 @@ class Plot:
             plt.tick_params(labelsize=5)
             plt.title(f'wel #{t + 1}')
             if sdir:
+                filesio.dirmaker(sdir)
                 plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300, transparent=True)
                 plt.close()
             if show:
@@ -371,6 +377,7 @@ class Plot:
         plt.tick_params(labelsize=5)
 
         if fig_file:
+            filesio.dirmaker(os.path.dirname(fig_file))
             plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
@@ -398,6 +405,7 @@ class Plot:
         if h_pred is not None:
             plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
         if fig_file:
+            filesio.dirmaker(os.path.dirname(fig_file))
             plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
@@ -433,6 +441,7 @@ class Plot:
                 plt.plot(pca_o.predict_physical[i], 'r', alpha=.8)
             plt.plot(v_pred, 'c', alpha=.8)
             if fig_dir is not None:
+                filesio.dirmaker(fig_dir)
                 plt.savefig(jp(fig_dir, f'{r}_d.png'), dpi=100, transparent=True)
                 plt.close()
             if show:
@@ -469,6 +478,7 @@ class Plot:
             else:
                 self.whp(h=pca_o.predict_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
             if fig_dir is not None:
+                filesio.dirmaker(fig_dir)
                 plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300, transparent=True)
                 plt.close()
             if show:

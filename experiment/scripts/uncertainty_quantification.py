@@ -87,7 +87,7 @@ def value_info(root):
     g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
     g.map(plt.axhline, y=0, lw=4)
     for ax in g.axes:
-        ax[0].set_xlim((600, 900))
+        ax[0].set_xlim((400, 900))
 
     def label(x, color, label):
         ax = plt.gca()  # get the axes of the current object
