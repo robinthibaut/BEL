@@ -175,7 +175,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     roots_training = folders[:250]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[250:253]  # List of m observation roots
+        roots_obs = folders[250:300]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""

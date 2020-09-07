@@ -204,6 +204,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
+    # TODO: This should not be there
     # Plot curves
     mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
     mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
@@ -238,7 +239,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500, tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
