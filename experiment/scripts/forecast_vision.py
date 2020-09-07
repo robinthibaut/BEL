@@ -154,8 +154,8 @@ def cca_vision(root, folders=None):
 
         cca_coefficient = np.corrcoef(d_cca_training, h_cca_training,).diagonal(offset=cca_operator.n_components)
 
-        # cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
-        #          sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+        cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+                 sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
         sns.lineplot(data=cca_coefficient)
         plt.grid(alpha=.2, linewidth=.5)
@@ -193,7 +193,7 @@ def plot_whpa(root=None):
     if root is not None:
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
         mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
-                  fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
+                  fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
 
 
 def plot_pc_ba(root, data=False, target=False):
@@ -249,8 +249,8 @@ def plot_pc_ba(root, data=False, target=False):
 
 def main(samples):
     for sample in samples:
-        plot_pc_ba(sample, data=True, target=True)
-        empty_figs(sample)
+        # plot_pc_ba(sample, data=True, target=True)
+        # empty_figs(sample)
         plot_whpa(sample)
         cca_vision(sample, folders=None)
         pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=None)
