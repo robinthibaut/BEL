@@ -35,7 +35,7 @@ from experiment.math.sgsim import sgsim
 
 
 def simulation(folder=None):
-    if folder is 0:
+    if folder == 0:
         folder = None
     # Directories
     main_dir = MySetup.Directories.main_dir
@@ -90,13 +90,14 @@ def simulation(folder=None):
 
 
 def main():
-    pool = mp.Pool(mp.cpu_count() - 1)
-    pool.map(simulation, np.zeros(300))
+    n_cpu = mp.cpu_count()//2 + 1
+    pool = mp.Pool(n_cpu)
+    pool.map(simulation, np.zeros(100))
 
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation()
+    # simulation('illustration')
     main()
     end = time.time()
     print((end - start) / 60)

@@ -6,14 +6,22 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from experiment.toolbox import utils
-from experiment.toolbox.filesio import load_res, folder_reset
+from experiment.toolbox.filesio import datread, load_res, folder_reset
 from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
 from experiment.base.inventory import MySetup
 
 
-def empty_figs(res_dir):
+def empty_figs(root):
     """ Empties figure folders """
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
@@ -25,10 +33,10 @@ def empty_figs(res_dir):
         folder_reset(os.path.join(subdir, f, 'cca'))
 
 
-def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
+def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):
     """
     Loads PCA pickles and plot scores for all folders
-    :param res_dir: str:
+    :param root: str:
     :param d: bool:
     :param h: bool:
     :param scores: bool:
@@ -37,7 +45,14 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
     :return:
     """
 
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
@@ -68,9 +83,9 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
         pcaf = os.path.join(hbase, 'h_pca.pkl')
         h_pco = joblib.load(pcaf)
         # Load npy whpa prediction
-        prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{res_dir}.npy'))
+        prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{root}.npy'))
         # Transform and split
-        h_pco.pca_test_transformation(prediction, test_root=[res_dir])
+        h_pco.pca_test_transformation(prediction, test_root=[root])
         nho = h_pco.ncomp
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Plot
@@ -87,15 +102,22 @@ def pca_vision(res_dir, d=True, h=False, scores=True, exvar=True, folders=None):
             explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
 
 
-def cca_vision(root_dir, folders=None):
+def cca_vision(root, folders=None):
     """
     Loads CCA pickles and plots components for all folders
-    :param root_dir:
+    :param root:
     :param folders:
     :return:
     """
 
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, root_dir)
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
 
     if folders is None:
         listme = os.listdir(subdir)
@@ -115,7 +137,7 @@ def cca_vision(root_dir, folders=None):
         cca_operator, d_pco = list(map(joblib.load, f_names))
         h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 
-        h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root_dir}.npy'))
+        h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
         # Inspect transformation between physical and PC space
         dnc0 = d_pco.ncomp
@@ -123,7 +145,7 @@ def cca_vision(root_dir, folders=None):
 
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-        h_pco.pca_test_transformation(h_pred, test_root=[root_dir])
+        h_pco.pca_test_transformation(h_pred, test_root=[root])
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
         # CCA plots
@@ -132,8 +154,8 @@ def cca_vision(root_dir, folders=None):
 
         cca_coefficient = np.corrcoef(d_cca_training, h_cca_training,).diagonal(offset=cca_operator.n_components)
 
-        # cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
-        #          sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+        cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+                 sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
         sns.lineplot(data=cca_coefficient)
         plt.grid(alpha=.2, linewidth=.5)
@@ -151,6 +173,13 @@ def plot_whpa(root=None):
     :return:
     """
 
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
@@ -164,7 +193,7 @@ def plot_whpa(root=None):
     if root is not None:
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
         mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
-                  fig_file=os.path.join(MySetup.Directories.forecasts_dir, 'base', 'whpa_training.png'))
+                  fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
 
 
 def plot_pc_ba(root, data=False, target=False):
@@ -175,6 +204,14 @@ def plot_pc_ba(root, data=False, target=False):
     :param target:
     :return:
     """
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
     x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
 
@@ -210,12 +247,19 @@ def plot_pc_ba(root, data=False, target=False):
                                      fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
 
 
+def main(samples):
+    for sample in samples:
+        # plot_pc_ba(sample, data=True, target=True)
+        # empty_figs(sample)
+        plot_whpa(sample)
+        cca_vision(sample, folders=None)
+        pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=None)
+
+
 if __name__ == '__main__':
     # TODO: Adapt for several observations
-    sample = '0a5fe077cc6b4cebb9ef10f07e8f61af'
-    default = ['123456']
-    # plot_pc_ba(sample, target=True)
-    # empty_figs(sample)
-    # plot_whpa(sample)
-    # cca_vision(sample, folders=default)
-    # pca_vision(sample, d=True, h=True, exvar=False, scores=True, folders=default)
+    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
+    main(test_roots)
+
+
