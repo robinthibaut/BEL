@@ -214,8 +214,8 @@ if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
                   flag_base=True,
                   roots_obs=None)
-    # forecast_dir = MySetup.Directories.forecasts_dir
-    # listit = os.listdir(forecast_dir)
-    # listit.remove('base')
-    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    # value_info(duq)
+    forecast_dir = MySetup.Directories.forecasts_dir
+    listit = os.listdir(forecast_dir)
+    listit.remove('base')
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    value_info(duq)
