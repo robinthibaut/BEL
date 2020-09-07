@@ -172,10 +172,10 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-    roots_training = folders[:300]  # List of n training roots
+    roots_training = folders[:250]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[300:]  # List of m observation roots
+        roots_obs = folders[250:]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
@@ -211,11 +211,11 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
-    #               flag_base=True,
-    #               roots_obs=None)
-    forecast_dir = MySetup.Directories.forecasts_dir
-    listit = os.listdir(forecast_dir)
-    listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    value_info(duq)
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  flag_base=True,
+                  roots_obs=None)
+    # forecast_dir = MySetup.Directories.forecasts_dir
+    # listit = os.listdir(forecast_dir)
+    # listit.remove('base')
+    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    # value_info(duq)
