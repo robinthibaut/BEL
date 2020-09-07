@@ -126,7 +126,7 @@ def cca_vision(root, folders=None):
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
         else:
-            folders = folders
+            pass
 
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
 
@@ -252,8 +252,8 @@ def main(samples):
         # plot_pc_ba(sample, data=True, target=True)
         # empty_figs(sample)
         plot_whpa(sample)
-        cca_vision(sample, folders=None)
-        pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=None)
+        cca_vision(sample, folders=['123456'])
+        pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=['123456'])
 
 
 if __name__ == '__main__':
