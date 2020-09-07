@@ -10,6 +10,8 @@
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/issues" />
       <excludeFolder url="file://$MODULE_DIR$/bel/misc/old_scripts" />
       <excludeFolder url="file://$MODULE_DIR$/experiment/misc" />
+      <excludeFolder url="file://$MODULE_DIR$/experiment/storage" />
+      <excludeFolder url="file://$MODULE_DIR$/experiment/storage/forwards" />
       <excludeFolder url="file://$MODULE_DIR$/figures" />
     </content>
     <orderEntry type="inheritedJdk" />
