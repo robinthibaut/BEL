@@ -113,7 +113,7 @@ def value_info(root):
 
 def scan_roots(base, training, obs, combinations, base_dir=None):
     """
-    Scan all roots and perform base decomposition
+    Scan forward roots and perform base decomposition
     :param base: class: Base class (inventory)
     :param training: list: List of uuid of each root for training
     :param obs: list: List of uuid of each root for observation
@@ -175,7 +175,7 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     roots_training = folders[:250]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[250:]  # List of m observation roots
+        roots_obs = folders[250:252]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""

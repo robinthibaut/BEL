@@ -565,20 +565,38 @@ class Plot:
         :return:
         """
         # Directory
-        md = jp(MySetup.Directories.forecasts_dir, root, folder, 'obj')
+        md = jp(MySetup.Directories.forecasts_dir, root, folder)
         # CCA pickle
-        cca_operator = joblib.load(jp(md, 'cca.pkl'))
+        cca_operator = joblib.load(jp(md, 'obj', 'cca.pkl'))
         # h PCA pickle
         hbase = jp(MySetup.Directories.forecasts_dir, 'base')
-        pcaf = os.path.join(hbase, 'h_pca.pkl')
+        pcaf = jp(hbase, 'h_pca.pkl')
         h_pco = joblib.load(pcaf)
-        # Figure path
+
+        # Curves - d
+        # Plot curves
+        sdir = jp(md, 'pca')
+        d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
+        tc = d_pco.training_physical
+        tcp = d_pco.predict_physical
+        tc = np.concatenate((tc, tcp), axis=0)
+        self.curves(tc=tc, sdir=sdir, highlight=[len(tc)])
+        self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc)])
+
+        # WHP - h
+        fig_dir = jp(hbase, 'roots_whpa')
+        ff = jp(fig_dir, f'{root}.png')  # figure name
+        h = h_pco.predict_physical
+        h_training = h_pco.training_physical.reshape(h_pco.shape)
+        # Plots target training + prediction
+        self.whp(h_training, alpha=.2, show=False)
+        self.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
+
+        # WHPs
         ff = jp(md,
                 'cca',
                 f'cca_{cca_operator.n_components}.png')
-
         h_training = h_pco.training_physical.reshape(h_pco.shape)
-
         forecast_posterior = np.load(jp(md, 'forecast_posterior.npy'))
         h_true_obs = np.load(jp(md, 'h_true_obs.npy'))
         h_pred = np.load(jp(md, 'h_pred.npy'))
@@ -589,6 +607,7 @@ class Plot:
                             h_pred=h_pred,
                             show_wells=True,
                             fig_file=ff)
+
 
     @staticmethod
     def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):

@@ -201,13 +201,14 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     tcp = tcp[:, selection, :]  # Extract desired observation
     d_pco.pca_test_transformation(tcp, test_root=test_root)  # Perform transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
+
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
     # TODO: This should not be there
     # Plot curves
-    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
-    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+    # mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
+    # mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
@@ -224,11 +225,11 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
-        ff = jp(fig_dir, f'{test_root[0]}.png')  # figure name
-        h_training = h_pco.training_physical.reshape(h_pco.shape)
+        # ff = jp(fig_dir, f'{test_root[0]}.png')  # figure name
+        # h_training = h_pco.training_physical.reshape(h_pco.shape)
         # Plots target training + prediction
-        mp.whp(h_training, alpha=.2, show=False)
-        mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
+        # mp.whp(h_training, alpha=.2, show=False)
+        # mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
 
     else:
         # Cut components
