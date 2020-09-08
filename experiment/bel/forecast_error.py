@@ -134,13 +134,15 @@ class UncertaintyQuantification:
 
         # Generate forecast in the initial dimension and reshape.
         self.forecast_posterior = \
-            self.h_pco.inverse_transform(forecast_pc).reshape((n_posts, self.h_pco.shape[1], self.h_pco.shape[2]))
+            self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
+                                                               self.h_pco.training_shape[1],
+                                                               self.h_pco.training_shape[2]))
 
         np.save(jp(self.res_dir, 'forecast_posterior.npy'), self.forecast_posterior)
 
         # Get the true array of the prediction
         # Prediction set - PCA space
-        self.shape = self.h_pco.shape
+        self.shape = self.h_pco.training_shape
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 

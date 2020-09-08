@@ -575,7 +575,7 @@ class Plot:
 
         # Curves - d
         # Plot curves
-        sdir = jp(md, 'pca')
+        sdir = jp(md, 'data')
         d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
         tc = d_pco.training_physical.reshape(d_pco.training_shape)
         tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
@@ -587,7 +587,7 @@ class Plot:
         fig_dir = jp(hbase, 'roots_whpa')
         ff = jp(fig_dir, f'{root}.png')  # figure name
         h = h_pco.predict_physical
-        h_training = h_pco.training_physical.reshape(h_pco.shape)
+        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         self.whp(h_training, alpha=.2, show=False)
         self.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
@@ -596,10 +596,10 @@ class Plot:
         ff = jp(md,
                 'cca',
                 f'cca_{cca_operator.n_components}.png')
-        h_training = h_pco.training_physical.reshape(h_pco.shape)
-        forecast_posterior = np.load(jp(md, 'forecast_posterior.npy'))
-        h_true_obs = np.load(jp(md, 'h_true_obs.npy'))
-        h_pred = np.load(jp(md, 'h_pred.npy'))
+        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+        forecast_posterior = np.load(jp(md, 'obj', 'forecast_posterior.npy'))
+        h_true_obs = np.load(jp(md, 'obj', 'h_true_obs.npy'))
+        h_pred = np.load(jp(md, 'obj', 'h_pred.npy'))
 
         self.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
         self.whp_prediction(forecasts=forecast_posterior,
@@ -763,7 +763,7 @@ class Plot:
 
         fobj = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
         h = joblib.load(fobj)
-        h_training = h.training_physical.reshape(h.shape)
+        h_training = h.training_physical.reshape(h.training_shape)
 
         mplot.whp(h_training)
 
