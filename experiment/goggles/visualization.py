@@ -580,13 +580,13 @@ class Plot:
         tc = d_pco.training_physical.reshape(d_pco.training_shape)
         tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
         tc = np.concatenate((tc, tcp), axis=0)
-        self.curves(tc=tc, sdir=sdir, highlight=[len(tc)])
-        self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc)])
+        self.curves(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
+        self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
 
         # WHP - h
         fig_dir = jp(hbase, 'roots_whpa')
         ff = jp(fig_dir, f'{root}.png')  # figure name
-        h = h_pco.predict_physical
+        h = np.load(jp(md, 'obj', 'h_true_obs.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         self.whp(h_training, alpha=.2, show=False)
@@ -594,7 +594,7 @@ class Plot:
 
         # WHPs
         ff = jp(md,
-                'cca',
+                'uq',
                 f'cca_{cca_operator.n_components}.png')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         forecast_posterior = np.load(jp(md, 'obj', 'forecast_posterior.npy'))
@@ -607,7 +607,6 @@ class Plot:
                             h_pred=h_pred,
                             show_wells=True,
                             fig_file=ff)
-
 
     @staticmethod
     def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):
@@ -666,7 +665,7 @@ class Plot:
             nho = h_pco.ncomp
             h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
             # Plot
-            fig_file = os.path.join(hbase, 'roots_whpa', 'h_scores.png')
+            fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_scores.png')
             if scores:
                 pca_scores(training=h_pc_training,
                            prediction=h_pc_prediction,
@@ -675,7 +674,7 @@ class Plot:
                            fig_file=fig_file)
             # Explained variance plots
             if exvar:
-                fig_file = os.path.join(hbase, 'roots_whpa', 'h_exvar.png')
+                fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.png')
                 explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
 
     @staticmethod

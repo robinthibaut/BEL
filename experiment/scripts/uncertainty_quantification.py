@@ -30,7 +30,7 @@ def value_info(root):
     for r in root:  # For each root
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
         for e in wid:  # For each subfolder (well) in the main folder
-            fmhd = os.path.join(droot, e, 'uq', 'haus.npy')  # Get the MHD file
+            fmhd = os.path.join(droot, e, 'obj', 'haus.npy')  # Get the MHD file
             mhd = np.load(fmhd)  # Load MHD
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well

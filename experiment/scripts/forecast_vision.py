@@ -304,7 +304,7 @@ def main(roots):
         for w in wells:
             mplot.plot_results(root=sample, folder=w)
         mplot.plot_whpa(sample)
-        mplot.cca_vision(sample, folders=['123456'])
+        # mplot.cca_vision(sample, folders=['123456'])
         mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=['123456'])
 
 
