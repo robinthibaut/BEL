@@ -136,7 +136,7 @@ class UncertaintyQuantification:
         self.forecast_posterior = \
             self.h_pco.inverse_transform(forecast_pc).reshape((n_posts, self.h_pco.shape[1], self.h_pco.shape[2]))
 
-        np.save(jp(self.res_dir), 'forecast_posterior.npy')
+        np.save(jp(self.res_dir, 'forecast_posterior.npy'), self.forecast_posterior)
 
         # Get the true array of the prediction
         # Prediction set - PCA space
@@ -144,7 +144,7 @@ class UncertaintyQuantification:
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 
-        np.save(jp(self.res_dir), 'h_true_obs.npy')
+        np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
 
         # Predicting the function based for a certain number of 'observations'
         self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
@@ -152,7 +152,7 @@ class UncertaintyQuantification:
         # Going back to the original function dimension and reshape.
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
-        np.save(jp(self.res_dir), 'h_pred.npy')
+        np.save(jp(self.res_dir, 'h_pred.npy'), self.h_pred)
 
         # Plot results
         # TODO: This shouldn't be here
