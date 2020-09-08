@@ -1,18 +1,18 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
+
 import joblib
-
-import numpy as np
-import seaborn as sns
-import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
-from experiment.toolbox import filesio, utils
+from experiment.base.inventory import MySetup
+from experiment.bel.forecast_error import UncertaintyQuantification
 from experiment.goggles.visualization import Plot
 from experiment.processing import decomposition as dcp
-from experiment.bel.forecast_error import UncertaintyQuantification
-from experiment.base.inventory import MySetup
+from experiment.toolbox import filesio, utils
 
 
 def value_info(root):
@@ -211,9 +211,9 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
-    #               flag_base=True,
-    #               roots_obs=None)
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  flag_base=True,
+                  roots_obs=None)
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
     listit.remove('base')
