@@ -577,8 +577,8 @@ class Plot:
         # Plot curves
         sdir = jp(md, 'pca')
         d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
-        tc = d_pco.training_physical
-        tcp = d_pco.predict_physical
+        tc = d_pco.training_physical.reshape(d_pco.training_shape)
+        tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
         tc = np.concatenate((tc, tcp), axis=0)
         self.curves(tc=tc, sdir=sdir, highlight=[len(tc)])
         self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc)])

@@ -293,11 +293,11 @@ from experiment.base.inventory import MySetup
 #                                      fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
 
 
-def main(samples):
+def main(roots):
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
-    for sample in samples:
+    for sample in roots:
         # plot_pc_ba(sample, data=True, target=True)
         # empty_figs(sample)
         wells = ['123456', '1', '2', '3', '4', '5', '6']
@@ -311,6 +311,7 @@ def main(samples):
 if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
-    main(test_roots)
+    samples = [item for sublist in test_roots for item in sublist]
+    main(samples)
 
 

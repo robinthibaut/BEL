@@ -27,7 +27,8 @@ class PCAIO:
         self.name = name  # str, name of the object
         self.roots = roots  # Name of training roots
 
-        self.shape = training.shape  # Shape of dataset
+        self.training_shape = training.shape  # Original shape of dataset
+        self.obs_shape = None # Original shape of observation
 
         self.operator = None  # PCA operator (scikit-learn instance)
         self.ncomp = None  # Number of components to keep
@@ -65,6 +66,8 @@ class PCAIO:
         :return: np.array: Observation PC
         """
         self.test_root = test_root
+
+        self.obs_shape = test.shape
 
         # Flattened array
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
