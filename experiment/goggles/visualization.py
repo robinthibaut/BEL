@@ -33,9 +33,13 @@ def empty_figs(root):
     for f in folders:
         # pca
         folder_reset(os.path.join(subdir, f, 'pca'))
-
         # cca
         folder_reset(os.path.join(subdir, f, 'cca'))
+        # uq
+        folder_reset(os.path.join(subdir, f, 'uq'))
+        # data
+        folder_reset(os.path.join(subdir, f, 'cca'))
+
 
 
 def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):

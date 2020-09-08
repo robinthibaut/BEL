@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from experiment.toolbox import utils
 from experiment.toolbox.filesio import datread, load_res, folder_reset
-from experiment.goggles.visualization import Plot, cca_plot, pca_scores, explained_variance
+from experiment.goggles.visualization import Plot, empty_figs
 from experiment.base.inventory import MySetup
 
 
@@ -299,13 +299,14 @@ def main(roots):
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
     for sample in roots:
         # plot_pc_ba(sample, data=True, target=True)
-        # empty_figs(sample)
+        empty_figs(sample)
         wells = ['123456', '1', '2', '3', '4', '5', '6']
         for w in wells:
             mplot.plot_results(root=sample, folder=w)
         mplot.plot_whpa(sample)
         # mplot.cca_vision(sample, folders=['123456'])
-        mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=['123456'])
+        mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True,
+                         folders=['123456', '1', '2', '3', '4', '5', '6'])
 
 
 if __name__ == '__main__':
