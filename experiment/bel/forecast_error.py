@@ -314,7 +314,7 @@ class UncertaintyQuantification:
         #           show=True)
 
         # Save result
-        np.save(jp(self.fig_pred_dir, 'bin'), b_low)
+        np.save(jp(self.res_dir, 'bin'), b_low)
 
     #  Let's try Hausdorff...
     def mhd(self):
@@ -350,4 +350,4 @@ class UncertaintyQuantification:
         #     fig_file=fig)
 
         # Save mhd
-        np.save(jp(self.fig_pred_dir, 'haus'), mhds)
+        np.save(jp(self.res_dir, 'haus'), mhds)

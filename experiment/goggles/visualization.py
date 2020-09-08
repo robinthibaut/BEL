@@ -569,7 +569,9 @@ class Plot:
         # CCA pickle
         cca_operator = joblib.load(jp(md, 'cca.pkl'))
         # h PCA pickle
-        h_pco = joblib.load(jp(md, 'h_pca.pkl'))
+        hbase = jp(MySetup.Directories.forecasts_dir, 'base')
+        pcaf = os.path.join(hbase, 'h_pca.pkl')
+        h_pco = joblib.load(pcaf)
         # Figure path
         ff = jp(md,
                 'cca',
