@@ -157,6 +157,7 @@ class PosteriorIO:
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
                                                          size=n_posts).T
+        # TODO: Save mean, covariance, seed and separate the inverse transform process
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
         h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
