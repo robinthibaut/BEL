@@ -3,6 +3,7 @@
 import os
 from os.path import join as jp
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -10,8 +11,31 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
+from experiment.toolbox.filesio import datread, load_res, folder_reset
 
 plt.style.use('dark_background')
+
+
+def empty_figs(root):
+    """ Empties figure folders """
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
+    for f in folders:
+        # pca
+        folder_reset(os.path.join(subdir, f, 'pca'))
+
+        # cca
+        folder_reset(os.path.join(subdir, f, 'cca'))
 
 
 def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
@@ -532,3 +556,34 @@ class Plot:
         plt.xlim(self.xlim)
         plt.ylim(self.ylim)
         plt.show()
+
+    def plot_results(self, root, folder):
+        """
+        Plots forecasts results in the 'uq' folder
+        :param root: str: Forward ID
+        :param folder: str: Well combination. '123456', '1'...
+        :return:
+        """
+        # Directory
+        md = jp(MySetup.Directories.forecasts_dir, root, folder, 'obj')
+        # CCA pickle
+        cca_operator = joblib.load(jp(md, 'cca.pkl'))
+        # h PCA pickle
+        h_pco = joblib.load(jp(md, 'h_pca.pkl'))
+        # Figure path
+        ff = jp(md,
+                'cca',
+                f'cca_{cca_operator.n_components}.png')
+
+        h_training = h_pco.training_physical.reshape(h_pco.shape)
+
+        forecast_posterior = np.load(jp(md, 'forecast_posterior.npy'))
+        h_true_obs = np.load(jp(md, 'h_true_obs.npy'))
+        h_pred = np.load(jp(md, 'h_pred.npy'))
+
+        self.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
+        self.whp_prediction(forecasts=forecast_posterior,
+                            h_true=h_true_obs,
+                            h_pred=h_pred,
+                            show_wells=True,
+                            fig_file=ff)

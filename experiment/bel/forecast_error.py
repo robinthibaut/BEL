@@ -69,7 +69,7 @@ class UncertaintyQuantification:
         self.mplot.wdir = self.grid_dir
 
         # TODO: get folders from base model
-        self.bel_dir = jp(self.main_dir, 'storage', 'forecasts', study_folder)
+        self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
             self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
         else:
@@ -106,7 +106,7 @@ class UncertaintyQuantification:
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
+    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=True):
         """
         Extracts n random samples from the posterior
         :param sample_n: int: Sample identifier
@@ -129,21 +129,30 @@ class UncertaintyQuantification:
                                             n_posts=self.n_posts,
                                             add_comp=0)
         if save_target_pc:
-            fname = os.path.join(self.fig_pred_dir, f'{self.n_posts}_target_pc.npy')
+            fname = jp(self.res_dir, f'{self.n_posts}_target_pc.npy')
             np.save(fname, forecast_pc)
 
         # Generate forecast in the initial dimension and reshape.
         self.forecast_posterior = \
             self.h_pco.inverse_transform(forecast_pc).reshape((n_posts, self.h_pco.shape[1], self.h_pco.shape[2]))
+
+        np.save(jp(self.res_dir), 'forecast_posterior.npy')
+
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.shape
         # Prediction set - physical space
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
+
+        np.save(jp(self.res_dir), 'h_true_obs.npy')
+
         # Predicting the function based for a certain number of 'observations'
         self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
+
         # Going back to the original function dimension and reshape.
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
+
+        np.save(jp(self.res_dir), 'h_pred.npy')
 
         # Plot results
         # TODO: This shouldn't be here
