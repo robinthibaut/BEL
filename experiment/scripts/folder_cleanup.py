@@ -1,10 +1,9 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
-from os.path import join as jp
-from experiment.base.inventory import Machine
-from experiment.base.inventory import MySetup
+
 import experiment.toolbox.filesio as fops
+from experiment.base.inventory import MySetup
 
 
 def cleanup():
