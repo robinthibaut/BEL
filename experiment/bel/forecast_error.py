@@ -150,12 +150,12 @@ class UncertaintyQuantification:
         np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
 
         # Predicting the function based for a certain number of 'observations'
-        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
+        # self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
 
         # Going back to the original function dimension and reshape.
-        self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
+        # self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
-        np.save(jp(self.res_dir, 'h_pred.npy'), self.h_pred)
+        # np.save(jp(self.res_dir, 'h_pred.npy'), self.h_pred)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):

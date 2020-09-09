@@ -608,12 +608,12 @@ class Plot:
                                                     n_posts=MySetup.Forecast.n_posts,
                                                     add_comp=False)
         h_true_obs = np.load(jp(md, 'obj', 'h_true_obs.npy'))
-        h_pred = np.load(jp(md, 'obj', 'h_pred.npy'))
+        # h_pred = np.load(jp(md, 'obj', 'h_pred.npy'))
 
         self.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
         self.whp_prediction(forecasts=forecast_posterior,
                             h_true=h_true_obs,
-                            h_pred=h_pred,
+                            # h_pred=h_pred,
                             show_wells=True,
                             fig_file=ff)
 

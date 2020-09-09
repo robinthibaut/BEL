@@ -199,13 +199,13 @@ class PosteriorIO:
 
             # Set the seed for later use
             if self.seed is None:
-                self.seed = np.random.randint(1e12)
-            np.random.seed(self.seed)
+                self.seed = np.random.randint(2 ** 32 - 1)
 
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
+        np.random.seed(self.seed)
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
                                                          size=n_posts).T

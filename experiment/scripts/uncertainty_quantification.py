@@ -172,10 +172,10 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-    roots_training = folders[:250]  # List of n training roots
+    roots_training = folders[:340]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[250:]  # List of m observation roots
+        roots_obs = folders[340:341]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
