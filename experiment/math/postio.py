@@ -65,7 +65,7 @@ class PosteriorIO:
         # Size of the set
         n_training = d_cca_training.shape[1]
 
-        # Evaluate the covariance in h
+        # Evaluate the covariance in h (in Canonical space)
         h_cov_operator = np.cov(h_cca_training_gaussian.T, rowvar=False)  # (n_comp_CCA, n_comp_CCA)
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
@@ -74,9 +74,10 @@ class PosteriorIO:
         d_cov_operator = np.eye(x_dim) * noise  # I matrix. (n_comp_PCA, n_comp_PCA)
         d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations  # (n_comp_CCA, n_comp_CCA)
 
-        # Linear modeling d to h
-        # Transpose to get same as Thomas
+        # Linear modeling d to h (in canonical space) with least-square criterion.
+        # Pay attention to the transpose operator.
         g = np.linalg.lstsq(h_cca_training_gaussian.T, d_cca_training.T, rcond=None)[0].T
+        # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
         # Modeling error due to deviations from theory
@@ -88,20 +89,22 @@ class PosteriorIO:
             - np.tile(d_modeling_mean_error, (1, np.size(d_cca_training, axis=1)))
         # (n_comp_CCA, n_training)
 
-        # Information about the covariance of the posterior distribution.
+        # Information about the covariance of the posterior distribution in Canonical space.
         d_modeling_covariance = (d_modeling_error @ d_modeling_error.T) / n_training  # (n_comp_CCA, n_comp_CCA)
 
-        # Computation of the posterior mean
+        # Computation of the posterior mean in Canonical space
         h_mean = np.row_stack(np.mean(h_cca_training_gaussian, axis=1))  # (n_comp_CCA, 1)
         h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
 
+        # Equations from Tarantola:
+        # h posterior mean (Canonical space)
         h_mean_posterior = \
             h_mean \
             + h_cov_operator @ g.T \
             @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
             @ (d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean)  # (n_comp_CCA, 1)
 
-        # h posterior covariance
+        # h posterior covariance (Canonical space)
         h_posterior_covariance = \
             h_cov_operator \
             - (h_cov_operator @ g.T) \
@@ -154,6 +157,7 @@ class PosteriorIO:
                        d_cca_prediction)
 
         # Draw n_posts random samples from the multivariate normal distribution :
+        # Pay attention to the transpose operator
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
                                                          size=n_posts).T
