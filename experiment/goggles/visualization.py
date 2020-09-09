@@ -244,7 +244,9 @@ class Plot:
         self.x, self.y = np.meshgrid(
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
-        self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
+        # self.cols = self.wels.wels_data
+        wells_id = list(self.wels.wels_data.keys())
+        self.cols = [self.wels.wels_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
     def contours_vertices(self, arrays, c=0):
         """
@@ -381,10 +383,9 @@ class Plot:
             pwl = wbd['pumping0']['coordinates']
             plt.plot(pwl[0], pwl[1], 'wo', label='pw')
             for n, i in enumerate(wbd):
-                if 'pumping' not in i:
-                    plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                             f'{self.cols[n]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                             label='{}'.format(n))
+                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
+                         f'{wbd[i]["color"]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+                         label=f'{n}')
             plt.legend(fontsize=8)
 
         # Plot limits
