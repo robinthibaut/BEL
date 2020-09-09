@@ -3,8 +3,8 @@
 import os
 
 from experiment.base.inventory import MySetup
-from experiment.goggles.visualization import Plot, empty_figs
-from experiment.toolbox.filesio import datread
+from experiment.goggles.visualization import Plot
+from experiment.toolbox.filesio import datread, empty_figs
 
 
 def main(roots):

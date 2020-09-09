@@ -11,34 +11,8 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
-from experiment.toolbox.filesio import folder_reset
 
 plt.style.use('dark_background')
-
-
-def empty_figs(root):
-    """ Empties figure folders """
-
-    if isinstance(root, (list, tuple)):
-        if len(root) > 1:
-            print('Input error')
-            return
-        else:
-            root = root[0]
-
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
-    listme = os.listdir(subdir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
-
-    for f in folders:
-        # pca
-        folder_reset(os.path.join(subdir, f, 'pca'))
-        # cca
-        folder_reset(os.path.join(subdir, f, 'cca'))
-        # uq
-        folder_reset(os.path.join(subdir, f, 'uq'))
-        # data
-        folder_reset(os.path.join(subdir, f, 'cca'))
 
 
 def explained_variance(pca, n_comp=0, xfs=2, thr=1., fig_file=None, show=False):

@@ -25,13 +25,41 @@ def datread(file=None, start=0, end=None):
 
 def folder_reset(folder):
     """Deletes files out of folder"""
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    try:
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    except FileNotFoundError:
+        pass
+
+
+def empty_figs(root):
+    """ Empties figure folders """
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
+    for f in folders:
+        # pca
+        folder_reset(os.path.join(subdir, f, 'pca'))
+        # cca
+        folder_reset(os.path.join(subdir, f, 'cca'))
+        # uq
+        folder_reset(os.path.join(subdir, f, 'uq'))
+        # data
+        folder_reset(os.path.join(subdir, f, 'cca'))
 
 
 def dirmaker(dird):
