@@ -383,7 +383,7 @@ class Plot:
             for n, i in enumerate(wbd):
                 if 'pumping' not in i:
                     plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                             'o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+                             f'{self.cols[n]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
                              label='{}'.format(n))
             plt.legend(fontsize=8)
 

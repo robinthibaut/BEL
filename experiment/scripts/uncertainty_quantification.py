@@ -55,7 +55,7 @@ def value_info(root):
     plt.ylabel('Opposite deviation from mode\'s mean')
     plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
     # Plot histogram
     for i, m in enumerate(wm):
@@ -66,7 +66,7 @@ def value_info(root):
     plt.legend(wid)
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
     # %% Facet histograms
     ids = np.array(np.concatenate([np.ones(wm.shape[1]) * i for i in range(1, 7)]), dtype='int')
@@ -108,7 +108,7 @@ def value_info(root):
     g.set(yticks=[])  # set y ticks to blank
     g.despine(bottom=True, left=True)  # remove 'spines'
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'facet.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
 
 def scan_roots(base, training, obs, combinations, base_dir=None):
@@ -211,11 +211,11 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
-                  flag_base=True,
-                  roots_obs=None)
+    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+    #               flag_base=True,
+    #               roots_obs=None)
     forecast_dir = MySetup.Directories.forecasts_dir
-    # listit = os.listdir(forecast_dir)
-    # listit.remove('base')
-    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    # value_info(duq)
+    listit = os.listdir(forecast_dir)
+    listit.remove('base')
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    value_info(duq)

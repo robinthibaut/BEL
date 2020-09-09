@@ -14,7 +14,7 @@ def main(roots):
     for sample in roots:
         # plot_pc_ba(sample, data=True, target=True)
         # empty_figs(sample)
-        wells = ['123456']
+        wells = ['123456', '1', '2', '3', '4', '5', '6']
         for w in wells:
             mplot.plot_results(root=sample, folder=w)
         mplot.plot_whpa(sample)
