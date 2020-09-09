@@ -199,7 +199,7 @@ class PosteriorIO:
 
             # Set the seed for later use
             if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1)
+                self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
 
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
