@@ -11,7 +11,7 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
-from experiment.toolbox.filesio import datread, load_res, folder_reset
+from experiment.toolbox.filesio import folder_reset
 
 plt.style.use('dark_background')
 
@@ -41,8 +41,7 @@ def empty_figs(root):
         folder_reset(os.path.join(subdir, f, 'cca'))
 
 
-
-def explained_variance(pca, n_comp=0, xfs=2, thr=1, fig_file=None, show=False):
+def explained_variance(pca, n_comp=0, xfs=2, thr=1., fig_file=None, show=False):
     """
     PCA explained variance plot
     :param pca: PCA operator
@@ -601,7 +600,13 @@ class Plot:
                 'uq',
                 f'cca_{cca_operator.n_components}.png')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        forecast_posterior = np.load(jp(md, 'obj', 'forecast_posterior.npy'))
+        # forecast_posterior = np.load(jp(md, 'obj', 'forecast_posterior.npy'))
+        post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
+        forecast_posterior = post_obj.random_sample(pca_d=d_pco,
+                                                    pca_h=h_pco,
+                                                    cca_obj=cca_operator,
+                                                    n_posts=MySetup.Forecast.n_posts,
+                                                    add_comp=False)
         h_true_obs = np.load(jp(md, 'obj', 'h_true_obs.npy'))
         h_pred = np.load(jp(md, 'obj', 'h_pred.npy'))
 

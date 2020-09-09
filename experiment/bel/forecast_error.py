@@ -94,6 +94,7 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
+        # TODO: Get rid of sample number
         self.sample_n = 0  # This class used to take into account multiple observations, now this parameter remains
         # fixed to 0.
         self.n_posts = self.base.Forecast.n_posts

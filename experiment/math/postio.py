@@ -11,9 +11,9 @@ from experiment.processing.predictions import TargetIO
 class PosteriorIO:
 
     def __init__(self, directory=None):
-        self.posterior_mean = 0
-        self.posterior_covariance = 0
-        self.seed = 0
+        self.posterior_mean = None
+        self.posterior_covariance = None
+        self.seed = None
         self.ops = TargetIO()
         self.directory = directory
 
@@ -121,10 +121,17 @@ class PosteriorIO:
         self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
-        return self.posterior_mean, self.posterior_covariance
-
     def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
-        # TODO: Save mean, covariance, seed and separate the inverse transform process
+        """
+
+        :param h_posts_gaussian:
+        :param cca_obj:
+        :param pca_h:
+        :param n_posts:
+        :param add_comp:
+        :param save_target_pc:
+        :return:
+        """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
         h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
@@ -139,9 +146,6 @@ class PosteriorIO:
         if add_comp:  # TODO: double check
             rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
-
-        # # Generate forecast in the initial dimension and reshape.
-        # forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
 
         if save_target_pc:
             fname = jp(self.directory, 'target_pc.npy')
@@ -166,38 +170,44 @@ class PosteriorIO:
         :return:
         """
 
-        # Cut desired number of PC components
-        d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
-        h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
+        if self.posterior_mean is None and self.posterior_covariance is None:
+            # Cut desired number of PC components
+            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
+            h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
 
-        d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
+            d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
-        d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
-        d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+            d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
+            d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-        # Ensure Gaussian distribution in h_cca
-        h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
+            # Ensure Gaussian distribution in h_cca
+            h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
 
-        # Get the rotation matrices
-        d_rotations = cca_obj.x_rotations_
+            # Get the rotation matrices
+            d_rotations = cca_obj.x_rotations_
 
-        # Project observed data into canonical space.
-        d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-        d_cca_prediction = d_cca_prediction.T
+            # Project observed data into canonical space.
+            d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
+            d_cca_prediction = d_cca_prediction.T
 
-        # Estimate the posterior mean and covariance (Tarantola)
-        posterior_mean, posterior_covariance = self.posterior(h_cca_training_gaussian,
-                                                              d_cca_training,
-                                                              d_pc_training,
-                                                              d_rotations,
-                                                              d_cca_prediction)
+            # Estimate the posterior mean and covariance (Tarantola)
+            self.posterior(h_cca_training_gaussian,
+                           d_cca_training,
+                           d_pc_training,
+                           d_rotations,
+                           d_cca_prediction)
+
+            # Set the seed for later use
+            if self.seed is None:
+                self.seed = np.random.randint(1e12)
+            np.random.seed(self.seed)
+
+            joblib.dump(self, jp(self.directory, 'post.pkl'))
+
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
-        if self.seed is None:
-            self.seed = np.random.randint(1e12)
-        np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(mean=posterior_mean,
-                                                         cov=posterior_covariance,
+        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
+                                                         cov=self.posterior_covariance,
                                                          size=n_posts).T
 
         # Back-transform
@@ -206,7 +216,5 @@ class PosteriorIO:
                                                  pca_h=pca_h,
                                                  n_posts=n_posts,
                                                  add_comp=add_comp)
-
-        joblib.dump(self, jp(self.directory, 'post.pkl'))
 
         return forecast_posterior
