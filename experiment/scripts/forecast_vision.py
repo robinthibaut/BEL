@@ -13,7 +13,7 @@ def main(roots):
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
     for sample in roots:
         # plot_pc_ba(sample, data=True, target=True)
-        empty_figs(sample)
+        # empty_figs(sample)
         wells = ['123456']
         for w in wells:
             mplot.plot_results(root=sample, folder=w)
