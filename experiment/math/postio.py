@@ -1,5 +1,8 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+from os.path import join as jp
+
+import joblib
 import numpy as np
 
 from experiment.processing.predictions import TargetIO
@@ -7,10 +10,12 @@ from experiment.processing.predictions import TargetIO
 
 class PosteriorIO:
 
-    def __init__(self):
+    def __init__(self, directory=None):
         self.posterior_mean = 0
         self.posterior_covariance = 0
+        self.seed = 0
         self.ops = TargetIO()
+        self.directory = directory
 
     def posterior(self,
                   h_cca_training_gaussian,
@@ -116,12 +121,43 @@ class PosteriorIO:
         self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
-        return h_mean_posterior.T[0], h_posterior_covariance
+        return self.posterior_mean, self.posterior_covariance
 
-    def random_sample(self, sample_n, pca_d, pca_h, cca_obj, n_posts=1, add_comp=0):
+    def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
+        # TODO: Save mean, covariance, seed and separate the inverse transform process
+        # This h_posts gaussian need to be inverse-transformed to the original distribution.
+        # We get the CCA scores.
+        h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
+        # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
+        # The value of h_pca_reverse are the score of PCA in the forecast space.
+        # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
+        # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
+        # and add the y_mean.
+        h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+
+        # Whether to add or not the rest of PC components
+        if add_comp:  # TODO: double check
+            rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
+            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
+
+        # # Generate forecast in the initial dimension and reshape.
+        # forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+
+        if save_target_pc:
+            fname = jp(self.directory, 'target_pc.npy')
+            np.save(fname, h_pca_reverse)
+
+        # Generate forecast in the initial dimension and reshape.
+        forecast_posterior = \
+            pca_h.inverse_transform(h_pca_reverse).reshape((n_posts,
+                                                            pca_h.training_shape[1],
+                                                            pca_h.training_shape[2]))
+
+        return forecast_posterior
+
+    def random_sample(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
         """
 
-        :param sample_n: Sample number
         :param pca_d: PCA object for observation
         :param pca_h: PCA object for target
         :param cca_obj: CCA object
@@ -134,7 +170,7 @@ class PosteriorIO:
         d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
         h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
 
-        d_pc_obs = d_pc_prediction[sample_n]  # observation data for prediction sample
+        d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
         d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
@@ -150,34 +186,27 @@ class PosteriorIO:
         d_cca_prediction = d_cca_prediction.T
 
         # Estimate the posterior mean and covariance (Tarantola)
-        self.posterior(h_cca_training_gaussian,
-                       d_cca_training,
-                       d_pc_training,
-                       d_rotations,
-                       d_cca_prediction)
-
+        posterior_mean, posterior_covariance = self.posterior(h_cca_training_gaussian,
+                                                              d_cca_training,
+                                                              d_pc_training,
+                                                              d_rotations,
+                                                              d_cca_prediction)
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
-        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
-                                                         cov=self.posterior_covariance,
+        if self.seed is None:
+            self.seed = np.random.randint(1e12)
+        np.random.seed(self.seed)
+        h_posts_gaussian = np.random.multivariate_normal(mean=posterior_mean,
+                                                         cov=posterior_covariance,
                                                          size=n_posts).T
-        # TODO: Save mean, covariance, seed and separate the inverse transform process
-        # This h_posts gaussian need to be inverse-transformed to the original distribution.
-        # We get the CCA scores.
-        h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
-        # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
-        # The value of h_pca_reverse are the score of PCA in the forecast space.
-        # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
-        # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
-        # and add the y_mean.
-        h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
-        # Whether to add or not the rest of PC components
-        if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
-            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Add them
+        # Back-transform
+        forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,
+                                                 cca_obj=cca_obj,
+                                                 pca_h=pca_h,
+                                                 n_posts=n_posts,
+                                                 add_comp=add_comp)
 
-        # # Generate forecast in the initial dimension and reshape.
-        # forecast_ = pca_h.inverse_transform(h_pca_reverse).reshape((n_posts, shp[1], shp[2]))
+        joblib.dump(self, jp(self.directory, 'post.pkl'))
 
-        return h_pca_reverse
+        return forecast_posterior

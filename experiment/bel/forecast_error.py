@@ -54,7 +54,6 @@ class UncertaintyQuantification:
 
         self.base = base
 
-        self.po = PosteriorIO()
         fc = self.base.Focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
@@ -77,6 +76,8 @@ class UncertaintyQuantification:
         self.res_dir = jp(self.bel_dir, 'obj')
         self.fig_cca_dir = jp(self.bel_dir, 'cca')
         self.fig_pred_dir = jp(self.bel_dir, 'uq')
+
+        self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
@@ -122,23 +123,22 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        forecast_pc = self.po.random_sample(sample_n=self.sample_n,
-                                            pca_d=self.d_pco,
-                                            pca_h=self.h_pco,
-                                            cca_obj=self.cca_operator,
-                                            n_posts=self.n_posts,
-                                            add_comp=0)
-        if save_target_pc:
-            fname = jp(self.res_dir, f'{self.n_posts}_target_pc.npy')
-            np.save(fname, forecast_pc)
+        self.forecast_posterior = self.po.random_sample(pca_d=self.d_pco,
+                                                        pca_h=self.h_pco,
+                                                        cca_obj=self.cca_operator,
+                                                        n_posts=self.n_posts,
+                                                        add_comp=False)
+        # if save_target_pc:
+        #     fname = jp(self.res_dir, f'{self.n_posts}_target_pc.npy')
+        #     np.save(fname, forecast_pc)
 
         # Generate forecast in the initial dimension and reshape.
-        self.forecast_posterior = \
-            self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
-                                                               self.h_pco.training_shape[1],
-                                                               self.h_pco.training_shape[2]))
+        # self.forecast_posterior = \
+        #     self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
+        #                                                        self.h_pco.training_shape[1],
+        #                                                        self.h_pco.training_shape[2]))
 
-        np.save(jp(self.res_dir, 'forecast_posterior.npy'), self.forecast_posterior)
+        # np.save(jp(self.res_dir, 'forecast_posterior.npy'), self.forecast_posterior)
 
         # Get the true array of the prediction
         # Prediction set - PCA space
@@ -155,17 +155,6 @@ class UncertaintyQuantification:
         self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
 
         np.save(jp(self.res_dir, 'h_pred.npy'), self.h_pred)
-
-        # Plot results
-        # TODO: This shouldn't be here
-        # ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
-        # h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
-        # self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
-        # self.mplot.whp_prediction(forecasts=self.forecast_posterior,
-        #                           h_true=self.h_true_obs,
-        #                           h_pred=self.h_pred,
-        #                           show_wells=True,
-        #                           fig_file=ff)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
