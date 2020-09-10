@@ -723,7 +723,7 @@ class Plot:
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
             plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
-            plt.show()
+            # plt.show()
 
     @staticmethod
     def plot_whpa(root=None):
