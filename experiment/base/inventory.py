@@ -83,11 +83,11 @@ class MySetup:
             'pumping0':
                 {'coordinates': [1000, 500],
                  'rates': [-1000, -1000, -1000],
-                 'color': 'k'},
+                 'color': 'w'},
             'injection0':
                 {'coordinates': [950, 450],
                  'rates': [0, 24, 0],
-                 'color': 'w'},
+                 'color': 'b'},
             'injection1':
                 {'coordinates': [930, 560],
                  'rates': [0, 24, 0],

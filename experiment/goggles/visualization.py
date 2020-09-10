@@ -354,12 +354,16 @@ class Plot:
             keys = [list(self.wels.wels_data.keys())[i] for i in comb]
             wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
             # Get pumping well coordinates
-            pwl = wbd['pumping0']['coordinates']
-            plt.plot(pwl[0], pwl[1], 'wo', label='pw')
+            # pwl = wbd['pumping0']['coordinates']
+            # plt.plot(pwl[0], pwl[1], 'wo', label='pw')
             for n, i in enumerate(wbd):
+                if n == 0:
+                    label = 'pw'
+                else:
+                    label = f'{n}'
                 plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
                          f'{wbd[i]["color"]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                         label=f'{n}')
+                         label=label)
             plt.legend(fontsize=8)
 
         # Plot limits

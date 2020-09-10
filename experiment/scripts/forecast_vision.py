@@ -30,6 +30,6 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    main(samples)
+    main(['bb3d985d33cf44a3b779fa8a40a418d0'])
 
 
