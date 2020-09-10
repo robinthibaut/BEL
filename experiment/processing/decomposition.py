@@ -61,7 +61,8 @@ def base_pca(base,
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
-        d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+        # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+        d_pco.ncomp = 50
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -96,7 +97,7 @@ def base_pca(base,
         # Transform
         h_pco.pca_training_transformation()
         # Define number of components to keep
-        h_pco.n_pca_components(.98)  # Number of components for signed distance
+        h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
@@ -111,7 +112,7 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
+def bel(base, wel_comb=None, training_roots=None, test_root=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -129,9 +130,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
 
     if wel_comb is not None:
         base.Wels.combination = wel_comb
-
-    # Initiate Plot instance
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
 
     # Directories
     md = base.Directories()
@@ -192,6 +190,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     d_pco.pca_training_transformation()
     # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
+    # TODO: Save ncomp, n_time_steps in Inventory
     d_pco.ncomp = 50
     ndo = d_pco.ncomp
     # Load observation (test_root)
@@ -204,11 +203,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
 
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
-
-    # TODO: This should not be there
-    # Plot curves
-    # mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
-    # mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
 
     # PCA on signed distance
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
@@ -225,12 +219,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
-        # ff = jp(fig_dir, f'{test_root[0]}.png')  # figure name
-        # h_training = h_pco.training_physical.reshape(h_pco.shape)
-        # Plots target training + prediction
-        # mp.whp(h_training, alpha=.2, show=False)
-        # mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
-
     else:
         # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
@@ -240,6 +228,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
+    # TODO: Check max_iter & tol
     cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator

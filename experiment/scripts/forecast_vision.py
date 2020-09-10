@@ -20,9 +20,9 @@ def main(roots):
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
         mplot.plot_whpa(sample)
-        mplot.cca_vision(sample, folders=wells)
-        mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True,
-                         folders=wells)
+        # mplot.cca_vision(sample, folders=wells)
+        # mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True,
+        #                  folders=wells)
         # ['123456', '1', '2', '3', '4', '5', '6']
 
 
@@ -30,6 +30,6 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    main(['bb3d985d33cf44a3b779fa8a40a418d0'])
+    main(samples)
 
 

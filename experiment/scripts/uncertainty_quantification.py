@@ -211,9 +211,10 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    # rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
-    #               flag_base=True,
-    #               roots_obs=None)
+    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  flag_base=True,
+                  roots_obs=None)
+    # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
     listit.remove('base')
