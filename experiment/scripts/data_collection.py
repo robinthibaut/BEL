@@ -70,7 +70,7 @@ def simulation(folder=None):
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
                       grid_dir=grid_dir,
-                      hk_array=hk_array, xy_dummy=xy_dummy)
+                      hk_array=hk_array/1000, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
