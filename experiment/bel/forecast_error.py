@@ -104,11 +104,11 @@ class UncertaintyQuantification:
         self.h_pc_true_pred = None  # CCA predicted 'true' h PC
         self.h_pred = None  # 'true' h in physical space
 
-        # Contours
+        # 0 contours of posterior WHPA
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=True):
+    def sample_posterior(self, sample_n=None, n_posts=None):
         """
         Extracts n random samples from the posterior
         :param sample_n: int: Sample identifier
@@ -129,17 +129,6 @@ class UncertaintyQuantification:
                                                         cca_obj=self.cca_operator,
                                                         n_posts=self.n_posts,
                                                         add_comp=False)
-        # if save_target_pc:
-        #     fname = jp(self.res_dir, f'{self.n_posts}_target_pc.npy')
-        #     np.save(fname, forecast_pc)
-
-        # Generate forecast in the initial dimension and reshape.
-        # self.forecast_posterior = \
-        #     self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
-        #                                                        self.h_pco.training_shape[1],
-        #                                                        self.h_pco.training_shape[2]))
-
-        # np.save(jp(self.res_dir, 'forecast_posterior.npy'), self.forecast_posterior)
 
         # Get the true array of the prediction
         # Prediction set - PCA space
@@ -148,14 +137,6 @@ class UncertaintyQuantification:
         self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 
         np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
-
-        # Predicting the function based for a certain number of 'observations'
-        # self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
-
-        # Going back to the original function dimension and reshape.
-        # self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
-
-        # np.save(jp(self.res_dir, 'h_pred.npy'), self.h_pred)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
@@ -324,22 +305,8 @@ class UncertaintyQuantification:
         # Delineation vertices of the true array
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
-        # Compute MHD between the true vertices and the n sampled vertices
+        # Compute MHD between the 'true vertices' and the n sampled vertices
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
-
-        # Identify the closest and farthest results
-        # min_pos = np.where(mhds == np.min(mhds))[0][0]
-        # max_pos = np.where(mhds == np.max(mhds))[0][0]
-
-        # Plot results
-        # fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
-        # self.mplot.whp_prediction(  # forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
-        #     forecasts=None,
-        #     h_true=v_h_true_cut,
-        #     h_pred=self.forecast_posterior[min_pos],
-        #     show_wells=True,
-        #     title=str(np.round(mhds.mean(), 2)),
-        #     fig_file=fig)
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)

@@ -117,8 +117,8 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
     :param h_pc_prediction: h test PC scores
-    :param sdir:
-    :param show:
+    :param sdir: str:
+    :param show: bool:
     :return:
     """
 
@@ -132,19 +132,22 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
             # Extract from sample
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
-            # Transform to CCA space
+            # Transform to CCA space and transpose
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
+            # Choose beautiful color map
             cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.95, reverse=True)
+            # Seaborn 'joinplot' between d & h training CCA scores
             g = sns.jointplot(d[comp_n], h[comp_n],
                               cmap=cmap, n_levels=80, shade=True,
                               kind='kde')
             g.plot_joint(plt.scatter, c='w', marker='+', s=2, alpha=.7)
-            # add 'arrows' at observation location
+            # add 'arrows' at observation location - tricky part!
             g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1)
             g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0)
+            # Plot prediction (d, h) in canonical space
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
@@ -718,16 +721,20 @@ class Plot:
 
             cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=cca_operator.n_components)
 
-            cca_plot(cca_operator, d_cca_training, h_cca_training, d_pc_prediction, h_pc_prediction,
+            cca_plot(cca_operator,
+                     d_cca_training,
+                     h_cca_training,
+                     d_pc_prediction,
+                     h_pc_prediction,
                      sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
+            # CCA coefficient plot
             sns.lineplot(data=cca_coefficient)
             plt.grid(alpha=.2, linewidth=.5)
             plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
             plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
-            # plt.show()
 
     @staticmethod
     def plot_whpa(root=None):
