@@ -1,5 +1,7 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
+import os
+import re
 from os import listdir
 from os.path import isfile
 from os.path import join as jp
@@ -334,7 +336,18 @@ def transport(modflowmodel, exe_name, grid_dir, save_ucn=False):
     # Export
     only_files = [f for f in listdir(model_ws) if isfile(jp(model_ws, f))]  # Listing all files in results folder
     obs_files = [jp(model_ws, x) for x in only_files if '.OBS' in x]  # Selects OBS files
-    observations = [mt.load_obs(of) for of in obs_files]  # Loading observations results
+
+    wells_list = [os.path.basename(r.lower()).split('.')[0] for r in obs_files]
+
+    def get_trailing_number(s):
+        m = re.search(r'\d+$', s)
+        return int(m.group()) if m else None
+
+    ids = [get_trailing_number(s) for s in wells_list]
+
+    obs_files_sorted = [x for _, x in sorted(zip(ids, obs_files))]
+
+    observations = [mt.load_obs(of) for of in obs_files_sorted]  # Loading observations results
     fields = observations[0].dtype.names
     hey = np.array(
         [
