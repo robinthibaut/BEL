@@ -92,7 +92,7 @@ def simulation(folder=None):
 def main():
     n_cpu = mp.cpu_count()//2 + 1
     pool = mp.Pool(n_cpu)
-    pool.map(simulation, np.zeros(300))
+    pool.map(simulation, np.zeros(100))
 
 
 if __name__ == "__main__":
