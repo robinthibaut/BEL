@@ -241,11 +241,12 @@ class Plot:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
 
-    def curves(self, tc, highlight=None, sdir=None, show=False):
+    def curves(self, tc, highlight=None, ghost=False, sdir=None, show=False):
         """
         Shows every breakthrough curve stacked on a plot.
         :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
         :param highlight: list: List of indices of curves to highlight in the plot
+        :param ghost: bool: Flag to only display highlighted curves.
         :param sdir: Directory in which to save figure
         :param show: Whether to show or not
         """
@@ -257,7 +258,7 @@ class Plot:
             for t in range(n_wels):
                 if i in highlight:
                     plt.plot(tc[i][t], color=self.cols[t], linewidth=2, alpha=1)
-                else:
+                elif not ghost:
                     plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
 
         plt.grid(linewidth=.3, alpha=.4)
@@ -403,10 +404,12 @@ class Plot:
                        title=None,
                        show=False):
 
+        # Plot n forecasts sampled
         self.whp(h=forecasts,
                  show_wells=show_wells,
                  bkg_field_array=bkg_field_array,
                  title=title)
+
         # Plot true h
         plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
 
@@ -582,7 +585,6 @@ class Plot:
                 'uq',
                 f'cca_{cca_operator.n_components}.png')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        # forecast_posterior = np.load(jp(md, 'obj', 'forecast_posterior.npy'))
         post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
         forecast_posterior = post_obj.random_sample(pca_d=d_pco,
                                                     pca_h=h_pco,
@@ -590,12 +592,11 @@ class Plot:
                                                     n_posts=MySetup.Forecast.n_posts,
                                                     add_comp=False)
         h_true_obs = np.load(jp(md, 'obj', 'h_true_obs.npy'))
-        # h_pred = np.load(jp(md, 'obj', 'h_pred.npy'))
 
-        self.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
+        # I display here the prior h behind the forecasts sampled from the posterior.
+        self.whp(h_training, lw=.1, alpha=.2, colors='gray', show=False)
         self.whp_prediction(forecasts=forecast_posterior,
                             h_true=h_true_obs,
-                            # h_pred=h_pred,
                             show_wells=True,
                             fig_file=ff)
 

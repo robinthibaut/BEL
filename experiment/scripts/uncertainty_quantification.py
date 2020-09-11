@@ -150,7 +150,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
 
-def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
+def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=None, to_swap=None, roots_obs=None):
     """
 
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -160,7 +160,10 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
     :param comb: list: List of well IDs
+    :param n_cut: int: Index from which training and data are separated
+    :param n_predictor: int: Number of predictors to take
     :param flag_base: bool: Recompute base PCA on target if True
+    :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
     :param roots_obs: list: List of roots considered as observations.
     :return: list: List of training roots, list: List of observation roots
@@ -172,15 +175,27 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-    roots_training = folders[:340]  # List of n training roots
+
+    if roots_training is None:
+        roots_training = folders[:n_cut]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        roots_obs = folders[340:]  # List of m observation roots
+        if n_cut+n_predictor <= len(folders):
+            roots_obs = folders[n_cut:(n_cut+n_predictor)]  # List of m observation roots
+        else:
+            print("Incompatible training/observation numbers")
+            return
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
-        idx = roots_training.index(pres)
-        roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+        if pres in roots_training:
+            idx = roots_training.index(pres)
+            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+        elif pres in folders:
+            idx = folders.index(pres)
+            roots_obs[0] = folders[idx]
+        else:
+            pass
 
     if to_swap is not None:
         [swap_root(ts) for ts in to_swap]
@@ -212,11 +227,12 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
+                  to_swap='illustration',
                   flag_base=True,
-                  roots_obs=None)
+                  roots_obs=['illustration'])
     # Value info
-    forecast_dir = MySetup.Directories.forecasts_dir
-    listit = os.listdir(forecast_dir)
-    listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    value_info(duq)
+    # forecast_dir = MySetup.Directories.forecasts_dir
+    # listit = os.listdir(forecast_dir)
+    # listit.remove('base')
+    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    # value_info(duq)
