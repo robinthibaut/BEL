@@ -70,7 +70,7 @@ def simulation(folder=None):
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
                       grid_dir=grid_dir,
-                      hk_array=hk_array/1000, xy_dummy=xy_dummy)
+                      hk_array=hk_array, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
         transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
@@ -88,14 +88,18 @@ def simulation(folder=None):
 
 
 def main():
-    n_cpu = mp.cpu_count() - 1
+    n_cpu = mp.cpu_count()//2 + 1
     pool = mp.Pool(n_cpu)
-    pool.map(simulation, np.zeros(250))
+
+    listme = os.listdir(MySetup.Directories.hydro_res_dir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+    # folders = np.zeros(250)
+    pool.map(simulation, folders)
 
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation('46d0170062654fc3b36888f2e2510fcb')
+    simulation('0ad0d4f2c96a4546935a64bdcfb85047')
     main()
     end = time.time()
     print((end - start) / 60)
