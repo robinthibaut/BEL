@@ -195,8 +195,11 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
         else:
             print("Incompatible training/observation numbers")
             return
-    else:
-        [swap_root(ts) for ts in roots_obs]
+
+    for r in roots_obs:
+        if r in roots_training:
+            print(f'obs {r} is located in the training roots')
+            return
 
     if to_swap is not None:
         [swap_root(ts) for ts in to_swap]
@@ -228,11 +231,11 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
 
 if __name__ == '__main__':
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6]]
+    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     rt, ro = main(comb=wells,
                   flag_base=True,
                   n_predictor=10,
-                  roots_obs=None)
+                  roots_obs=['46d0170062654fc3b36888f2e2510fcb'])
     # Value info
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)

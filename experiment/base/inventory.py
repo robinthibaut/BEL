@@ -121,4 +121,4 @@ class MySetup:
 
     @dataclass
     class Forecast:
-        n_posts = 500
+        n_posts = 200

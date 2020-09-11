@@ -95,7 +95,7 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('illustration')
+    simulation('46d0170062654fc3b36888f2e2510fcb')
     # main()
     end = time.time()
     print((end - start) / 60)

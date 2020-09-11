@@ -473,7 +473,7 @@ class Plot:
         :return:
         """
 
-        shape = pca_o.shape
+        shape = pca_o.training_shape
 
         if training:
             v_pc = pca_o.training_pc
@@ -799,7 +799,7 @@ class Plot:
             # Cut desired number of PC components
             h_pco.pca_test_transformation(h_pred, test_root=[root])
             h_pco.pca_refresh(hnc0)
-            mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=os.path.join(base_dir, 'control'))
+            mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=base_dir)
 
         # d
         if data:
@@ -814,7 +814,7 @@ class Plot:
                 dnc0 = d_pco.ncomp
                 d_pco.pca_refresh(dnc0)
                 setattr(d_pco, 'test_root', [root])
-                mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
-                                         fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
+                # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
+                #                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
                 mplot.d_pca_inverse_plot(d_pco, dnc0, training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))

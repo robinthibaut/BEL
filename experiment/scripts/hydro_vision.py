@@ -12,7 +12,7 @@ if __name__ == '__main__':
     mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
 
     # VTK
-    mi = ModelVTK(base=base, folder='illustration')
+    mi = ModelVTK(base=base, folder='46d0170062654fc3b36888f2e2510fcb')
     mi.flow_vtk()
     mi.transport_vtk()
     mi.conc_vtk()
