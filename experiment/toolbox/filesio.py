@@ -126,7 +126,11 @@ def keep_essential(res_dir):
     :return:
     """
     for the_file in os.listdir(res_dir):
-        if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
+        if not the_file.endswith('.npy') \
+                and not the_file.endswith('.py') \
+                and not the_file.endswith('.xy') \
+                and not the_file.endswith('.sgems'):
+
             file_path = os.path.join(res_dir, the_file)
             try:
                 if os.path.isfile(file_path):

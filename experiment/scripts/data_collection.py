@@ -58,8 +58,6 @@ def simulation(folder=None):
         res_dir = folder
 
     results_dir = jp(MySetup.Directories.hydro_res_dir, res_dir)
-    # reload data in old root:
-    # results_dir = jp(MySetup.Directories.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
 
     grid_dir = MySetup.Directories.grid_dir
     # Generates the result directory
@@ -75,7 +73,7 @@ def simulation(folder=None):
                       hk_array=hk_array, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on
@@ -97,7 +95,7 @@ def main():
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation('illustration')
-    main()
+    simulation('illustration')
+    # main()
     end = time.time()
     print((end - start) / 60)
