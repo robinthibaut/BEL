@@ -88,14 +88,14 @@ def simulation(folder=None):
 
 
 def main():
-    n_cpu = mp.cpu_count()//2 + 1
+    n_cpu = mp.cpu_count() - 1
     pool = mp.Pool(n_cpu)
-    pool.map(simulation, np.zeros(100))
+    pool.map(simulation, np.zeros(250))
 
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('46d0170062654fc3b36888f2e2510fcb')
-    # main()
+    # simulation('46d0170062654fc3b36888f2e2510fcb')
+    main()
     end = time.time()
     print((end - start) / 60)
