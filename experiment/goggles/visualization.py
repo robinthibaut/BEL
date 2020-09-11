@@ -594,9 +594,9 @@ class Plot:
                                                     add_comp=False)
 
         # I display here the prior h behind the forecasts sampled from the posterior.
-        self.whp(h_training, lw=.1, alpha=.2, colors='gray', show=False)
+        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show=False)
         self.whp_prediction(forecasts=forecast_posterior,
-                            h_true=h,
+                            h_true=h[0],
                             show_wells=True,
                             fig_file=ff)
 
@@ -736,6 +736,7 @@ class Plot:
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
             plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
+            plt.close()
 
     @staticmethod
     def plot_whpa(root=None):
