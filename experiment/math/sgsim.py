@@ -29,6 +29,16 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     # %% Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
+    # Get sgems grid centers coordinates:
+    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
+    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy / 2
+    xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
+    centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
+
+    if os.path.exists(jp(model_ws, 'hk0.npy')):
+        hk0 = np.load(jp(model_ws, 'hk0.npy'))
+        return hk0, centers
+
     # %% Load hard data point set
 
     data_dir = grid_dir
@@ -50,16 +60,6 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     gd = MySetup.GridDimensions()
     Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
-
-    # Get sgems grid centers coordinates:
-    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
-    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy / 2
-    xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
-    centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
-
-    if os.path.exists(jp(model_ws, 'hk0.npy')):
-        hk0 = np.load(jp(model_ws, 'hk0.npy'))
-        return hk0, centers
 
     # %% Display point coordinates and grid
     # pl = Plots(project=pjt)
