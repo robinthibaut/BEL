@@ -1,5 +1,6 @@
 .idea
 *.png
+*.npy
 *.pdf
 *.ucn
 *.ftl
@@ -7,3 +8,6 @@
 *.hds
 *.list
 *.iml
+*.vtk
+*.vtp
+*.vtu

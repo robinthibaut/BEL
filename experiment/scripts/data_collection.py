@@ -35,7 +35,7 @@ from experiment.math.sgsim import sgsim
 
 
 def simulation(folder=None):
-    if folder is 0:
+    if folder == 0:
         folder = None
     # Directories
     main_dir = MySetup.Directories.main_dir
@@ -58,8 +58,6 @@ def simulation(folder=None):
         res_dir = folder
 
     results_dir = jp(MySetup.Directories.hydro_res_dir, res_dir)
-    # reload data in old root:
-    # results_dir = jp(MySetup.Directories.hydro_res_dir, '6623dd4fb5014a978d59b9acb03946d2')
 
     grid_dir = MySetup.Directories.grid_dir
     # Generates the result directory
@@ -72,10 +70,10 @@ def simulation(folder=None):
     flow_model = flow(exe_name=exe_name_mf,
                       model_ws=results_dir,
                       grid_dir=grid_dir,
-                      hk_array=hk_array, xy_dummy=xy_dummy)
+                      hk_array=hk_array/1000, xy_dummy=xy_dummy)
     # Run Transport
     if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
+        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
         # Run Modpath
         end_points = backtrack(flow_model, exe_name_mp)
         # Compute particle delineation to compute signed distance later on
@@ -90,14 +88,14 @@ def simulation(folder=None):
 
 
 def main():
-    n_cpu = mp.cpu_count()//2 + 1
+    n_cpu = mp.cpu_count() - 1
     pool = mp.Pool(n_cpu)
-    pool.map(simulation, np.zeros(100))
+    pool.map(simulation, np.zeros(250))
 
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('illustration')
-    # main()
+    # simulation('46d0170062654fc3b36888f2e2510fcb')
+    main()
     end = time.time()
     print((end - start) / 60)

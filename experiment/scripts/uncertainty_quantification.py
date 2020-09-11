@@ -1,18 +1,18 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
+
 import joblib
-
-import numpy as np
-import seaborn as sns
-import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
-from experiment.toolbox import filesio, utils
+from experiment.base.inventory import MySetup
+from experiment.bel.forecast_error import UncertaintyQuantification
 from experiment.goggles.visualization import Plot
 from experiment.processing import decomposition as dcp
-from experiment.bel.forecast_error import UncertaintyQuantification
-from experiment.base.inventory import MySetup
+from experiment.toolbox import filesio, utils
 
 
 def value_info(root):
@@ -30,7 +30,7 @@ def value_info(root):
     for r in root:  # For each root
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
         for e in wid:  # For each subfolder (well) in the main folder
-            fmhd = os.path.join(droot, e, 'uq', 'haus.npy')  # Get the MHD file
+            fmhd = os.path.join(droot, e, 'obj', 'haus.npy')  # Get the MHD file
             mhd = np.load(fmhd)  # Load MHD
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
@@ -55,7 +55,7 @@ def value_info(root):
     plt.ylabel('Opposite deviation from mode\'s mean')
     plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
     # Plot histogram
     for i, m in enumerate(wm):
@@ -66,7 +66,7 @@ def value_info(root):
     plt.legend(wid)
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
     # %% Facet histograms
     ids = np.array(np.concatenate([np.ones(wm.shape[1]) * i for i in range(1, 7)]), dtype='int')
@@ -87,7 +87,7 @@ def value_info(root):
     g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
     g.map(plt.axhline, y=0, lw=4)
     for ax in g.axes:
-        ax[0].set_xlim((600, 900))
+        ax[0].set_xlim((400, 900))
 
     def label(x, color, label):
         ax = plt.gca()  # get the axes of the current object
@@ -108,12 +108,12 @@ def value_info(root):
     g.set(yticks=[])  # set y ticks to blank
     g.despine(bottom=True, left=True)  # remove 'spines'
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'facet.png'), dpi=300, transparent=True)
-    plt.show()
+    # plt.show()
 
 
 def scan_roots(base, training, obs, combinations, base_dir=None):
     """
-    Scan all roots and perform base decomposition
+    Scan forward roots and perform base decomposition
     :param base: class: Base class (inventory)
     :param training: list: List of uuid of each root for training
     :param obs: list: List of uuid of each root for observation
@@ -140,7 +140,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_root=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
@@ -150,7 +150,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
 
-def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
+def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=None, to_swap=None, roots_obs=None):
     """
 
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -160,27 +160,46 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
     :param comb: list: List of well IDs
-    :param flag_base: bool: Recompute base PCA on target
+    :param n_cut: int: Index from which training and data are separated
+    :param n_predictor: int: Number of predictors to take
+    :param flag_base: bool: Recompute base PCA on target if True
+    :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
     :param roots_obs: list: List of roots considered as observations.
     :return: list: List of training roots, list: List of observation roots
 
     """
-
     # Results location
     md = MySetup.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-    roots_training = folders[:200]  # List of n training roots
-
-    if roots_obs is None:  # If no observation provided
-        roots_obs = folders[200:210]  # List of m observation roots
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
-        idx = roots_training.index(pres)
-        roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+        if pres in roots_training:
+            idx = roots_training.index(pres)
+            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+        elif pres in folders:
+            idx = folders.index(pres)
+            roots_obs[0] = folders[idx]
+        else:
+            pass
+
+    if roots_training is None:
+        roots_training = folders[:n_cut]  # List of n training roots
+
+    if roots_obs is None:  # If no observation provided
+        if n_cut+n_predictor <= len(folders):
+            roots_obs = folders[n_cut:(n_cut+n_predictor)]  # List of m observation roots
+        else:
+            print("Incompatible training/observation numbers")
+            return
+
+    for r in roots_obs:
+        if r in roots_training:
+            print(f'obs {r} is located in the training roots')
+            return
 
     if to_swap is not None:
         [swap_root(ts) for ts in to_swap]
@@ -191,7 +210,12 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
     if flag_base and not fb:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
-        dcp.base_pca(base=MySetup, roots=roots_training, h_pca_obj=obj, check=False)
+        dcp.base_pca(base=MySetup,
+                     base_dir=obj_path,
+                     roots=roots_training,
+                     test_roots=roots_obs,
+                     h_pca_obj=obj,
+                     check=False)
 
     if comb is None:
         comb = MySetup.Wels.combination  # Get default combination (all)
@@ -206,9 +230,13 @@ def main(comb=None, flag_base=False, to_swap=None, roots_obs=None):
 
 
 if __name__ == '__main__':
-    rt, ro = main(comb=[[1, 2, 3, 4, 5, 6]],
-                  flag_base=False,
-                  roots_obs=['0a5fe077cc6b4cebb9ef10f07e8f61af'])
+    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    wells = [[1, 2, 3, 4, 5, 6]]
+    rt, ro = main(comb=wells,
+                  flag_base=True,
+                  n_predictor=10,
+                  roots_obs=['46d0170062654fc3b36888f2e2510fcb'])
+    # Value info
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)
     # listit.remove('base')

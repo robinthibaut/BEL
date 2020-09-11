@@ -31,7 +31,12 @@ plt.style.use('dark_background')
 
 class UncertaintyQuantification:
 
-    def __init__(self, base, study_folder, base_dir=None, wel_comb=None, seed=None):
+    def __init__(self,
+                 base,
+                 study_folder,
+                 base_dir=None,
+                 wel_comb=None,
+                 seed=None):
         """
 
         :param base: class: Base object (inventory)
@@ -49,7 +54,6 @@ class UncertaintyQuantification:
 
         self.base = base
 
-        self.po = PosteriorIO()
         fc = self.base.Focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
@@ -64,7 +68,7 @@ class UncertaintyQuantification:
         self.mplot.wdir = self.grid_dir
 
         # TODO: get folders from base model
-        self.bel_dir = jp(self.main_dir, 'storage', 'forecasts', study_folder)
+        self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
             self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
         else:
@@ -72,6 +76,8 @@ class UncertaintyQuantification:
         self.res_dir = jp(self.bel_dir, 'obj')
         self.fig_cca_dir = jp(self.bel_dir, 'cca')
         self.fig_pred_dir = jp(self.bel_dir, 'uq')
+
+        self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
@@ -88,6 +94,7 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
+        # TODO: Get rid of sample number
         self.sample_n = 0  # This class used to take into account multiple observations, now this parameter remains
         # fixed to 0.
         self.n_posts = self.base.Forecast.n_posts
@@ -97,16 +104,15 @@ class UncertaintyQuantification:
         self.h_pc_true_pred = None  # CCA predicted 'true' h PC
         self.h_pred = None  # 'true' h in physical space
 
-        # Contours
+        # 0 contours of posterior WHPA
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None, save_target_pc=False):
+    def sample_posterior(self, sample_n=None, n_posts=None):
         """
         Extracts n random samples from the posterior
         :param sample_n: int: Sample identifier
         :param n_posts: int: Desired number of samples
-        :param save_target_pc: bool: Flag to save the observation target PC
         :return:
         """
         if sample_n is not None:
@@ -115,40 +121,22 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
-        # Extract n random sample (target pc's). The posterior distribution is computed within the below method.
-        forecast_pc = self.po.random_sample(sample_n=self.sample_n,
-                                            pca_d=self.d_pco,
-                                            pca_h=self.h_pco,
-                                            cca_obj=self.cca_operator,
-                                            n_posts=self.n_posts,
-                                            add_comp=0)
-        if save_target_pc:
-            fname = os.path.join(self.fig_pred_dir, f'{self.n_posts}_target_pc.npy')
-            np.save(fname, forecast_pc)
+        # Extract n random sample (target pc's).
+        # The posterior distribution is computed within the method below.
+        self.forecast_posterior = self.po.random_sample(pca_d=self.d_pco,
+                                                        pca_h=self.h_pco,
+                                                        cca_obj=self.cca_operator,
+                                                        n_posts=self.n_posts,
+                                                        add_comp=False)
 
-        # Generate forecast in the initial dimension and reshape.
-        self.forecast_posterior = self.h_pco.inverse_transform(forecast_pc).reshape((n_posts,
-                                                                                     self.h_pco.shape[1],
-                                                                                     self.h_pco.shape[2]))
         # Get the true array of the prediction
         # Prediction set - PCA space
-        self.shape = self.h_pco.shape
-        # Prediction set - physical space
-        self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
-        # Predicting the function based for a certain number of 'observations'
-        self.h_pc_true_pred = self.cca_operator.predict(self.d_pc_prediction)
-        # Going back to the original function dimension and reshape.
-        self.h_pred = self.h_pco.inverse_transform(self.h_pc_true_pred).reshape(self.shape[1], self.shape[2])
+        self.shape = self.h_pco.training_shape
 
-        # Plot results
-        ff = jp(self.fig_pred_dir, f'cca_{self.cca_operator.n_components}.png')
-        h_training = self.h_pco.training_physical.reshape(self.h_pco.shape)
-        self.mplot.whp(h_training, lw=.1, alpha=.1, colors='b', show=False)
-        self.mplot.whp_prediction(forecasts=self.forecast_posterior,
-                                  h_true=self.h_true_obs,
-                                  h_pred=self.h_pred,
-                                  show_wells=True,
-                                  fig_file=ff)
+        # Prediction set - physical space
+        # self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
+        #
+        # np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
@@ -247,19 +235,19 @@ class UncertaintyQuantification:
         z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
         # Plot KDE
-        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-                       alpha=1,
-                       lw=1,
-                       show_wells=True,
-                       colors='red',
-                       show=False)
-        mpkde.whp(bkg_field_array=z,
-                  vmin=None,
-                  vmax=None,
-                  cmap='RdGy',
-                  colors='red',
-                  fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
-                  show=True)
+        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+        #                alpha=1,
+        #                lw=1,
+        #                show_wells=True,
+        #                colors='red',
+        #                show=False)
+        # mpkde.whp(bkg_field_array=z,
+        #           vmin=None,
+        #           vmax=None,
+        #           cmap='RdGy',
+        #           colors='red',
+        #           fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
+        #           show=True)
 
         return z
 
@@ -279,58 +267,46 @@ class UncertaintyQuantification:
         b_low = np.flipud(b_low)
 
         # a measure of the error could be a measure of the area covered by the n samples.
-        error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
+        # error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
 
         # Display result
-        self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-                       alpha=1,
-                       lw=1,
-                       show_wells=False,
-                       colors='red',
-                       show=False)
-
-        mpbin.whp(bkg_field_array=b_low,
-                  show_wells=True,
-                  vmin=None,
-                  vmax=None,
-                  cmap='RdGy',
-                  fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
-                  title=str(error_estimate),
-                  show=True)
+        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
+        #                alpha=1,
+        #                lw=1,
+        #                show_wells=False,
+        #                colors='red',
+        #                show=False)
+        #
+        # mpbin.whp(bkg_field_array=b_low,
+        #           show_wells=True,
+        #           vmin=None,
+        #           vmax=None,
+        #           cmap='RdGy',
+        #           fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
+        #           title=str(error_estimate),
+        #           show=True)
 
         # Save result
-        np.save(jp(self.fig_pred_dir, 'bin'), b_low)
+        np.save(jp(self.res_dir, 'bin'), b_low)
 
     #  Let's try Hausdorff...
     def mhd(self):
         """
-        Computes the Modified Hausdorff Distance between the true WHPA, that has been recovered from its n
-        first PCA components to allow good comparison.
+        Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA
+        components to allow proper comparison.
         """
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
-        n_cut = self.h_pco.ncomp
+        n_cut = self.h_pco.ncomp  # Number of components to keep
+        # Inverse transform and reshape
         v_h_true_cut = \
             self.h_pco.inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
         # Delineation vertices of the true array
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
-        # Compute MHD between the true vertices and the n sampled vertices
+        # Compute MHD between the 'true vertices' and the n sampled vertices
         mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
 
-        # Identify the closest and farthest results
-        min_pos = np.where(mhds == np.min(mhds))[0][0]
-        max_pos = np.where(mhds == np.max(mhds))[0][0]
-
-        # Plot results
-        fig = jp(self.fig_pred_dir, '{}_{}_hausdorff.png'.format(self.sample_n, self.cca_operator.n_components))
-        self.mplot.whp_prediction(forecasts=np.expand_dims(self.forecast_posterior[max_pos], axis=0),
-                                  h_true=v_h_true_cut,
-                                  h_pred=self.forecast_posterior[min_pos],
-                                  show_wells=True,
-                                  title=str(np.round(mhds.mean(), 2)),
-                                  fig_file=fig)
-
         # Save mhd
-        np.save(jp(self.fig_pred_dir, 'haus'), mhds)
+        np.save(jp(self.res_dir, 'haus'), mhds)

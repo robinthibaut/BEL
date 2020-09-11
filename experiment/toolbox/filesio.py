@@ -17,7 +17,7 @@ def datread(file=None, start=0, end=None):
     with open(file, 'r') as fr:
         lines = np.copy(fr.readlines())[start:end]
         try:
-            op = np.array([list(map(float, line.split())) for line in lines])
+            op = np.array([list(map(float, line.split())) for line in lines], dtype=object)
         except ValueError:
             op = [line.split() for line in lines]
     return op
@@ -25,13 +25,41 @@ def datread(file=None, start=0, end=None):
 
 def folder_reset(folder):
     """Deletes files out of folder"""
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    try:
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    except FileNotFoundError:
+        pass
+
+
+def empty_figs(root):
+    """ Empties figure folders """
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            print('Input error')
+            return
+        else:
+            root = root[0]
+
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    listme = os.listdir(subdir)
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+
+    for f in folders:
+        # pca
+        folder_reset(os.path.join(subdir, f, 'pca'))
+        # cca
+        folder_reset(os.path.join(subdir, f, 'cca'))
+        # uq
+        folder_reset(os.path.join(subdir, f, 'uq'))
+        # data
+        folder_reset(os.path.join(subdir, f, 'cca'))
 
 
 def dirmaker(dird):
@@ -98,7 +126,11 @@ def keep_essential(res_dir):
     :return:
     """
     for the_file in os.listdir(res_dir):
-        if not the_file.endswith('.npy') and not the_file.endswith('.py') and not the_file.endswith('.xy'):
+        if not the_file.endswith('.npy') \
+                and not the_file.endswith('.py') \
+                and not the_file.endswith('.xy') \
+                and not the_file.endswith('.sgems'):
+
             file_path = os.path.join(res_dir, the_file)
             try:
                 if os.path.isfile(file_path):

@@ -31,11 +31,19 @@ from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
-def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
+def base_pca(base,
+             base_dir,
+             roots,
+             test_roots,
+             d_pca_obj=None,
+             h_pca_obj=None,
+             check=False):
     """
     Initiate BEL by performing PCA on the training targets or features.
     :param base: class: Base class object
+    :param base_dir: str: Base directory path
     :param roots: list:
+    :param test_roots: list:
     :param d_pca_obj:
     :param h_pca_obj:
     :param check: bool: Flag to plot
@@ -53,7 +61,8 @@ def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
-        d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+        # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
+        d_pco.ncomp = 50
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -84,16 +93,26 @@ def base_pca(base, roots, d_pca_obj=None, h_pca_obj=None, check=False):
             # return
 
         # Initiate h pca object
-        h_pco = PCAIO(name='h', training=h, roots=roots, directory=os.path.dirname(h_pca_obj))
+        h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
         h_pco.pca_training_transformation()
         # Define number of components to keep
-        h_pco.n_pca_components(.98)  # Number of components for signed distance
+        h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
+        if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
+            with open(jp(base_dir, 'roots.dat'), 'w') as f:
+                for r in roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r) + '\n')
 
-def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
+        if not os.path.exists(jp(base_dir, 'test_roots.dat')):  # Save roots id's in a dat file
+            with open(jp(base_dir, 'test_roots.dat'), 'w') as f:
+                for r in test_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r) + '\n')
+
+
+def bel(base, wel_comb=None, training_roots=None, test_root=None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -101,7 +120,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
     :param wel_comb: list: List of injection wells used to make prediction
-    :param test_root: list: Folder paths containing outputs to be predicted
+    :param test_root: list: Folder path containing output to be predicted
 
     """
 
@@ -111,9 +130,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
 
     if wel_comb is not None:
         base.Wels.combination = wel_comb
-
-    # Initiate Plot instance
-    mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
 
     # Directories
     md = base.Directories()
@@ -161,11 +177,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     else:
         tc = np.load(tsub)
 
-    if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
-        with open(jp(base_dir, 'roots.dat'), 'w') as f:
-            for r in training_roots:  # Saves roots name until test roots
-                f.write(os.path.basename(r) + '\n')
-
     # %% Select wells:
     selection = [wc - 1 for wc in base.Wels.combination]
     tc = tc[:, selection, :]
@@ -179,6 +190,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     d_pco.pca_training_transformation()
     # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
+    # TODO: Save ncomp, n_time_steps in Inventory
     d_pco.ncomp = 50
     ndo = d_pco.ncomp
     # Load observation (test_root)
@@ -188,34 +200,28 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     tcp = tcp[:, selection, :]  # Extract desired observation
     d_pco.pca_test_transformation(tcp, test_root=test_root)  # Perform transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
+
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
-    # Plot curves
-    mp.curves(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
-    mp.curves_i(tc=np.concatenate((tc, tcp), axis=0), sdir=fig_data_dir, highlight=[len(tc)])
-
-    # PCA on signed distance
+    # PCA on signed distance from base object containing training instances
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
-    # Load whpa
+    # Load whpa to predict
     _, pzs, _ = fops.load_res(roots=test_root, h=True)
-    # Compute WHPA
+    # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
+        # Perform PCA
         h_pco.pca_test_transformation(h, test_root=test_root)
+        # Cut desired number of components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        # Save updated PCA object in base
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')
         fops.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
-        ff = jp(fig_dir, f'{test_root[0]}.png')  # figure name
-        h_training = h_pco.training_physical.reshape(h_pco.shape)
-        # Plots target training + prediction
-        mp.whp(h_training, alpha=.2, show=False)
-        mp.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
-
     else:
         # Cut components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
@@ -225,7 +231,8 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None, **kwargs):
     # components between d and h.
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=int(500 * 20), tol=float_epsilon * 10)
+    # TODO: Check max_iter & tol
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 

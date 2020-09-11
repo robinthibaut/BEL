@@ -76,30 +76,38 @@ class MySetup:
              [1, 10]])  # 10 meters from the pumping wel coordinates, grid cells will have dimensions 1*1
 
     @dataclass
+    # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
     class Wels:
         """Wels coordinates"""
         wels_data = {
             'pumping0':
                 {'coordinates': [1000, 500],
-                 'rates': [-1000, -1000, -1000]},
+                 'rates': [-1000, -1000, -1000],
+                 'color': 'w'},
             'injection0':
                 {'coordinates': [950, 450],
-                 'rates': [0, 24, 0]},
+                 'rates': [0, 24, 0],
+                 'color': 'b'},
             'injection1':
                 {'coordinates': [930, 560],
-                 'rates': [0, 24, 0]},
+                 'rates': [0, 24, 0],
+                 'color': 'g'},
             'injection2':
                 {'coordinates': [900, 505],
-                 'rates': [0, 24, 0]},
+                 'rates': [0, 24, 0],
+                 'color': 'r'},
             'injection3':
                 {'coordinates': [1068, 515],
-                 'rates': [0, 24, 0]},
+                 'rates': [0, 24, 0],
+                 'color': 'c'},
             'injection4':
                 {'coordinates': [1030, 580],
-                 'rates': [0, 24, 0]},
+                 'rates': [0, 24, 0],
+                 'color': 'm'},
             'injection5':
                 {'coordinates': [1050, 470],
-                 'rates': [0, 24, 0]}
+                 'rates': [0, 24, 0],
+                 'color': 'y'}
         }
 
         combination = np.arange(1, len(wels_data))  # Injection wells in use for prediction (default: all)
@@ -109,8 +117,8 @@ class MySetup:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
-        cell_dim = 4
+        cell_dim = 4  # Defines cell dimensions for the signed distance computation.
 
     @dataclass
     class Forecast:
-        n_posts = 500
+        n_posts = 200
