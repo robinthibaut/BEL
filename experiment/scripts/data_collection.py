@@ -63,6 +63,8 @@ def simulation(folder=None):
     # Generates the result directory
     fops.dirmaker(results_dir)
 
+    # TODO: Pass if results already exist in folder
+
     # Statistical simulation
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
 
@@ -88,18 +90,20 @@ def simulation(folder=None):
 
 
 def main():
+
     n_cpu = mp.cpu_count()//2 + 1
     pool = mp.Pool(n_cpu)
 
     listme = os.listdir(MySetup.Directories.hydro_res_dir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+
     # folders = np.zeros(250)
     pool.map(simulation, folders)
 
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('0ad0d4f2c96a4546935a64bdcfb85047')
+    # simulation('0ad0d4f2c96a4546935a64bdcfb85047')
     main()
     end = time.time()
     print((end - start) / 60)
