@@ -241,13 +241,14 @@ class Plot:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
 
-    def curves(self, tc, highlight=None, ghost=False, sdir=None, show=False):
+    def curves(self, tc, highlight=None, ghost=False, sdir=None, title='curves', show=False):
         """
         Shows every breakthrough curve stacked on a plot.
         :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
         :param highlight: list: List of indices of curves to highlight in the plot
         :param ghost: bool: Flag to only display highlighted curves.
         :param sdir: Directory in which to save figure
+        :param title: str: Title
         :param show: Whether to show or not
         """
         if highlight is None:
@@ -569,12 +570,13 @@ class Plot:
         tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
         tc = np.concatenate((tc, tcp), axis=0)
         self.curves(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
+        self.curves(tc=tc, sdir=sdir, highlight=[len(tc) - 1], ghost=True, title='curves_ghost')
         self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
 
         # WHP - h
         fig_dir = jp(hbase, 'roots_whpa')
         ff = jp(fig_dir, f'{root}.png')  # figure name
-        h = np.load(jp(md, 'obj', 'h_true_obs.npy')).reshape(h_pco.obs_shape)
+        h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         self.whp(h_training, alpha=.2, show=False)

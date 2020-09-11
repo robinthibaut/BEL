@@ -204,16 +204,19 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
 
-    # PCA on signed distance
+    # PCA on signed distance from base object containing training instances
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
-    # Load whpa
+    # Load whpa to predict
     _, pzs, _ = fops.load_res(roots=test_root, h=True)
-    # Compute WHPA
+    # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
+        # Perform PCA
         h_pco.pca_test_transformation(h, test_root=test_root)
+        # Cut desired number of components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        # Save updated PCA object in base
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')

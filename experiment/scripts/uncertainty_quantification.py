@@ -140,7 +140,7 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
             sf = dcp.bel(base=base, training_roots=training, test_root=r_, wel_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts, save_target_pc=True)  # Sample posterior
+            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
             uq.c0(write_vtk=0)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
@@ -169,22 +169,11 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
     :return: list: List of training roots, list: List of observation roots
 
     """
-
     # Results location
     md = MySetup.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-
-    if roots_training is None:
-        roots_training = folders[:n_cut]  # List of n training roots
-
-    if roots_obs is None:  # If no observation provided
-        if n_cut+n_predictor <= len(folders):
-            roots_obs = folders[n_cut:(n_cut+n_predictor)]  # List of m observation roots
-        else:
-            print("Incompatible training/observation numbers")
-            return
 
     def swap_root(pres):
         """Selects roots from main folder and swap them from training to observation"""
@@ -196,6 +185,18 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
             roots_obs[0] = folders[idx]
         else:
             pass
+
+    if roots_training is None:
+        roots_training = folders[:n_cut]  # List of n training roots
+
+    if roots_obs is None:  # If no observation provided
+        if n_cut+n_predictor <= len(folders):
+            roots_obs = folders[n_cut:(n_cut+n_predictor)]  # List of m observation roots
+        else:
+            print("Incompatible training/observation numbers")
+            return
+    else:
+        [swap_root(ts) for ts in roots_obs]
 
     if to_swap is not None:
         [swap_root(ts) for ts in to_swap]
@@ -227,7 +228,6 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
 
 if __name__ == '__main__':
     rt, ro = main(comb=[[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]],
-                  to_swap='illustration',
                   flag_base=True,
                   roots_obs=['illustration'])
     # Value info

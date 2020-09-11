@@ -113,7 +113,6 @@ class UncertaintyQuantification:
         Extracts n random samples from the posterior
         :param sample_n: int: Sample identifier
         :param n_posts: int: Desired number of samples
-        :param save_target_pc: bool: Flag to save the observation target PC
         :return:
         """
         if sample_n is not None:
@@ -133,10 +132,11 @@ class UncertaintyQuantification:
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
-        # Prediction set - physical space
-        self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
 
-        np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
+        # Prediction set - physical space
+        # self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
+        #
+        # np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
 
     # %% extract 0 contours
     def c0(self, write_vtk=1):
