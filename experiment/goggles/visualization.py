@@ -253,7 +253,6 @@ class Plot:
         """
         if highlight is None:
             highlight = []
-        title = 'curves'
         n_sim, n_wels, nts = tc.shape
         for i in range(n_sim):
             for t in range(n_wels):
@@ -593,12 +592,11 @@ class Plot:
                                                     cca_obj=cca_operator,
                                                     n_posts=MySetup.Forecast.n_posts,
                                                     add_comp=False)
-        h_true_obs = np.load(jp(md, 'obj', 'h_true_obs.npy'))
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         self.whp(h_training, lw=.1, alpha=.2, colors='gray', show=False)
         self.whp_prediction(forecasts=forecast_posterior,
-                            h_true=h_true_obs,
+                            h_true=h,
                             show_wells=True,
                             fig_file=ff)
 

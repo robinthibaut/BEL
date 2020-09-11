@@ -15,7 +15,7 @@ def main(roots):
         print(f'Plotting root {sample}')
         # plot_pc_ba(sample, data=True, target=True)
         # empty_figs(sample)
-        wells = ['123456', '1', '2', '3', '4', '5', '6']
+        wells = ['123456']
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
@@ -30,4 +30,4 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    main(['illustration'])
+    main(samples)
