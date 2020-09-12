@@ -7,7 +7,6 @@ from experiment.base.inventory import MySetup
 
 
 def cleanup():
-    # cwd = os.getcwd()
     res_tree = MySetup.Directories.hydro_res_dir
     # r=root, d=directories, f = files
     for r, d, f in os.walk(res_tree, topdown=False):
@@ -18,5 +17,13 @@ def cleanup():
     print('Folders cleaned up')
 
 
+def filter_file(crit):
+    res_tree = MySetup.Directories.hydro_res_dir
+    for r, d, f in os.walk(res_tree, topdown=False):
+        if r != res_tree:
+            fops.remove_incomplete(r, crit='hk0.npy')
+    print(f'Folders filtered based on {crit}')
+
+
 if __name__ == '__main__':
-    cleanup()
+    filter_file('hk0.npy')

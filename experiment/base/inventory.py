@@ -20,22 +20,30 @@ class MySetup:
 
     @dataclass
     class Directories:
-        """Define main directories"""
+        """Define main directories and file names"""
+
+        computer = Machine.computer
+
+        # Content directory
         main_dir = dirname(dirname(os.path.abspath(__file__)))
 
-        print(f'Working on {Machine.computer}')
         hydro_res_dir = join(main_dir, 'storage', 'forwards')
 
-        # In future version I'll put the data under VCS and push to GitHub
-        # if Machine.computer == 'MacBook-Pro.local':
-        #     hydro_res_dir = '/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
-        # if Machine.computer == 'Yippee-Ki-yay-PC':
-        #     hydro_res_dir = 'C:/Users/robin/OneDrive - UGent/Project-we13c420/experiment/hydro/results'
-        # else:
-        #     hydro_res_dir = join(main_dir, 'hydro', 'results')
-
         forecasts_dir = join(main_dir, 'storage', 'forecasts')
+
         grid_dir = join(main_dir, 'grid', 'parameters')
+
+        # Output file names
+        hk_file = 'hk0.npy'
+        predictor_file = 'bkt.npy'
+        target_file = 'pz.npy'
+
+        output_files = [hk_file, predictor_file, target_file]
+
+        sgems_file = 'hd.sgems'
+        command_file = 'sgsim_commands.py'
+
+        sgems_family = [sgems_file, command_file, hk_file]
 
     @dataclass
     class FileNames:
