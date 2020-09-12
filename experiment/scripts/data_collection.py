@@ -101,6 +101,7 @@ def simulation(folder=None):
 def main():
 
     n_cpu = mp.cpu_count()//2 + 1
+    print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 
     # List directories in forwards folder
@@ -116,4 +117,4 @@ if __name__ == "__main__":
     # simulation('0ad0d4f2c96a4546935a64bdcfb85047')
     main()
     end = time.time()
-    print((end - start) / 60)
+    print(f'TET (min) {(end - start) // 60}')
