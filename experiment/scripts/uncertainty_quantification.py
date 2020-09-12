@@ -190,11 +190,15 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
         roots_training = folders[:n_cut]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        if n_cut+n_predictor <= len(folders):
-            roots_obs = folders[n_cut:(n_cut+n_predictor)]  # List of m observation roots
+        if n_cut + n_predictor <= len(folders):
+            roots_obs = folders[n_cut:(n_cut + n_predictor)]  # List of m observation roots
         else:
             print("Incompatible training/observation numbers")
             return
+
+    for i, r in enumerate(roots_training):
+        if r in roots_obs:
+            roots_training[i] = np.random.choice(folders[n_cut:])
 
     for r in roots_obs:
         if r in roots_training:
@@ -230,12 +234,18 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
 
 
 if __name__ == '__main__':
+    # List directories in forwards folder
+    listme = os.listdir(MySetup.Directories.hydro_res_dir)
+
+    pot_obs = [f for f in listme if os.path.exists(
+        os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
+
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6]]
     rt, ro = main(comb=wells,
                   flag_base=True,
                   n_predictor=10,
-                  roots_obs=['46d0170062654fc3b36888f2e2510fcb'])
+                  roots_obs=[pot_obs[0]])
     # Value info
     # forecast_dir = MySetup.Directories.forecasts_dir
     # listit = os.listdir(forecast_dir)

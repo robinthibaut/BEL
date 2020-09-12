@@ -34,6 +34,8 @@ class MySetup:
         grid_dir = join(main_dir, 'grid', 'parameters')
 
         # Output file names
+        project_name = 'whpa'
+
         hk_file = 'hk0.npy'
         predictor_file = 'bkt.npy'
         target_file = 'pz.npy'
