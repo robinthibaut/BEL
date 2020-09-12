@@ -29,6 +29,23 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     # %% Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
+    # %% Load hard data point set
+
+    data_dir = grid_dir
+    dataset = 'wels.eas'
+    file_path = jp(data_dir, dataset)
+
+    hd = PointSet(project=pjt, pointset_path=file_path)
+
+    if wells_hk is None:
+        hku = 2. + np.random.rand(len(hd.dataframe))  # Fix hard data values at wells location
+    else:
+        hku = wells_hk
+
+    if not os.path.exists(jp(model_ws, MySetup.Directories.sgems_file)):
+        hd.dataframe['hd'] = hku
+        hd.export_01('hd')  # Exports modified dataset in binary
+
     # %% Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     gd = MySetup.GridDimensions()
@@ -43,23 +60,6 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     if os.path.exists(jp(model_ws, 'hk0.npy')):
         hk0 = np.load(jp(model_ws, 'hk0.npy'))
         return hk0, centers
-
-    # %% Load hard data point set
-
-    data_dir = grid_dir
-    dataset = 'wels.eas'
-    file_path = jp(data_dir, dataset)
-
-    hd = PointSet(project=pjt, pointset_path=file_path)
-
-    if wells_hk is None:
-        hku = 2. + np.random.rand(len(hd.dataframe))  # Fix hard data values at wells location
-    else:
-        hku = wells_hk
-
-    hd.dataframe['hd'] = hku
-
-    hd.export_01('hd')  # Exports modified dataset in binary
 
     # %% Display point coordinates and grid
     # pl = Plots(project=pjt)
