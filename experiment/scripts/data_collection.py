@@ -65,10 +65,10 @@ def simulation(folder=None):
 
     print(f'fwd {res_dir}')
     # Check if forwards have already been computed
-    opt = np.array([os.path.isfile(jp(res_dir, d)) for d in MySetup.Directories.output_files])
+    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Directories.output_files])
 
     if not opt.all():
-        fops.folder_reset(results_dir, exceptions=MySetup.Directories.hk_file)
+        fops.folder_reset(results_dir, exceptions=MySetup.Directories.sgems_family)
         start_fwd = time.time()
         # Statistical simulation
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)

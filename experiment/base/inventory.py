@@ -34,11 +34,16 @@ class MySetup:
         grid_dir = join(main_dir, 'grid', 'parameters')
 
         # Output file names
-        hk_file = 'hk.npy'
+        hk_file = 'hk0.npy'
         predictor_file = 'bkt.npy'
         target_file = 'pz.npy'
 
         output_files = [hk_file, predictor_file, target_file]
+
+        sgems_file = 'hd.sgems'
+        command_file = 'sgsim_commands.py'
+
+        sgems_family = [sgems_file, command_file, hk_file]
 
     @dataclass
     class FileNames:
