@@ -68,6 +68,7 @@ def simulation(folder=None):
     opt = np.array([os.path.isfile(jp(res_dir, d)) for d in MySetup.Directories.output_files])
 
     if not opt.all():
+        fops.folder_reset(results_dir)
         start_fwd = time.time()
         # Statistical simulation
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
@@ -101,7 +102,7 @@ def simulation(folder=None):
 def main():
 
     # n_cpu = mp.cpu_count()//2 + 1
-    n_cpu = 4
+    n_cpu = 2
     print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 

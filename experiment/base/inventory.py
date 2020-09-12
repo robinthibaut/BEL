@@ -22,7 +22,7 @@ class MySetup:
     class Directories:
         """Define main directories and file names"""
 
-        print(f'Working on {Machine.computer}')
+        computer = Machine.computer
 
         # Content directory
         main_dir = dirname(dirname(os.path.abspath(__file__)))
