@@ -23,16 +23,19 @@ def datread(file=None, start=0, end=None):
     return op
 
 
-def folder_reset(folder):
+def folder_reset(folder, exceptions=None):
     """Deletes files out of folder"""
+    if not isinstance(exceptions, (list, tuple)):
+        exceptions = [exceptions]
     try:
         for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+            if filename not in exceptions:
+                file_path = os.path.join(folder, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
     except FileNotFoundError:
         pass
 
