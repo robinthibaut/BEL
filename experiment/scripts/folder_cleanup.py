@@ -21,9 +21,9 @@ def filter_file(crit):
     res_tree = MySetup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fops.remove_incomplete(r, crit='hk0.npy')
+            fops.remove_incomplete(r, crit=crit)
     print(f'Folders filtered based on {crit}')
 
 
 if __name__ == '__main__':
-    filter_file('hk0.npy')
+    filter_file('bkt.npy')

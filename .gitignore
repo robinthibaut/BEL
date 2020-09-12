@@ -1,12 +1,4 @@
-.idea
-*.png
-*.pdf
-*.ucn
-*.ftl
-*.cbc
-*.hds
-*.list
-*.iml
-*.vtk
-*.vtp
-*.vtu
+*.*
+!*.py
+!*.npy
+!*.sgems

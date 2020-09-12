@@ -101,8 +101,8 @@ def simulation(folder=None):
 
 def main():
 
-    # n_cpu = mp.cpu_count()//2 + 1
-    n_cpu = 2
+    n_cpu = mp.cpu_count()//2 + 1
+    # n_cpu = 15
     print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 
