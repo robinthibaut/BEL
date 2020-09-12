@@ -99,24 +99,26 @@ def simulation(folder=None):
         print(f'pass {res_dir}')
 
 
-def main():
+def main(n_sim=None):
 
     n_cpu = mp.cpu_count()//2 + 1
     # n_cpu = 15
     print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 
-    # List directories in forwards folder
-    listme = os.listdir(MySetup.Directories.hydro_res_dir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+    if n_sim is None:
+        # List directories in forwards folder
+        listme = os.listdir(MySetup.Directories.hydro_res_dir)
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+    else:
+        folders = np.zeros(n_sim)
 
-    # folders = np.zeros(250)
     pool.map(simulation, folders)
 
 
 if __name__ == "__main__":
     start = time.time()
     # simulation('0ad0d4f2c96a4546935a64bdcfb85047')
-    main()
+    main(50)
     end = time.time()
     print(f'TET (min) {(end - start) // 60}')
