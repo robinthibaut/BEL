@@ -63,30 +63,39 @@ def simulation(folder=None):
     # Generates the result directory
     fops.dirmaker(results_dir)
 
-    # TODO: Pass if results already exist in folder
+    print(f'fwd {res_dir}')
+    # Check if forwards have already been computed
+    opt = np.array([os.path.isfile(jp(res_dir, d)) for d in MySetup.Directories.output_files])
 
-    # Statistical simulation
-    hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
+    if not opt.all():
+        start_fwd = time.time()
+        # Statistical simulation
+        hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
 
-    # Run Flow
-    flow_model = flow(exe_name=exe_name_mf,
-                      model_ws=results_dir,
-                      grid_dir=grid_dir,
-                      hk_array=hk_array, xy_dummy=xy_dummy)
-    # Run Transport
-    if flow_model:  # If flow simulation succeeds
-        transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
-        # Run Modpath
-        end_points = backtrack(flow_model, exe_name_mp)
-        # Compute particle delineation to compute signed distance later on
-        delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
-        pzs = end_points[delineation]  # x-y coordinates protection zone
-        np.save(jp(results_dir, 'pz'), pzs)  # Save those
-        # Deletes everything except final results
-        if not folder:
-            fops.keep_essential(results_dir)
+        # Run Flow
+        flow_model = flow(exe_name=exe_name_mf,
+                          model_ws=results_dir,
+                          grid_dir=grid_dir,
+                          hk_array=hk_array, xy_dummy=xy_dummy)
+        # Run Transport
+        if flow_model:  # If flow simulation succeeds
+            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            # Run Modpath
+            end_points = backtrack(flow_model, exe_name_mp)
+            # Compute particle delineation to compute signed distance later on
+            delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
+            pzs = end_points[delineation]  # x-y coordinates protection zone
+            np.save(jp(results_dir, 'pz'), pzs)  # Save those
+            # Deletes everything except final results
+            hl = (time.time()-start_fwd)//60
+            print(f'done in {hl} min')
+            if not folder:
+                fops.keep_essential(results_dir)
+        else:
+            shutil.rmtree(results_dir)
+            print(f'terminated f{res_dir}')
     else:
-        shutil.rmtree(results_dir)
+        print(f'pass {res_dir}')
 
 
 def main():
@@ -94,6 +103,7 @@ def main():
     n_cpu = mp.cpu_count()//2 + 1
     pool = mp.Pool(n_cpu)
 
+    # List directories in forwards folder
     listme = os.listdir(MySetup.Directories.hydro_res_dir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
 
