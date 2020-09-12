@@ -2,3 +2,4 @@
 !*.py
 !*.npy
 !*.sgems
+!*.pkl
