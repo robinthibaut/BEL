@@ -342,13 +342,14 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     headobj = bf.HeadFile(jp(model_ws, '{}.hds'.format(model_name)))  # Create the headfile and budget file objects
     times = headobj.get_times()
-
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
     if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top,
         # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         # TODO: optimize this
+        model = None
+    if head.min() == -1e+30:
         model = None
 
     return model

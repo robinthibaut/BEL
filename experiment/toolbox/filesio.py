@@ -23,16 +23,19 @@ def datread(file=None, start=0, end=None):
     return op
 
 
-def folder_reset(folder):
+def folder_reset(folder, exceptions=None):
     """Deletes files out of folder"""
+    if not isinstance(exceptions, (list, tuple)):
+        exceptions = [exceptions]
     try:
         for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+            if filename not in exceptions:
+                file_path = os.path.join(folder, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
     except FileNotFoundError:
         pass
 
@@ -107,16 +110,28 @@ def remove_sd(res_tree):
             os.remove(jp(r, 'sd.npy'))
 
 
-def remove_incomplete(res_tree):
+def remove_incomplete(res_tree, crit=None):
     """
 
-    :param res_tree: Path directing to the folder containing the directories of results
+    :param res_tree: str: Path directing to the folder containing the directories of results
+    :param crit: str: Name of a file to test against
     :return:
     """
-    for r, d, f in os.walk(res_tree, topdown=False):
-        # Adds the data files to the lists, which will be loaded later
-        if 'bkt.npy' not in f or 'hk.npy' not in f or 'pz.npy' not in f:
-            shutil.rmtree(r)
+
+    if crit is None:
+        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in MySetup.Directories.output_files])
+    else:
+        ck = np.array([os.path.isfile(jp(res_tree, crit))])
+
+    opt = ck.all()
+
+    if not opt:
+        shutil.rmtree(res_tree)
+
+    # for r, d, f in os.walk(res_tree, topdown=False):
+    #     # Adds the data files to the lists, which will be loaded later
+    #     if 'bkt.npy' not in f or 'hk.npy' not in f or 'pz.npy' not in f:
+    #         shutil.rmtree(r)
 
 
 def keep_essential(res_dir):
