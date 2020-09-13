@@ -603,12 +603,14 @@ class Plot:
     def plot_K_field(self, root):
         # HK field
         matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'hk0.npy'))
-        extent = (self.xlim[0], self.xlim[1], self.ylim[0], self.ylim[1])
+        grid_dim = MySetup.GridDimensions
+        extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
         plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
-        self.plot_wells()
+        self.plot_wells(markersize=1)
         plt.colorbar()
         plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.png'),
                     bbox_inches='tight', dpi=300, transparent=True)
+        plt.close()
 
     @staticmethod
     def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):
