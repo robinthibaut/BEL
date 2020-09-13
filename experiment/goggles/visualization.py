@@ -811,7 +811,7 @@ class Plot:
             # Cut desired number of PC components
             h_pco.pca_test_transformation(h_pred, test_root=[root])
             h_pco.pca_refresh(hnc0)
-            mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=base_dir)
+            mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=jp(base_dir, 'roots_whpa'))
 
         # d
         if data:
