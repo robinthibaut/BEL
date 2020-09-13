@@ -241,14 +241,14 @@ if __name__ == '__main__':
         os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6]]
-    rt, ro = main(comb=wells,
-                  flag_base=True,
-                  n_predictor=10,
-                  roots_obs=[pot_obs[0]])
+    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    # rt, ro = main(comb=wells,
+    #               flag_base=True,
+    #               n_predictor=10,
+    #               roots_obs=pot_obs[:40])
     # Value info
-    # forecast_dir = MySetup.Directories.forecasts_dir
-    # listit = os.listdir(forecast_dir)
-    # listit.remove('base')
-    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    # value_info(duq)
+    forecast_dir = MySetup.Directories.forecasts_dir
+    listit = os.listdir(forecast_dir)
+    listit.remove('base')
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    value_info(duq)
