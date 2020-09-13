@@ -150,7 +150,8 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
 
-def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=None, to_swap=None, roots_obs=None):
+def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_training=None, to_swap=None,
+         roots_obs=None):
     """
 
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -235,17 +236,24 @@ def main(comb=None, n_cut=200, n_predictor=50, flag_base=False, roots_training=N
 
 if __name__ == '__main__':
     # List directories in forwards folder
-    listme = os.listdir(MySetup.Directories.hydro_res_dir)
+    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
 
-    pot_obs = [f for f in listme if os.path.exists(
-        os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
+    # listme = os.listdir(MySetup.Directories.hydro_res_dir)
+    # pot_obs = [f for f in listme if os.path.exists(
+    #     os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
+
+    training_roots = filesio.datread(os.path.join(base_dir, 'roots.dat'))
+    training_roots = [item for sublist in training_roots for item in sublist]
+
+    test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
+    test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    # rt, ro = main(comb=wells,
-    #               flag_base=True,
-    #               n_predictor=10,
-    #               roots_obs=pot_obs[:40])
+    rt, ro = main(comb=wells,
+                  flag_base=False,
+                  roots_training=training_roots,
+                  roots_obs=test_roots)
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)

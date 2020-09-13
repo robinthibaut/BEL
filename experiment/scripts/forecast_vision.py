@@ -4,7 +4,7 @@ import os
 
 from experiment.base.inventory import MySetup
 from experiment.goggles.visualization import Plot
-from experiment.toolbox.filesio import datread, empty_figs
+from experiment.toolbox.filesio import datread
 
 
 if __name__ == '__main__':

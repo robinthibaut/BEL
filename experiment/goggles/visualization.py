@@ -301,6 +301,19 @@ class Plot:
                 plt.show()
                 plt.close()
 
+    def plot_wells(self):
+        comb = [0] + list(self.wels.combination)
+        keys = [list(self.wels.wels_data.keys())[i] for i in comb]
+        wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
+        for n, i in enumerate(wbd):
+            if n == 0:
+                label = 'pw'
+            else:
+                label = f'{n}'
+            plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
+                     f'{wbd[i]["color"]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
+                     label=label)
+
     def whp(self,
             h=None,
             alpha=0.4,
@@ -354,20 +367,7 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            comb = [0] + list(self.wels.combination)
-            keys = [list(self.wels.wels_data.keys())[i] for i in comb]
-            wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
-            # Get pumping well coordinates
-            # pwl = wbd['pumping0']['coordinates']
-            # plt.plot(pwl[0], pwl[1], 'wo', label='pw')
-            for n, i in enumerate(wbd):
-                if n == 0:
-                    label = 'pw'
-                else:
-                    label = f'{n}'
-                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                         f'{wbd[i]["color"]}o', markersize=4, markeredgecolor='k', markeredgewidth=.5,
-                         label=label)
+            self.plot_wells()
             plt.legend(fontsize=8)
 
         # Plot limits
@@ -599,6 +599,14 @@ class Plot:
                             h_true=h[0],
                             show_wells=True,
                             fig_file=ff)
+
+        # HK field
+        matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'hk0.npy'))
+        extent = (self.xlim[0], self.xlim[1], self.ylim[0], self.ylim[1])
+        plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+        self.plot_wells()
+        plt.colorbar()
+        plt.savefig(jp(md, 'k_field.png'), bbox_inches='tight', dpi=300, transparent=True)
 
     @staticmethod
     def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):
