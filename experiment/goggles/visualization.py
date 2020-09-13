@@ -682,7 +682,7 @@ class Plot:
                 explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
 
     @staticmethod
-    def cca_vision(root, folders=None):
+    def cca_vision(root: str = None, folders=None):
         """
         Loads CCA pickles and plots components for all folders
         :param root:
@@ -751,7 +751,7 @@ class Plot:
             plt.close()
 
     @staticmethod
-    def plot_whpa(root=None):
+    def plot_whpa(root: str = None):
         """
         Loads target pickle and plots all training WHPA
         :param root:
@@ -781,9 +781,9 @@ class Plot:
                       fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
 
     @staticmethod
-    def plot_pc_ba(root, data=False, target=False):
+    def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
         """
-
+        Comparison between original variables and the same variables back-transformed with n PCA components.
         :param root:
         :param data:
         :param target:
