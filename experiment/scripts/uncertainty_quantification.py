@@ -55,6 +55,7 @@ def value_info(root):
     plt.ylabel('Opposite deviation from mode\'s mean')
     plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.png'), dpi=300, transparent=True)
+    plt.close()
     # plt.show()
 
     # Plot histogram
@@ -66,6 +67,7 @@ def value_info(root):
     plt.legend(wid)
     plt.grid(alpha=0.2)
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.png'), dpi=300, transparent=True)
+    plt.close()
     # plt.show()
 
     # %% Facet histograms
@@ -250,10 +252,10 @@ if __name__ == '__main__':
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro = main(comb=wells,
-                  flag_base=False,
-                  roots_training=training_roots,
-                  roots_obs=test_roots)
+    # rt, ro = main(comb=wells,
+    #               flag_base=False,
+    #               roots_training=training_roots,
+    #               roots_obs=test_roots)
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
