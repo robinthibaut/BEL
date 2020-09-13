@@ -80,7 +80,7 @@ def simulation(folder=None):
                           hk_array=hk_array, xy_dummy=xy_dummy)
         # Run Transport
         if flow_model:  # If flow simulation succeeds
-            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=True)
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
@@ -118,7 +118,7 @@ def main(n_sim=None):
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation('0ad0d4f2c96a4546935a64bdcfb85047')
-    main(50)
+    simulation('6a4d614c838442629d7a826cc1f498a8')
+    # main(50)
     end = time.time()
     print(f'TET (min) {(end - start) // 60}')

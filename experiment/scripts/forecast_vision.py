@@ -12,7 +12,7 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    roots = samples
+    roots = [samples[0]]
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -25,6 +25,7 @@ if __name__ == '__main__':
         # empty_figs(sample)
         # ['123456', '1', '2', '3', '4', '5', '6']
         wells = ['123456', '1', '2', '3', '4', '5', '6']
+        mplot.plot_K_field(sample)
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
