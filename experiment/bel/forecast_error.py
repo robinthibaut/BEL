@@ -123,11 +123,11 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        self.forecast_posterior = self.po.random_sample(pca_d=self.d_pco,
-                                                        pca_h=self.h_pco,
-                                                        cca_obj=self.cca_operator,
-                                                        n_posts=self.n_posts,
-                                                        add_comp=False)
+        self.forecast_posterior = self.po.bel_predict(pca_d=self.d_pco,
+                                                      pca_h=self.h_pco,
+                                                      cca_obj=self.cca_operator,
+                                                      n_posts=self.n_posts,
+                                                      add_comp=False)
 
         # Get the true array of the prediction
         # Prediction set - PCA space

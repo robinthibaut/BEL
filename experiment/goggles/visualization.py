@@ -123,6 +123,9 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
+    #
+    post_obj = joblib.load(jp(os.path.dirname(sdir), 'obj', 'post.pkl'))
+    #
 
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
@@ -151,6 +154,11 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
+            # Plot predicted canonical variate mean
+            plt.plot(d_cca_prediction[comp_n], post_obj.posterior_mean[comp_n],
+                     'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
+                     label='{}'.format(sample_n))
+
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
         plt.xlabel('d')
@@ -587,11 +595,11 @@ class Plot:
                 f'cca_{cca_operator.n_components}.png')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
-        forecast_posterior = post_obj.random_sample(pca_d=d_pco,
-                                                    pca_h=h_pco,
-                                                    cca_obj=cca_operator,
-                                                    n_posts=MySetup.Forecast.n_posts,
-                                                    add_comp=False)
+        forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
+                                                  pca_h=h_pco,
+                                                  cca_obj=cca_operator,
+                                                  n_posts=MySetup.Forecast.n_posts,
+                                                  add_comp=False)
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         self.whp(h_training, lw=.2, alpha=.5, colors='gray', show=False)
@@ -713,7 +721,7 @@ class Plot:
         for f in folders:
             res_dir = os.path.join(subdir, f, 'obj')
             # Load objects
-            f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+            f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
             cca_operator, d_pco = list(map(joblib.load, f_names))
             h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 

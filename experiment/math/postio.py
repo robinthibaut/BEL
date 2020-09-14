@@ -160,7 +160,16 @@ class PosteriorIO:
 
         return forecast_posterior
 
-    def random_sample(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
+    def random_sample(self, n_posts):
+        # Draw n_posts random samples from the multivariate normal distribution :
+        # Pay attention to the transpose operator
+        np.random.seed(self.seed)
+        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
+                                                         cov=self.posterior_covariance,
+                                                         size=n_posts).T
+        return h_posts_gaussian
+
+    def bel_predict(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
         """
 
         :param pca_d: PCA object for observation
@@ -204,12 +213,7 @@ class PosteriorIO:
 
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
-        # Draw n_posts random samples from the multivariate normal distribution :
-        # Pay attention to the transpose operator
-        np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
-                                                         cov=self.posterior_covariance,
-                                                         size=n_posts).T
+        h_posts_gaussian = self.random_sample(n_posts)
 
         # Back-transform
         forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,

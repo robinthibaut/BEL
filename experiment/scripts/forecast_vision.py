@@ -19,18 +19,17 @@ if __name__ == '__main__':
     mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
 
     # mplot.plot_pc_ba(roots[0], data=True, target=True)
+    # ['123456', '1', '2', '3', '4', '5', '6']
 
     for sample in roots:
         print(f'Plotting root {sample}')
-        mplot.plot_pc_ba(root=sample, data=True, target=True)
-        # empty_figs(sample)
-        # ['123456', '1', '2', '3', '4', '5', '6']
+        # mplot.plot_pc_ba(root=sample, data=True, target=True)
         wells = ['123456', '1', '2', '3', '4', '5', '6']
-        mplot.plot_K_field(sample)
-        for w in wells:
-            print(f'Plotting well {w}')
-            mplot.plot_results(root=sample, folder=w)
-        mplot.plot_whpa(sample)
+        # mplot.plot_K_field(sample)
+        # for w in wells:
+        #     print(f'Plotting well {w}')
+        #     mplot.plot_results(root=sample, folder=w)
+        # mplot.plot_whpa(sample)
         mplot.cca_vision(sample, folders=wells)
-        mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=wells)
+        # mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=wells)
 
