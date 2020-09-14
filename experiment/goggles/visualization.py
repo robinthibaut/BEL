@@ -230,7 +230,7 @@ class Plot:
         self.x, self.y = np.meshgrid(
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
-        # self.cols = self.wels.wels_data
+
         wells_id = list(self.wels.wels_data.keys())
         self.cols = [self.wels.wels_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
