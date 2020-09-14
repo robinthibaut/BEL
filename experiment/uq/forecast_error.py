@@ -94,9 +94,6 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
-        # TODO: Get rid of sample number
-        self.sample_n = 0  # This class used to take into account multiple observations, now this parameter remains
-        # fixed to 0.
         self.n_posts = self.base.Forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
@@ -108,15 +105,12 @@ class UncertaintyQuantification:
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None):
+    def sample_posterior(self, n_posts=None):
         """
         Extracts n random samples from the posterior
-        :param sample_n: int: Sample identifier
         :param n_posts: int: Desired number of samples
         :return:
         """
-        if sample_n is not None:
-            self.sample_n = sample_n
 
         if n_posts is not None:
             self.n_posts = n_posts
@@ -133,11 +127,6 @@ class UncertaintyQuantification:
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
 
-        # Prediction set - physical space
-        # self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
-        #
-        # np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
-
     # %% extract 0 contours
     def c0(self, write_vtk=1):
         """
@@ -146,7 +135,7 @@ class UncertaintyQuantification:
         """
         self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
         if write_vtk:
-            vdir = jp(self.fig_pred_dir, '{}_vtk'.format(self.sample_n))
+            vdir = jp(self.fig_pred_dir, 'vtk')
             fops.dirmaker(vdir)
             for i, v in enumerate(self.vertices):
                 nv = len(v)
@@ -234,21 +223,6 @@ class UncertaintyQuantification:
         z[inside] = score
         z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
-        # Plot KDE
-        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-        #                alpha=1,
-        #                lw=1,
-        #                show_wells=True,
-        #                colors='red',
-        #                show=False)
-        # mpkde.whp(bkg_field_array=z,
-        #           vmin=None,
-        #           vmax=None,
-        #           cmap='RdGy',
-        #           colors='red',
-        #           fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
-        #           show=True)
-
         return z
 
     # %% New approach : stack binary WHPA
@@ -265,26 +239,6 @@ class UncertaintyQuantification:
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
-
-        # a measure of the error could be a measure of the area covered by the n samples.
-        # error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
-
-        # Display result
-        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-        #                alpha=1,
-        #                lw=1,
-        #                show_wells=False,
-        #                colors='red',
-        #                show=False)
-        #
-        # mpbin.whp(bkg_field_array=b_low,
-        #           show_wells=True,
-        #           vmin=None,
-        #           vmax=None,
-        #           cmap='RdGy',
-        #           fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
-        #           title=str(error_estimate),
-        #           show=True)
 
         # Save result
         np.save(jp(self.res_dir, 'bin'), b_low)
