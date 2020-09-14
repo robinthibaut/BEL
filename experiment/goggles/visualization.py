@@ -124,7 +124,8 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
 
     cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
     #
-    post_obj = joblib.load(jp(os.path.dirname(sdir), 'obj', 'post.pkl'))
+    # post_obj = joblib.load(jp(os.path.dirname(sdir), 'obj', 'post.pkl'))
+    # h_samples = post_obj.random_sample()
     #
 
     # CCA plots for each observation:
@@ -155,9 +156,9 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
             # Plot predicted canonical variate mean
-            plt.plot(d_cca_prediction[comp_n], post_obj.posterior_mean[comp_n],
-                     'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
-                     label='{}'.format(sample_n))
+            # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
+            #          'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
+            #          label='{}'.format(sample_n))
 
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)

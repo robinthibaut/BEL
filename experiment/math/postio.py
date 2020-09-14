@@ -5,6 +5,7 @@ from os.path import join as jp
 import joblib
 import numpy as np
 
+from experiment.base.inventory import MySetup
 from experiment.processing.predictions import TargetIO
 
 
@@ -14,6 +15,7 @@ class PosteriorIO:
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
+        self.n_posts = None
         self.ops = TargetIO()
         self.directory = directory
 
@@ -160,7 +162,9 @@ class PosteriorIO:
 
         return forecast_posterior
 
-    def random_sample(self, n_posts):
+    def random_sample(self, n_posts=None):
+        if n_posts is None:
+            n_posts = self.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
@@ -211,15 +215,20 @@ class PosteriorIO:
             if self.seed is None:
                 self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
 
+            if n_posts is None:
+                self.n_posts = MySetup.Forecast.n_posts
+            else:
+                self.n_posts = n_posts
+
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
-        h_posts_gaussian = self.random_sample(n_posts)
+        h_posts_gaussian = self.random_sample(self.n_posts)
 
         # Back-transform
         forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,
                                                  cca_obj=cca_obj,
                                                  pca_h=pca_h,
-                                                 n_posts=n_posts,
+                                                 n_posts=self.n_posts,
                                                  add_comp=add_comp)
 
         return forecast_posterior
