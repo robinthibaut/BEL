@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 
 from experiment.base.inventory import MySetup
-from experiment.processing.predictions import TargetIO
+from experiment.processing.target import TargetIO
 
 
 class PosteriorIO:

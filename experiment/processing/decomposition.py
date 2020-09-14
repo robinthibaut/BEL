@@ -25,7 +25,7 @@ import numpy as np
 from sklearn.cross_decomposition import CCA
 
 import experiment.goggles.visualization as plot
-import experiment.processing.examples as dops
+import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
