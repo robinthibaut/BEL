@@ -260,9 +260,9 @@ if __name__ == '__main__':
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    # rt, ro = main(comb=wells,
-    #               flag_base=True,
-    #               to_swap=['6a4d614c838442629d7a826cc1f498a8'])
+    rt, ro = main(comb=wells,
+                  flag_base=False,
+                  to_swap=['6a4d614c838442629d7a826cc1f498a8'])
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
