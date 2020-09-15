@@ -310,18 +310,28 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def plot_wells(self, markersize: float = 4):
-        comb = [0] + list(self.wels.combination)
+    def plot_wells(self, well_ids=None, markersize: float = 4):
+
+        if well_ids is None:
+            comb = [0] + list(self.wels.combination)
+        else:
+            comb = well_ids
+        # comb = [0] + list(self.wels.combination)
+        # comb = [0] + list(self.wels.combination)
         keys = [list(self.wels.wels_data.keys())[i] for i in comb]
         wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
-        for n, i in enumerate(wbd):
+        s = 0
+        for i in wbd:
+            n = comb[s]
             if n == 0:
                 label = 'pw'
             else:
                 label = f'{n}'
-            plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                     f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
-                     label=label)
+            if n in comb:
+                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
+                         f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
+                         label=label)
+            s+=1
 
     def whp(self,
             h=None,
@@ -335,6 +345,7 @@ class Plot:
             cmap='coolwarm',
             colors='white',
             show_wells=False,
+            well_ids=None,
             title=None,
             fig_file=None,
             show=False):
@@ -376,7 +387,7 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            self.plot_wells()
+            self.plot_wells(well_ids=well_ids, markersize=7)
             plt.legend(fontsize=8)
 
         # Plot limits
@@ -410,12 +421,14 @@ class Plot:
                        bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
+                       well_ids=None,
                        title=None,
                        show=False):
 
         # Plot n forecasts sampled
         self.whp(h=forecasts,
                  show_wells=show_wells,
+                 well_ids=well_ids,
                  bkg_field_array=bkg_field_array,
                  title=title)
 
@@ -587,7 +600,7 @@ class Plot:
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
-        self.whp(h_training, alpha=.2, show=False)
+        self.whp(h_training, alpha=.2)
         self.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
 
         # WHPs
@@ -603,10 +616,10 @@ class Plot:
                                                   add_comp=False)
 
         # I display here the prior h behind the forecasts sampled from the posterior.
-        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show=False)
+        well_ids = [0] + list(map(int, list(folder)))
+        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show_wells=True, well_ids=well_ids, show=False)
         self.whp_prediction(forecasts=forecast_posterior,
                             h_true=h[0],
-                            show_wells=True,
                             fig_file=ff)
 
     def plot_K_field(self, root):
