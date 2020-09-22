@@ -15,12 +15,10 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 """
 
 import os
-import uuid
 import warnings
 from os.path import join as jp
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
@@ -79,7 +77,8 @@ def base_pca(base,
 
         if check:
             # Load parameters:
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)  # Initiate Plot instance
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)  # Initiate Plot
+            # instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):

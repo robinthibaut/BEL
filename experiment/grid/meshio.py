@@ -21,7 +21,7 @@ def blockshaped(arr, nrows, ncols):
             .reshape(-1, nrows, ncols))
 
 
-def refine_axis(widths, r_pt, ext, cnd, d_dim, a_lim):
+def refine_axis(widths: list, r_pt, ext, cnd, d_dim, a_lim):
     # TODO: write better documentation for this
     x0 = widths
     x0s = np.cumsum(x0)  # Cumulative sum of the width of the cells
