@@ -56,13 +56,11 @@ def base_pca(base,
         # pzs = WHPA
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
+        tc = dops.d_process(tc0=tc0)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
-        # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-        d_pco.ncomp = 50
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -90,8 +88,6 @@ def base_pca(base,
                        fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
 
-            # return
-
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
@@ -112,7 +108,7 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def bel(base, wel_comb=None, training_roots=None, test_root=None):
+def bel(base, wel_comb: list = None, training_roots: list = None, test_root: list = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -166,7 +162,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
@@ -188,7 +184,6 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.pca_training_transformation()
-    # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
     # TODO: Save ncomp, n_time_steps in Inventory
     d_pco.ncomp = 50

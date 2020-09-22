@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 
 class PCAIO:
     # TODO: add properties
-    def __init__(self, name, training=None, roots=None, directory=None):
+    def __init__(self, name: str, training=None, roots: list = None, directory: str = None):
         """
         Given a set of training data and one observation (optional), performs necessary dimension reduction
         and transformations.
@@ -28,7 +28,7 @@ class PCAIO:
         self.roots = roots  # Name of training roots
 
         self.training_shape = training.shape  # Original shape of dataset
-        self.obs_shape = None # Original shape of observation
+        self.obs_shape = None  # Original shape of observation
 
         self.operator = None  # PCA operator (scikit-learn instance)
         self.ncomp = None  # Number of components to keep
@@ -53,12 +53,11 @@ class PCAIO:
         self.operator.fit(self.training_physical)  # Principal components
 
         # Transform training data into principal components
-        pc_training = self.operator.transform(self.training_physical)
-        self.training_pc = pc_training
+        self.training_pc = self.operator.transform(self.training_physical)
 
-        return pc_training
+        return self.training_pc
 
-    def pca_test_transformation(self, test, test_root):
+    def pca_test_transformation(self, test, test_root: list):
         """
         Transforms observation to PC scores.
         :param test: np.array: Observation array
@@ -78,29 +77,27 @@ class PCAIO:
 
         return pc_prediction
 
-    def n_pca_components(self, perc):
+    def n_pca_components(self, perc: float):
         """
         Given an explained variance percentage, returns the number of components
         necessary to obtain that level.
         :param perc: float: Percentage between 0 and 1
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
-        nc = len(np.where(evr <= perc)[0])
+        self.ncomp = len(np.where(evr <= perc)[0])
 
-        self.ncomp = nc
+        return self.ncomp
 
-        return nc
-
-    def perc_pca_components(self, n_c):
+    def perc_pca_components(self, n_c: int):
         """
         Returns the explained variance percentage given a number of components n_c.
-        :param n_c: int: Number of conponents to keep
+        :param n_c: int: Number of components to keep
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
 
         return evr[n_c - 1]
 
-    def pca_refresh(self, n_comp=None):
+    def pca_refresh(self, n_comp: int = None):
         """
         Given a number of components to keep, returns the PC array with the corresponding shape.
         :param n_comp: int: Number of components
@@ -121,11 +118,11 @@ class PCAIO:
         else:
             return pc_training
 
-    def pc_random(self, n_posts):
+    def pc_random(self, n_posts: int):
         """
-        Randomly selects PC components from the original training matrix dtp
+        Randomly selects PC components from the original training matrix.
         :param n_posts: int: Number of random PC to use
-        :return np.array: Random scores
+        :return np.array: Random PC scores
         """
         r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the training array
         score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
@@ -136,7 +133,7 @@ class PCAIO:
 
         return np.array(test)
 
-    def inverse_transform(self, pc_to_invert, n_comp=None):
+    def inverse_transform(self, pc_to_invert, n_comp: int = None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
@@ -147,13 +144,13 @@ class PCAIO:
         if n_comp is None:
             n_comp = self.ncomp
         # TODO: double check
-        inv = np.dot(pc_to_invert, self.operator.components_[:pc_to_invert.shape[1], :]) + self.operator.mean_
+        inv = np.dot(pc_to_invert, self.operator.components_[:n_comp, :]) + self.operator.mean_
 
         return inv
 
     def reset_(self):
         """
-        Deletes (resets) the observation properties
+        Deletes (resets) the observation properties in the object.
         """
         self.predict_pc = None
         self.predict_physical = None
