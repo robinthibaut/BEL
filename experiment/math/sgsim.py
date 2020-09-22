@@ -40,7 +40,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None):
     # %% Load hard data point set
 
     data_dir = grid_dir
-    dataset = 'wels.eas'
+    dataset = 'wells.eas'
     file_path = jp(data_dir, dataset)
 
     hd = PointSet(project=pjt, pointset_path=file_path)

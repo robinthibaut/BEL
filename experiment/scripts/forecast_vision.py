@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
-    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
+    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 

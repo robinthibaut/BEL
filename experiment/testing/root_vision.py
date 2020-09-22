@@ -9,7 +9,7 @@ from experiment.toolbox import filesio as fops
 
 x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
 # Initiate Plot instance
-mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wells.combination)
+mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)
 
 tc0, sd, r = fops.data_loader(res_dir=base.Directories.hydro_res_dir,
                               roots=['1d596ce96cbd4b1681bc4423253f40e2'],

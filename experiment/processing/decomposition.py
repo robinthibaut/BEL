@@ -79,7 +79,7 @@ def base_pca(base,
 
         if check:
             # Load parameters:
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wells.combination)  # Initiate Plot instance
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)  # Initiate Plot instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):

@@ -55,7 +55,7 @@ class UncertaintyQuantification:
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
-        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, wel_comb=self.wel_comb)
+        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, well_comb=self.wel_comb)
 
         # Directories & files paths
         md = self.base.Directories()
@@ -229,7 +229,7 @@ class UncertaintyQuantification:
         """
         # For this approach we use our SignedDistance module
         sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, wel_comb=self.wel_comb)  # Initiate Plot tool
+        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]

@@ -312,14 +312,14 @@ class ModelVTK:
     # %% Export wells objects as vtk
 
     def wels_vtk(self):
-        """Exports wels coordinates to VTK"""
+        """Exports wells coordinates to VTK"""
 
         wbd = self.base.Wells().wells_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z
 
-        # Export wels as VTK points
+        # Export wells as VTK points
         points = vtk.vtkPoints()  # Points
         ids = [points.InsertNextPoint(w) for w in wels]  # Points IDS
         welArray = vtk.vtkCellArray()  # Vertices
@@ -331,5 +331,5 @@ class ModelVTK:
         # Save objects
         writer = vtk.vtkXMLPolyDataWriter()
         writer.SetInputData(welPolydata)
-        writer.SetFileName(jp(self.vtk_dir, 'wels.vtp'))
+        writer.SetFileName(jp(self.vtk_dir, 'wells.vtp'))
         writer.Write()
