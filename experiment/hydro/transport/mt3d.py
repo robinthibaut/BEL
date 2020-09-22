@@ -10,13 +10,12 @@ import flopy
 import numpy as np
 
 
-def transport(modflowmodel, exe_name, grid_dir, save_ucn=False):
+def transport(modflowmodel, exe_name: str, grid_dir: str, save_ucn: bool = False):
     """
-
-    :param save_ucn: Flag to save UCN files
-    :param grid_dir: Directory containing discretization information
     :param modflowmodel: flopy modflow model object
     :param exe_name: Path to executable file
+    :param grid_dir: Directory containing discretization information
+    :param save_ucn: Flag to save UCN files
     :return:
     """
 
@@ -105,7 +104,7 @@ def transport(modflowmodel, exe_name, grid_dir, save_ucn=False):
     ttsmult = 1.0  # The multiplier for successive transport steps within a flow time-step if the GCG solver is used
     # and the solution option for the advection term is the standard finite-difference method. (default is 1.0)
     ttsmax = 0
-    species_names = ['c{}'.format(c + 1) for c in range(ncomp)]
+    species_names = [f'c{c+1}' for c in range(ncomp)]
     extension = 'btn'
     unitnumber = None
     filenames = None
