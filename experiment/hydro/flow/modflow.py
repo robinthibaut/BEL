@@ -152,14 +152,14 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
         for xc in ncd1[1]:
             xy_true.append([xc, yc])
 
-    def make_well(wel_name):
+    def make_well(well_name):
         """
         Produce well stress period data readable by modflow
-        :param wel_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
+        :param well_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         :return:
         """
-        iw = [0, wcd.wells_data[wel_name]['coordinates'][0], wcd.wells_data[wel_name]['coordinates'][1]]
-        iwr = wcd.wells_data[wel_name]['rates']  # Well rate for the defined time periods
+        iw = [0, wcd.wells_data[well_name]['coordinates'][0], wcd.wells_data[well_name]['coordinates'][1]]
+        iwr = wcd.wells_data[well_name]['rates']  # Well rate for the defined time periods
         iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
@@ -172,10 +172,10 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
 
     # %% ModflowWel
 
-    wel_stress_period_data = {}
+    well_stress_period_data = {}
 
     for sp in range(nper):
-        wel_stress_period_data[sp] = np.array(spd)[:, sp]
+        well_stress_period_data[sp] = np.array(spd)[:, sp]
 
     # stress_period_data =
     # {
@@ -185,7 +185,7 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
     # }
 
     flopy.modflow.ModflowWel(model=model,
-                             stress_period_data=wel_stress_period_data)
+                             stress_period_data=well_stress_period_data)
 
     # %% ModflowBas
 
@@ -341,14 +341,13 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
 
     # %% Checking flow results
 
-    headobj = bf.HeadFile(jp(model_ws, '{}.hds'.format(model_name)))  # Create the headfile and budget file objects
+    headobj = bf.HeadFile(jp(model_ws, f'{model_name}.hds'))  # Create the headfile and budget file objects
     times = headobj.get_times()
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
     if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top,
         # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
-        # TODO: optimize this
         model = None
     if head.min() == -1e+30:
         model = None
