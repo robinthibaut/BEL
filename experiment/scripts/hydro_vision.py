@@ -17,7 +17,7 @@ if __name__ == '__main__':
     mi.transport_vtk()
     mi.conc_vtk()
     mi.particles_vtk(path=1)
-    mi.wels_vtk()
+    mi.wells_vtk()
 
 
 

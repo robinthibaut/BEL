@@ -7,7 +7,8 @@ from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
 
 
-def datread(file=None, header=0):
+def datread(file=None,
+            header=0):
     """Reads space separated dat file"""
     with open(file, 'r') as fr:
         op = np.array([list(map(float, i.split())) for i in fr.readlines()[header:]], dtype=object)
@@ -57,7 +58,8 @@ def tsp(xy):
 
     distance_matrix = compute_euclidean_distance_matrix(data['locations'])
 
-    def distance_callback(from_index, to_index):
+    def distance_callback(from_index,
+                          to_index):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)

@@ -10,6 +10,7 @@ import numpy as np
 import vtk
 from flopy.export import vtk as vtk_flow
 
+from experiment.base.inventory import MySetup
 import experiment.grid.meshio as mops
 import experiment.toolbox.filesio as fops
 
@@ -58,8 +59,8 @@ class ModelVTK:
             # Transport model
             mt_load = jp(self.results_dir, 'whpa.mtnam')
             self.transport_model = fops.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
-            ucn_files = [jp(self.results_dir, 'MT3D00{}.UCN'.format(i)) for i in
-                         range(1, 7)]  # Files containing concentration
+            ucn_files = [jp(self.results_dir, f'MT3D00{i}.UCN') for i in
+                         MySetup.Wells.combination]  # Files containing concentration
             ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
             self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
             self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
@@ -110,16 +111,6 @@ class ModelVTK:
                 dic_conc['conc_wel_{}'.format(i)] = cflip
                 array += cflip  # Stack all components
             dic_conc['stack'] = array
-            # Use meshio to export the mesh
-            # meshio.write_points_cells(
-            #     jp(conc_dir, 'cstack_{}.vtk'.format(j)),
-            #     blocks3d,
-            #     cells,
-            #     # Optionally provide extra data on points, cells, etc.
-            #     # point_data=point_data,
-            #     cell_data=dic_conc,
-            #     # field_data=field_data
-            # )
 
     def conc_vtk(self):
         """Stack component concentrations for each time step and save vtk"""
@@ -311,7 +302,7 @@ class ModelVTK:
 
     # %% Export wells objects as vtk
 
-    def wels_vtk(self):
+    def wells_vtk(self):
         """Exports wells coordinates to VTK"""
 
         wbd = self.base.Wells().wells_data
