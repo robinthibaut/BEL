@@ -125,14 +125,14 @@ class PosteriorIO:
 
     def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
         """
-
+        Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
         :param cca_obj:
         :param pca_h:
         :param n_posts:
         :param add_comp:
         :param save_target_pc:
-        :return:
+        :return: forecast_posterior
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
@@ -175,13 +175,13 @@ class PosteriorIO:
 
     def bel_predict(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
         """
-
+        Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observation
         :param pca_h: PCA object for target
         :param cca_obj: CCA object
         :param n_posts: Number of posteriors to extract
         :param add_comp: Flag to add remaining components
-        :return:
+        :return: forecast_posterior
         """
 
         if self.posterior_mean is None and self.posterior_covariance is None:
@@ -220,11 +220,14 @@ class PosteriorIO:
             else:
                 self.n_posts = n_posts
 
+            # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
+            # This allows to reload this object later on and resample using the same seed.
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
+        # Sample the inferred multivariate gaussian distribution
         h_posts_gaussian = self.random_sample(self.n_posts)
 
-        # Back-transform
+        # Back-transform h posterior to the physical space
         forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,
                                                  cca_obj=cca_obj,
                                                  pca_h=pca_h,

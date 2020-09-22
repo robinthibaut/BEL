@@ -7,7 +7,7 @@ from matplotlib.patches import Polygon
 
 def get_centroids(array, grf: float):
     """
-    Given a (m, n) matrix of cells diemsions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
+    Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
     centroids.
     :param array: (m, n) array
     :param grf: float: Cell dimension
