@@ -15,7 +15,6 @@ import os
 from os.path import join as jp
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
@@ -26,17 +25,15 @@ from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
 from experiment.toolbox import filesio as fops
 
-plt.style.use('dark_background')
-
 
 class UncertaintyQuantification:
 
     def __init__(self,
                  base,
-                 study_folder,
-                 base_dir=None,
-                 wel_comb=None,
-                 seed=None):
+                 study_folder: str,
+                 base_dir: str = None,
+                 wel_comb: list = None,
+                 seed: int = None):
         """
 
         :param base: class: Base object (inventory)
@@ -104,10 +101,10 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-    # %% Random sample from the posterior
-    def sample_posterior(self, n_posts=None):
+# %% Random sample from the posterior
+    def sample_posterior(self, n_posts: int = None):
         """
-        Extracts n random samples from the posterior
+        Extracts n_posts random samples from the posterior.
         :param n_posts: int: Desired number of samples
         :return:
         """
@@ -127,8 +124,8 @@ class UncertaintyQuantification:
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
 
-    # %% extract 0 contours
-    def c0(self, write_vtk=1):
+# %% extract 0 contours
+    def c0(self, write_vtk: bool = 1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
@@ -155,10 +152,10 @@ class UncertaintyQuantification:
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(poly_data)
 
-                writer.SetFileName(jp(vdir, 'forecast_posterior_{}.vtp'.format(i)))
+                writer.SetFileName(jp(vdir, f'forecast_posterior_{i}.vtp'))
                 writer.Write()
 
-    # %% Kernel density
+# %% Kernel density
     def kernel_density(self):
         # Scatter plot vertices
         # nn = sample_n
@@ -225,7 +222,7 @@ class UncertaintyQuantification:
 
         return z
 
-    # %% New approach : stack binary WHPA
+# %% New approach : stack binary WHPA
     def binary_stack(self):
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
@@ -243,7 +240,7 @@ class UncertaintyQuantification:
         # Save result
         np.save(jp(self.res_dir, 'bin'), b_low)
 
-    #  Let's try Hausdorff...
+# %% Hausdorff
     def mhd(self):
         """
         Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA
