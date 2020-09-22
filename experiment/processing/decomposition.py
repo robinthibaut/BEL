@@ -32,12 +32,12 @@ from experiment.processing.pca import PCAIO
 
 
 def base_pca(base,
-             base_dir,
-             roots,
-             test_roots,
+             base_dir: str,
+             roots: list,
+             test_roots: list,
              d_pca_obj=None,
              h_pca_obj=None,
-             check=False):
+             check: bool = False):
     """
     Initiate BEL by performing PCA on the training targets or features.
     :param base: class: Base class object
@@ -52,11 +52,11 @@ def base_pca(base,
     if d_pca_obj is not None:
         # Loads the results:
         tc0, _, _ = fops.load_res(roots=roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
@@ -81,7 +81,7 @@ def base_pca(base,
 
         if check:
             # Load parameters:
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wells.combination)  # Initiate Plot instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
@@ -129,7 +129,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if wel_comb is not None:
-        base.Wels.combination = wel_comb
+        base.Wells.combination = wel_comb
 
     # Directories
     md = base.Directories()
@@ -146,7 +146,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    new_dir = ''.join(list(map(str, base.Wels.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -178,7 +178,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
         tc = np.load(tsub)
 
     # %% Select wells:
-    selection = [wc - 1 for wc in base.Wels.combination]
+    selection = [wc - 1 for wc in base.Wells.combination]
     tc = tc[:, selection, :]
 
     # %%  PCA

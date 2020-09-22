@@ -39,7 +39,7 @@ def wel_export():
     # Directories
     md = Directories()
     grid_dir = md.grid_dir
-    wd = Wels().wels_data
+    wd = Wels().wells_data
 
     columns = ['x', 'y', 'hd']  # Save wells data for sgems
     wels_xy = [wd[o]['coordinates'] for o in wd]

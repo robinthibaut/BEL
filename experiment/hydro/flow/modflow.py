@@ -64,8 +64,8 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     nlay = gd.nlay  # Number of layers
 
     # Refinement
-    wcd = MySetup.Wels()
-    pw_d = wcd.wels_data['pumping0']
+    wcd = MySetup.Wells()
+    pw_d = wcd.wells_data['pumping0']
     # Point around which refinement will occur
     pt = pw_d['coordinates']
     # [cell size, extent around pt in m]
@@ -157,13 +157,13 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
         :param wel_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         :return:
         """
-        iw = [0, wcd.wels_data[wel_name]['coordinates'][0], wcd.wels_data[wel_name]['coordinates'][1]]
-        iwr = wcd.wels_data[wel_name]['rates']  # Well rate for the defined time periods
+        iw = [0, wcd.wells_data[wel_name]['coordinates'][0], wcd.wells_data[wel_name]['coordinates'][1]]
+        iwr = wcd.wells_data[wel_name]['rates']  # Well rate for the defined time periods
         iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
 
-    my_wells = [make_well(o) for o in wcd.wels_data]  # Produce well stress period data readable by modflow
+    my_wells = [make_well(o) for o in wcd.wells_data]  # Produce well stress period data readable by modflow
 
     spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 

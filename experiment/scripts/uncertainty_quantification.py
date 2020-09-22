@@ -24,7 +24,7 @@ def value_info(root):
     if not isinstance(root, (list, tuple)):
         root = [root]
 
-    wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
+    wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
 
     for r in root:  # For each root
@@ -233,7 +233,7 @@ def main(comb: list = None,
                      check=False)
 
     if comb is None:
-        comb = MySetup.Wels.combination  # Get default combination (all)
+        comb = MySetup.Wells.combination  # Get default combination (all)
         belcomb = utils.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb

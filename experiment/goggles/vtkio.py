@@ -314,7 +314,7 @@ class ModelVTK:
     def wels_vtk(self):
         """Exports wels coordinates to VTK"""
 
-        wbd = self.base.Wels().wels_data
+        wbd = self.base.Wells().wells_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z

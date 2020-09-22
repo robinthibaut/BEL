@@ -207,7 +207,7 @@ class Plot:
 
         md = MySetup.Directories()
         focus = MySetup.Focus()
-        self.wels = MySetup.Wels()
+        self.wels = MySetup.Wells()
 
         if wel_comb is not None:
             self.wels.combination = wel_comb
@@ -231,8 +231,8 @@ class Plot:
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
 
-        wells_id = list(self.wels.wels_data.keys())
-        self.cols = [self.wels.wels_data[w]['color'] for w in wells_id if 'pumping' not in w]
+        wells_id = list(self.wels.wells_data.keys())
+        self.cols = [self.wels.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
     def contours_vertices(self, arrays, c=0):
         """
@@ -318,8 +318,8 @@ class Plot:
             comb = well_ids
         # comb = [0] + list(self.wels.combination)
         # comb = [0] + list(self.wels.combination)
-        keys = [list(self.wels.wels_data.keys())[i] for i in comb]
-        wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
+        keys = [list(self.wels.wells_data.keys())[i] for i in comb]
+        wbd = {k: self.wels.wells_data[k] for k in keys if k in self.wels.wells_data}
         s = 0
         for i in wbd:
             n = comb[s]
