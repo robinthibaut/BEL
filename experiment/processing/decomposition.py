@@ -51,7 +51,7 @@ def base_pca(base,
     """
     if d_pca_obj is not None:
         # Loads the results:
-        tc0, _, _ = fops.load_res(roots=roots, d=True)
+        tc0, _, _ = fops.data_loader(roots=roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -68,7 +68,7 @@ def base_pca(base,
 
     if h_pca_obj is not None:
         # Loads the results:
-        _, pzs, r = fops.load_res(roots=roots, h=True)
+        _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
         sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
@@ -161,7 +161,7 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
+        tc0, _, _ = fops.data_loader(res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
@@ -189,7 +189,7 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     d_pco.ncomp = 50
     ndo = d_pco.ncomp
     # Load observation (test_root)
-    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_root, d=True)
+    tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
     tcp = tcp[:, selection, :]  # Extract desired observation
@@ -203,7 +203,7 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
     # Load whpa to predict
-    _, pzs, _ = fops.load_res(roots=test_root, h=True)
+    _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])

@@ -558,7 +558,7 @@ class Plot:
         :param root:
         :return:
         """
-        bkt, whpa, _ = filesio.load_res(roots=root)
+        bkt, whpa, _ = filesio.data_loader(roots=root)
         whpa = whpa.squeeze()
         # self.curves_i(bkt, show=True)  # This function will not work
 

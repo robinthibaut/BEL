@@ -11,9 +11,11 @@ import numpy as np
 from experiment.base.inventory import MySetup
 
 
-def datread(file=None, start=0, end=None):
+def datread(file: str = None,
+            start: int = 0,
+            end: int = None):
     # end must be set to None and NOT -1
-    """Reads space separated dat file"""
+    """Reads space-separated dat file"""
     with open(file, 'r') as fr:
         lines = np.copy(fr.readlines())[start:end]
         try:
@@ -23,7 +25,8 @@ def datread(file=None, start=0, end=None):
     return op
 
 
-def folder_reset(folder, exceptions=None):
+def folder_reset(folder: str,
+                 exceptions: list = None):
     """Deletes files out of folder"""
     if not isinstance(exceptions, (list, tuple)):
         exceptions = [exceptions]
@@ -40,8 +43,8 @@ def folder_reset(folder, exceptions=None):
         pass
 
 
-def empty_figs(root):
-    """ Empties figure folders """
+def empty_figs(root: str):
+    """Empties figure folders"""
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
@@ -65,10 +68,10 @@ def empty_figs(root):
         folder_reset(os.path.join(subdir, f, 'cca'))
 
 
-def dirmaker(dird):
+def dirmaker(dird: str):
     """
-    Given a folder path, check if it exists, and if not, creates it
-    :param dird: path
+    Given a folder path, check if it exists, and if not, creates it.
+    :param dird: str: Directory path.
     :return:
     """
     try:
@@ -82,14 +85,37 @@ def dirmaker(dird):
         return 0
 
 
-def load_flow_model(nam_file, exe_name='', model_ws=''):
+def load_flow_model(nam_file: str,
+                    exe_name: str = '',
+                    model_ws: str = ''):
+    """
+    Loads a modflow model.
+    :param nam_file: str: Path to the 'nam' file.
+    :param exe_name: str: Path to the modflow exe file.
+    :param model_ws: str: Working directory.
+    :return:
+    """
     flow_loader = flopy.modflow.mf.Modflow.load
 
     return flow_loader(f=nam_file, exe_name=exe_name, model_ws=model_ws)
 
 
-def load_transport_model(nam_file, modflowmodel, exe_name='', model_ws='', ftl_file='mt3d_link.ftl',
-                         version='mt3d-usgs'):
+def load_transport_model(nam_file: str, modflowmodel,
+                         exe_name: str = '',
+                         model_ws: str = '',
+                         ftl_file: str = 'mt3d_link.ftl',
+                         version: str = 'mt3d-usgs'):
+    """
+    Loads a transport model.
+
+    :param nam_file: str: Path to the 'nam' file.
+    :param modflowmodel: Modflow model object.
+    :param exe_name: str: Path to the mt3d exe file.
+    :param model_ws: str: Working directory.
+    :param ftl_file: str: Path to the 'ftl' file.
+    :param version: str: Mt3dms version.
+    :return:
+    """
     transport_loader = flopy.mt3d.Mt3dms.load
     transport_reloaded = transport_loader(f=nam_file, version=version, modflowmodel=modflowmodel,
                                           exe_name=exe_name, model_ws=model_ws)
@@ -98,10 +124,10 @@ def load_transport_model(nam_file, modflowmodel, exe_name='', model_ws='', ftl_f
     return transport_reloaded
 
 
-def remove_sd(res_tree):
+def remove_sd(res_tree: str):
     """
-
-    :param res_tree: Path directing to the folder containing the directories of results
+    Deletes signed distance file out of sub-folders of folder res_tree.
+    :param res_tree: str: Path directing to the folder containing the directories of results
     :return:
     """
     for r, d, f in os.walk(res_tree, topdown=False):
@@ -110,16 +136,16 @@ def remove_sd(res_tree):
             os.remove(jp(r, 'sd.npy'))
 
 
-def remove_incomplete(res_tree, crit=None):
+def remove_incomplete(res_tree: str, crit: str = None):
     """
 
-    :param res_tree: str: Path directing to the folder containing the directories of results
-    :param crit: str: Name of a file to test against
+    :param res_tree: str: Path directing to the folder containing the directories of results.
+    :param crit: str: Name of a file according to which delete folder if not present in said folder.
     :return:
     """
 
     if crit is None:
-        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in MySetup.Directories.output_files])
+        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in MySetup.Files.output_files])
     else:
         ck = np.array([os.path.isfile(jp(res_tree, crit))])
 
@@ -128,17 +154,11 @@ def remove_incomplete(res_tree, crit=None):
     if not opt:
         shutil.rmtree(res_tree)
 
-    # for r, d, f in os.walk(res_tree, topdown=False):
-    #     # Adds the data files to the lists, which will be loaded later
-    #     if 'bkt.npy' not in f or 'hk.npy' not in f or 'pz.npy' not in f:
-    #         shutil.rmtree(r)
 
-
-def keep_essential(res_dir):
+def keep_essential(res_dir: str):
     """
     Deletes everything in a simulation folder except specific files.
-    :param res_dir: Path to the folder containing results
-    :return:
+    :param res_dir: Path to the folder containing results.
     """
     for the_file in os.listdir(res_dir):
         if not the_file.endswith('.npy') \
@@ -156,26 +176,11 @@ def keep_essential(res_dir):
                 print(e)
 
 
-def remove_bad(res_tree):
-    """
-
-    :param res_tree: Path directing to the folder containing the directories of results
-    :return:
-    """
-    for r, d, f in os.walk(res_tree, topdown=False):
-        # Adds the data files to the lists, which will be loaded later
-        if 'mt3d_link.ftl' in f:
-            if r != res_tree:  # Make sure to not delete the main results directory !
-                print('removed 1 folder')
-                shutil.rmtree(r)
-
-
-def remove_bkt(res_dir):
+def remove_bad_bkt(res_dir: str):
     """
     Loads all breakthrough curves from the results and delete folder in case
     the max computed concentration is > 1.
-    :param res_dir:
-    :return:
+    :param res_dir: str: Path to result directory.
     """
     bkt_files = []  # Breakthrough curves files
     # r=root, d=directories, f = files
@@ -196,12 +201,19 @@ def remove_bkt(res_dir):
         shutil.rmtree(roots[index])
 
 
-def load_res(res_dir=None, roots=None, test_roots=None, d=False, h=False):
+def data_loader(res_dir: str = None,
+                roots: list = None,
+                test_roots: list = None,
+                d: bool = False,
+                h: bool = False):
     """
     Loads results from main results folder.
-    :param test_roots: Specified roots for testing
-    :param roots: Specified roots for training
-    :param res_dir: main directory containing results sub-directories
+
+    :param roots: Specified roots for training.
+    :param test_roots: Specified roots for testing.
+    :param res_dir: main directory containing results sub-directories.
+    :param d: bool: Flag to load predictor.
+    :param h: bool: Flag to load target.
     :return: tp, sd, roots
     """
 
