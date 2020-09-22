@@ -13,18 +13,19 @@ import experiment.grid.meshio as mops
 from experiment.base.inventory import MySetup
 
 
-def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
+def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
     """
     Builds and run customized MODFLOW simulation.
-    :param xy_dummy: [x, y] coordinates of the centers of the cell of the geostatistical simulation grid
-    :param hk_array: Hydraulic conductivity array
     :param exe_name: Path to the executable file.
     :param model_ws: Path to the working directory.
     :param grid_dir: Path to wells data directory.
+    :param hk_array: Hydraulic conductivity array.
+    :param xy_dummy: [x, y] coordinates of the centers of the cell of the geostatistical simulation grid.
+
     :return:
     """
     # Model name
-    model_name = 'whpa'
+    model_name = MySetup.Files.project_name
     # %% Modflow
     model = flopy.modflow.Modflow(modelname=model_name,
                                   namefile_ext='nam',
