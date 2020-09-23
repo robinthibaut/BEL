@@ -10,7 +10,15 @@ class TargetIO:
     def __init__(self):
         self.gaussian_transformers = {}
 
-    def gaussian_distribution(self, original_array, name: str = 'gd'):
+    def gaussian_distribution(self,
+                              original_array,
+                              name: str = 'gd'):
+        """
+
+        :param original_array:
+        :param name:
+        :return:
+        """
         # Ensure Gaussian distribution in original_array Each vector for each original_array components will be
         # transformed one-by-one by a different operator, stored in yj.
         yj = [PowerTransformer(method='yeo-johnson', standardize=True) for _ in range(original_array.shape[0])]

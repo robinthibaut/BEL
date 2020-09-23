@@ -26,35 +26,16 @@ class PosteriorIO:
                                    d_rotations,
                                    d_cca_prediction):
         """
-        Estimating posterior uncertainties.
-
-        Parameters
-        ----------
-        :param h_cca_training_gaussian:
-               Canonical Variate of the training target, Gaussian-distributed
-        :param d_cca_training:
-               Canonical Variate of the training data
-        :param d_pc_training:
-               Principal Components of the training data
-        :param d_rotations:
-               CCA rotations of the training data
-        :param d_cca_prediction:
-               Canonical Variate of the observation
-
-        Returns
-        -------
-        :return: h_mean_posterior, h_posterior_covariance
-
-        Raises
-        ------
-        ValueError
-            An exception is thrown if the shape of input arrays are not consistent.
-
-        References
-        ----------
+        Estimating posterior mean and covariance of the target.
         .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
                SIAM, 2005. Pages: 70-71
-
+        :param h_cca_training_gaussian: Canonical Variate of the training target, gaussian-distributed
+        :param d_cca_training: Canonical Variate of the training data
+        :param d_pc_training: Principal Components of the training data
+        :param d_rotations: CCA rotations of the training data
+        :param d_cca_prediction: Canonical Variate of the observation
+        :return: h_mean_posterior, h_posterior_covariance
+        :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
         # TODO: add dimension check

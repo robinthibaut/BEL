@@ -183,7 +183,7 @@ def main(comb: list = None,
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
 
-    def swap_root(pres):
+    def swap_root(pres: str):
         """Selects roots from main folder and swap them from training to observation"""
         if pres in roots_training:
             idx = roots_training.index(pres)
@@ -267,11 +267,11 @@ if __name__ == '__main__':
     # test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    # rt, ro = main(comb=wells,
-    #               n_training=300,
-    #               n_observations=90,
-    #               flag_base=True)
+    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    rt, ro = main(comb=wells,
+                  n_training=300,
+                  n_observations=10,
+                  flag_base=True)
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
