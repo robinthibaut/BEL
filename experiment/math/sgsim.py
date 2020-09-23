@@ -13,7 +13,9 @@ from experiment.base.inventory import MySetup
 from experiment.toolbox.filesio import data_read
 
 
-def transform(f, k_mean: float, k_std: float):
+def transform(f,
+              k_mean: float,
+              k_std: float):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data
     :param: f: np.array: Simulation output = Hk field
@@ -26,12 +28,14 @@ def transform(f, k_mean: float, k_std: float):
     return 10 ** ff
 
 
-def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None):
+def sgsim(model_ws: str,
+          grid_dir: str,
+          wells_hk: list = None):
     """
     Perform sequential gaussian simulation to generate K fields.
     :param model_ws: str: Working directory
     :param grid_dir: str: Grid directory
-    :param wells_hk: list[float]: K values at wells
+    :param wells_hk: List[float]: K values at wells
     :return:
     """
     # %% Initiate sgems pjt
