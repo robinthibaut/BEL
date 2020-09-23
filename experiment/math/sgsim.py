@@ -50,7 +50,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None):
     else:
         hku = wells_hk
 
-    if not os.path.exists(jp(model_ws, MySetup.Directories.sgems_file)):
+    if not os.path.exists(jp(model_ws, MySetup.Files.sgems_file)):
         hd.dataframe['hd'] = hku
         hd.export_01('hd')  # Exports modified dataset in binary
 
