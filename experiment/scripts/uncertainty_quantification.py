@@ -16,7 +16,6 @@ from experiment.processing import decomposition as dcp
 from experiment.toolbox import filesio, utils
 
 Root = List[str]
-Combination = List[int]
 
 
 def value_info(root: Root):
@@ -120,7 +119,7 @@ def value_info(root: Root):
 def scan_roots(base,
                training: Root,
                obs: Root,
-               combinations: Combination,
+               combinations: List[int],
                base_dir_path: str = None):
     """
     Scan forward roots and perform base decomposition
@@ -160,7 +159,7 @@ def scan_roots(base,
         joblib.load(os.path.join(base_dir_path, 'h_pca.pkl')).reset_()
 
 
-def main(comb: Combination = None,
+def main(comb: List[List[int]] = None,
          n_training: int = 200,
          n_observations: int = 50,
          flag_base: bool = False,

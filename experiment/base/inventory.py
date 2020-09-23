@@ -8,12 +8,13 @@ import os
 import platform
 from dataclasses import dataclass
 from os.path import dirname, join
+from typing import List
 
 import numpy as np
 
 
 class Machine(object):
-    computer = platform.node()
+    computer: str = platform.node()
 
 
 class MySetup:
@@ -22,42 +23,42 @@ class MySetup:
         """Define main directories and file names"""
 
         # Content directory
-        main_dir = dirname(dirname(os.path.abspath(__file__)))
-        hydro_res_dir = join(main_dir, 'storage', 'forwards')
-        forecasts_dir = join(main_dir, 'storage', 'forecasts')
-        grid_dir = join(main_dir, 'grid', 'parameters')
+        main_dir: str = dirname(dirname(os.path.abspath(__file__)))
+        hydro_res_dir: str = join(main_dir, 'storage', 'forwards')
+        forecasts_dir: str = join(main_dir, 'storage', 'forecasts')
+        grid_dir: str = join(main_dir, 'grid', 'parameters')
 
     @dataclass
     class Files:
         """Class to keep track of important file names"""
         # Output file names
-        project_name = 'whpa'
+        project_name: str = 'whpa'
 
-        hk_file = 'hk0.npy'
-        predictor_file = 'bkt.npy'
-        target_file = 'pz.npy'
+        hk_file: str = 'hk0.npy'
+        predictor_file: str = 'bkt.npy'
+        target_file: str = 'pz.npy'
 
         output_files = [hk_file, predictor_file, target_file]
 
-        sgems_file = 'hd.sgems'
-        command_file = 'sgsim_commands.py'
+        sgems_file: str = 'hd.sgems'
+        command_file: str = 'sgsim_commands.py'
 
         sgems_family = [sgems_file, command_file, hk_file]
 
     @dataclass
     class GridDimensions:
         """Class for keeping track of grid dimensions"""
-        x_lim: float = 1500
-        y_lim: float = 1000
-        z_lim: float = 1
+        x_lim: float = 1500.
+        y_lim: float = 1000.
+        z_lim: float = 1.
 
-        dx: float = 10  # Block x-dimension
-        dy: float = 10  # Block y-dimension
-        dz: float = 10  # Block z-dimension
+        dx: float = 10.  # Block x-dimension
+        dy: float = 10.  # Block y-dimension
+        dz: float = 10.  # Block z-dimension
 
-        xo: float = 0
-        yo: float = 0
-        zo: float = 0
+        xo: float = 0.
+        yo: float = 0.
+        zo: float = 0.
 
         nrow: int = y_lim // dy  # Number of rows
         ncol: int = x_lim // dx  # Number of columns
@@ -82,7 +83,7 @@ class MySetup:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
-        cell_dim = 4  # Defines cell dimensions for the signed distance computation.
+        cell_dim: float = 4  # Defines cell dimensions for the signed distance computation.
 
     @dataclass
     # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
@@ -123,4 +124,4 @@ class MySetup:
 
     @dataclass
     class Forecast:
-        n_posts = 200
+        n_posts: int = 200
