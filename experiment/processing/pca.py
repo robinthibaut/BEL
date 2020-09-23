@@ -21,7 +21,7 @@ class PCAIO:
         Given a set of training data and one observation (optional), performs necessary dimension reduction
         and transformations.
         :param name: str: name of the dataset (e.g. 'data', 'target'...)
-        :param training: np.array: Training dataset
+        :param training: numpy.ndarray: Training dataset
         :param roots: list: List containing uuid of training roots
         :param directory: str: Path to the folder in which to save the pickle
         """
@@ -51,7 +51,7 @@ class PCAIO:
     def pca_training_fit_transform(self):
         """
         Instantiate the PCA object and transforms training data to scores.
-        :return: np.array: PC training
+        :return: numpy.ndarray: PC training
         """
 
         self.operator = PCA()
@@ -67,9 +67,9 @@ class PCAIO:
                                test_root: list):
         """
         Transforms observation to PC scores.
-        :param test: np.array: Observation array
+        :param test: numpy.ndarray: Observation array
         :param test_root: list: List containing observation id (str)
-        :return: np.array: Observation PC
+        :return: numpy.ndarray: Observation PC
         """
         self.test_root = test_root
 
@@ -129,7 +129,7 @@ class PCAIO:
         """
         Randomly selects PC components from the original training matrix.
         :param n_rand: int: Number of random PC to use
-        :return np.array: Random PC scores
+        :return numpy.ndarray: Random PC scores
         """
         rand_rows = np.random.choice(self.n_samples, n_rand)  # Selects n_posts rows from the training array
         score_selection = self.training_pc[rand_rows, self.n_pc_cut:]  # Extracts those rows, from the number of
@@ -148,7 +148,7 @@ class PCAIO:
         The self.operator.components contains all components.
         :param pc_to_invert: np.array: (n_samples, n_components) PC array to back-transform to physical space
         :param n_comp: int: Number of components to back-transform with
-        :return: Back transformed array
+        :return: numpy.ndarray: Back transformed array
         """
         if n_comp is None:
             n_comp = self.n_pc_cut

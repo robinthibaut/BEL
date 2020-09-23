@@ -153,7 +153,6 @@ def bel(base,
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
-    # TODO: pass them to next class, or save the paths globally
     obj_dir = jp(sub_dir, 'obj')
     fig_data_dir = jp(sub_dir, 'data')
     fig_pca_dir = jp(sub_dir, 'pca')

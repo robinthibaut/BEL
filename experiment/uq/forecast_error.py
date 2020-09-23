@@ -20,7 +20,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
-from experiment.math.hausdorff import modified_distance
+from experiment.math.hausdorff import modified_hausdorff_distance
 from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
 from experiment.toolbox import filesio as fops
@@ -257,7 +257,7 @@ class UncertaintyQuantification:
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
+        mhds = np.array([modified_hausdorff_distance(v_h_true, vt) for vt in self.vertices])
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)

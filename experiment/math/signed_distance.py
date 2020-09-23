@@ -5,7 +5,8 @@ import skfmm  # Library to compute the signed distance
 from matplotlib.patches import Polygon
 
 
-def get_centroids(array, grf: float):
+def get_centroids(array,
+                  grf: float):
     """
     Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
     centroids.
@@ -18,7 +19,10 @@ def get_centroids(array, grf: float):
 
 class SignedDistance:
 
-    def __init__(self, x_lim=None, y_lim=None, grf=1):
+    def __init__(self,
+                 x_lim: float = None,
+                 y_lim: float = None,
+                 grf: float = 1):
         if y_lim is None:
             y_lim = [0, 1000]
         if x_lim is None:
@@ -29,7 +33,10 @@ class SignedDistance:
         array = np.ones((self.nrow, self.ncol))  # Dummy array
         self.xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)  # Centroids of dummy array
 
-    def matrix_poly_bin(self, pzs, outside: int = -1, inside: int = 1):
+    def matrix_poly_bin(self,
+                        pzs,
+                        outside: int = -1,
+                        inside: int = 1):
         """
         Given a polygon whose vertices are given by the array pzs, and a matrix of
         centroids coordinates of the surface discretization, assigns to the matrix a certain value
