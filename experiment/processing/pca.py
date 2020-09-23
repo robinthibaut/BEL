@@ -147,7 +147,7 @@ class PCAIO:
         op_cut = PCA(n_components=n_comp)
         op_cut.fit(self.training_physical)
 
-        inv = op_cut.inverse_transform(pc_to_invert)
+        inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])
 
         # inv = np.dot(pc_to_invert[:, :n_comp], self.operator.components_[:, :n_comp]) + self.operator.mean_[:, :n_comp]
 
