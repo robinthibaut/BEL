@@ -127,9 +127,9 @@ class PosteriorIO:
                        h_posts_gaussian,
                        cca_obj,
                        pca_h,
-                       n_posts,
-                       add_comp=False,
-                       save_target_pc=False):
+                       n_posts: int,
+                       add_comp: bool = False,
+                       save_target_pc: bool = False):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
@@ -163,8 +163,8 @@ class PosteriorIO:
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = \
             pca_h.inverse_transform(h_pca_reverse).reshape((n_posts,
-                                                              pca_h.training_shape[1],
-                                                              pca_h.training_shape[2]))
+                                                            pca_h.training_shape[1],
+                                                            pca_h.training_shape[2]))
 
         return forecast_posterior
 

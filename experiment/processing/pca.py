@@ -30,6 +30,7 @@ class PCAIO:
         self.name = name  # str, name of the object
         self.roots = roots  # Name of training roots
 
+        # TODO: separate training shape in self.n_samples, self.n_components
         self.training_shape = training.shape  # Original shape of dataset
         self.obs_shape = None  # Original shape of observation
 
@@ -60,7 +61,9 @@ class PCAIO:
 
         return self.training_pc
 
-    def pca_test_transformation(self, test, test_root: list):
+    def pca_test_transformation(self,
+                                test,
+                                test_root: list):
         """
         Transforms observation to PC scores.
         :param test: np.array: Observation array
@@ -127,11 +130,11 @@ class PCAIO:
         :param n_posts: int: Number of random PC to use
         :return np.array: Random PC scores
         """
-        r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the training array
+        r_rows = np.random.choice(self.training_shape[0], n_posts)  # Selects n_posts rows from the training array
         score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
         # used until the end of the array.
 
-        # For each column of shape n_sim-ncomp, selects a random PC component to add.
+        # For each column of shape n_samples, n_components, selects a random PC component to add.
         test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
 
         return np.array(test)
@@ -149,6 +152,7 @@ class PCAIO:
         if n_comp is None:
             n_comp = self.ncomp
 
+        # TODO: (optimization) only fit after dimension check
         op_cut = PCA(n_components=n_comp)
         op_cut.fit(self.training_physical)
 

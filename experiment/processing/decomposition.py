@@ -107,7 +107,10 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def bel(base, wel_comb: list = None, training_roots: list = None, test_root: list = None):
+def bel(base,
+        wel_comb: list = None,
+        training_roots: list = None,
+        test_root: list = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
