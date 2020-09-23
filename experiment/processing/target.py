@@ -10,7 +10,7 @@ class TargetIO:
     def __init__(self):
         self.gaussian_transformers = {}
 
-    def gaussian_distribution(self, original_array, name='gd'):
+    def gaussian_distribution(self, original_array, name: str = 'gd'):
         # Ensure Gaussian distribution in original_array Each vector for each original_array components will be
         # transformed one-by-one by a different operator, stored in yj.
         yj = [PowerTransformer(method='yeo-johnson', standardize=True) for _ in range(original_array.shape[0])]
@@ -23,7 +23,7 @@ class TargetIO:
 
         return original_array_gaussian
 
-    def gaussian_inverse(self, original_array, name='gd'):
+    def gaussian_inverse(self, original_array, name: str = 'gd'):
         yj = self.gaussian_transformers[name]
         back2 \
             = np.concatenate([yj[i].inverse_transform(original_array[i].reshape(-1, 1)) for i in range(len(yj))],

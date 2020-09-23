@@ -39,14 +39,14 @@ def wel_export():
     # Directories
     md = Directories()
     grid_dir = md.grid_dir
-    wd = Wels().wels_data
+    wd = Wels().wells_data
 
     columns = ['x', 'y', 'hd']  # Save wells data for sgems
     wels_xy = [wd[o]['coordinates'] for o in wd]
     wels_val = np.ones((len(wels_xy), 1)) * -9966699
     wel_arr = np.concatenate((wels_xy, wels_val), axis=1)
     df = pd.DataFrame(columns=columns, data=wel_arr)
-    export_eas(df, jp(grid_dir, 'wels'))
+    export_eas(df, jp(grid_dir, 'wells'))
 
 
 if __name__ == '__main__':

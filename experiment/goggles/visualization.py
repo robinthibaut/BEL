@@ -15,12 +15,18 @@ from experiment.toolbox import filesio
 plt.style.use('dark_background')
 
 
-def explained_variance(pca, n_comp=0, xfs=2, thr=1., fig_file=None, show=False):
+def explained_variance(pca,
+                       n_comp: int = 0,
+                       xfs: float = 2,
+                       thr: float = 1.,
+                       fig_file: str = None,
+                       show: bool = False):
     """
     PCA explained variance plot
     :param pca: PCA operator
     :param n_comp: Number of components to display
     :param xfs: X-axis fontsize
+    :param thr: float: Threshold
     :param fig_file:
     :param show:
     :return:
@@ -48,7 +54,12 @@ def explained_variance(pca, n_comp=0, xfs=2, thr=1., fig_file=None, show=False):
         plt.close()
 
 
-def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=False):
+def pca_scores(training,
+               prediction,
+               n_comp,
+               fig_file=None,
+               labels=True,
+               show=False):
     """
     PCA scores plot, displays scores of observations above those of training.
     :param training: Training scores
@@ -108,7 +119,13 @@ def pca_scores(training, prediction, n_comp, fig_file=None, labels=True, show=Fa
         plt.close()
 
 
-def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, show=False):
+def cca_plot(cca_operator,
+             d,
+             h,
+             d_pc_prediction,
+             h_pc_prediction,
+             sdir=None,
+             show=False):
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
@@ -123,6 +140,10 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
+    #
+    # post_obj = joblib.load(jp(os.path.dirname(sdir), 'obj', 'post.pkl'))
+    # h_samples = post_obj.random_sample()
+    #
 
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
@@ -151,6 +172,11 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label='{}'.format(sample_n))
+            # Plot predicted canonical variate mean
+            # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
+            #          'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
+            #          label='{}'.format(sample_n))
+
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
         plt.xlabel('d')
@@ -165,43 +191,21 @@ def cca_plot(cca_operator, d, h, d_pc_prediction, h_pc_prediction, sdir=None, sh
             plt.show()
             plt.close()
 
-    # # CCA plots for each observation:
-    # for i in range(cca_operator.n_components):
-    #     comp_n = i
-    #     plt.plot(d[comp_n], h[comp_n], 'ro', markersize=3, markerfacecolor='r', alpha=.25)
-    #     for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
-    #         d_obs = d_pc_prediction[sample_n]
-    #         h_obs = h_pc_prediction[sample_n]
-    #         d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
-    #                                                                     h_obs.reshape(1, -1))
-    #         d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
-    #
-    #         plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-    #                  'o', markersize=4.5, alpha=.7,
-    #                  label='{}'.format(sample_n))
-    #
-    #     plt.grid('w', linewidth=.3, alpha=.4)
-    #     plt.tick_params(labelsize=8)
-    #     plt.title(round(cca_coefficient[i], 4))
-    #     plt.legend(fontsize=5)
-    #     if sdir:
-    #         plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300)
-    #         plt.close()
-    #     if show:
-    #         plt.show()
-    #         plt.close()
-
 
 class Plot:
 
-    def __init__(self, x_lim=None, y_lim=None, grf=None, wel_comb=None):
+    def __init__(self,
+                 x_lim=None,
+                 y_lim=None,
+                 grf=None,
+                 well_comb=None):
 
         md = MySetup.Directories()
         focus = MySetup.Focus()
-        self.wels = MySetup.Wels()
+        self.wells = MySetup.Wells()
 
-        if wel_comb is not None:
-            self.wels.combination = wel_comb
+        if well_comb is not None:
+            self.wells.combination = well_comb
 
         if y_lim is None:
             self.ylim = focus.y_range
@@ -221,11 +225,13 @@ class Plot:
         self.x, self.y = np.meshgrid(
             np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
         self.wdir = md.grid_dir
-        # self.cols = self.wels.wels_data
-        wells_id = list(self.wels.wels_data.keys())
-        self.cols = [self.wels.wels_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
-    def contours_vertices(self, arrays, c=0):
+        wells_id = list(self.wells.wells_data.keys())
+        self.cols = [self.wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
+
+    def contours_vertices(self,
+                          arrays,
+                          c=0):
         """
         Extracts contour vertices from a list of matrices
         :param arrays: list of matrices
@@ -241,7 +247,13 @@ class Plot:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
 
-    def curves(self, tc, highlight=None, ghost=False, sdir=None, title='curves', show=False):
+    def curves(self,
+               tc,
+               highlight=None,
+               ghost=False,
+               sdir=None,
+               title='curves',
+               show=False):
         """
         Shows every breakthrough curve stacked on a plot.
         :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
@@ -271,7 +283,11 @@ class Plot:
             plt.show()
             plt.close()
 
-    def curves_i(self, tc, highlight=None, sdir=None, show=False):
+    def curves_i(self,
+                 tc,
+                 highlight=None,
+                 sdir=None,
+                 show=False):
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
@@ -292,7 +308,7 @@ class Plot:
                     plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=5)
-            plt.title(f'wel #{t + 1}')
+            plt.title(f'well #{t + 1}')
             if sdir:
                 filesio.dirmaker(sdir)
                 plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300, transparent=True)
@@ -301,18 +317,30 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def plot_wells(self, markersize: float = 4):
-        comb = [0] + list(self.wels.combination)
-        keys = [list(self.wels.wels_data.keys())[i] for i in comb]
-        wbd = {k: self.wels.wels_data[k] for k in keys if k in self.wels.wels_data}
-        for n, i in enumerate(wbd):
+    def plot_wells(self,
+                   well_ids=None,
+                   markersize: float = 4):
+
+        if well_ids is None:
+            comb = [0] + list(self.wells.combination)
+        else:
+            comb = well_ids
+        # comb = [0] + list(self.wells.combination)
+        # comb = [0] + list(self.wells.combination)
+        keys = [list(self.wells.wells_data.keys())[i] for i in comb]
+        wbd = {k: self.wells.wells_data[k] for k in keys if k in self.wells.wells_data}
+        s = 0
+        for i in wbd:
+            n = comb[s]
             if n == 0:
                 label = 'pw'
             else:
                 label = f'{n}'
-            plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                     f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
-                     label=label)
+            if n in comb:
+                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
+                         f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
+                         label=label)
+            s += 1
 
     def whp(self,
             h=None,
@@ -326,6 +354,7 @@ class Plot:
             cmap='coolwarm',
             colors='white',
             show_wells=False,
+            well_ids=None,
             title=None,
             fig_file=None,
             show=False):
@@ -367,7 +396,7 @@ class Plot:
 
         # Plot wells
         if show_wells:
-            self.plot_wells()
+            self.plot_wells(well_ids=well_ids, markersize=7)
             plt.legend(fontsize=8)
 
         # Plot limits
@@ -401,12 +430,14 @@ class Plot:
                        bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
+                       well_ids=None,
                        title=None,
                        show=False):
 
         # Plot n forecasts sampled
         self.whp(h=forecasts,
                  show_wells=show_wells,
+                 well_ids=well_ids,
                  bkg_field_array=bkg_field_array,
                  title=title)
 
@@ -425,7 +456,11 @@ class Plot:
             plt.close()
 
     @staticmethod
-    def d_pca_inverse_plot(pca_o, vn, training=True, fig_dir=None, show=False):
+    def d_pca_inverse_plot(pca_o,
+                           vn,
+                           training=True,
+                           fig_dir=None,
+                           show=False):
         """
 
         Plot used to compare the reproduction of the original physical space after PCA transformation.
@@ -460,7 +495,12 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def h_pca_inverse_plot(self, pca_o, vn, training=True, fig_dir=None, show=False):
+    def h_pca_inverse_plot(self,
+                           pca_o,
+                           vn,
+                           training=True,
+                           fig_dir=None,
+                           show=False):
         """
 
         Plot used to compare the reproduction of the original physical space after PCA transformation
@@ -497,46 +537,13 @@ class Plot:
                 plt.show()
                 plt.close()
 
-    def pca_inverse_compare(self, pco_d=None, pco_h=None, nd=None, nh=None, show=False):
-        """
-        Plots original data and recovered data by PCA inverse transformation given a number of components
-        :param pco_h: PCA object for h
-        :param pco_d: PCA object for d
-        :param nd: number of components in d
-        :param nh: number of components in h
-        :return:
-        """
-
-        for n_compare, r in enumerate(pco_h.roots):
-            fig_dir = jp(MySetup.Directories.forecasts_dir, 'base', 'control')
-            filesio.dirmaker(fig_dir)
-
-            fig_file = jp(fig_dir, r)
-
-            if pco_d is not None:
-                self.d_pca_inverse_plot(pco_d.training_physical,
-                                        n_compare,
-                                        pco_d.operator,
-                                        nd,
-                                        fig_file=''.join((fig_file, '_d')), show=show)
-
-            if pco_h is not None:
-                self.h_pca_inverse_plot(pco_h,
-                                        n_compare,
-                                        nh,
-                                        fig_file=''.join((fig_file, '_h')), show=show)
-
-        # Displays the explained variance percentage given the number of components
-        # print(pco_d.perc_pca_components(nd))
-        # print(pco_h.perc_pca_components(nh))
-
     def check_root(self, root):
         """
         Plots raw data of folder 'root'
         :param root:
         :return:
         """
-        bkt, whpa, _ = filesio.load_res(roots=root)
+        bkt, whpa, _ = filesio.data_loader(roots=root)
         whpa = whpa.squeeze()
         # self.curves_i(bkt, show=True)  # This function will not work
 
@@ -545,7 +552,9 @@ class Plot:
         plt.ylim(self.ylim)
         plt.show()
 
-    def plot_results(self, root, folder):
+    def plot_results(self,
+                     root,
+                     folder):
         """
         Plots forecasts results in the 'uq' folder
         :param root: str: Forward ID
@@ -578,7 +587,7 @@ class Plot:
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
-        self.whp(h_training, alpha=.2, show=False)
+        self.whp(h_training, alpha=.2)
         self.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
 
         # WHPs
@@ -587,17 +596,17 @@ class Plot:
                 f'cca_{cca_operator.n_components}.png')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
-        forecast_posterior = post_obj.random_sample(pca_d=d_pco,
-                                                    pca_h=h_pco,
-                                                    cca_obj=cca_operator,
-                                                    n_posts=MySetup.Forecast.n_posts,
-                                                    add_comp=False)
+        forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
+                                                  pca_h=h_pco,
+                                                  cca_obj=cca_operator,
+                                                  n_posts=MySetup.Forecast.n_posts,
+                                                  add_comp=False)
 
         # I display here the prior h behind the forecasts sampled from the posterior.
-        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show=False)
+        well_ids = [0] + list(map(int, list(folder)))
+        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show_wells=True, well_ids=well_ids, show=False)
         self.whp_prediction(forecasts=forecast_posterior,
                             h_true=h[0],
-                            show_wells=True,
                             fig_file=ff)
 
     def plot_K_field(self, root):
@@ -613,7 +622,12 @@ class Plot:
         plt.close()
 
     @staticmethod
-    def pca_vision(root, d=True, h=False, scores=True, exvar=True, folders=None):
+    def pca_vision(root,
+                   d=True,
+                   h=False,
+                   scores=True,
+                   exvar=True,
+                   folders=None):
         """
         Loads PCA pickles and plot scores for all folders
         :param root: str:
@@ -682,7 +696,8 @@ class Plot:
                 explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
 
     @staticmethod
-    def cca_vision(root, folders=None):
+    def cca_vision(root: str = None,
+                   folders=None):
         """
         Loads CCA pickles and plots components for all folders
         :param root:
@@ -713,7 +728,7 @@ class Plot:
         for f in folders:
             res_dir = os.path.join(subdir, f, 'obj')
             # Load objects
-            f_names = list(map(lambda fn: os.path.join(res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+            f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
             cca_operator, d_pco = list(map(joblib.load, f_names))
             h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 
@@ -751,7 +766,7 @@ class Plot:
             plt.close()
 
     @staticmethod
-    def plot_whpa(root=None):
+    def plot_whpa(root: str = None):
         """
         Loads target pickle and plots all training WHPA
         :param root:
@@ -781,9 +796,11 @@ class Plot:
                       fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
 
     @staticmethod
-    def plot_pc_ba(root, data=False, target=False):
+    def plot_pc_ba(root: str = None,
+                   data: bool = False,
+                   target: bool = False):
         """
-
+        Comparison between original variables and the same variables back-transformed with n PCA components.
         :param root:
         :param data:
         :param target:

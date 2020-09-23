@@ -1,5 +1,7 @@
 ortools
 scikit-fmm
+flopy
+pysgems
 scikit-learn
 matplotlib
 scipy

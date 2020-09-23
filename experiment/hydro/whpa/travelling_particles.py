@@ -7,14 +7,15 @@ from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
 
 
-def datread(file=None, header=0):
+def datread(file: str = None,
+            header: int = 0):
     """Reads space separated dat file"""
     with open(file, 'r') as fr:
         op = np.array([list(map(float, i.split())) for i in fr.readlines()[header:]], dtype=object)
     return op
 
 
-def create_data_model(xy):
+def create_data_model(xy: list):
     """Stores the data for the problem."""
     data = {}
     # Locations in block units
@@ -25,7 +26,7 @@ def create_data_model(xy):
 
 
 # Check if this can't be made faster with scipy distance matrix
-def compute_euclidean_distance_matrix(locations):
+def compute_euclidean_distance_matrix(locations: list):
     """Creates callback to return distance between points."""
     distances = {}
     for from_counter, from_node in enumerate(locations):
@@ -41,7 +42,7 @@ def compute_euclidean_distance_matrix(locations):
     return distances
 
 
-def tsp(xy):
+def tsp(xy: list):
     """Entry point of the program."""
     # Instantiate the data problem.
 
@@ -57,7 +58,8 @@ def tsp(xy):
 
     distance_matrix = compute_euclidean_distance_matrix(data['locations'])
 
-    def distance_callback(from_index, to_index):
+    def distance_callback(from_index: int,
+                          to_index: int):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
@@ -88,7 +90,7 @@ def tsp(xy):
 
     while not routing.IsEnd(index):
         sln.append(manager.IndexToNode(index))
-        previous_index = index
+        # previous_index = index
         index = assignment.Value(routing.NextVar(index))
 
     sln.append(0)

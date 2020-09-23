@@ -13,18 +13,19 @@ import experiment.grid.meshio as mops
 from experiment.base.inventory import MySetup
 
 
-def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
+def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
     """
     Builds and run customized MODFLOW simulation.
-    :param xy_dummy: [x, y] coordinates of the centers of the cell of the geostatistical simulation grid
-    :param hk_array: Hydraulic conductivity array
     :param exe_name: Path to the executable file.
     :param model_ws: Path to the working directory.
     :param grid_dir: Path to wells data directory.
+    :param hk_array: Hydraulic conductivity array.
+    :param xy_dummy: [x, y] coordinates of the centers of the cell of the geostatistical simulation grid.
+
     :return:
     """
     # Model name
-    model_name = 'whpa'
+    model_name = MySetup.Files.project_name
     # %% Modflow
     model = flopy.modflow.Modflow(modelname=model_name,
                                   namefile_ext='nam',
@@ -64,8 +65,8 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     nlay = gd.nlay  # Number of layers
 
     # Refinement
-    wcd = MySetup.Wels()
-    pw_d = wcd.wels_data['pumping0']
+    wcd = MySetup.Wells()
+    pw_d = wcd.wells_data['pumping0']
     # Point around which refinement will occur
     pt = pw_d['coordinates']
     # [cell size, extent around pt in m]
@@ -151,19 +152,19 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
         for xc in ncd1[1]:
             xy_true.append([xc, yc])
 
-    def make_well(wel_name):
+    def make_well(well_name):
         """
         Produce well stress period data readable by modflow
-        :param wel_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
+        :param well_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         :return:
         """
-        iw = [0, wcd.wels_data[wel_name]['coordinates'][0], wcd.wels_data[wel_name]['coordinates'][1]]
-        iwr = wcd.wels_data[wel_name]['rates']  # Well rate for the defined time periods
+        iw = [0, wcd.wells_data[well_name]['coordinates'][0], wcd.wells_data[well_name]['coordinates'][1]]
+        iwr = wcd.wells_data[well_name]['rates']  # Well rate for the defined time periods
         iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
         spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
         return [iw, iwr, iw_lrc, spiw]
 
-    my_wells = [make_well(o) for o in wcd.wels_data]  # Produce well stress period data readable by modflow
+    my_wells = [make_well(o) for o in wcd.wells_data]  # Produce well stress period data readable by modflow
 
     spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 
@@ -171,10 +172,10 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     # %% ModflowWel
 
-    wel_stress_period_data = {}
+    well_stress_period_data = {}
 
     for sp in range(nper):
-        wel_stress_period_data[sp] = np.array(spd)[:, sp]
+        well_stress_period_data[sp] = np.array(spd)[:, sp]
 
     # stress_period_data =
     # {
@@ -184,7 +185,7 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
     # }
 
     flopy.modflow.ModflowWel(model=model,
-                             stress_period_data=wel_stress_period_data)
+                             stress_period_data=well_stress_period_data)
 
     # %% ModflowBas
 
@@ -340,14 +341,13 @@ def flow(exe_name, model_ws, grid_dir, hk_array, xy_dummy):
 
     # %% Checking flow results
 
-    headobj = bf.HeadFile(jp(model_ws, '{}.hds'.format(model_name)))  # Create the headfile and budget file objects
+    headobj = bf.HeadFile(jp(model_ws, f'{model_name}.hds'))  # Create the headfile and budget file objects
     times = headobj.get_times()
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
     if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top,
         # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
-        # TODO: optimize this
         model = None
     if head.min() == -1e+30:
         model = None

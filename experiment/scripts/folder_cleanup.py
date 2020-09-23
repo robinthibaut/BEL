@@ -12,7 +12,7 @@ def cleanup():
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.keep_essential(r)
-            fops.remove_bkt(r)
+            fops.remove_bad_bkt(r)
             fops.remove_incomplete(r)
     print('Folders cleaned up')
 
@@ -21,7 +21,7 @@ def filter_file(crit):
     res_tree = MySetup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fops.remove_bkt(r)
+            fops.remove_bad_bkt(r)
             fops.remove_incomplete(r, crit=crit)
     print(f'Folders filtered based on {crit}')
 

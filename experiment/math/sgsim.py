@@ -13,11 +13,12 @@ from experiment.base.inventory import MySetup
 from experiment.toolbox.filesio import datread
 
 
-def transform(f, k_mean, k_std):
+def transform(f, k_mean: float, k_std: float):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data
-    :param: f: float: Simulation output
-    :param: k_mean: float: Desired mean for the Hk field
+    :param: f: np.array: Simulation output = Hk field
+    :param: k_mean: float: Mean of the Hk field
+    :param: k_std: float: Standard deviation of the Hk field
     """
 
     ff = f * k_std + k_mean
@@ -25,14 +26,21 @@ def transform(f, k_mean, k_std):
     return 10 ** ff
 
 
-def sgsim(model_ws, grid_dir, wells_hk=None):
+def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None):
+    """
+    Perform sequential gaussian simulation to generate K fields.
+    :param model_ws: str: Working directory
+    :param grid_dir: str: Grid directory
+    :param wells_hk: list[float]: K values at wells
+    :return:
+    """
     # %% Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
     # %% Load hard data point set
 
     data_dir = grid_dir
-    dataset = 'wels.eas'
+    dataset = 'wells.eas'
     file_path = jp(data_dir, dataset)
 
     hd = PointSet(project=pjt, pointset_path=file_path)
@@ -88,7 +96,7 @@ def sgsim(model_ws, grid_dir, wells_hk=None):
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
-    print(f'hk mean={10 ** k_mean}')
+    print(f'hk mean={10 ** k_mean} m/d')
     k_std = 0.4  # Log value of the standard deviation
 
     tf = np.vectorize(transform)  # Transform values from log10

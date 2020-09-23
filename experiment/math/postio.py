@@ -5,7 +5,8 @@ from os.path import join as jp
 import joblib
 import numpy as np
 
-from experiment.processing.predictions import TargetIO
+from experiment.base.inventory import MySetup
+from experiment.processing.target import TargetIO
 
 
 class PosteriorIO:
@@ -14,6 +15,7 @@ class PosteriorIO:
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
+        self.n_posts = None
         self.ops = TargetIO()
         self.directory = directory
 
@@ -123,14 +125,14 @@ class PosteriorIO:
 
     def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
         """
-
+        Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
         :param cca_obj:
         :param pca_h:
         :param n_posts:
         :param add_comp:
         :param save_target_pc:
-        :return:
+        :return: forecast_posterior
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
@@ -140,6 +142,7 @@ class PosteriorIO:
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
+        # TODO: Check that h_posts.T has shape (n_samples, n_components)
         h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
@@ -159,15 +162,26 @@ class PosteriorIO:
 
         return forecast_posterior
 
-    def random_sample(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
-        """
+    def random_sample(self, n_posts=None):
+        if n_posts is None:
+            n_posts = self.n_posts
+        # Draw n_posts random samples from the multivariate normal distribution :
+        # Pay attention to the transpose operator
+        np.random.seed(self.seed)
+        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
+                                                         cov=self.posterior_covariance,
+                                                         size=n_posts).T
+        return h_posts_gaussian
 
+    def bel_predict(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
+        """
+        Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observation
         :param pca_h: PCA object for target
         :param cca_obj: CCA object
         :param n_posts: Number of posteriors to extract
         :param add_comp: Flag to add remaining components
-        :return:
+        :return: forecast_posterior
         """
 
         if self.posterior_mean is None and self.posterior_covariance is None:
@@ -201,20 +215,23 @@ class PosteriorIO:
             if self.seed is None:
                 self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
 
+            if n_posts is None:
+                self.n_posts = MySetup.Forecast.n_posts
+            else:
+                self.n_posts = n_posts
+
+            # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
+            # This allows to reload this object later on and resample using the same seed.
             joblib.dump(self, jp(self.directory, 'post.pkl'))
 
-        # Draw n_posts random samples from the multivariate normal distribution :
-        # Pay attention to the transpose operator
-        np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
-                                                         cov=self.posterior_covariance,
-                                                         size=n_posts).T
+        # Sample the inferred multivariate gaussian distribution
+        h_posts_gaussian = self.random_sample(self.n_posts)
 
-        # Back-transform
+        # Back-transform h posterior to the physical space
         forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,
                                                  cca_obj=cca_obj,
                                                  pca_h=pca_h,
-                                                 n_posts=n_posts,
+                                                 n_posts=self.n_posts,
                                                  add_comp=add_comp)
 
         return forecast_posterior

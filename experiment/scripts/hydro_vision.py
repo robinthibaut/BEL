@@ -9,7 +9,7 @@ from experiment.toolbox import filesio
 if __name__ == '__main__':
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     # Initiate Plot instance
-    mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)
+    mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)
 
     # VTK
     mi = ModelVTK(base=base, folder='6a4d614c838442629d7a826cc1f498a8')
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     mi.transport_vtk()
     mi.conc_vtk()
     mi.particles_vtk(path=1)
-    mi.wels_vtk()
+    mi.wells_vtk()
 
 
 

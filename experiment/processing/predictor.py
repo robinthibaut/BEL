@@ -4,7 +4,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
+def d_process(tc0, n_time_steps: int = 200, t_max: float = 1.01080e+02):
     """
 
     Perform data transformations on the observations feature.
@@ -15,7 +15,7 @@ def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
 
     :param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
     :param n_time_steps: desired number of time step, will be the new dimension in shape[1].
-    :param t_max: Time corresponding to the end of the simulation.
+    :param t_max: Time corresponding to the end of the simulation (default unit is seconds).
     :return: Observation data array with shape (n_sim, n_time_steps, n_wells)
     """
     # Preprocess d
@@ -25,8 +25,8 @@ def d_process(tc0, n_time_steps=500, t_max=1.01080e+02):
         f1d.append(fs)
     f1d = np.array(f1d)
     # Watch out as the two following variables are also defined in the load_data() function:
-    # n_time_steps = 500  Arbitrary number of time steps to create the final transport array
-    ls = np.linspace(0, t_max, num=n_time_steps)  # From 0 to 200 days with 1000 steps
+    # n_time_steps = 200  Arbitrary number of time steps to create the final transport array
+    ls = np.linspace(0, t_max, num=n_time_steps)
     tc = []  # List of interpolating functions for each curve
     for f in f1d:
         ts = [fi(ls) for fi in f]

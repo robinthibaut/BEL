@@ -15,7 +15,6 @@ import os
 from os.path import join as jp
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
@@ -26,17 +25,15 @@ from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
 from experiment.toolbox import filesio as fops
 
-plt.style.use('dark_background')
-
 
 class UncertaintyQuantification:
 
     def __init__(self,
                  base,
-                 study_folder,
-                 base_dir=None,
-                 wel_comb=None,
-                 seed=None):
+                 study_folder: str,
+                 base_dir: str = None,
+                 wel_comb: list = None,
+                 seed: int = None):
         """
 
         :param base: class: Base object (inventory)
@@ -58,7 +55,7 @@ class UncertaintyQuantification:
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
-        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, wel_comb=self.wel_comb)
+        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, well_comb=self.wel_comb)
 
         # Directories & files paths
         md = self.base.Directories()
@@ -94,9 +91,6 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
-        # TODO: Get rid of sample number
-        self.sample_n = 0  # This class used to take into account multiple observations, now this parameter remains
-        # fixed to 0.
         self.n_posts = self.base.Forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
@@ -107,46 +101,38 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-    # %% Random sample from the posterior
-    def sample_posterior(self, sample_n=None, n_posts=None):
+# %% Random sample from the posterior
+    def sample_posterior(self, n_posts: int = None):
         """
-        Extracts n random samples from the posterior
-        :param sample_n: int: Sample identifier
+        Extracts n_posts random samples from the posterior.
         :param n_posts: int: Desired number of samples
         :return:
         """
-        if sample_n is not None:
-            self.sample_n = sample_n
 
         if n_posts is not None:
             self.n_posts = n_posts
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        self.forecast_posterior = self.po.random_sample(pca_d=self.d_pco,
-                                                        pca_h=self.h_pco,
-                                                        cca_obj=self.cca_operator,
-                                                        n_posts=self.n_posts,
-                                                        add_comp=False)
+        self.forecast_posterior = self.po.bel_predict(pca_d=self.d_pco,
+                                                      pca_h=self.h_pco,
+                                                      cca_obj=self.cca_operator,
+                                                      n_posts=self.n_posts,
+                                                      add_comp=False)
 
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
 
-        # Prediction set - physical space
-        # self.h_true_obs = self.h_pco.predict_physical[sample_n].reshape(self.shape[1], self.shape[2])
-        #
-        # np.save(jp(self.res_dir, 'h_true_obs.npy'), self.h_true_obs)
-
-    # %% extract 0 contours
-    def c0(self, write_vtk=1):
+# %% extract 0 contours
+    def c0(self, write_vtk: bool = 1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
         """
         self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
         if write_vtk:
-            vdir = jp(self.fig_pred_dir, '{}_vtk'.format(self.sample_n))
+            vdir = jp(self.fig_pred_dir, 'vtk')
             fops.dirmaker(vdir)
             for i, v in enumerate(self.vertices):
                 nv = len(v)
@@ -166,10 +152,10 @@ class UncertaintyQuantification:
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(poly_data)
 
-                writer.SetFileName(jp(vdir, 'forecast_posterior_{}.vtp'.format(i)))
+                writer.SetFileName(jp(vdir, f'forecast_posterior_{i}.vtp'))
                 writer.Write()
 
-    # %% Kernel density
+# %% Kernel density
     def kernel_density(self):
         # Scatter plot vertices
         # nn = sample_n
@@ -234,31 +220,16 @@ class UncertaintyQuantification:
         z[inside] = score
         z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
 
-        # Plot KDE
-        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-        #                alpha=1,
-        #                lw=1,
-        #                show_wells=True,
-        #                colors='red',
-        #                show=False)
-        # mpkde.whp(bkg_field_array=z,
-        #           vmin=None,
-        #           vmax=None,
-        #           cmap='RdGy',
-        #           colors='red',
-        #           fig_file=jp(self.fig_pred_dir, '{}comp.png'.format(self.sample_n)),
-        #           show=True)
-
         return z
 
-    # %% New approach : stack binary WHPA
+# %% New approach : stack binary WHPA
     def binary_stack(self):
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
         sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, wel_comb=self.wel_comb)  # Initiate Plot tool
+        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
@@ -266,30 +237,10 @@ class UncertaintyQuantification:
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
 
-        # a measure of the error could be a measure of the area covered by the n samples.
-        # error_estimate = len(np.where(b_low < 1)[0])  # Number of cells covered at least once.
-
-        # Display result
-        # self.mplot.whp(self.h_true_obs.reshape(1, self.shape[1], self.shape[2]),
-        #                alpha=1,
-        #                lw=1,
-        #                show_wells=False,
-        #                colors='red',
-        #                show=False)
-        #
-        # mpbin.whp(bkg_field_array=b_low,
-        #           show_wells=True,
-        #           vmin=None,
-        #           vmax=None,
-        #           cmap='RdGy',
-        #           fig_file=jp(self.fig_pred_dir, '{}_0stacked.png'.format(self.sample_n)),
-        #           title=str(error_estimate),
-        #           show=True)
-
         # Save result
         np.save(jp(self.res_dir, 'bin'), b_low)
 
-    #  Let's try Hausdorff...
+# %% Hausdorff
     def mhd(self):
         """
         Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA

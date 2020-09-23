@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 
 from experiment.base.inventory import MySetup
-from experiment.bel.forecast_error import UncertaintyQuantification
+from experiment.uq.forecast_error import UncertaintyQuantification
 from experiment.goggles.visualization import Plot
 from experiment.processing import decomposition as dcp
 from experiment.toolbox import filesio, utils
@@ -24,7 +24,7 @@ def value_info(root):
     if not isinstance(root, (list, tuple)):
         root = [root]
 
-    wid = list(map(str, MySetup.Wels.combination))  # Wel identifiers (n)
+    wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
 
     for r in root:  # For each root
@@ -89,7 +89,7 @@ def value_info(root):
     g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
     g.map(plt.axhline, y=0, lw=4)
     for ax in g.axes:
-        ax[0].set_xlim((400, 900))
+        ax[0].set_xlim((500, 1000))
 
     def label(x, color, label):
         ax = plt.gca()  # get the axes of the current object
@@ -152,7 +152,12 @@ def scan_roots(base, training, obs, combinations, base_dir=None):
         joblib.load(os.path.join(base_dir, 'h_pca.pkl')).reset_()
 
 
-def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_training=None, to_swap=None,
+def main(comb: list = None,
+         n_training: int = 200,
+         n_observations: int = 50,
+         flag_base=False,
+         roots_training=None,
+         to_swap=None,
          roots_obs=None):
     """
 
@@ -163,8 +168,8 @@ def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_tr
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
     :param comb: list: List of well IDs
-    :param n_cut: int: Index from which training and data are separated
-    :param n_predictor: int: Number of predictors to take
+    :param n_training: int: Index from which training and data are separated
+    :param n_observations: int: Number of predictors to take
     :param flag_base: bool: Recompute base PCA on target if True
     :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
@@ -190,18 +195,21 @@ def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_tr
             pass
 
     if roots_training is None:
-        roots_training = folders[:n_cut]  # List of n training roots
+        roots_training = folders[:n_training]  # List of n training roots
 
     if roots_obs is None:  # If no observation provided
-        if n_cut + n_predictor <= len(folders):
-            roots_obs = folders[n_cut:(n_cut + n_predictor)]  # List of m observation roots
+        if n_training + n_observations <= len(folders):
+            roots_obs = folders[n_training:(n_training + n_observations)]  # List of m observation roots
         else:
             print("Incompatible training/observation numbers")
             return
 
     for i, r in enumerate(roots_training):
+        choices = folders[n_training:].copy()
         if r in roots_obs:
-            roots_training[i] = np.random.choice(folders[n_cut:])
+            random_root = np.random.choice(choices)
+            roots_training[i] = random_root
+            choices.remove(random_root)
 
     for r in roots_obs:
         if r in roots_training:
@@ -214,7 +222,7 @@ def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_tr
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     fb = filesio.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base and not fb:
+    if flag_base:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
         dcp.base_pca(base=MySetup,
@@ -225,7 +233,7 @@ def main(comb: list = None, n_cut=200, n_predictor=50, flag_base=False, roots_tr
                      check=False)
 
     if comb is None:
-        comb = MySetup.Wels.combination  # Get default combination (all)
+        comb = MySetup.Wells.combination  # Get default combination (all)
         belcomb = utils.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
@@ -244,18 +252,18 @@ if __name__ == '__main__':
     # pot_obs = [f for f in listme if os.path.exists(
     #     os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
 
-    training_roots = filesio.datread(os.path.join(base_dir, 'roots.dat'))
+    training_roots = filesio.datread(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
-    test_roots = [item for sublist in test_roots for item in sublist]
+    # test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
+    # test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     # rt, ro = main(comb=wells,
-    #               flag_base=False,
     #               roots_training=training_roots,
-    #               roots_obs=test_roots)
+    #               roots_obs=['6a4d614c838442629d7a826cc1f498a8'],
+    #               flag_base=True)
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)

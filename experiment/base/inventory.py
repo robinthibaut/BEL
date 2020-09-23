@@ -17,22 +17,19 @@ class Machine(object):
 
 
 class MySetup:
-
     @dataclass
     class Directories:
         """Define main directories and file names"""
 
-        computer = Machine.computer
-
         # Content directory
         main_dir = dirname(dirname(os.path.abspath(__file__)))
-
         hydro_res_dir = join(main_dir, 'storage', 'forwards')
-
         forecasts_dir = join(main_dir, 'storage', 'forecasts')
-
         grid_dir = join(main_dir, 'grid', 'parameters')
 
+    @dataclass
+    class Files:
+        """Class to keep track of important file names"""
         # Output file names
         project_name = 'whpa'
 
@@ -46,11 +43,6 @@ class MySetup:
         command_file = 'sgsim_commands.py'
 
         sgems_family = [sgems_file, command_file, hk_file]
-
-    @dataclass
-    class FileNames:
-        """Class to keep track of important file names"""
-        pass
 
     @dataclass
     class GridDimensions:
@@ -71,9 +63,9 @@ class MySetup:
         ncol: int = x_lim // dx  # Number of columns
         nlay: int = 1  # Number of layers
 
-        # Refinement parameters around the pumping wel.
+        # Refinement parameters around the pumping well.
         r_params = np.array(
-            [[9, 150],  # 150 meters from the pumping wel coordinates, grid cells will have dimensions 9x9
+            [[9, 150],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
              [8, 100],
              [7, 90],
              [6, 80],
@@ -83,13 +75,20 @@ class MySetup:
              [2.5, 40],
              [2, 30],
              [1.5, 20],
-             [1, 10]])  # 10 meters from the pumping wel coordinates, grid cells will have dimensions 1*1
+             [1, 10]])  # 10 meters from the pumping well coordinates, grid cells will have dimensions 1*1
+
+    @dataclass
+    class Focus:
+        """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
+        x_range = [800, 1150]
+        y_range = [300, 700]
+        cell_dim = 4  # Defines cell dimensions for the signed distance computation.
 
     @dataclass
     # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
-    class Wels:
-        """Wels coordinates"""
-        wels_data = {
+    class Wells:
+        """Wells coordinates"""
+        wells_data = {
             'pumping0':
                 {'coordinates': [1000, 500],
                  'rates': [-1000, -1000, -1000],
@@ -120,14 +119,7 @@ class MySetup:
                  'color': 'y'}
         }
 
-        combination = np.arange(1, len(wels_data))  # Injection wells in use for prediction (default: all)
-
-    @dataclass
-    class Focus:
-        """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
-        x_range = [800, 1150]
-        y_range = [300, 700]
-        cell_dim = 4  # Defines cell dimensions for the signed distance computation.
+        combination = np.arange(1, len(wells_data))  # Injection wells in use for prediction (default: all)
 
     @dataclass
     class Forecast:

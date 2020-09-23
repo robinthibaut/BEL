@@ -14,7 +14,7 @@ from sklearn.metrics import mean_squared_error
 fc = base.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
-mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=None)
+mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 
 # def ng_boost(res_dir, folder=None):
 

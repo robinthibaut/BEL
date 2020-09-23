@@ -15,29 +15,27 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 """
 
 import os
-import uuid
 import warnings
 from os.path import join as jp
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cross_decomposition import CCA
 
 import experiment.goggles.visualization as plot
-import experiment.processing.examples as dops
+import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
 
 def base_pca(base,
-             base_dir,
-             roots,
-             test_roots,
+             base_dir: str,
+             roots: list,
+             test_roots: list,
              d_pca_obj=None,
              h_pca_obj=None,
-             check=False):
+             check: bool = False):
     """
     Initiate BEL by performing PCA on the training targets or features.
     :param base: class: Base class object
@@ -51,18 +49,16 @@ def base_pca(base,
     """
     if d_pca_obj is not None:
         # Loads the results:
-        tc0, _, _ = fops.load_res(roots=roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        tc0, _, _ = fops.data_loader(roots=roots, d=True)
+        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wels, n_time_steps)
+        tc = dops.d_process(tc0=tc0)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
         d_pco.pca_training_transformation()
-        # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
-        d_pco.ncomp = 50
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -70,7 +66,7 @@ def base_pca(base,
 
     if h_pca_obj is not None:
         # Loads the results:
-        _, pzs, r = fops.load_res(roots=roots, h=True)
+        _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
         sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
@@ -81,7 +77,8 @@ def base_pca(base,
 
         if check:
             # Load parameters:
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, wel_comb=base.Wels.combination)  # Initiate Plot instance
+            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)  # Initiate Plot
+            # instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
@@ -89,8 +86,6 @@ def base_pca(base,
                        lw=1,
                        fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
-
-            # return
 
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
@@ -112,7 +107,7 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def bel(base, wel_comb=None, training_roots=None, test_root=None):
+def bel(base, wel_comb: list = None, training_roots: list = None, test_root: list = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -129,7 +124,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if wel_comb is not None:
-        base.Wels.combination = wel_comb
+        base.Wells.combination = wel_comb
 
     # Directories
     md = base.Directories()
@@ -146,7 +141,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    new_dir = ''.join(list(map(str, base.Wels.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -165,8 +160,8 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.load_res(res_dir=res_dir, roots=training_roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wels, n_time_steps)
+        tc0, _, _ = fops.data_loader(res_dir=res_dir, roots=training_roots, d=True)
+        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
@@ -178,7 +173,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
         tc = np.load(tsub)
 
     # %% Select wells:
-    selection = [wc - 1 for wc in base.Wels.combination]
+    selection = [wc - 1 for wc in base.Wells.combination]
     tc = tc[:, selection, :]
 
     # %%  PCA
@@ -188,13 +183,12 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.pca_training_transformation()
-    # d_pco.n_pca_components(.999)  # Number of components for breakthrough curves
     # PCA on transport curves
     # TODO: Save ncomp, n_time_steps in Inventory
     d_pco.ncomp = 50
     ndo = d_pco.ncomp
     # Load observation (test_root)
-    tc0, _, _ = fops.load_res(res_dir=res_dir, test_roots=test_root, d=True)
+    tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=200)
     tcp = tcp[:, selection, :]  # Extract desired observation
@@ -208,7 +202,7 @@ def bel(base, wel_comb=None, training_roots=None, test_root=None):
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.ncomp  # Number of components to keep
     # Load whpa to predict
-    _, pzs, _ = fops.load_res(roots=test_root, h=True)
+    _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])

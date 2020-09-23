@@ -6,7 +6,7 @@ import flopy
 import numpy as np
 
 
-def backtrack(flowmodel, exe_name, load=False):
+def backtrack(flowmodel, exe_name: str, load: bool = False):
     """
     Function to implement Modpath 7 backtracking simulation.
     :param  flowmodel: Modflow model
@@ -17,7 +17,7 @@ def backtrack(flowmodel, exe_name, load=False):
     """
     model_name = flowmodel.name
     # MODPATH
-    mpfname = model_name + '_mp'  # Model name
+    mpfname = '_'.join([model_name, 'mp'])  # Model name
     model_ws = flowmodel.model_ws  # Model working directory
     dis = flowmodel.dis  # DIS package
     wells_data = np.load(jp(model_ws, 'spd.npy'))  # Stress period data
@@ -110,11 +110,11 @@ def backtrack(flowmodel, exe_name, load=False):
     # pwb = gp.get_destination_pathline_data(dest_cells=wn)
 
     # Load backward tracking endpoints
-    modpath_files = jp(model_ws, mpfname + '.mpend')
+    modpath_files = jp(model_ws, '.'.join([mpfname, 'mpend']))
     e = flopy.utils.EndpointFile(modpath_files)
     # noinspection PyTypeChecker
     ewb = e.get_destination_endpoint_data(dest_cells=wn, source=True)
-    # In my implementation I'm only interested in x y locations.
+    # In this implementation, we are only interested in x y locations.
     xep = ewb.x  # Endpoints x-locations (m)
     yep = ewb.y  # Endpoints y-locations (m)
     pzone_xy = np.array(list(zip(xep, yep)))
