@@ -125,3 +125,12 @@ class MySetup:
     @dataclass
     class Forecast:
         n_posts: int = 200
+
+    @dataclass
+    class Predictor:
+        n_pc: int = 50
+        n_tstp: int = 200
+
+    @dataclass
+    class Target:
+        n_pc: int = 50

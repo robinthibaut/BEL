@@ -46,14 +46,13 @@ class PCAIO:
         self.predict_physical = None  # Observation set - physical space
         self.predict_pc = None  # Observation PCA scores
 
-    def pca_training_transformation(self):
+    def pca_training_fit_transformation(self):
         """
         Instantiate the PCA object and transforms training data to scores.
         :return: np.array: PC training
         """
 
-        pca_operator = PCA()
-        self.operator = pca_operator
+        self.operator = PCA()
         self.operator.fit(self.training_physical)  # Principal components
 
         # Transform training data into principal components
@@ -61,9 +60,9 @@ class PCAIO:
 
         return self.training_pc
 
-    def pca_test_transformation(self,
-                                test,
-                                test_root: list):
+    def pca_test_fit_transformation(self,
+                                    test,
+                                    test_root: list):
         """
         Transforms observation to PC scores.
         :param test: np.array: Observation array
@@ -139,9 +138,9 @@ class PCAIO:
 
         return np.array(test)
 
-    def inverse_transform(self,
-                          pc_to_invert,
-                          n_comp: int = None):
+    def custom_inverse_transform(self,
+                                 pc_to_invert,
+                                 n_comp: int = None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.

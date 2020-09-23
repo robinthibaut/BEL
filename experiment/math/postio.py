@@ -142,9 +142,9 @@ class PosteriorIO:
 
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = \
-            pca_h.inverse_transform(h_pca_reverse).reshape((n_posts,
-                                                            pca_h.training_shape[1],
-                                                            pca_h.training_shape[2]))
+            pca_h.custom_inverse_transform(h_pca_reverse).reshape((n_posts,
+                                                                   pca_h.training_shape[1],
+                                                                   pca_h.training_shape[2]))
 
         return forecast_posterior
 
