@@ -16,7 +16,7 @@ class PosteriorIO:
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.ops = TargetIO()
+        self.processing = TargetIO()
         self.directory = directory
 
     def linear_gaussian_regression(self,
@@ -123,13 +123,12 @@ class PosteriorIO:
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
-        h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
+        h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
-        # TODO: Check that h_posts.T has shape (n_samples, n_components)
         h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
@@ -149,7 +148,12 @@ class PosteriorIO:
 
         return forecast_posterior
 
-    def random_sample(self, n_posts=None):
+    def random_sample(self, n_posts: int = None):
+        """
+
+        :param n_posts:
+        :return:
+        """
         if n_posts is None:
             n_posts = self.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
@@ -164,15 +168,15 @@ class PosteriorIO:
                     pca_d,
                     pca_h,
                     cca_obj,
-                    n_posts,
-                    add_comp=False):
+                    n_posts: int,
+                    add_comp: bool = False):
         """
         Make predictions, in the BEL fashion.
-        :param pca_d: PCA object for observation
-        :param pca_h: PCA object for target
-        :param cca_obj: CCA object
-        :param n_posts: Number of posteriors to extract
-        :param add_comp: Flag to add remaining components
+        :param pca_d: PCA object for observations.
+        :param pca_h: PCA object for targets.
+        :param cca_obj: CCA object.
+        :param n_posts: Number of posteriors to extract.
+        :param add_comp: Flag to add remaining components.
         :return: forecast_posterior
         """
 
@@ -183,11 +187,12 @@ class PosteriorIO:
 
             d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
+            # Transform to canonical space
             d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
             d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-            # Ensure Gaussian distribution in h_cca
-            h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
+            # Ensure Gaussian distribution in h_cca_training
+            h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
 
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_

@@ -21,6 +21,7 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from sklearn.cross_decomposition import CCA
+from typing import List
 
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
@@ -28,11 +29,14 @@ import experiment.toolbox.filesio as fops
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
 
+Root = List[str]
+Combination = List[int]
+
 
 def base_pca(base,
              base_dir: str,
-             roots: list,
-             test_roots: list,
+             roots: Root,
+             test_roots: Root,
              d_pca_obj=None,
              h_pca_obj=None,
              check: bool = False):
@@ -108,16 +112,16 @@ def base_pca(base,
 
 
 def bel(base,
-        wel_comb: list = None,
-        training_roots: list = None,
-        test_root: list = None):
+        well_comb: Combination = None,
+        training_roots: Root = None,
+        test_root: Root = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
-    :param wel_comb: list: List of injection wells used to make prediction
+    :param well_comb: list: List of injection wells used to make prediction
     :param test_root: list: Folder path containing output to be predicted
 
     """
@@ -126,8 +130,8 @@ def bel(base,
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
-    if wel_comb is not None:
-        base.Wells.combination = wel_comb
+    if well_comb is not None:
+        base.Wells.combination = well_comb
 
     # Directories
     md = base.Directories()
@@ -229,7 +233,7 @@ def bel(base,
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
     # TODO: Check max_iter & tol
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
