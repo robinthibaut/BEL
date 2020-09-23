@@ -3,6 +3,7 @@
 import os
 import shutil
 from collections import deque
+from typing import List
 from os.path import join as jp
 
 import flopy
@@ -11,9 +12,9 @@ import numpy as np
 from experiment.base.inventory import MySetup
 
 
-def datread(file: str = None,
-            start: int = 0,
-            end: int = None):
+def data_read(file: str = None,
+              start: int = 0,
+              end: int = None):
     # end must be set to None and NOT -1
     """Reads space-separated dat file"""
     with open(file, 'r') as fr:
@@ -202,8 +203,8 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(res_dir: str = None,
-                roots: list = None,
-                test_roots: list = None,
+                roots: List[str] = None,
+                test_roots: List[str] = None,
                 d: bool = False,
                 h: bool = False):
     """
@@ -233,7 +234,7 @@ def data_loader(res_dir: str = None,
             roots = test_roots
     else:
         if not isinstance(roots, (list, tuple)):
-            roots = [roots]
+            roots: list = [roots]
 
     [bkt_files.append(jp(res_dir, r, 'bkt.npy')) for r in roots]
     [sd_files.append(jp(res_dir, r, 'pz.npy')) for r in roots]

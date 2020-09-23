@@ -4,13 +4,13 @@ import os
 
 from experiment.base.inventory import MySetup
 from experiment.goggles.visualization import Plot
-from experiment.toolbox.filesio import datread
+from experiment.toolbox.filesio import data_read
 
 
 if __name__ == '__main__':
 
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
+    test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
     roots = samples
 

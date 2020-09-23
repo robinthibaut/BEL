@@ -10,7 +10,7 @@ from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
 from experiment.base.inventory import MySetup
-from experiment.toolbox.filesio import datread
+from experiment.toolbox.filesio import data_read
 
 
 def transform(f, k_mean: float, k_std: float):
@@ -92,7 +92,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None):
 
     opl = jp(model_ws, 'results.grid')  # Output file location.
 
-    matrix = datread(opl, start=3)  # Grid information directly derived from the output file.
+    matrix = data_read(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
