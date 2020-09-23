@@ -252,8 +252,8 @@ if __name__ == '__main__':
     # pot_obs = [f for f in listme if os.path.exists(
     #     os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
 
-    training_roots = filesio.datread(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
-    training_roots = [item for sublist in training_roots for item in sublist]
+    # training_roots = filesio.datread(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
+    # training_roots = [item for sublist in training_roots for item in sublist]
 
     # test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
     # test_roots = [item for sublist in test_roots for item in sublist]

@@ -137,14 +137,19 @@ class PCAIO:
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
-        :param pc_to_invert: np.array: PC array to back-transform to physical space
+        :param pc_to_invert: np.array: (n_samples, n_components) PC array to back-transform to physical space
         :param n_comp: int: Number of components to back-transform with
         :return: Back transformed array
         """
         if n_comp is None:
             n_comp = self.ncomp
         # TODO: double check
-        inv = np.dot(pc_to_invert, self.operator.components_[:n_comp, :]) + self.operator.mean_
+        op_cut = PCA(n_components=n_comp)
+        op_cut.fit(self.training_physical)
+
+        inv = op_cut.inverse_transform(pc_to_invert)
+
+        # inv = np.dot(pc_to_invert[:, :n_comp], self.operator.components_[:, :n_comp]) + self.operator.mean_[:, :n_comp]
 
         return inv
 
