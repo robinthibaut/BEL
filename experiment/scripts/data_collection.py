@@ -99,7 +99,7 @@ def simulation(folder=None):
         print(f'pass {res_dir}')
 
 
-def main(n_sim=None):
+def main(n_sim: int = None):
 
     n_cpu = mp.cpu_count()//2 + 1
     # n_cpu = 15
@@ -119,6 +119,6 @@ def main(n_sim=None):
 if __name__ == "__main__":
     start = time.time()
     # simulation('6a4d614c838442629d7a826cc1f498a8')
-    main(100)
+    main(200)
     end = time.time()
-    print(f'TET (min) {(end - start) // 60}')
+    print(f'TET (hours) {(end - start) / 60 // 60}')
