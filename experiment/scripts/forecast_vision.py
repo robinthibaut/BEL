@@ -12,7 +12,7 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = datread(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    roots = [samples[0]]
+    roots = samples
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -24,11 +24,11 @@ if __name__ == '__main__':
         print(f'Plotting root {sample}')
         # mplot.plot_pc_ba(root=sample, data=True, target=True)
         wells = ['123456', '1', '2', '3', '4', '5', '6']
-        # mplot.plot_K_field(sample)
+        mplot.plot_K_field(sample)
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
-        # mplot.plot_whpa(sample)
+        mplot.plot_whpa(sample)
         # mplot.cca_vision(sample, folders=wells)
         # mplot.pca_vision(sample, d=True, h=True, exvar=True, scores=True, folders=wells)
 

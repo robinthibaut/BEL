@@ -196,6 +196,10 @@ def main(comb: list = None,
 
     if roots_training is None:
         roots_training = folders[:n_training]  # List of n training roots
+    else:
+        n_training = len(roots_training)
+
+    MySetup.Forecast.n_posts = n_training
 
     if roots_obs is None:  # If no observation provided
         if n_training + n_observations <= len(folders):
@@ -239,7 +243,11 @@ def main(comb: list = None,
         belcomb = comb
 
     # Perform base decomposition on the m roots
-    scan_roots(base=MySetup, training=roots_training, obs=roots_obs, combinations=belcomb, base_dir=obj_path)
+    scan_roots(base=MySetup,
+               training=roots_training,
+               obs=roots_obs,
+               combinations=belcomb,
+               base_dir=obj_path)
 
     return roots_training, roots_obs
 
@@ -259,11 +267,11 @@ if __name__ == '__main__':
     # test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro = main(comb=wells,
-                  n_training=300,
-                  n_observations=90,
-                  flag_base=True)
+    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    # rt, ro = main(comb=wells,
+    #               n_training=300,
+    #               n_observations=90,
+    #               flag_base=True)
     # Value info
     forecast_dir = MySetup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)

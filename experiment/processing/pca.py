@@ -12,8 +12,11 @@ from sklearn.decomposition import PCA
 
 
 class PCAIO:
-    # TODO: add properties
-    def __init__(self, name: str, training=None, roots: list = None, directory: str = None):
+    def __init__(self,
+                 name: str,
+                 training=None,
+                 roots: list = None,
+                 directory: str = None):
         """
         Given a set of training data and one observation (optional), performs necessary dimension reduction
         and transformations.
@@ -133,7 +136,9 @@ class PCAIO:
 
         return np.array(test)
 
-    def inverse_transform(self, pc_to_invert, n_comp: int = None):
+    def inverse_transform(self,
+                          pc_to_invert,
+                          n_comp: int = None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
@@ -143,13 +148,11 @@ class PCAIO:
         """
         if n_comp is None:
             n_comp = self.ncomp
-        # TODO: double check
+
         op_cut = PCA(n_components=n_comp)
         op_cut.fit(self.training_physical)
 
         inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])
-
-        # inv = np.dot(pc_to_invert[:, :n_comp], self.operator.components_[:, :n_comp]) + self.operator.mean_[:, :n_comp]
 
         return inv
 
