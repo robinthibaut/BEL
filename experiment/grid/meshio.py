@@ -6,7 +6,7 @@ from scipy.spatial import distance_matrix
 from typing import List
 
 
-def blockshaped(arr, nrows, ncols):
+def block_shaped(arr, nrows, ncols):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -108,8 +108,8 @@ def rc_from_blocks(blocks):
     :param blocks:
     :return:
     """
-    dc = np.array([np.diff(b[:, 0]).max() for b in blocks])
-    dr = np.array([np.diff(b[:, 1]).max() for b in blocks])
+    dc = np.array([np.diff(b[:, 0]).max for b in blocks])
+    dr = np.array([np.diff(b[:, 1]).max for b in blocks])
 
     return dc, dr
 
@@ -170,7 +170,10 @@ def matrix_paste(c_big, c_small):
     return inds
 
 
-def h_sub(h, un, uc, sc):
+def h_sub(h,
+          un: int,
+          uc: int,
+          sc: float):
     """
     Process signed distance array.
     :param h: Signed distance array
@@ -182,7 +185,7 @@ def h_sub(h, un, uc, sc):
     h_u = np.zeros((h.shape[0], un, uc))
     for i in range(h.shape[0]):
         sim = h[i]
-        sub = blockshaped(sim, sc, sc)
+        sub = block_shaped(sim, sc, sc)
         h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
 
     return h_u
