@@ -118,7 +118,7 @@ def main(n_sim=None):
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('6a4d614c838442629d7a826cc1f498a8')
-    # main(50)
+    # simulation('6a4d614c838442629d7a826cc1f498a8')
+    main(100)
     end = time.time()
     print(f'TET (min) {(end - start) // 60}')
