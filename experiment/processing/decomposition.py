@@ -63,7 +63,7 @@ def base_pca(base,
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
-        d_pco.pca_training_fit_transformation()
+        d_pco.pca_training_fit_transform()
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -95,7 +95,7 @@ def base_pca(base,
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
-        h_pco.pca_training_fit_transformation()
+        h_pco.pca_training_fit_transform()
         # Define number of components to keep
         h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         # Dump
@@ -189,17 +189,17 @@ def bel(base,
 
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
-    d_pco.pca_training_fit_transformation()
+    d_pco.pca_training_fit_transform()
     # PCA on transport curves
-    d_pco.ncomp = MySetup.Predictor.n_pc
-    ndo = d_pco.ncomp
+    d_pco.n_pc_cut = MySetup.Predictor.n_pc
+    ndo = d_pco.n_pc_cut
     n_time_steps = MySetup.Predictor.n_tstp
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.d_process(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
-    d_pco.pca_test_fit_transformation(tcp, test_root=test_root)  # Perform transformation on testing curves
+    d_pco.pca_test_fit_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -207,14 +207,14 @@ def bel(base,
 
     # PCA on signed distance from base object containing training instances
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
-    nho = h_pco.ncomp  # Number of components to keep
+    nho = h_pco.n_pc_cut  # Number of components to keep
     # Load whpa to predict
     _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
         # Perform PCA
-        h_pco.pca_test_fit_transformation(h, test_root=test_root)
+        h_pco.pca_test_fit_transform(h, test_root=test_root)
         # Cut desired number of components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Save updated PCA object in base

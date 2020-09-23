@@ -37,8 +37,8 @@ h_pco = joblib.load(pcaf)
 # Load npy whpa prediction
 prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{res_dir}.npy'))
 # Transform and split
-h_pco.pca_test_fit_transformation(prediction, test_root=[res_dir])
-nho = h_pco.ncomp
+h_pco.pca_test_fit_transform(prediction, test_root=[res_dir])
+nho = h_pco.n_pc_cut
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
 
 nhco = 37

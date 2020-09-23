@@ -182,8 +182,8 @@ class PosteriorIO:
 
         if self.posterior_mean is None and self.posterior_covariance is None:
             # Cut desired number of PC components
-            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
-            h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
+            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.n_pc_cut)
+            h_pc_training, _ = pca_h.pca_refresh(pca_h.n_pc_cut)
 
             d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 

@@ -82,8 +82,8 @@ class UncertaintyQuantification:
         self.h_pco = joblib.load(jp(self.base_dir, 'h_pca.pkl'))
 
         # Inspect transformation between physical and PC space
-        dnc0 = self.d_pco.ncomp
-        hnc0 = self.h_pco.ncomp
+        dnc0 = self.d_pco.n_pc_cut
+        hnc0 = self.h_pco.n_pc_cut
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
@@ -248,7 +248,7 @@ class UncertaintyQuantification:
         """
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
-        n_cut = self.h_pco.ncomp  # Number of components to keep
+        n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
         v_h_true_cut = \
             self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
