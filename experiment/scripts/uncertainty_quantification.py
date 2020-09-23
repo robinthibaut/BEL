@@ -25,7 +25,7 @@ def value_info(root: Root):
     :return:
     """
     if not isinstance(root, (list, tuple)):
-        root = [root]
+        root: list = [root]
 
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears

@@ -30,19 +30,18 @@ def refine_axis(widths: List[float],
                 d_dim: float,
                 a_lim: float):
     """
-
     Refines one 1D axis around a point belonging to it.
 
     Example:
     along_c = refine_axis([10m, 10m... 10m], 500m, 70m, 2m, 10m, 1500m)
 
     :param widths: Array of cell widths along axis.
-    :param r_pt: 1D point around which refining will occur.
+    :param r_pt: 1D point on the axis around which refining will occur.
     :param ext: Extent (distance) of the refinement around the point.
     :param cnd: New cell size after refinement.
     :param d_dim: Base cell dimension.
     :param a_lim: Limit of the axis.
-    :return: Refined axis
+    :return: Refined axis (widths)
     """
 
     x0 = widths
@@ -60,7 +59,7 @@ def refine_axis(widths: List[float],
     wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]
 
     # The algorithm must choose a 'flexible parameter', either the cell grid size, the dimensions of the grid or the
-    # refined cells themselves
+    # refined cells themselves... We choose to adapt the dimensions of the grid.
     exn = np.sum(x0[wherex])  # x-extent of the refinement zone
     fx = exn / cdrx  # divides the extent by the new cell spacing
     rx = exn % cdrx  # remainder
