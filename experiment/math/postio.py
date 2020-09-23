@@ -11,7 +11,7 @@ from experiment.processing.target import TargetIO
 
 class PosteriorIO:
 
-    def __init__(self, directory=None):
+    def __init__(self, directory: str = None):
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
@@ -19,12 +19,12 @@ class PosteriorIO:
         self.ops = TargetIO()
         self.directory = directory
 
-    def posterior(self,
-                  h_cca_training_gaussian,
-                  d_cca_training,
-                  d_pc_training,
-                  d_rotations,
-                  d_cca_prediction):
+    def linear_gaussian_regression(self,
+                                   h_cca_training_gaussian,
+                                   d_cca_training,
+                                   d_pc_training,
+                                   d_rotations,
+                                   d_cca_prediction):
         """
         Estimating posterior uncertainties.
 
@@ -123,7 +123,13 @@ class PosteriorIO:
         self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
-    def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
+    def back_transform(self,
+                       h_posts_gaussian,
+                       cca_obj,
+                       pca_h,
+                       n_posts,
+                       add_comp=False,
+                       save_target_pc=False):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
@@ -173,7 +179,12 @@ class PosteriorIO:
                                                          size=n_posts).T
         return h_posts_gaussian
 
-    def bel_predict(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
+    def bel_predict(self,
+                    pca_d,
+                    pca_h,
+                    cca_obj,
+                    n_posts,
+                    add_comp=False):
         """
         Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observation
@@ -205,11 +216,11 @@ class PosteriorIO:
             d_cca_prediction = d_cca_prediction.T
 
             # Estimate the posterior mean and covariance (Tarantola)
-            self.posterior(h_cca_training_gaussian,
-                           d_cca_training,
-                           d_pc_training,
-                           d_rotations,
-                           d_cca_prediction)
+            self.linear_gaussian_regression(h_cca_training_gaussian,
+                                            d_cca_training,
+                                            d_pc_training,
+                                            d_rotations,
+                                            d_cca_prediction)
 
             # Set the seed for later use
             if self.seed is None:
