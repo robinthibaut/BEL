@@ -158,6 +158,7 @@ def remove_incomplete(res_tree: str, crit: str = None):
         except FileNotFoundError:
             pass
 
+
 def keep_essential(res_dir: str):
     """
     Deletes everything in a simulation folder except specific files.
