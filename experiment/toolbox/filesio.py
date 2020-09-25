@@ -153,8 +153,10 @@ def remove_incomplete(res_tree: str, crit: str = None):
     opt = ck.all()
 
     if not opt:
-        shutil.rmtree(res_tree)
-
+        try:
+            shutil.rmtree(res_tree)
+        except FileNotFoundError:
+            pass
 
 def keep_essential(res_dir: str):
     """
