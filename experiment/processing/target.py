@@ -44,7 +44,7 @@ class TargetIO:
 
         yj = self.gaussian_transformers[name]
         back2 \
-            = np.concatenate([yj[i].custom_inverse_transform(original_array[i].reshape(-1, 1)) for i in range(len(yj))],
+            = np.concatenate([yj[i].inverse_transform(original_array[i].reshape(-1, 1)) for i in range(len(yj))],
                              axis=1).T
 
         return back2
