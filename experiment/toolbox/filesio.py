@@ -194,15 +194,16 @@ def remove_bad_bkt(res_dir: str):
         if 'bkt.npy' in f:
             bkt_files.append(jp(r, 'bkt.npy'))
             roots.append(r)
-    tpt = list(map(np.load, bkt_files))
-    rm = []  # Will contain indices to remove
-    for i in range(len(tpt)):
-        for j in range(len(tpt[i])):
-            if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
-                rm.append(i)
-                break
-    for index in sorted(rm, reverse=True):
-        shutil.rmtree(roots[index])
+    if bkt_files:
+        tpt = list(map(np.load, bkt_files))
+        rm = []  # Will contain indices to remove
+        for i in range(len(tpt)):
+            for j in range(len(tpt[i])):
+                if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
+                    rm.append(i)
+                    break
+        for index in sorted(rm, reverse=True):
+            shutil.rmtree(roots[index])
 
 
 def data_loader(res_dir: str = None,

@@ -31,6 +31,7 @@ def spare_me():
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.keep_essential(r)
+            fops.remove_bad_bkt(r)
 
 
 if __name__ == '__main__':
