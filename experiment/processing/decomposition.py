@@ -124,7 +124,6 @@ def bel(base,
     :param base: class: Base class object containing global constants.
     :param well_comb: list: List of injection wells used to make prediction
     :param test_root: list: Folder path containing output to be predicted
-
     """
 
     # Load parameters:
