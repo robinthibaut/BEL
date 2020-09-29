@@ -33,7 +33,10 @@ def order_vertices(vertices):
 
 
 class ModelVTK:
-    def __init__(self, base, folder):
+    """
+    Loads flow/transport models and export the VTK objects.
+    """
+    def __init__(self, base=None, folder=None):
         self.base = base
         md = self.base.Directories()
         self.rn = folder
