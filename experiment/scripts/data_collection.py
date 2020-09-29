@@ -5,13 +5,13 @@
 In a Bayesian framework: the prior consists of all possibilities
 imagined by a human modeler, possibly aided by computers, then, the posterior includes
 only those possibilities that cannot be falsified with data as modeled in the likelihood.
-- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 49
+- Modeling Uncertainty in the Earth Sciences, p. 49
 
 If simpler models can be run more frequently
 when uncertainty is a critical objective (such as in forecasts), then simpler models may
 be preferred if the difference between a simple model and a complex model is small
 compared to all other uncertainties in the model.
-- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 52
+- Modeling Uncertainty in the Earth Sciences, p. 52
 
 """
 
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     simulation('6de02277697848a8bd093779063d80a6')
     # main(333)
     end = time.time()
-    print(f'TET (hours) {(end - start) / 60 // 60}')
+    print(f'TET (hours) {(end - start) / 60 / 60}')
