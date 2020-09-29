@@ -13,7 +13,11 @@ import experiment.grid.meshio as mops
 from experiment.base.inventory import MySetup
 
 
-def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
+def flow(exe_name: str,
+         model_ws: str,
+         grid_dir: str,
+         hk_array,
+         xy_dummy):
     """
     Builds and run customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
@@ -73,6 +77,9 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
     r_params = gd.r_params
 
     def refine_():
+        """
+        Refine X-Y axes.
+        """
         along_c = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
         along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
         r_a = mops.refine_axis
@@ -152,11 +159,10 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array, xy_dummy):
         for xc in ncd1[1]:
             xy_true.append([xc, yc])
 
-    def make_well(well_name):
+    def make_well(well_name: str):
         """
-        Produce well stress period data readable by modflow
+        Produces well stress period data readable by Modflow.
         :param well_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
-        :return:
         """
         iw = [0, wcd.wells_data[well_name]['coordinates'][0], wcd.wells_data[well_name]['coordinates'][1]]
         iwr = wcd.wells_data[well_name]['rates']  # Well rate for the defined time periods
