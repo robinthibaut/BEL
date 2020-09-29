@@ -6,7 +6,7 @@ Forecast error analysis.
 - quantifying uncertainty
 - assessing uncertainty
 - modeling uncertainty
-- realistic assessment of uncertainty.
+- realistic assessment of uncertainty
 
 - Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 50
 """
@@ -20,7 +20,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
-from experiment.math.hausdorff import modified_distance
+from experiment.math.hausdorff import modified_hausdorff_distance
 from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
 from experiment.toolbox import filesio as fops
@@ -82,8 +82,8 @@ class UncertaintyQuantification:
         self.h_pco = joblib.load(jp(self.base_dir, 'h_pca.pkl'))
 
         # Inspect transformation between physical and PC space
-        dnc0 = self.d_pco.ncomp
-        hnc0 = self.h_pco.ncomp
+        dnc0 = self.d_pco.n_pc_cut
+        hnc0 = self.h_pco.n_pc_cut
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
@@ -248,16 +248,16 @@ class UncertaintyQuantification:
         """
 
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
-        n_cut = self.h_pco.ncomp  # Number of components to keep
+        n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
         v_h_true_cut = \
-            self.h_pco.inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
+            self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
         # Delineation vertices of the true array
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array([modified_distance(v_h_true, vt) for vt in self.vertices])
+        mhds = np.array([modified_hausdorff_distance(v_h_true, vt) for vt in self.vertices])
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)

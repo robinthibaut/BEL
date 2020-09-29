@@ -664,13 +664,13 @@ class Plot:
                 if scores:
                     pca_scores(training=d_pco.training_pc,
                                prediction=d_pco.predict_pc,
-                               n_comp=d_pco.ncomp,
+                               n_comp=d_pco.n_pc_cut,
                                labels=False,
                                fig_file=fig_file)
                 # Explained variance plots
                 if exvar:
                     fig_file = os.path.join(dfig, 'd_exvar.png')
-                    explained_variance(d_pco.operator, n_comp=d_pco.ncomp, thr=.9, fig_file=fig_file)
+                    explained_variance(d_pco.operator, n_comp=d_pco.n_pc_cut, thr=.9, fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
             # Load h pickle
@@ -679,8 +679,8 @@ class Plot:
             # Load npy whpa prediction
             prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{root}.npy'))
             # Transform and split
-            h_pco.pca_test_transformation(prediction, test_root=[root])
-            nho = h_pco.ncomp
+            h_pco.pca_test_fit_transform(prediction, test_root=[root])
+            nho = h_pco.n_pc_cut
             h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
             # Plot
             fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_scores.png')
@@ -693,7 +693,7 @@ class Plot:
             # Explained variance plots
             if exvar:
                 fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.png')
-                explained_variance(h_pco.operator, n_comp=h_pco.ncomp, thr=.85, fig_file=fig_file)
+                explained_variance(h_pco.operator, n_comp=h_pco.n_pc_cut, thr=.85, fig_file=fig_file)
 
     @staticmethod
     def cca_vision(root: str = None,
@@ -735,12 +735,12 @@ class Plot:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
             # Inspect transformation between physical and PC space
-            dnc0 = d_pco.ncomp
-            hnc0 = h_pco.ncomp
+            dnc0 = d_pco.n_pc_cut
+            hnc0 = h_pco.n_pc_cut
 
             # Cut desired number of PC components
             d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-            h_pco.pca_test_transformation(h_pred, test_root=[root])
+            h_pco.pca_test_fit_transform(h_pred, test_root=[root])
             h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
             # CCA plots
@@ -821,12 +821,12 @@ class Plot:
         if target:
             fobj = os.path.join(base_dir, 'h_pca.pkl')
             h_pco = joblib.load(fobj)
-            hnc0 = h_pco.ncomp
+            hnc0 = h_pco.n_pc_cut
             # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
 
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
             # Cut desired number of PC components
-            h_pco.pca_test_transformation(h_pred, test_root=[root])
+            h_pco.pca_test_fit_transform(h_pred, test_root=[root])
             h_pco.pca_refresh(hnc0)
             mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=jp(base_dir, 'roots_whpa'))
 
@@ -840,7 +840,7 @@ class Plot:
                 res_dir = os.path.join(subdir, f, 'obj')
                 # Load objects
                 d_pco = joblib.load(os.path.join(res_dir, 'd_pca.pkl'))
-                dnc0 = d_pco.ncomp
+                dnc0 = d_pco.n_pc_cut
                 d_pco.pca_refresh(dnc0)
                 setattr(d_pco, 'test_root', [root])
                 # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,

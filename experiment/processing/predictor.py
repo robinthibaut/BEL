@@ -4,18 +4,21 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def d_process(tc0, n_time_steps: int = 200, t_max: float = 1.01080e+02):
+def d_process(tc0,
+              n_time_steps: int = 200,
+              t_max: float = 1.01080e+02):
     """
 
-    Perform data transformations on the observations feature.
+    Perform data transformations on the predictor.
 
     The breakthrough curves do not share the same time steps.
+
     We need to save the data array in a consistent shape, thus interpolates and sub-divides each simulation
     curves into n time steps.
 
     :param tc0: original data - breakthrough curves of shape (n_sim, n_time_steps, n_wells)
-    :param n_time_steps: desired number of time step, will be the new dimension in shape[1].
-    :param t_max: Time corresponding to the end of the simulation (default unit is seconds).
+    :param n_time_steps: float: desired number of time step, will be the new dimension in shape[1].
+    :param t_max: float: Time corresponding to the end of the simulation (default unit is seconds).
     :return: Observation data array with shape (n_sim, n_time_steps, n_wells)
     """
     # Preprocess d

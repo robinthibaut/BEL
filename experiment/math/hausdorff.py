@@ -4,37 +4,22 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 
-def modified_distance(a, b):
+def modified_hausdorff_distance(a, b):
     """
     Compute the modified Hausdorff distance between two N-D arrays.
     Distances between pairs are calculated using an Euclidean metric.
 
-    Parameters
-    ----------
-    a : (M,N) ndarray
-        Input array.
-    b : (O,N) ndarray
-        Input array.
-
-    Returns
-    -------
-    d : double
-        The modified Hausdorff distance between arrays `a` and `b`.
-
-    Raises
-    ------
-    ValueError
-        An exception is thrown if `a` and `b` do not have
-        the same number of columns.
-
-    References
-    ----------
     .. [1] M. P. Dubuisson and A. K. Jain. A Modified Hausdorff distance for object
            matching. In ICPR94, pages A:566-568, Jerusalem, Israel, 1994.
            http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=576361
 
-    See Also
-    --------
+    :param a : (M,N) ndarray. Input array.
+    :param b : (O,N) ndarray. Input array.
+
+    :return: d : double. The modified Hausdorff distance between arrays `a` and `b`.
+
+    :raise ValueError: An exception is thrown if `a` and `b` do not have the same number of columns.
+
     Another Python implementation:
     https://github.com/sapphire008/Python/blob/master/generic/HausdorffDistance.py
 

@@ -28,4 +28,4 @@ def filter_file(crit):
 
 if __name__ == '__main__':
     # cleanup()
-    filter_file('bkt.npy')
+    filter_file('pz.npy')

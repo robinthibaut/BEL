@@ -12,13 +12,16 @@ from sklearn.decomposition import PCA
 
 
 class PCAIO:
-    # TODO: add properties
-    def __init__(self, name: str, training=None, roots: list = None, directory: str = None):
+    def __init__(self,
+                 name: str,
+                 training=None,
+                 roots: list = None,
+                 directory: str = None):
         """
         Given a set of training data and one observation (optional), performs necessary dimension reduction
         and transformations.
         :param name: str: name of the dataset (e.g. 'data', 'target'...)
-        :param training: np.array: Training dataset
+        :param training: numpy.ndarray: Training dataset
         :param roots: list: List containing uuid of training roots
         :param directory: str: Path to the folder in which to save the pickle
         """
@@ -28,10 +31,13 @@ class PCAIO:
         self.roots = roots  # Name of training roots
 
         self.training_shape = training.shape  # Original shape of dataset
+        self.n_samples = self.training_shape[0]
+        self.n_components = self.training_shape[1]
+
         self.obs_shape = None  # Original shape of observation
 
         self.operator = None  # PCA operator (scikit-learn instance)
-        self.ncomp = None  # Number of components to keep
+        self.n_pc_cut = None  # Number of components to keep
 
         # Training set - physical space - flattened array
         self.training_physical = np.array([item for sublist in training for item in sublist]).reshape(len(training), -1)
@@ -42,14 +48,13 @@ class PCAIO:
         self.predict_physical = None  # Observation set - physical space
         self.predict_pc = None  # Observation PCA scores
 
-    def pca_training_transformation(self):
+    def pca_training_fit_transform(self):
         """
         Instantiate the PCA object and transforms training data to scores.
-        :return: np.array: PC training
+        :return: numpy.ndarray: PC training
         """
 
-        pca_operator = PCA()
-        self.operator = pca_operator
+        self.operator = PCA()
         self.operator.fit(self.training_physical)  # Principal components
 
         # Transform training data into principal components
@@ -57,12 +62,14 @@ class PCAIO:
 
         return self.training_pc
 
-    def pca_test_transformation(self, test, test_root: list):
+    def pca_test_fit_transform(self,
+                               test,
+                               test_root: list):
         """
         Transforms observation to PC scores.
-        :param test: np.array: Observation array
+        :param test: numpy.ndarray: Observation array
         :param test_root: list: List containing observation id (str)
-        :return: np.array: Observation PC
+        :return: numpy.ndarray: Observation PC
         """
         self.test_root = test_root
 
@@ -84,9 +91,9 @@ class PCAIO:
         :param perc: float: Percentage between 0 and 1
         """
         evr = np.cumsum(self.operator.explained_variance_ratio_)
-        self.ncomp = len(np.where(evr <= perc)[0])
+        self.n_pc_cut = len(np.where(evr <= perc)[0])
 
-        return self.ncomp
+        return self.n_pc_cut
 
     def perc_pca_components(self, n_c: int):
         """
@@ -105,46 +112,52 @@ class PCAIO:
         """
 
         if n_comp is not None:
-            self.ncomp = n_comp  # Assign the number of components in the class for later use
+            self.n_pc_cut = n_comp  # Assign the number of components in the class for later use
 
         pc_training = self.training_pc.copy()  # Reloads the original training components
-        pc_training = pc_training[:, :self.ncomp]  # Cut
+        pc_training = pc_training[:, :self.n_pc_cut]  # Cut
 
         if self.predict_pc is not None:
             pc_prediction = self.predict_pc.copy()  # Reloads the original test components
-            pc_prediction = pc_prediction[:, :self.ncomp]  # Cut
+            pc_prediction = pc_prediction[:, :self.n_pc_cut]  # Cut
             return pc_training, pc_prediction
 
         else:
             return pc_training
 
-    def pc_random(self, n_posts: int):
+    def pc_random(self, n_rand: int):
         """
         Randomly selects PC components from the original training matrix.
-        :param n_posts: int: Number of random PC to use
-        :return np.array: Random PC scores
+        :param n_rand: int: Number of random PC to use
+        :return numpy.ndarray: Random PC scores
         """
-        r_rows = np.random.choice(self.training_pc.shape[0], n_posts)  # Selects n_posts rows from the training array
-        score_selection = self.training_pc[r_rows, self.ncomp:]  # Extracts those rows, from the number of components
-        # used until the end of the array.
+        rand_rows = np.random.choice(self.n_samples, n_rand)  # Selects n_posts rows from the training array
+        score_selection = self.training_pc[rand_rows, self.n_pc_cut:]  # Extracts those rows, from the number of
+        # components used until the end of the array.
 
-        # For each column of shape n_sim-ncomp, selects a random PC component to add.
+        # For each column of shape n_samples, n_components, selects a random PC component to add.
         test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
 
         return np.array(test)
 
-    def inverse_transform(self, pc_to_invert, n_comp: int = None):
+    def custom_inverse_transform(self,
+                                 pc_to_invert,
+                                 n_comp: int = None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
-        :param pc_to_invert: np.array: PC array to back-transform to physical space
+        :param pc_to_invert: np.array: (n_samples, n_components) PC array to back-transform to physical space
         :param n_comp: int: Number of components to back-transform with
-        :return: Back transformed array
+        :return: numpy.ndarray: Back transformed array
         """
         if n_comp is None:
-            n_comp = self.ncomp
-        # TODO: double check
-        inv = np.dot(pc_to_invert, self.operator.components_[:n_comp, :]) + self.operator.mean_
+            n_comp = self.n_pc_cut
+
+        # TODO: (optimization) only fit after dimension check
+        op_cut = PCA(n_components=n_comp)
+        op_cut.fit(self.training_physical)
+
+        inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])
 
         return inv
 

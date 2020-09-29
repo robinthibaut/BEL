@@ -21,18 +21,23 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from sklearn.cross_decomposition import CCA
+from typing import List
 
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
 from experiment.math.signed_distance import SignedDistance
 from experiment.processing.pca import PCAIO
+from experiment.base.inventory import MySetup
+
+Root = List[str]
+Combination = List[int]
 
 
 def base_pca(base,
              base_dir: str,
-             roots: list,
-             test_roots: list,
+             roots: Root,
+             test_roots: Root,
              d_pca_obj=None,
              h_pca_obj=None,
              check: bool = False):
@@ -58,7 +63,7 @@ def base_pca(base,
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
-        d_pco.pca_training_transformation()
+        d_pco.pca_training_fit_transform()
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -90,7 +95,7 @@ def base_pca(base,
         # Initiate h pca object
         h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
-        h_pco.pca_training_transformation()
+        h_pco.pca_training_fit_transform()
         # Define number of components to keep
         h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         # Dump
@@ -107,14 +112,17 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def bel(base, wel_comb: list = None, training_roots: list = None, test_root: list = None):
+def bel(base,
+        well_comb: Combination = None,
+        training_roots: Root = None,
+        test_root: Root = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
 
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
-    :param wel_comb: list: List of injection wells used to make prediction
+    :param well_comb: list: List of injection wells used to make prediction
     :param test_root: list: Folder path containing output to be predicted
 
     """
@@ -123,8 +131,8 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
-    if wel_comb is not None:
-        base.Wells.combination = wel_comb
+    if well_comb is not None:
+        base.Wells.combination = well_comb
 
     # Directories
     md = base.Directories()
@@ -145,7 +153,6 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
-    # TODO: pass them to next class, or save the paths globally
     obj_dir = jp(sub_dir, 'obj')
     fig_data_dir = jp(sub_dir, 'data')
     fig_pca_dir = jp(sub_dir, 'pca')
@@ -153,7 +160,6 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     fig_pred_dir = jp(sub_dir, 'uq')
 
     # %% Creates directories
-
     [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load training data
@@ -182,17 +188,17 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
 
     # PCA on transport curves
     d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
-    d_pco.pca_training_transformation()
+    d_pco.pca_training_fit_transform()
     # PCA on transport curves
-    # TODO: Save ncomp, n_time_steps in Inventory
-    d_pco.ncomp = 50
-    ndo = d_pco.ncomp
+    d_pco.n_pc_cut = MySetup.Predictor.n_pc
+    ndo = d_pco.n_pc_cut
+    n_time_steps = MySetup.Predictor.n_tstp
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
-    tcp = dops.d_process(tc0=tc0, n_time_steps=200)
+    tcp = dops.d_process(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
-    d_pco.pca_test_transformation(tcp, test_root=test_root)  # Perform transformation on testing curves
+    d_pco.pca_test_fit_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -200,14 +206,14 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
 
     # PCA on signed distance from base object containing training instances
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
-    nho = h_pco.ncomp  # Number of components to keep
+    nho = h_pco.n_pc_cut  # Number of components to keep
     # Load whpa to predict
     _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([sd.compute(pp) for pp in pzs])
         # Perform PCA
-        h_pco.pca_test_transformation(h, test_root=test_root)
+        h_pco.pca_test_fit_transform(h, test_root=test_root)
         # Cut desired number of components
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
         # Save updated PCA object in base
@@ -226,7 +232,7 @@ def bel(base, wel_comb: list = None, training_roots: list = None, test_root: lis
     float_epsilon = np.finfo(float).eps
     # By default, it scales the data
     # TODO: Check max_iter & tol
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=float_epsilon * 10)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 

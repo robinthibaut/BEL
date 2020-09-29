@@ -11,50 +11,31 @@ from experiment.processing.target import TargetIO
 
 class PosteriorIO:
 
-    def __init__(self, directory=None):
+    def __init__(self, directory: str = None):
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.ops = TargetIO()
+        self.processing = TargetIO()
         self.directory = directory
 
-    def posterior(self,
-                  h_cca_training_gaussian,
-                  d_cca_training,
-                  d_pc_training,
-                  d_rotations,
-                  d_cca_prediction):
+    def linear_gaussian_regression(self,
+                                   h_cca_training_gaussian,
+                                   d_cca_training,
+                                   d_pc_training,
+                                   d_rotations,
+                                   d_cca_prediction):
         """
-        Estimating posterior uncertainties.
-
-        Parameters
-        ----------
-        :param h_cca_training_gaussian:
-               Canonical Variate of the training target, Gaussian-distributed
-        :param d_cca_training:
-               Canonical Variate of the training data
-        :param d_pc_training:
-               Principal Components of the training data
-        :param d_rotations:
-               CCA rotations of the training data
-        :param d_cca_prediction:
-               Canonical Variate of the observation
-
-        Returns
-        -------
-        :return: h_mean_posterior, h_posterior_covariance
-
-        Raises
-        ------
-        ValueError
-            An exception is thrown if the shape of input arrays are not consistent.
-
-        References
-        ----------
+        Estimating posterior mean and covariance of the target.
         .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
                SIAM, 2005. Pages: 70-71
-
+        :param h_cca_training_gaussian: Canonical Variate of the training target, gaussian-distributed
+        :param d_cca_training: Canonical Variate of the training data
+        :param d_pc_training: Principal Components of the training data
+        :param d_rotations: CCA rotations of the training data
+        :param d_cca_prediction: Canonical Variate of the observation
+        :return: h_mean_posterior, h_posterior_covariance
+        :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
         # TODO: add dimension check
@@ -123,7 +104,13 @@ class PosteriorIO:
         self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
-    def back_transform(self, h_posts_gaussian, cca_obj, pca_h, n_posts, add_comp=False, save_target_pc=False):
+    def back_transform(self,
+                       h_posts_gaussian,
+                       cca_obj,
+                       pca_h,
+                       n_posts: int,
+                       add_comp: bool = False,
+                       save_target_pc: bool = False):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
@@ -136,13 +123,12 @@ class PosteriorIO:
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
-        h_posts = self.ops.gaussian_inverse(h_posts_gaussian)
+        h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
-        # TODO: Check that h_posts.T has shape (n_samples, n_components)
         h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
@@ -156,13 +142,18 @@ class PosteriorIO:
 
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = \
-            pca_h.inverse_transform(h_pca_reverse).reshape((n_posts,
-                                                            pca_h.training_shape[1],
-                                                            pca_h.training_shape[2]))
+            pca_h.custom_inverse_transform(h_pca_reverse).reshape((n_posts,
+                                                                   pca_h.training_shape[1],
+                                                                   pca_h.training_shape[2]))
 
         return forecast_posterior
 
-    def random_sample(self, n_posts=None):
+    def random_sample(self, n_posts: int = None):
+        """
+
+        :param n_posts:
+        :return:
+        """
         if n_posts is None:
             n_posts = self.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
@@ -173,29 +164,35 @@ class PosteriorIO:
                                                          size=n_posts).T
         return h_posts_gaussian
 
-    def bel_predict(self, pca_d, pca_h, cca_obj, n_posts, add_comp=False):
+    def bel_predict(self,
+                    pca_d,
+                    pca_h,
+                    cca_obj,
+                    n_posts: int,
+                    add_comp: bool = False):
         """
         Make predictions, in the BEL fashion.
-        :param pca_d: PCA object for observation
-        :param pca_h: PCA object for target
-        :param cca_obj: CCA object
-        :param n_posts: Number of posteriors to extract
-        :param add_comp: Flag to add remaining components
+        :param pca_d: PCA object for observations.
+        :param pca_h: PCA object for targets.
+        :param cca_obj: CCA object.
+        :param n_posts: Number of posteriors to extract.
+        :param add_comp: Flag to add remaining components.
         :return: forecast_posterior
         """
 
         if self.posterior_mean is None and self.posterior_covariance is None:
             # Cut desired number of PC components
-            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.ncomp)
-            h_pc_training, _ = pca_h.pca_refresh(pca_h.ncomp)
+            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.n_pc_cut)
+            h_pc_training, _ = pca_h.pca_refresh(pca_h.n_pc_cut)
 
             d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
+            # Transform to canonical space
             d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
             d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-            # Ensure Gaussian distribution in h_cca
-            h_cca_training_gaussian = self.ops.gaussian_distribution(h_cca_training)
+            # Ensure Gaussian distribution in h_cca_training
+            h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
 
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_
@@ -205,11 +202,11 @@ class PosteriorIO:
             d_cca_prediction = d_cca_prediction.T
 
             # Estimate the posterior mean and covariance (Tarantola)
-            self.posterior(h_cca_training_gaussian,
-                           d_cca_training,
-                           d_pc_training,
-                           d_rotations,
-                           d_cca_prediction)
+            self.linear_gaussian_regression(h_cca_training_gaussian,
+                                            d_cca_training,
+                                            d_pc_training,
+                                            d_rotations,
+                                            d_cca_prediction)
 
             # Set the seed for later use
             if self.seed is None:

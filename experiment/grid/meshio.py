@@ -3,8 +3,10 @@
 import numpy as np
 from scipy.spatial import distance_matrix
 
+from typing import List
 
-def blockshaped(arr, nrows, ncols):
+
+def block_shaped(arr, nrows, ncols):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -21,12 +23,31 @@ def blockshaped(arr, nrows, ncols):
             .reshape(-1, nrows, ncols))
 
 
-def refine_axis(widths: list, r_pt, ext, cnd, d_dim, a_lim):
-    # TODO: write better documentation for this
+def refine_axis(widths: List[float],
+                r_pt: float,
+                ext: float,
+                cnd: float,
+                d_dim: float,
+                a_lim: float):
+    """
+    Refines one 1D axis around a point belonging to it.
+
+    Example:
+    along_c = refine_axis([10m, 10m... 10m], 500m, 70m, 2m, 10m, 1500m)
+
+    :param widths: Array of cell widths along axis.
+    :param r_pt: 1D point on the axis around which refining will occur.
+    :param ext: Extent (distance) of the refinement around the point.
+    :param cnd: New cell size after refinement.
+    :param d_dim: Base cell dimension.
+    :param a_lim: Limit of the axis.
+    :return: Refined axis (widths)
+    """
+
     x0 = widths
     x0s = np.cumsum(x0)  # Cumulative sum of the width of the cells
-    pt = r_pt
-    extx = ext
+    pt = r_pt  # Point around which refining
+    extx = ext  # Extent around the point
     cdrx = cnd
     dx = d_dim
     xlim = a_lim
@@ -34,10 +55,11 @@ def refine_axis(widths: list, r_pt, ext, cnd, d_dim, a_lim):
     # X range of the polygon
     xrp = [pt - extx, pt + extx]
 
+    # Where to refine
     wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]
 
     # The algorithm must choose a 'flexible parameter', either the cell grid size, the dimensions of the grid or the
-    # refined cells themselves
+    # refined cells themselves... We choose to adapt the dimensions of the grid.
     exn = np.sum(x0[wherex])  # x-extent of the refinement zone
     fx = exn / cdrx  # divides the extent by the new cell spacing
     rx = exn % cdrx  # remainder
@@ -50,13 +72,11 @@ def refine_axis(widths: list, r_pt, ext, cnd, d_dim, a_lim):
         x0 = np.delete(x0, wherex)  # Delete old cells
         x0 = np.insert(x0, wherex[0], nwxs)  # insert new
 
-        cs = np.cumsum(
-            x0)  # Cumulative width should equal x_lim, but it will not be the case, have to adapt width
+        cs = np.cumsum(x0)  # Cumulative width should equal x_lim, but it will not be the case, we have to adapt widths.
         difx = xlim - cs[-1]
         where_default = np.where(abs(x0 - dx) <= 5)[0]  # Location of cells whose widths will be adapted
-        where_left = where_default[
-            np.where(where_default < wherex[0])]  # Where do we have the default cell size on the
-        # left
+        where_left = where_default[np.where(where_default < wherex[0])]  # Where do we have the default cell size on
+        # the left
         where_right = where_default[np.where((where_default >= wherex[0] + len(nwxs)))]  # And on the right
         lwl = len(where_left)
         lwr = len(where_right)
@@ -78,7 +98,7 @@ def refine_axis(widths: list, r_pt, ext, cnd, d_dim, a_lim):
         x0[where_left] = x0[where_left] + dal / lwl
         x0[where_right] = x0[where_right] + dar / lwr
 
-    return x0  # Flip to correspond to flopy expectations
+    return x0
 
 
 def rc_from_blocks(blocks):
@@ -87,8 +107,8 @@ def rc_from_blocks(blocks):
     :param blocks:
     :return:
     """
-    dc = np.array([np.diff(b[:, 0]).max() for b in blocks])
-    dr = np.array([np.diff(b[:, 1]).max() for b in blocks])
+    dc = np.array([np.diff(b[:, 0]).max for b in blocks])
+    dr = np.array([np.diff(b[:, 1]).max for b in blocks])
 
     return dc, dr
 
@@ -149,7 +169,10 @@ def matrix_paste(c_big, c_small):
     return inds
 
 
-def h_sub(h, un, uc, sc):
+def h_sub(h,
+          un: int,
+          uc: int,
+          sc: float):
     """
     Process signed distance array.
     :param h: Signed distance array
@@ -161,7 +184,7 @@ def h_sub(h, un, uc, sc):
     h_u = np.zeros((h.shape[0], un, uc))
     for i in range(h.shape[0]):
         sim = h[i]
-        sub = blockshaped(sim, sc, sc)
+        sub = block_shaped(sim, sc, sc)
         h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
 
     return h_u
