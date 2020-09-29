@@ -26,6 +26,15 @@ def filter_file(crit):
     print(f'Folders filtered based on {crit}')
 
 
+def spare_me():
+    res_tree = MySetup.Directories.hydro_res_dir
+    for r, d, f in os.walk(res_tree, topdown=False):
+        if r != res_tree:
+            fops.keep_essential(r)
+            fops.remove_bad_bkt(r)
+
+
 if __name__ == '__main__':
     # cleanup()
-    filter_file('pz.npy')
+    # filter_file('pz.npy')
+    spare_me()
