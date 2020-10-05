@@ -35,6 +35,6 @@ def spare_me():
 
 
 if __name__ == '__main__':
-    # cleanup()
-    # filter_file('pz.npy')
-    spare_me()
+    cleanup()
+    filter_file('pz.npy')
+    # spare_me()
