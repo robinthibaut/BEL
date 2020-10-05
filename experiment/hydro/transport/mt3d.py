@@ -10,12 +10,15 @@ import flopy
 import numpy as np
 
 
-def transport(modflowmodel, exe_name: str, grid_dir: str, save_ucn: bool = False):
+def transport(modflowmodel,
+              exe_name: str,
+              grid_dir: str,
+              save_ucn: bool = False):
     """
-    :param modflowmodel: flopy modflow model object
-    :param exe_name: Path to executable file
-    :param grid_dir: Directory containing discretization information
-    :param save_ucn: Flag to save UCN files
+    :param modflowmodel: flopy modflow model object.
+    :param exe_name: Path to executable file.
+    :param grid_dir: Directory containing discretization information.
+    :param save_ucn: Flag to save UCN files.
     :return:
     """
 
@@ -233,7 +236,7 @@ def transport(modflowmodel, exe_name: str, grid_dir: str, save_ucn: bool = False
     # layer, row, column, concentration specie 1 (dummy value), type, concentration specie 1,
     # concentration specie 2, concentration specie 3
 
-    def spd_maker(l_r_c, c):
+    def spd_maker(l_r_c: list, c):
         """
         Given the location (layer, row, column) and pumping rate for each stress period, for >= 1 wells,
         creates a stress period data array that mt3dms needs.
@@ -339,6 +342,7 @@ def transport(modflowmodel, exe_name: str, grid_dir: str, save_ucn: bool = False
     wells_list = [os.path.basename(r.lower()).split('.')[0] for r in obs_files]
 
     def get_trailing_number(s):
+        """Gets last number (str) of a string to get observation ID."""
         m = re.search(r'\d+$', s)
         return int(m.group()) if m else None
 

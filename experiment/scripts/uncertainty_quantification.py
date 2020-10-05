@@ -274,14 +274,14 @@ if __name__ == '__main__':
     # test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    wells = [[1], [2], [3], [4], [5], [6]]
     rt, ro = main(comb=wells,
-                  n_training=500,
+                  n_training=200,
                   n_observations=50,
                   flag_base=True)
     # Value info
-    forecast_dir = MySetup.Directories.forecasts_dir
-    listit = os.listdir(forecast_dir)
-    listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    value_info(duq)
+    # forecast_dir = MySetup.Directories.forecasts_dir
+    # listit = os.listdir(forecast_dir)
+    # listit.remove('base')
+    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    # value_info(duq)

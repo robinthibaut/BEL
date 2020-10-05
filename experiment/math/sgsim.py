@@ -17,7 +17,7 @@ def transform(f,
               k_mean: float,
               k_std: float):
     """
-    Transforms the values of the statistical_simulation simulations into meaningful data
+    Transforms the values of the statistical_simulation simulations into meaningful data.
     :param: f: np.array: Simulation output = Hk field
     :param: k_mean: float: Mean of the Hk field
     :param: k_std: float: Standard deviation of the Hk field
