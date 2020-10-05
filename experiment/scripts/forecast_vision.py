@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for sample in roots:
         print(f'Plotting root {sample}')
         mplot.plot_pc_ba(root=sample, data=True, target=True)
-        wells = ['1', '2', '3', '4', '5', '6']
+        wells = ['123456']
         mplot.plot_K_field(sample)
         for w in wells:
             print(f'Plotting well {w}')

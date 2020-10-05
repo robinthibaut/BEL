@@ -276,8 +276,8 @@ if __name__ == '__main__':
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     rt, ro = main(comb=wells,
-                  n_training=1000,
-                  n_observations=4,
+                  n_training=250,
+                  n_observations=50,
                   flag_base=True)
     # Value info
     # forecast_dir = MySetup.Directories.forecasts_dir
