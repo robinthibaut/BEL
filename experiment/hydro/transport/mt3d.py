@@ -157,6 +157,8 @@ def transport(modflowmodel,
 
     # %% Mt3dAdv
 
+    # MIXELM is an integer flag for the advection solution option. = 3, the hybrid method of characteristics (HMOC)
+    # with MOC or MMOC automatically and dynamically selected;
     mixelm = 3
     percel = 0.75
     mxpart = 800000

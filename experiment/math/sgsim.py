@@ -99,7 +99,7 @@ def sgsim(model_ws: str,
     matrix = data_read(opl, start=3)  # Grid information directly derived from the output file.
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-    k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity mean between x and y in m/d.
+    k_mean = np.random.uniform(1.4, 2)  # Hydraulic conductivity exponent mean between x and y.
     print(f'hk mean={10 ** k_mean} m/d')
     k_std = 0.4  # Log value of the standard deviation
 
