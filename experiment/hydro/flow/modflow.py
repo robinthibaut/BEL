@@ -280,7 +280,7 @@ def flow(exe_name: str,
 
     # %% Layer 1 properties
 
-    laytyp = 1
+    laytyp = 1  # confined
     layavg = 0
     chani = 0
     layvka = 0

@@ -104,7 +104,7 @@ def transport(modflowmodel,
     ssflag = None
     dt0 = 0
     mxstrn = 50000
-    ttsmult = 1.0  # The multiplier for successive transport steps within a flow time-step if the GCG solver is used
+    ttsmult = [1.0, 1, 1.1]  # The multiplier for successive transport steps within a flow time-step if the GCG solver is used
     # and the solution option for the advection term is the standard finite-difference method. (default is 1.0)
     ttsmax = 0
     species_names = [f'c{c+1}' for c in range(ncomp)]
@@ -157,6 +157,8 @@ def transport(modflowmodel,
 
     # %% Mt3dAdv
 
+    # MIXELM is an integer flag for the advection solution option. = 3, the hybrid method of characteristics (HMOC)
+    # with MOC or MMOC automatically and dynamically selected;
     mixelm = 3
     percel = 0.75
     mxpart = 800000
