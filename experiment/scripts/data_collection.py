@@ -118,7 +118,6 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-#    simulation('818dd775ba0c4e8aa567b5d7d153c9db')
 #    simulation('d8986e2d40064c23b6365041223ad566')
 #    simulation('6de02277697848a8bd093779063d80a6')
     main(1000)
