@@ -2,6 +2,8 @@
 """
 Define the vertices of the Wellhead Protection Areas using the Travelling Salesman Algorithm.
 https://developers.google.com/optimization/routing/tsp
+https://github.com/google/or-tools/tree/stable/ortools/constraint_solver
+https://github.com/google/or-tools/blob/stable/ortools/constraint_solver/routing.h
 """
 import math
 
