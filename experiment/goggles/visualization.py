@@ -12,8 +12,6 @@ from scipy.interpolate import make_interp_spline, BSpline
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 
-plt.style.use('dark_background')
-
 
 def explained_variance(pca,
                        n_comp: int = 0,
