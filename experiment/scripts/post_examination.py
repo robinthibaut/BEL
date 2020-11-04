@@ -25,5 +25,7 @@ fc = MySetup.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 mplot.whp(h=nn, bkg_field_array=np.flipud(nn[0]), colors='black', cmap=None)
-plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.png'), bbox_inches='tight', dpi=300, transparent=True)
+plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.png'),
+            bbox_inches='tight',
+            dpi=300, transparent=True)
 plt.show()
