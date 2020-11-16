@@ -254,7 +254,7 @@ class Plot:
                show=False):
         """
         Shows every breakthrough curve stacked on a plot.
-        :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
+        :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
         :param highlight: list: List of indices of curves to highlight in the plot
         :param ghost: bool: Flag to only display highlighted curves.
         :param sdir: Directory in which to save figure
@@ -263,9 +263,9 @@ class Plot:
         """
         if highlight is None:
             highlight = []
-        n_sim, n_wels, nts = tc.shape
+        n_sim, n_wells, nts = tc.shape
         for i in range(n_sim):
-            for t in range(n_wels):
+            for t in range(n_wells):
                 if i in highlight:
                     plt.plot(tc[i][t], color=self.cols[t], linewidth=2, alpha=1)
                 elif not ghost:

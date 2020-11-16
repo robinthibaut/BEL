@@ -31,8 +31,9 @@ def modified_hausdorff_distance(a, b):
     if a.shape[1] != b.shape[1]:
         raise ValueError('a and b must have the same number of columns')
 
-    d = cdist(a, b)
-    fhd = np.mean(np.min(d, axis=0))
-    rhd = np.mean(np.min(d, axis=1))
+    d = cdist(a, b)  # Compute distance between each pair of the two collections of inputs.
+    # dim(d) = (M, O)
+    fhd = np.mean(np.min(d, axis=0))  # Mean of minimum values along rows
+    rhd = np.mean(np.min(d, axis=1))  # Mean of minimum values along columns
 
     return max(fhd, rhd)
