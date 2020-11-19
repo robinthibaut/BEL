@@ -71,7 +71,7 @@ class PosteriorIO:
         d_cov_operator = np.eye(x_dim) * noise  # I matrix. (n_comp_PCA, n_comp_PCA)
         d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations  # (n_comp_CCA, n_comp_CCA)
 
-        # Linear modeling d to h (in canonical space) with least-square criterion.
+        # Linear modeling h to d (in canonical space) with least-square criterion.
         # Pay attention to the transpose operator.
         g = np.linalg.lstsq(h_cca_training_gaussian.T, d_cca_training.T, rcond=None)[0].T
         # Replace values below threshold by 0.
