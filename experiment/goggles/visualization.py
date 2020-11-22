@@ -157,7 +157,8 @@ def cca_plot(cca_operator,
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             # Choose beautiful color map
-            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.95, reverse=True)
+            # light = 0.95 is beautiful for reverse = True
+            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
             # Seaborn 'joinplot' between d & h training CCA scores
             g = sns.jointplot(d[comp_n], h[comp_n],
                               cmap=cmap, n_levels=80, shade=True,
@@ -183,7 +184,7 @@ def cca_plot(cca_operator,
         g.fig.suptitle(f'{i} - {round(cca_coefficient[i], 4)}')
         if sdir:
             filesio.dirmaker(sdir)
-            plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
+            plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -275,7 +276,7 @@ class Plot:
         plt.tick_params(labelsize=5)
         if sdir:
             filesio.dirmaker(sdir)
-            plt.savefig(jp(sdir, f'{title}.png'), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f'{title}.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -309,7 +310,7 @@ class Plot:
             plt.title(f'well #{t + 1}')
             if sdir:
                 filesio.dirmaker(sdir)
-                plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300, transparent=True)
+                plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -335,8 +336,12 @@ class Plot:
             else:
                 label = f'{n}'
             if n in comb:
-                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                         f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
+                plt.plot(wbd[i]['coordinates'][0],
+                         wbd[i]['coordinates'][1],
+                         f'{wbd[i]["color"]}o',
+                         markersize=markersize,
+                         markeredgecolor='k',
+                         markeredgewidth=.5,
                          label=label)
             s += 1
 
@@ -349,6 +354,10 @@ class Plot:
             vmax=None,
             x_lim=None,
             y_lim=None,
+            xlabel=None,
+            ylabel=None,
+            cb_title=None,
+            labelsize=5,
             cmap='coolwarm',
             colors='white',
             show_wells=False,
@@ -359,6 +368,7 @@ class Plot:
         """
         Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+        :param labelsize: Label size
         :param title: str: plot title
         :param show_wells: bool: whether to plot well coordinates or not
         :param cmap: str: colormap name for the background array
@@ -382,7 +392,8 @@ class Plot:
                        vmin=vmin,
                        vmax=vmax,
                        cmap=cmap)
-            plt.colorbar()
+            cb = plt.colorbar()
+            cb.ax.set_title(cb_title)
 
         # Plot results
         if h is None:
@@ -410,8 +421,11 @@ class Plot:
         if title:
             plt.title(title)
 
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+
         # Tick size
-        plt.tick_params(labelsize=5)
+        plt.tick_params(labelsize=labelsize)
 
         if fig_file:
             filesio.dirmaker(os.path.dirname(fig_file))
@@ -487,7 +501,7 @@ class Plot:
             plt.plot(v_pred, 'c', alpha=.8)
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
-                plt.savefig(jp(fig_dir, f'{r}_d.png'), dpi=100, transparent=True)
+                plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=100, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -529,7 +543,7 @@ class Plot:
                 self.whp(h=pca_o.predict_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
-                plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300, transparent=True)
+                plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -581,7 +595,7 @@ class Plot:
 
         # WHP - h
         fig_dir = jp(hbase, 'roots_whpa')
-        ff = jp(fig_dir, f'{root}.png')  # figure name
+        ff = jp(fig_dir, f'{root}.pdf')  # figure name
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
@@ -615,7 +629,7 @@ class Plot:
         plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
         self.plot_wells(markersize=1)
         plt.colorbar()
-        plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.png'),
+        plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.pdf'),
                     bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
 
@@ -658,7 +672,7 @@ class Plot:
                 # For d only
                 pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
                 d_pco = joblib.load(pcaf)
-                fig_file = os.path.join(dfig, 'd_scores.png')
+                fig_file = os.path.join(dfig, 'd_scores.pdf')
                 if scores:
                     pca_scores(training=d_pco.training_pc,
                                prediction=d_pco.predict_pc,
@@ -667,7 +681,7 @@ class Plot:
                                fig_file=fig_file)
                 # Explained variance plots
                 if exvar:
-                    fig_file = os.path.join(dfig, 'd_exvar.png')
+                    fig_file = os.path.join(dfig, 'd_exvar.pdf')
                     explained_variance(d_pco.operator, n_comp=d_pco.n_pc_cut, thr=.9, fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
@@ -690,7 +704,7 @@ class Plot:
                            fig_file=fig_file)
             # Explained variance plots
             if exvar:
-                fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.png')
+                fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.pdf')
                 explained_variance(h_pco.operator, n_comp=h_pco.n_pc_cut, thr=.85, fig_file=fig_file)
 
     @staticmethod
@@ -760,7 +774,7 @@ class Plot:
             plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
-            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
+            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'), dpi=300, transparent=True)
             plt.close()
 
     @staticmethod
@@ -791,7 +805,7 @@ class Plot:
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
             mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
-                      fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
+                      fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
     @staticmethod
     def plot_pc_ba(root: str = None,
