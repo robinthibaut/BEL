@@ -28,7 +28,7 @@ if __name__ == '__main__':
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
-        mplot.plot_whpa(sample)
-        mplot.cca_vision(sample, folders=wells)
+        # mplot.plot_whpa(sample)
+        # mplot.cca_vision(sample, folders=wells)
         mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
 
