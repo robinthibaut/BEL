@@ -329,7 +329,7 @@ class Plot:
         for t in range(n_wels):
             for i in range(n_sim):
                 if i in highlight:
-                    plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=2, alpha=1)
+                    plt.plot(tc[i][t] * factor, color='k', linewidth=2, alpha=1)
                 else:
                     plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
@@ -472,6 +472,8 @@ class Plot:
                        forecasts,
                        h_true,
                        h_pred=None,
+                       x_lim=None,
+                       y_lim=None,
                        bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
@@ -481,6 +483,8 @@ class Plot:
 
         # Plot n forecasts sampled
         self.whp(h=forecasts,
+                 x_lim=x_lim,
+                 y_lim=y_lim,
                  show_wells=show_wells,
                  well_ids=well_ids,
                  bkg_field_array=bkg_field_array,
@@ -694,6 +698,7 @@ class Plot:
         well_ids = [0] + list(map(int, list(folder)))
         self.whp(h_training, lw=.2, alpha=.5, colors='gray', show_wells=True, well_ids=well_ids, show=False)
         self.whp_prediction(forecasts=forecast_posterior,
+                            x_lim=[800, 1200],
                             h_true=h[0],
                             fig_file=ff)
 
