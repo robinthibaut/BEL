@@ -15,7 +15,6 @@ from experiment.toolbox import filesio
 
 def explained_variance(pca,
                        n_comp: int = 0,
-                       xfs: float = 2,
                        thr: float = 1.,
                        fig_file: str = None,
                        show: bool = False):
@@ -23,7 +22,6 @@ def explained_variance(pca,
     PCA explained variance plot
     :param pca: PCA operator
     :param n_comp: Number of components to display
-    :param xfs: X-axis fontsize
     :param thr: float: Threshold
     :param fig_file:
     :param show:
@@ -34,15 +32,25 @@ def explained_variance(pca,
         n_comp = pca.n_components_
 
     # plt.xticks(np.arange(n_comp), fontsize=xfs)
+    # Index where explained variance is below threshold:
     ny = len(np.where(np.cumsum(pca.explained_variance_ratio_) < thr)[0])
+    # Explained variance vector:
     cum = np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100
+    # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
-    plt.yticks(yticks)
-    plt.bar(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100, color='m', alpha=.1)
-    plt.plot(np.arange(n_comp), np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100,
+    plt.yticks(yticks, fontsize=8.5)
+    # bars for aesthetics
+    plt.bar(np.arange(n_comp),
+            np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100,
+            color='m', alpha=.1)
+    # line for aesthetics
+    plt.plot(np.arange(n_comp),
+             np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
-    plt.xlabel('Components number')
-    plt.ylabel('Cumulative explained variance (%)')
+
+    plt.xlabel('PC number', fontsize=11)
+    plt.ylabel('Cumulative explained variance (%)', fontsize=11)
+
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
@@ -60,6 +68,7 @@ def pca_scores(training,
                show=False):
     """
     PCA scores plot, displays scores of observations above those of training.
+    :param labels:
     :param training: Training scores
     :param prediction: Test scores
     :param n_comp: How many components to show
@@ -73,9 +82,9 @@ def pca_scores(training,
     # Number of components to keep
     ut = n_comp
     # Ticks
-    plt.xticks(np.arange(0, ut, 5), fontsize=8)
+    plt.xticks(np.arange(0, ut, 5), fontsize=11)
     # Plot all training scores
-    plt.plot(training.T[:ut], 'ow', markersize=3, alpha=0.05)
+    plt.plot(training.T[:ut], 'ob', markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
     # Choose seaborn cmap
     # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
@@ -103,10 +112,10 @@ def pca_scores(training,
         #          label=str(sample_n))
 
     if labels:
-        plt.title('PCA scores')
-        plt.xlabel('Component id')
-        plt.ylabel('Component scores')
-    plt.tick_params(labelsize=6)
+        plt.title('Principal Components of training and test dataset')
+        plt.xlabel('PC number')
+        plt.ylabel('PC')
+    plt.tick_params(labelsize=11)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -157,7 +166,8 @@ def cca_plot(cca_operator,
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             # Choose beautiful color map
-            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.95, reverse=True)
+            # light = 0.95 is beautiful for reverse = True
+            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
             # Seaborn 'joinplot' between d & h training CCA scores
             g = sns.jointplot(d[comp_n], h[comp_n],
                               cmap=cmap, n_levels=80, shade=True,
@@ -169,7 +179,7 @@ def cca_plot(cca_operator,
             # Plot prediction (d, h) in canonical space
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
-                     label='{}'.format(sample_n))
+                     label=f'{sample_n}')
             # Plot predicted canonical variate mean
             # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
             #          'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
@@ -177,13 +187,13 @@ def cca_plot(cca_operator,
 
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
-        plt.xlabel('d')
-        plt.ylabel('h')
+        plt.xlabel('$d^{c}$', fontsize=11)
+        plt.ylabel('$h^{c}$', fontsize=11)
         plt.subplots_adjust(top=0.9)
-        g.fig.suptitle(f'{i} - {round(cca_coefficient[i], 4)}')
+        g.fig.suptitle(f'Pair {i+1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
         if sdir:
             filesio.dirmaker(sdir)
-            plt.savefig(jp(sdir, 'cca{}.png'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
+            plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -250,11 +260,19 @@ class Plot:
                highlight=None,
                ghost=False,
                sdir=None,
+               labelsize=12,
+               factor=1,
+               xlabel=None,
+               ylabel=None,
                title='curves',
                show=False):
         """
         Shows every breakthrough curve stacked on a plot.
-        :param tc: Curves with shape (n_sim, n_wels, n_time_steps)
+        :param ylabel:
+        :param xlabel:
+        :param factor:
+        :param labelsize:
+        :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
         :param highlight: list: List of indices of curves to highlight in the plot
         :param ghost: bool: Flag to only display highlighted curves.
         :param sdir: Directory in which to save figure
@@ -263,19 +281,21 @@ class Plot:
         """
         if highlight is None:
             highlight = []
-        n_sim, n_wels, nts = tc.shape
+        n_sim, n_wells, nts = tc.shape
         for i in range(n_sim):
-            for t in range(n_wels):
+            for t in range(n_wells):
                 if i in highlight:
-                    plt.plot(tc[i][t], color=self.cols[t], linewidth=2, alpha=1)
+                    plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=2, alpha=1)
                 elif not ghost:
-                    plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
+                    plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=.2, alpha=0.5)
 
         plt.grid(linewidth=.3, alpha=.4)
-        plt.tick_params(labelsize=5)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.tick_params(labelsize=labelsize)
         if sdir:
             filesio.dirmaker(sdir)
-            plt.savefig(jp(sdir, f'{title}.png'), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f'{title}.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -284,11 +304,19 @@ class Plot:
     def curves_i(self,
                  tc,
                  highlight=None,
+                 labelsize=12,
+                 factor=1,
+                 xlabel=None,
+                 ylabel=None,
                  sdir=None,
                  show=False):
         """
         Shows every breakthrough individually for each observation point.
         Will produce n_well figures of n_sim curves each.
+        :param labelsize:
+        :param factor:
+        :param xlabel:
+        :param ylabel:
         :param tc: Curves with shape (n_sim, n_wells, n_time_steps)
         :param highlight: list: List of indices of curves to highlight in the plot
         :param sdir: Directory in which to save figure
@@ -301,15 +329,17 @@ class Plot:
         for t in range(n_wels):
             for i in range(n_sim):
                 if i in highlight:
-                    plt.plot(tc[i][t], color=self.cols[t], linewidth=2, alpha=1)
+                    plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=2, alpha=1)
                 else:
-                    plt.plot(tc[i][t], color=self.cols[t], linewidth=.2, alpha=0.5)
+                    plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
-            plt.tick_params(labelsize=5)
-            plt.title(f'well #{t + 1}')
+            plt.tick_params(labelsize=labelsize)
+            plt.title(f'Well {t + 1}')
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
             if sdir:
                 filesio.dirmaker(sdir)
-                plt.savefig(jp(sdir, f'{title}_{t + 1}.png'), dpi=300, transparent=True)
+                plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -317,7 +347,7 @@ class Plot:
 
     def plot_wells(self,
                    well_ids=None,
-                   markersize: float = 4):
+                   markersize: float = 4.):
 
         if well_ids is None:
             comb = [0] + list(self.wells.combination)
@@ -335,8 +365,12 @@ class Plot:
             else:
                 label = f'{n}'
             if n in comb:
-                plt.plot(wbd[i]['coordinates'][0], wbd[i]['coordinates'][1],
-                         f'{wbd[i]["color"]}o', markersize=markersize, markeredgecolor='k', markeredgewidth=.5,
+                plt.plot(wbd[i]['coordinates'][0],
+                         wbd[i]['coordinates'][1],
+                         f'{wbd[i]["color"]}o',
+                         markersize=markersize,
+                         markeredgecolor='k',
+                         markeredgewidth=.5,
                          label=label)
             s += 1
 
@@ -349,6 +383,10 @@ class Plot:
             vmax=None,
             x_lim=None,
             y_lim=None,
+            xlabel=None,
+            ylabel=None,
+            cb_title=None,
+            labelsize=5,
             cmap='coolwarm',
             colors='white',
             show_wells=False,
@@ -359,6 +397,11 @@ class Plot:
         """
         Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+        :param xlabel:
+        :param ylabel:
+        :param cb_title:
+        :param well_ids:
+        :param labelsize: Label size
         :param title: str: plot title
         :param show_wells: bool: whether to plot well coordinates or not
         :param cmap: str: colormap name for the background array
@@ -382,7 +425,8 @@ class Plot:
                        vmin=vmin,
                        vmax=vmax,
                        cmap=cmap)
-            plt.colorbar()
+            cb = plt.colorbar()
+            cb.ax.set_title(cb_title)
 
         # Plot results
         if h is None:
@@ -395,7 +439,7 @@ class Plot:
         # Plot wells
         if show_wells:
             self.plot_wells(well_ids=well_ids, markersize=7)
-            plt.legend(fontsize=8)
+            plt.legend(fontsize=11)
 
         # Plot limits
         if x_lim is None:
@@ -410,8 +454,11 @@ class Plot:
         if title:
             plt.title(title)
 
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+
         # Tick size
-        plt.tick_params(labelsize=5)
+        plt.tick_params(labelsize=labelsize)
 
         if fig_file:
             filesio.dirmaker(os.path.dirname(fig_file))
@@ -444,7 +491,7 @@ class Plot:
 
         # Plot 'true' h predicted
         if h_pred is not None:
-            plt.contour(self.x, self.y, h_pred, [0], colors='cyan', linewidths=1, alpha=.9)
+            plt.contour(self.x, self.y, h_pred, [0], colors='blue', linewidths=1, alpha=.9)
         if fig_file:
             filesio.dirmaker(os.path.dirname(fig_file))
             plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
@@ -455,7 +502,11 @@ class Plot:
 
     @staticmethod
     def d_pca_inverse_plot(pca_o,
-                           vn,
+                           vn: int,
+                           factor: float = 1.,
+                           xlabel: str = None,
+                           ylabel: str = None,
+                           labelsize: float = 11.,
                            training=True,
                            fig_dir=None,
                            show=False):
@@ -463,6 +514,10 @@ class Plot:
 
         Plot used to compare the reproduction of the original physical space after PCA transformation.
 
+        :param xlabel:
+        :param ylabel:
+        :param labelsize:
+        :param factor:
         :param pca_o: data PCA operator
         :param vn: Number of components to keep while inverse-transforming the data
         :param training: bool:
@@ -481,13 +536,20 @@ class Plot:
         for i, r in enumerate(roots):
             v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
             if training:
-                plt.plot(pca_o.training_physical[i], 'r', alpha=.8)
+                to_plot = np.copy(pca_o.training_physical[i])
             else:
-                plt.plot(pca_o.predict_physical[i], 'r', alpha=.8)
-            plt.plot(v_pred, 'c', alpha=.8)
+                to_plot = np.copy(pca_o.predict_physical[i])
+
+            plt.plot(to_plot * factor, 'r', alpha=.8)
+            plt.plot(v_pred * factor, 'b', alpha=.8)
+            plt.legend(['Physical', 'Back transformed'])
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.tick_params(labelsize=labelsize)
+
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
-                plt.savefig(jp(fig_dir, f'{r}_d.png'), dpi=100, transparent=True)
+                plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -522,14 +584,15 @@ class Plot:
 
         for i, r in enumerate(roots):
             v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
-            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='cyan', alpha=.8, lw=1)
+            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=.8, lw=1)
             if training:
-                self.whp(h=pca_o.training_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+                h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
             else:
-                self.whp(h=pca_o.predict_physical[i].reshape(1, shape[1], shape[2]), colors='red', alpha=1, lw=1)
+                h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
+            self.whp(h=h_to_plot, colors='red', alpha=1, lw=1)
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
-                plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300, transparent=True)
+                plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()
@@ -575,13 +638,40 @@ class Plot:
         tc = d_pco.training_physical.reshape(d_pco.training_shape)
         tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
         tc = np.concatenate((tc, tcp), axis=0)
-        self.curves(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
-        self.curves(tc=tc, sdir=sdir, highlight=[len(tc) - 1], ghost=True, title='curves_ghost')
-        self.curves_i(tc=tc, sdir=sdir, highlight=[len(tc) - 1])
+
+        # Plot parameters for predictor
+        xlabel = 'Observation index number'
+        ylabel = 'Concentration ($g/m^{3})$'
+        factor = 1000
+        labelsize = 11
+
+        self.curves(tc=tc,
+                    sdir=sdir,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    factor=factor,
+                    labelsize=labelsize,
+                    highlight=[len(tc) - 1])
+        self.curves(tc=tc,
+                    sdir=sdir,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    factor=factor,
+                    labelsize=labelsize,
+                    highlight=[len(tc) - 1],
+                    ghost=True,
+                    title='curves_ghost')
+        self.curves_i(tc=tc,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      factor=factor,
+                      labelsize=labelsize,
+                      sdir=sdir,
+                      highlight=[len(tc) - 1])
 
         # WHP - h
         fig_dir = jp(hbase, 'roots_whpa')
-        ff = jp(fig_dir, f'{root}.png')  # figure name
+        ff = jp(fig_dir, f'{root}.pdf')  # figure name
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
@@ -615,7 +705,7 @@ class Plot:
         plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
         self.plot_wells(markersize=1)
         plt.colorbar()
-        plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.png'),
+        plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.pdf'),
                     bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
 
@@ -625,9 +715,11 @@ class Plot:
                    h=False,
                    scores=True,
                    exvar=True,
+                   labels=False,
                    folders=None):
         """
         Loads PCA pickles and plot scores for all folders
+        :param labels:
         :param root: str:
         :param d: bool:
         :param h: bool:
@@ -658,17 +750,20 @@ class Plot:
                 # For d only
                 pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
                 d_pco = joblib.load(pcaf)
-                fig_file = os.path.join(dfig, 'd_scores.png')
+                fig_file = os.path.join(dfig, 'd_scores.pdf')
                 if scores:
                     pca_scores(training=d_pco.training_pc,
                                prediction=d_pco.predict_pc,
                                n_comp=d_pco.n_pc_cut,
-                               labels=False,
+                               labels=labels,
                                fig_file=fig_file)
                 # Explained variance plots
                 if exvar:
-                    fig_file = os.path.join(dfig, 'd_exvar.png')
-                    explained_variance(d_pco.operator, n_comp=d_pco.n_pc_cut, thr=.9, fig_file=fig_file)
+                    fig_file = os.path.join(dfig, 'd_exvar.pdf')
+                    explained_variance(d_pco.operator,
+                                       n_comp=d_pco.n_pc_cut,
+                                       thr=.9,
+                                       fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
             # Load h pickle
@@ -686,11 +781,11 @@ class Plot:
                 pca_scores(training=h_pc_training,
                            prediction=h_pc_prediction,
                            n_comp=nho,
-                           labels=False,
+                           labels=labels,
                            fig_file=fig_file)
             # Explained variance plots
             if exvar:
-                fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.png')
+                fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.pdf')
                 explained_variance(h_pco.operator, n_comp=h_pco.n_pc_cut, thr=.85, fig_file=fig_file)
 
     @staticmethod
@@ -760,7 +855,7 @@ class Plot:
             plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
-            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.png'), dpi=300, transparent=True)
+            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'), dpi=300, transparent=True)
             plt.close()
 
     @staticmethod
@@ -791,7 +886,7 @@ class Plot:
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
             mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
-                      fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.png'))
+                      fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
     @staticmethod
     def plot_pc_ba(root: str = None,
@@ -838,10 +933,21 @@ class Plot:
                 res_dir = os.path.join(subdir, f, 'obj')
                 # Load objects
                 d_pco = joblib.load(os.path.join(res_dir, 'd_pca.pkl'))
-                dnc0 = d_pco.n_pc_cut
-                d_pco.pca_refresh(dnc0)
+                dnc0 = d_pco.n_pc_cut  # Number of PC components
+                d_pco.pca_refresh(dnc0)  # refresh based on dnc0
                 setattr(d_pco, 'test_root', [root])
                 # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
                 #                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
-                mplot.d_pca_inverse_plot(d_pco, dnc0, training=False,
+                # Plot parameters for predictor
+                xlabel = 'Observation index number'
+                ylabel = 'Concentration ($g/m^{3})$'
+                factor = 1000
+                labelsize = 11
+                mplot.d_pca_inverse_plot(d_pco,
+                                         dnc0,
+                                         xlabel=xlabel,
+                                         ylabel=ylabel,
+                                         labelsize=labelsize,
+                                         factor=factor,
+                                         training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))

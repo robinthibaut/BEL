@@ -133,4 +133,4 @@ class MySetup:
 
     @dataclass
     class Target:
-        n_pc: int = 50
+        n_pc: int = 30
