@@ -179,7 +179,7 @@ def cca_plot(cca_operator,
             # Plot prediction (d, h) in canonical space
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
-                     label='{}'.format(sample_n))
+                     label=f'{sample_n}')
             # Plot predicted canonical variate mean
             # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
             #          'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
@@ -190,7 +190,7 @@ def cca_plot(cca_operator,
         plt.xlabel('$d^{c}$', fontsize=11)
         plt.ylabel('$h^{c}$', fontsize=11)
         plt.subplots_adjust(top=0.9)
-        g.fig.suptitle(f'Pair {i} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
+        g.fig.suptitle(f'Pair {i+1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
         if sdir:
             filesio.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
@@ -502,8 +502,11 @@ class Plot:
 
     @staticmethod
     def d_pca_inverse_plot(pca_o,
-                           vn,
+                           vn: int,
                            factor: float = 1.,
+                           xlabel: str = None,
+                           ylabel: str = None,
+                           labelsize: float = 11.,
                            training=True,
                            fig_dir=None,
                            show=False):
@@ -511,6 +514,9 @@ class Plot:
 
         Plot used to compare the reproduction of the original physical space after PCA transformation.
 
+        :param xlabel:
+        :param ylabel:
+        :param labelsize:
         :param factor:
         :param pca_o: data PCA operator
         :param vn: Number of components to keep while inverse-transforming the data
@@ -533,8 +539,14 @@ class Plot:
                 to_plot = np.copy(pca_o.training_physical[i])
             else:
                 to_plot = np.copy(pca_o.predict_physical[i])
+
             plt.plot(to_plot * factor, 'r', alpha=.8)
-            plt.plot(v_pred, 'b', alpha=.8)
+            plt.plot(v_pred * factor, 'b', alpha=.8)
+            plt.legend(['Physical', 'Back transformed'])
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.tick_params(labelsize=labelsize)
+
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
                 plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=300, transparent=True)
@@ -707,6 +719,7 @@ class Plot:
                    folders=None):
         """
         Loads PCA pickles and plot scores for all folders
+        :param labels:
         :param root: str:
         :param d: bool:
         :param h: bool:
@@ -920,10 +933,21 @@ class Plot:
                 res_dir = os.path.join(subdir, f, 'obj')
                 # Load objects
                 d_pco = joblib.load(os.path.join(res_dir, 'd_pca.pkl'))
-                dnc0 = d_pco.n_pc_cut
-                d_pco.pca_refresh(dnc0)
+                dnc0 = d_pco.n_pc_cut  # Number of PC components
+                d_pco.pca_refresh(dnc0)  # refresh based on dnc0
                 setattr(d_pco, 'test_root', [root])
                 # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
                 #                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
-                mplot.d_pca_inverse_plot(d_pco, dnc0, training=False,
+                # Plot parameters for predictor
+                xlabel = 'Observation index number'
+                ylabel = 'Concentration ($g/m^{3})$'
+                factor = 1000
+                labelsize = 11
+                mplot.d_pca_inverse_plot(d_pco,
+                                         dnc0,
+                                         xlabel=xlabel,
+                                         ylabel=ylabel,
+                                         labelsize=labelsize,
+                                         factor=factor,
+                                         training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))

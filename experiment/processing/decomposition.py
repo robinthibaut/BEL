@@ -97,7 +97,8 @@ def base_pca(base,
         # Transform
         h_pco.pca_training_fit_transform()
         # Define number of components to keep
-        h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
+        # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
+        h_pco.n_pc_cut = MySetup.Target.n_pc
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
