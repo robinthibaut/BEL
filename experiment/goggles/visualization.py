@@ -166,19 +166,22 @@ def cca_plot(cca_operator,
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             # Choose beautiful color map
+            # cube_helix very nice for dark mode
             # light = 0.95 is beautiful for reverse = True
-            cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
+            # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
+            cmap = sns.color_palette("Blues", as_cmap=True)
             # Seaborn 'joinplot' between d & h training CCA scores
             g = sns.jointplot(d[comp_n], h[comp_n],
                               cmap=cmap, n_levels=80, shade=True,
                               kind='kde')
-            g.plot_joint(plt.scatter, c='w', marker='+', s=2, alpha=.7)
+            g.plot_joint(plt.scatter, c='w', marker='o', s=2, alpha=.7)
             # add 'arrows' at observation location - tricky part!
-            g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1)
-            g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0)
+            # https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.patches.FancyArrow.html
+            g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1, color='r', head_width=0, head_length=0, lw=2)
+            g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0, color='r', head_width=0, head_length=0, lw=2)
             # Plot prediction (d, h) in canonical space
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-                     'wo', markersize=4.5, markeredgecolor='k', alpha=.7,
+                     'ro', markersize=4.5, markeredgecolor='k', alpha=.7,
                      label=f'{sample_n}')
             # Plot predicted canonical variate mean
             # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
