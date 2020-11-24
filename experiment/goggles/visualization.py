@@ -190,7 +190,7 @@ def cca_plot(cca_operator,
         plt.xlabel('$d^{c}$', fontsize=11)
         plt.ylabel('$h^{c}$', fontsize=11)
         plt.subplots_adjust(top=0.9)
-        g.fig.suptitle(f'Pair {i+1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
+        g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
         if sdir:
             filesio.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
@@ -454,8 +454,8 @@ class Plot:
         if title:
             plt.title(title)
 
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(xlabel, fontsize=labelsize)
+        plt.ylabel(ylabel, fontsize=labelsize)
 
         # Tick size
         plt.tick_params(labelsize=labelsize)
@@ -679,8 +679,8 @@ class Plot:
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
-        self.whp(h_training, alpha=.2)
-        self.whp(h, colors='r', lw=1, alpha=1, fig_file=ff)
+        self.whp(h_training, colors='blue', alpha=.2)
+        self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11, fig_file=ff)
 
         # WHPs
         ff = jp(md,
