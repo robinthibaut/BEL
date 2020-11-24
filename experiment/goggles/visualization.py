@@ -181,7 +181,7 @@ def cca_plot(cca_operator,
             g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0, color='r', head_width=0, head_length=0, lw=2)
             # Plot prediction (d, h) in canonical space
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-                     'ro', markersize=4.5, markeredgecolor='k', alpha=.7,
+                     'ro', markersize=4.5, markeredgecolor='k', alpha=1,
                      label=f'{sample_n}')
             # Plot predicted canonical variate mean
             # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
@@ -190,9 +190,10 @@ def cca_plot(cca_operator,
 
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
-        plt.xlabel('$d^{c}$', fontsize=11)
-        plt.ylabel('$h^{c}$', fontsize=11)
+        plt.xlabel('$d^{c}$', fontsize=12)
+        plt.ylabel('$h^{c}$', fontsize=12)
         plt.subplots_adjust(top=0.9)
+        plt.tick_params(labelsize=11)
         g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
         if sdir:
             filesio.dirmaker(sdir)
@@ -590,13 +591,18 @@ class Plot:
             roots = pca_o.test_root
 
         for i, r in enumerate(roots):
-            v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
-            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=.8, lw=1)
+
             if training:
                 h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
             else:
                 h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
-            self.whp(h=h_to_plot, colors='red', alpha=1, lw=1)
+            self.whp(h=h_to_plot,
+                     colors='red', alpha=1, lw=2)
+            v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=1, lw=2,
+                     labelsize=11, xlabel='X(m)', ylabel='Y(m)',
+                     x_lim=[850, 1100], y_lim=[400, 650])
+
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
                 plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
