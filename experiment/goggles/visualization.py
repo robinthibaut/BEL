@@ -2,6 +2,7 @@
 
 import os
 from os.path import join as jp
+import warnings
 
 import joblib
 import matplotlib.pyplot as plt
@@ -432,18 +433,20 @@ class Plot:
             cb = plt.colorbar()
             cb.ax.set_title(cb_title)
 
+        contour = None
         # Plot results
         if h is None:
             h = []
 
         for z in h:  # h is the n square WHPA matrix
-            plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
+            contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
         # Plot wells
+        well_legend = None
         if show_wells:
             self.plot_wells(well_ids=well_ids, markersize=7)
-            plt.legend(fontsize=11)
+            well_legend = plt.legend(fontsize=11)
 
         # Plot limits
         if x_lim is None:
@@ -472,19 +475,22 @@ class Plot:
             plt.show()
             plt.close()
 
+        return contour, well_legend
+
     def whp_prediction(self,
                        forecasts,
                        h_true,
                        h_pred=None,
                        x_lim=None,
                        y_lim=None,
+                       label=None,
                        bkg_field_array=None,
                        fig_file=None,
                        show_wells=False,
                        well_ids=None,
                        title=None,
                        show=False):
-
+        warnings.warn('Depecrated funcion')
         # Plot n forecasts sampled
         self.whp(h=forecasts,
                  x_lim=x_lim,
@@ -495,7 +501,7 @@ class Plot:
                  title=title)
 
         # Plot true h
-        plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9)
+        plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9, label=label)
 
         # Plot 'true' h predicted
         if h_pred is not None:
@@ -694,7 +700,7 @@ class Plot:
         # WHPs
         ff = jp(md,
                 'uq',
-                f'cca_{cca_operator.n_components}.png')
+                f'cca_{cca_operator.n_components}.pdf')
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
         forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
@@ -705,11 +711,26 @@ class Plot:
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
-        self.whp(h_training, lw=.2, alpha=.5, colors='gray', show_wells=True, well_ids=well_ids, show=False)
-        self.whp_prediction(forecasts=forecast_posterior,
-                            x_lim=[800, 1200],
-                            h_true=h[0],
-                            fig_file=ff)
+        labels = ['Training', 'Samples', 'True test']
+        colors = ['blue', 'red', 'k']
+
+        contour1, well_legend = self.whp(h_training, lw=3, alpha=.05, colors=colors[0],
+                                         show_wells=True, well_ids=well_ids, show=False)
+
+        contour2, _ = self.whp(forecast_posterior, colors=colors[1], lw=.5, alpha=1, show=False)
+
+        contour3, _ = self.whp(h, colors=colors[2], lw=.7, alpha=.8,
+                               x_lim=[800, 1200], xlabel='X(m)', ylabel='Y(m)',
+                               labelsize=11)
+
+        # Tricky operation to add a second legend:
+        # https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+        proxys = [plt.plot([], color=c) for c in colors]
+        plt.legend([p[0] for p in proxys], labels, loc=4)
+        plt.gca().add_artist(well_legend)
+
+        filesio.dirmaker(os.path.dirname(ff))
+        plt.savefig(ff, bbox_inches='tight', dpi=300, transparent=True)
 
     def plot_K_field(self, root):
         # HK field
