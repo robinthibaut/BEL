@@ -14,6 +14,29 @@ from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 
 
+def proxy_legend(legend1=None, colors: list = None, labels: list = None, loc: int = 4, marker: str = '-'):
+    """
+    Add a second legend to a figure @ bottom right (loc=4)
+    https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+    :param legend1: First legend instance from the figure
+    :param colors: List of colors
+    :param labels: List of labels
+    :param loc: Position of the legend
+    :param marker: Points 'o' or line '-'
+    :return:
+    """
+    if colors is None:
+        colors = []
+    if labels is None:
+        labels = []
+
+    proxys = [plt.plot([], marker, color=c) for c in colors]
+    plt.legend([p[0] for p in proxys], labels, loc=loc)
+
+    if legend1:
+        plt.gca().add_artist(legend1)
+
+
 def explained_variance(pca,
                        n_comp: int = 0,
                        thr: float = 1.,
@@ -117,6 +140,8 @@ def pca_scores(training,
         plt.xlabel('PC number')
         plt.ylabel('PC')
     plt.tick_params(labelsize=11)
+    # Add legend
+    proxy_legend(colors=['blue', 'red'], labels=['Training', 'Test'], marker='o')
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -196,6 +221,9 @@ def cca_plot(cca_operator,
         plt.subplots_adjust(top=0.9)
         plt.tick_params(labelsize=11)
         g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
+
+        proxy_legend(colors=['white', 'red'], labels=['Training', 'Test'], marker='o')
+
         if sdir:
             filesio.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
@@ -556,7 +584,7 @@ class Plot:
 
             plt.plot(to_plot * factor, 'r', alpha=.8)
             plt.plot(v_pred * factor, 'b', alpha=.8)
-            plt.legend(['Physical', 'Back transformed'])
+            legend1 = plt.legend(['Physical', 'Back transformed'])
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             plt.tick_params(labelsize=labelsize)
@@ -608,6 +636,8 @@ class Plot:
             self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=1, lw=2,
                      labelsize=11, xlabel='X(m)', ylabel='Y(m)',
                      x_lim=[850, 1100], y_lim=[400, 650])
+
+            proxy_legend(colors=['red', 'blue'], labels=['Physical', 'Back transformed'], marker='-')
 
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
@@ -714,20 +744,17 @@ class Plot:
         labels = ['Training', 'Samples', 'True test']
         colors = ['blue', 'red', 'k']
 
-        contour1, well_legend = self.whp(h_training, lw=3, alpha=.05, colors=colors[0],
-                                         show_wells=True, well_ids=well_ids, show=False)
+        _, well_legend = self.whp(h_training, lw=3, alpha=.05, colors=colors[0],
+                                  show_wells=True, well_ids=well_ids, show=False)
 
-        contour2, _ = self.whp(forecast_posterior, colors=colors[1], lw=.5, alpha=1, show=False)
+        self.whp(forecast_posterior, colors=colors[1], lw=.5, alpha=1, show=False)
 
-        contour3, _ = self.whp(h, colors=colors[2], lw=.7, alpha=.8,
-                               x_lim=[800, 1200], xlabel='X(m)', ylabel='Y(m)',
-                               labelsize=11)
+        self.whp(h, colors=colors[2], lw=.7, alpha=.8,
+                 x_lim=[800, 1200], xlabel='X(m)', ylabel='Y(m)',
+                 labelsize=11)
 
         # Tricky operation to add a second legend:
-        # https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
-        proxys = [plt.plot([], color=c) for c in colors]
-        plt.legend([p[0] for p in proxys], labels, loc=4)
-        plt.gca().add_artist(well_legend)
+        proxy_legend(well_legend, colors, labels)
 
         filesio.dirmaker(os.path.dirname(ff))
         plt.savefig(ff, bbox_inches='tight', dpi=300, transparent=True)
