@@ -21,7 +21,8 @@ def proxy_legend(legend1=None,
                  loc: int = 4,
                  marker: str = '-',
                  pec: list = None,
-                 fz: float = 11):
+                 fz: float = 11,
+                 fig_file: str = None):
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
@@ -32,6 +33,7 @@ def proxy_legend(legend1=None,
     :param marker: Points 'o' or line '-'
     :param pec: List of point edge color, e.g. [None, 'k']
     :param fz: Fontsize
+    :param closure: Boolean to closethe figure or not
     :return:
     """
     if colors is None:
@@ -46,6 +48,11 @@ def proxy_legend(legend1=None,
 
     if legend1:
         plt.gca().add_artist(legend1)
+
+    if fig_file:
+        filesio.dirmaker(os.path.dirname(fig_file))
+        plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
+        plt.close()
 
 
 def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
@@ -469,6 +476,7 @@ class Plot:
             labelsize=5,
             cmap='coolwarm',
             colors='white',
+            legendary=None,
             show_wells=False,
             well_ids=None,
             title=None,
@@ -682,7 +690,7 @@ class Plot:
             v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
             self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=1, lw=2,
                      labelsize=11, xlabel='X(m)', ylabel='Y(m)',
-                     x_lim=[850, 1100], y_lim=[400, 650])
+                     x_lim=[850, 1100], y_lim=[350, 650])
 
             proxy_legend(colors=['red', 'blue'], labels=['Physical', 'Back transformed'], marker='-')
 
@@ -765,14 +773,17 @@ class Plot:
                       sdir=sdir,
                       highlight=[len(tc) - 1])
 
-        # WHP - h
+        # WHP - h test + training
         fig_dir = jp(hbase, 'roots_whpa')
         ff = jp(fig_dir, f'{root}.pdf')  # figure name
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         self.whp(h_training, colors='blue', alpha=.2)
-        self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11, fig_file=ff)
+        self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+        colors = ['blue', 'red']
+        labels = ['Training', 'Test']
+        proxy_legend(colors, labels, fig_file=ff)
 
         # WHPs
         ff = jp(md,
@@ -804,10 +815,7 @@ class Plot:
                  labelsize=11)
 
         # Tricky operation to add a second legend:
-        proxy_legend(well_legend, colors, labels)
-
-        filesio.dirmaker(os.path.dirname(ff))
-        plt.savefig(ff, bbox_inches='tight', dpi=300, transparent=True)
+        proxy_legend(well_legend, colors, labels, fig_file=ff)
 
     def plot_K_field(self, root):
         # HK field
