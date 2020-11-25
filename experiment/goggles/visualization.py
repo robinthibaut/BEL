@@ -33,15 +33,15 @@ def proxy_legend(legend1=None,
     :param marker: Points 'o' or line '-'
     :param pec: List of point edge color, e.g. [None, 'k']
     :param fz: Fontsize
-    :param closure: Boolean to closethe figure or not
+    :param fig_file: Path to figure file
     :return:
     """
     if colors is None:
-        colors = []
+        colors = ['w']
     if labels is None:
         labels = []
     if pec is None:
-        pec = colors.copy()
+        pec = [None for _ in range(len(colors))]
 
     proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     plt.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
@@ -250,10 +250,10 @@ def cca_plot(cca_operator,
 
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
-        plt.xlabel('$d^{c}$', fontsize=12)
-        plt.ylabel('$h^{c}$', fontsize=12)
+        plt.xlabel('$d^{c}$', fontsize=14)
+        plt.ylabel('$h^{c}$', fontsize=14)
         plt.subplots_adjust(top=0.9)
-        plt.tick_params(labelsize=11)
+        plt.tick_params(labelsize=14)
         # g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 3)}', fontsize=11)
         # Put title inside box
 
@@ -268,7 +268,7 @@ def cca_plot(cca_operator,
 
         # Add title inside the box
         an = [f'{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}']
-        legend_a = proxy_annotate(annotation=an, loc=0, fz=12)
+        legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
 
         proxy_legend(legend1=legend_a,
                      colors=['white', 'red'],
@@ -417,11 +417,17 @@ class Plot:
                     plt.plot(tc[i][t] * factor, color='k', linewidth=2, alpha=1)
                 else:
                     plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=.2, alpha=0.5)
+            colors = [self.cols[t], 'k']
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=labelsize)
             # plt.title(f'Well {t + 1}')
+
             alphabet = string.ascii_uppercase
-            proxy_annotate([f'{alphabet[t]}. Well {t + 1}'], fz=12)
+            legend_a = proxy_annotate([f'{alphabet[t]}. Well {t + 1}'], fz=12, loc=2)
+
+            labels = ['Training', 'Test']
+            proxy_legend(legend1=legend_a, colors=colors, labels=labels, loc=1)
+
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             if sdir:
@@ -476,7 +482,6 @@ class Plot:
             labelsize=5,
             cmap='coolwarm',
             colors='white',
-            legendary=None,
             show_wells=False,
             well_ids=None,
             title=None,
