@@ -1,8 +1,9 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
-
+import itertools
 import os
 from os.path import join as jp
 import warnings
+import string
 
 import joblib
 import matplotlib.pyplot as plt
@@ -14,7 +15,12 @@ from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 
 
-def proxy_legend(legend1=None, colors: list = None, labels: list = None, loc: int = 4, marker: str = '-'):
+def proxy_legend(legend1=None,
+                 colors: list = None,
+                 labels: list = None,
+                 loc: int = 4,
+                 marker: str = '-',
+                 pec: list = None):
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
@@ -23,18 +29,34 @@ def proxy_legend(legend1=None, colors: list = None, labels: list = None, loc: in
     :param labels: List of labels
     :param loc: Position of the legend
     :param marker: Points 'o' or line '-'
+    :param pec: List of point edge color, e.g. [None, 'k']
     :return:
     """
     if colors is None:
         colors = []
     if labels is None:
         labels = []
+    if pec is None:
+        pec = colors.copy()
 
-    proxys = [plt.plot([], marker, color=c) for c in colors]
+    proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     plt.legend([p[0] for p in proxys], labels, loc=loc)
 
     if legend1:
         plt.gca().add_artist(legend1)
+
+
+def proxy_annotate(annotation: str):
+    """
+    Places annotation (or title) within the figure box
+    :return:
+    """
+
+    legend_a = plt.legend(plt.plot([], linestyle=None), 
+                          annotation, 
+                          handlelength=0, handletextpad=0, fancybox=True, loc=1)
+    
+    return legend_a
 
 
 def explained_variance(pca,
@@ -220,9 +242,26 @@ def cca_plot(cca_operator,
         plt.ylabel('$h^{c}$', fontsize=12)
         plt.subplots_adjust(top=0.9)
         plt.tick_params(labelsize=11)
-        g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 4)}', fontsize=11)
+        # g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 3)}', fontsize=11)
+        # Put title inside box
 
-        proxy_legend(colors=['white', 'red'], labels=['Training', 'Test'], marker='o')
+        alphabet = string.ascii_uppercase
+        extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
+
+        if i <= 25:
+            annotation = alphabet[i]
+        else:
+            j = i - 26
+            annotation = extended_alphabet[j]
+
+        an = f'{annotation}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}'
+        legend_a = proxy_annotate(annotation=an)
+
+        proxy_legend(legend1=legend_a,
+                     colors=['white', 'red'],
+                     labels=['Training', 'Test'],
+                     marker='o',
+                     pec=['k', 'k'])
 
         if sdir:
             filesio.dirmaker(sdir)
@@ -367,7 +406,9 @@ class Plot:
                     plt.plot(tc[i][t] * factor, color=self.cols[t], linewidth=.2, alpha=0.5)
             plt.grid(linewidth=.3, alpha=.4)
             plt.tick_params(labelsize=labelsize)
-            plt.title(f'Well {t + 1}')
+            # plt.title(f'Well {t + 1}')
+            alphabet = string.ascii_uppercase
+            proxy_annotate(f'{alphabet[t]}. Well {t + 1}')
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             if sdir:
@@ -742,14 +783,17 @@ class Plot:
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
         labels = ['Training', 'Samples', 'True test']
-        colors = ['blue', 'red', 'k']
+        colors = ['darkblue', 'darkred', 'k']
 
-        _, well_legend = self.whp(h_training, lw=3, alpha=.05, colors=colors[0],
+        # Training
+        _, well_legend = self.whp(h_training, lw=.7, alpha=.12, colors=colors[0],
                                   show_wells=True, well_ids=well_ids, show=False)
 
+        # Samples
         self.whp(forecast_posterior, colors=colors[1], lw=.5, alpha=1, show=False)
 
-        self.whp(h, colors=colors[2], lw=.7, alpha=.8,
+        # True test
+        self.whp(h, colors=colors[2], lw=1, alpha=1,
                  x_lim=[800, 1200], xlabel='X(m)', ylabel='Y(m)',
                  labelsize=11)
 

@@ -28,7 +28,7 @@ if __name__ == '__main__':
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
-
+        #
         # mplot.plot_pc_ba(root=sample, data=True, target=True)
         # mplot.plot_K_field(sample)
         # mplot.plot_whpa(sample)
