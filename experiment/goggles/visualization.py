@@ -783,7 +783,7 @@ class Plot:
         self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
         colors = ['blue', 'red']
         labels = ['Training', 'Test']
-        proxy_legend(colors, labels, fig_file=ff)
+        proxy_legend(colors=colors, labels=labels, fig_file=ff)
 
         # WHPs
         ff = jp(md,
@@ -815,7 +815,7 @@ class Plot:
                  labelsize=11)
 
         # Tricky operation to add a second legend:
-        proxy_legend(well_legend, colors, labels, fig_file=ff)
+        proxy_legend(legend1=well_legend, colors=colors, labels=labels, fig_file=ff)
 
     def plot_K_field(self, root):
         # HK field
