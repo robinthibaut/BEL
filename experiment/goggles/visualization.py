@@ -20,7 +20,8 @@ def proxy_legend(legend1=None,
                  labels: list = None,
                  loc: int = 4,
                  marker: str = '-',
-                 pec: list = None):
+                 pec: list = None,
+                 fz: float = 11):
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
@@ -30,6 +31,7 @@ def proxy_legend(legend1=None,
     :param loc: Position of the legend
     :param marker: Points 'o' or line '-'
     :param pec: List of point edge color, e.g. [None, 'k']
+    :param fz: Fontsize
     :return:
     """
     if colors is None:
@@ -40,21 +42,24 @@ def proxy_legend(legend1=None,
         pec = colors.copy()
 
     proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
-    plt.legend([p[0] for p in proxys], labels, loc=loc)
+    plt.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
         plt.gca().add_artist(legend1)
 
 
-def proxy_annotate(annotation: str):
+def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
     """
     Places annotation (or title) within the figure box
+    :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
+    :param fz: Fontsize
+    :param loc: Location (default 1 = upper right corner)
     :return:
     """
 
     legend_a = plt.legend(plt.plot([], linestyle=None), 
                           annotation, 
-                          handlelength=0, handletextpad=0, fancybox=True, loc=1)
+                          handlelength=0, handletextpad=0, fancybox=True, loc=loc, fontsize=fz)
     
     return legend_a
 
@@ -249,13 +254,14 @@ def cca_plot(cca_operator,
         extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
 
         if i <= 25:
-            annotation = alphabet[i]
+            subtitle = alphabet[i]
         else:
             j = i - 26
-            annotation = extended_alphabet[j]
+            subtitle = extended_alphabet[j]
 
-        an = f'{annotation}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}'
-        legend_a = proxy_annotate(annotation=an)
+        # Add title inside the box
+        an = [f'{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}']
+        legend_a = proxy_annotate(annotation=an, loc=0, fz=12)
 
         proxy_legend(legend1=legend_a,
                      colors=['white', 'red'],
@@ -408,7 +414,7 @@ class Plot:
             plt.tick_params(labelsize=labelsize)
             # plt.title(f'Well {t + 1}')
             alphabet = string.ascii_uppercase
-            proxy_annotate(f'{alphabet[t]}. Well {t + 1}')
+            proxy_annotate([f'{alphabet[t]}. Well {t + 1}'], fz=12)
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             if sdir:
