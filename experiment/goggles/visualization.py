@@ -64,7 +64,7 @@ def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
     :return:
     """
 
-    legend_a = plt.legend(plt.plot([], linestyle=None), 
+    legend_a = plt.legend(plt.plot([], linestyle=None, color='w', markeredgecolor=None),
                           annotation, 
                           handlelength=0, handletextpad=0, fancybox=True, loc=loc, fontsize=fz)
     
@@ -809,7 +809,7 @@ class Plot:
 
         # Training
         _, well_legend = self.whp(h_training,
-                                  alpha=.2,
+                                  alpha=.1,
                                   lw=.8,
                                   colors=colors[0],
                                   show_wells=True,
@@ -826,8 +826,8 @@ class Plot:
         # True test
         self.whp(h,
                  colors=colors[2],
-                 lw=1.2,
-                 alpha=.7,
+                 lw=1,
+                 alpha=1,
                  x_lim=[800, 1200],
                  xlabel='X(m)',
                  ylabel='Y(m)',
