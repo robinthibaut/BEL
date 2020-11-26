@@ -805,18 +805,32 @@ class Plot:
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
         labels = ['Training', 'Samples', 'True test']
-        colors = ['darkblue', 'darkred', 'k']
+        colors = ['blue', 'k', 'red']
 
         # Training
-        _, well_legend = self.whp(h_training, lw=.7, alpha=.12, colors=colors[0],
-                                  show_wells=True, well_ids=well_ids, show=False)
+        _, well_legend = self.whp(h_training,
+                                  alpha=.2,
+                                  lw=.8,
+                                  colors=colors[0],
+                                  show_wells=True,
+                                  well_ids=well_ids,
+                                  show=False)
 
         # Samples
-        self.whp(forecast_posterior, colors=colors[1], lw=.5, alpha=1, show=False)
+        self.whp(forecast_posterior,
+                 colors=colors[1],
+                 lw=1,
+                 alpha=1,
+                 show=False)
 
         # True test
-        self.whp(h, colors=colors[2], lw=1, alpha=1,
-                 x_lim=[800, 1200], xlabel='X(m)', ylabel='Y(m)',
+        self.whp(h,
+                 colors=colors[2],
+                 lw=1.2,
+                 alpha=.7,
+                 x_lim=[800, 1200],
+                 xlabel='X(m)',
+                 ylabel='Y(m)',
                  labelsize=11)
 
         # Tricky operation to add a second legend:

@@ -21,6 +21,8 @@ Root = List[str]
 def value_info(root: Root):
     """
     Computes the combined value of information for n observations.
+    see also
+    https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
     :param root: list: List containing the roots whose wells contributions will be taken into account.
     :return:
     """
