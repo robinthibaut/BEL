@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for sample in roots:
         print(f'Plotting root {sample}')
 
-        wells = ['1', '2', '3', '4', '5', '6']
+        wells = ['123456', '1', '2', '3', '4', '5', '6']
 
         for w in wells:
             print(f'Plotting well {w}')
