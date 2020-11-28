@@ -23,7 +23,7 @@ if __name__ == '__main__':
     for sample in roots:
         print(f'Plotting root {sample}')
 
-        wells = ['123456', '1', '2', '3', '4', '5', '6']
+        wells = ['123456']
 
         for w in wells:
             print(f'Plotting well {w}')
@@ -32,6 +32,6 @@ if __name__ == '__main__':
         mplot.plot_pc_ba(root=sample, data=True, target=True)
         mplot.plot_K_field(sample)
         mplot.plot_whpa(sample)
-        mplot.cca_vision(sample, folders=wells)
+        # mplot.cca_vision(sample, folders=wells)
         mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
 

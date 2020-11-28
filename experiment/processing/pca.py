@@ -9,6 +9,8 @@ import os
 import joblib
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 
 class PCAIO:
@@ -36,6 +38,8 @@ class PCAIO:
 
         self.obs_shape = None  # Original shape of observation
 
+        self.scaler = None
+        self.pipe = None
         self.operator = None  # PCA operator (scikit-learn instance)
         self.n_pc_cut = None  # Number of components to keep
 
@@ -55,10 +59,13 @@ class PCAIO:
         """
 
         self.operator = PCA()
-        self.operator.fit(self.training_physical)  # Principal components
-
-        # Transform training data into principal components
-        self.training_pc = self.operator.transform(self.training_physical)
+        self.scaler = StandardScaler(with_mean=False)
+        self.pipe = make_pipeline(self.scaler, self.operator, verbose=True)
+        self.pipe.fit(self.training_physical)
+        self.training_pc = self.pipe.transform(self.training_physical)
+        # self.operator.fit(self.training_physical)  # Principal components
+        # # Transform training data into principal components
+        # self.training_pc = self.operator.transform(self.training_physical)
 
         return self.training_pc
 
@@ -79,7 +86,8 @@ class PCAIO:
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
 
         # Transform prediction data into principal components
-        pc_prediction = self.operator.transform(self.predict_physical)
+        # pc_prediction = self.operator.transform(self.predict_physical)
+        pc_prediction = self.pipe.transform(self.predict_physical)
         self.predict_pc = pc_prediction
 
         return pc_prediction
@@ -154,7 +162,7 @@ class PCAIO:
             n_comp = self.n_pc_cut
 
         # TODO: (optimization) only fit after dimension check
-        op_cut = PCA(n_components=n_comp)
+        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp))
         op_cut.fit(self.training_physical)
 
         inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])

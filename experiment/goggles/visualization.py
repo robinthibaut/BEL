@@ -636,7 +636,10 @@ class Plot:
             roots = pca_o.test_root
 
         for i, r in enumerate(roots):
-            v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
+
+            # v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
+            v_pred = pca_o.custom_inverse_transform(v_pc)[0]
+
             if training:
                 to_plot = np.copy(pca_o.training_physical[i])
             else:
@@ -692,7 +695,9 @@ class Plot:
                 h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
             self.whp(h=h_to_plot,
                      colors='red', alpha=1, lw=2)
-            v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+            # v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
+            v_pred = pca_o.custom_inverse_transform(v_pc)
+
             self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=1, lw=2,
                      labelsize=11, xlabel='X(m)', ylabel='Y(m)',
                      x_lim=[850, 1100], y_lim=[350, 650])
@@ -1056,7 +1061,7 @@ class Plot:
             hnc0 = h_pco.n_pc_cut
             # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
 
-            h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+            h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))  # Signed Distance
             # Cut desired number of PC components
             h_pco.pca_test_fit_transform(h_pred, test_root=[root])
             h_pco.pca_refresh(hnc0)
