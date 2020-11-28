@@ -37,6 +37,7 @@ print(seed)
 # 4088225279
 # 1440052516 but remove 60
 
+#%%
 
 test_array = epxy
 

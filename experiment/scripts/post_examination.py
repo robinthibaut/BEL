@@ -6,6 +6,9 @@ import joblib
 
 import seaborn as sb
 
+from sklearn.decomposition import PCA
+
+
 from experiment.goggles.visualization import Plot
 
 from experiment.base.inventory import MySetup
@@ -22,9 +25,22 @@ sb.set_theme()
 
 ndor = jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}.npy')
 nn = np.load(ndor)
-plt.imshow(nn[0])
+nnt = np.flipud(nn[0])
+plt.imshow(nnt)
 plt.colorbar()
 plt.show()
+
+pca = PCA(n_components=20)
+pca.fit(nnt)
+scores = pca.transform(nnt)
+
+inv = pca.inverse_transform(scores).reshape(100, 87)
+plt.imshow(inv)
+plt.colorbar()
+plt.show()
+
+
+#%%
 
 fc = MySetup.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -39,7 +55,7 @@ mplot.whp(h=nn,
           bkg_field_array=np.flipud(nn[0]),
           colors='black',
           cmap=None)
-plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.pdf'),
-            bbox_inches='tight',
-            dpi=300, transparent=True)
+# plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.pdf'),
+#             bbox_inches='tight',
+#             dpi=300, transparent=True)
 plt.show()
