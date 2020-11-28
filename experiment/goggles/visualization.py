@@ -604,7 +604,6 @@ class Plot:
 
     @staticmethod
     def d_pca_inverse_plot(pca_o,
-                           vn: int,
                            factor: float = 1.,
                            xlabel: str = None,
                            ylabel: str = None,
@@ -621,7 +620,6 @@ class Plot:
         :param labelsize:
         :param factor:
         :param pca_o: data PCA operator
-        :param vn: Number of components to keep while inverse-transforming the data
         :param training: bool:
         :param fig_dir: str:
         :param show: bool:
@@ -638,6 +636,7 @@ class Plot:
         for i, r in enumerate(roots):
 
             # v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
+            # The trick is to use [0]
             v_pred = pca_o.custom_inverse_transform(v_pc)[0]
 
             if training:
@@ -1088,7 +1087,6 @@ class Plot:
                 factor = 1000
                 labelsize = 11
                 mplot.d_pca_inverse_plot(d_pco,
-                                         dnc0,
                                          xlabel=xlabel,
                                          ylabel=ylabel,
                                          labelsize=labelsize,

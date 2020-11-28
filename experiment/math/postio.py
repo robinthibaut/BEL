@@ -180,7 +180,9 @@ class PosteriorIO:
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
+
         h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
+
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space

@@ -10,6 +10,7 @@ import joblib
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PowerTransformer
 from sklearn.pipeline import make_pipeline
 
 
@@ -38,9 +39,12 @@ class PCAIO:
 
         self.obs_shape = None  # Original shape of observation
 
-        self.scaler = None
-        self.pipe = None
-        self.operator = None  # PCA operator (scikit-learn instance)
+        self.scaler = StandardScaler(with_mean=False)
+        self.operator = PCA()  # PCA operator (scikit-learn instance)
+        self.transformer = None
+        # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
+        self.pipe = make_pipeline(self.scaler, self.operator, self.transformer, verbose=True)
+
         self.n_pc_cut = None  # Number of components to keep
 
         # Training set - physical space - flattened array
@@ -58,9 +62,11 @@ class PCAIO:
         :return: numpy.ndarray: PC training
         """
 
-        self.operator = PCA()
-        self.scaler = StandardScaler(with_mean=False)
-        self.pipe = make_pipeline(self.scaler, self.operator, verbose=True)
+        # self.scaler = StandardScaler(with_mean=False)
+        # self.operator = PCA()
+        # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
+        # self.pipe = make_pipeline(self.scaler, self.operator, self.transformer, verbose=True)
+
         self.pipe.fit(self.training_physical)
         self.training_pc = self.pipe.transform(self.training_physical)
         # self.operator.fit(self.training_physical)  # Principal components
@@ -162,7 +168,7 @@ class PCAIO:
             n_comp = self.n_pc_cut
 
         # TODO: (optimization) only fit after dimension check
-        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp))
+        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp), self.transformer)
         op_cut.fit(self.training_physical)
 
         inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])
