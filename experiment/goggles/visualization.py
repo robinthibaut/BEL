@@ -1008,7 +1008,6 @@ class Plot:
             # plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
-            plt.show()
             plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'),
                         bbox_inches='tight',
                         dpi=300,
