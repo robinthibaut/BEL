@@ -19,8 +19,9 @@ import matplotlib.pyplot as plt
 from experiment.base.inventory import MySetup
 
 from sklearn import svm
+from sklearn.preprocessing import StandardScaler
 
-plt.style.use('dark_background')
+# plt.style.use('dark_background')
 
 
 def svm1(res_dir, d=True, h=False, folders=None):
@@ -45,18 +46,25 @@ def svm1(res_dir, d=True, h=False, folders=None):
     return obj_
 
 
-sample = '6623dd4fb5014a978d59b9acb03946d2'
+sample = '6a4d614c838442629d7a826cc1f498a8'
 default = ['123456']
 
 dpc = svm1(sample, folders=default)[0]
 
 dataset = np.concatenate([dpc.training_pc[:, :2], dpc.predict_pc[:, :2]], axis=0)
-dataset -= np.min(dataset)
-dataset /= np.max(dataset)
-dataset += 1
+sc = StandardScaler()
+dataset = sc.fit_transform(dataset)
+# dataset -= np.min(dataset)
+# dataset /= np.max(dataset)
+# dataset += 1
 
-xx, yy = np.meshgrid(np.linspace(0.8, 2.2, 200),
-                     np.linspace(0.8, 2.2, 200))
+minx = min(dataset.min(axis=0))
+miny = min(dataset.min(axis=1))
+maxx = max(dataset.max(axis=0))
+maxy = max(dataset.max(axis=1))
+
+xx, yy = np.meshgrid(np.linspace(minx-2, maxx+2, 200),
+                     np.linspace(miny-2, maxy+2, 200))
 
 # 𝜈 is upper bounded by the fraction of outliers and lower bounded by the fraction of support vectors. Just consider
 # that for default value 0.1 0.1 , atmost 10% of the training samples are allowed to be wrongly classified or
@@ -82,7 +90,7 @@ e = plt.plot(dataset[:, 0], dataset[:, 1], 'wo', markersize=3, markeredgecolor='
 f = plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor='k', label='Observation')
 plt.xlabel('First PC score')
 plt.ylabel('Second PC score')
-plt.legend(loc='upper left', fontsize=8)
+plt.legend(loc='lower right', fontsize=8)
 plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, sample, default[0], 'pca', f'{sample}_pc1_outlier.png'),
             dpi=300, transparent=True)
 plt.show()

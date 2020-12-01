@@ -992,18 +992,19 @@ class Plot:
 
             # CCA coefficient plot
             cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=cca_operator.n_components)
-            plt.plot(cca_coefficient, 'lightblue', zorder=0)
+            plt.plot(cca_coefficient, 'lightblue', zorder=1)
             plt.scatter(x=np.arange(len(cca_coefficient)),
                         y=cca_coefficient,
                         c=cca_coefficient,
                         alpha=1,
                         s=50,
-                        cmap='coolwarm')
+                        cmap='coolwarm',
+                        zorder=2)
             cb = plt.colorbar()
             cb.ax.set_title('R')
-            plt.grid(alpha=.4, linewidth=.5)
+            plt.grid(alpha=.4, linewidth=.5, zorder=0)
             plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
-            plt.tick_params(labelsize=8)
+            plt.tick_params(labelsize=5)
             plt.yticks([])
             # plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')

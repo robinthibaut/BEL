@@ -10,7 +10,6 @@ import joblib
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import PowerTransformer
 from sklearn.pipeline import make_pipeline
 
 
