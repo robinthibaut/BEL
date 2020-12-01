@@ -983,22 +983,36 @@ class Plot:
             d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
             d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-            cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=cca_operator.n_components)
-
-            cca_plot(cca_operator,
-                     d_cca_training,
-                     h_cca_training,
-                     d_pc_prediction,
-                     h_pc_prediction,
-                     sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+            # cca_plot(cca_operator,
+            #          d_cca_training,
+            #          h_cca_training,
+            #          d_pc_prediction,
+            #          h_pc_prediction,
+            #          sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
             # CCA coefficient plot
-            sns.lineplot(data=cca_coefficient)
-            plt.grid(alpha=.2, linewidth=.5)
-            plt.title('Decrease of CCA correlation coefficient with component number')
+            cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=cca_operator.n_components)
+            plt.plot(cca_coefficient, 'lightblue', zorder=0)
+            plt.scatter(x=np.arange(len(cca_coefficient)),
+                        y=cca_coefficient,
+                        c=cca_coefficient,
+                        alpha=1,
+                        s=50,
+                        cmap='coolwarm')
+            cb = plt.colorbar()
+            cb.ax.set_title('R')
+            plt.grid(alpha=.4, linewidth=.5)
+            plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
+            plt.tick_params(labelsize=8)
+            plt.yticks([])
+            # plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
-            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'), dpi=300, transparent=True)
+            plt.show()
+            plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'),
+                        bbox_inches='tight',
+                        dpi=300,
+                        transparent=True)
             plt.close()
 
     @staticmethod
