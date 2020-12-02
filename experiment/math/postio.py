@@ -8,8 +8,6 @@ import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
 from experiment.base.inventory import MySetup
-from experiment.processing.target import TargetIO
-
 
 class PosteriorIO:
 
@@ -18,17 +16,16 @@ class PosteriorIO:
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.processing = TargetIO()
-        self.test_h = PowerTransformer(method='yeo-johnson', standardize=True)
-        self.test_d = PowerTransformer(method='yeo-johnson', standardize=True)
+        self.normalize_h = PowerTransformer(method='yeo-johnson', standardize=True)
+        self.normalize_d = PowerTransformer(method='yeo-johnson', standardize=True)
         self.directory = directory
 
-    def linear_gaussian_regression(self,
-                                   h_cca_training_gaussian,
-                                   d_cca_training,
-                                   d_pc_training,
-                                   d_rotations,
-                                   d_cca_prediction):
+    def mvn_inference(self,
+                      h_cca_training_gaussian,
+                      d_cca_training,
+                      d_pc_training,
+                      d_rotations,
+                      d_cca_prediction):
         """
         Estimating posterior mean and covariance of the target.
         .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
@@ -124,7 +121,7 @@ class PosteriorIO:
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.test_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
+        h_posts = self.normalize_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -194,11 +191,11 @@ class PosteriorIO:
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
-            d_cca_training = self.test_d.fit_transform(d_cca_training)
+            d_cca_training = self.normalize_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
             # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
-            h_cca_training = self.test_h.fit_transform(h_cca_training)
+            h_cca_training = self.normalize_h.fit_transform(h_cca_training)
 
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_
@@ -206,15 +203,15 @@ class PosteriorIO:
             # Project observed data into canonical space.
             d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
 
-            d_cca_prediction = self.test_d.transform(d_cca_prediction)
+            d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
 
             # Estimate the posterior mean and covariance (Tarantola)
 
-            self.linear_gaussian_regression(h_cca_training,
-                                            d_cca_training,
-                                            d_pc_training,
-                                            d_rotations,
-                                            d_cca_prediction)
+            self.mvn_inference(h_cca_training,
+                               d_cca_training,
+                               d_pc_training,
+                               d_rotations,
+                               d_cca_prediction)
 
             # Set the seed for later use
             if self.seed is None:
