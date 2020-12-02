@@ -67,7 +67,7 @@ class PosteriorIO:
         n_training = d_cca_training.shape[0]
 
         # Evaluate the covariance in h (in Canonical space)
-        h_cov_operator = np.cov(h_cca_training_gaussian, rowvar=False)  # (n_comp_CCA, n_comp_CCA)
+        h_cov_operator = np.cov(h_cca_training_gaussian.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         x_dim = np.size(d_pc_training, axis=1)  # Number of PCA components for the curves
@@ -78,13 +78,13 @@ class PosteriorIO:
         # Linear modeling h to d (in canonical space) with least-square criterion.
         # Pay attention to the transpose operator.
         # Computes the vector g that approximatively solves the equation h @ g = d.
-        g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0]
+        g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
         # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
         # Modeling error due to deviations from theory
-        d_ls_predicted = h_cca_training_gaussian @ g  # (n_components_CCA, n_training)
-        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=0).reshape(1, -1)  # (n_comp_CCA, 1)
+        d_ls_predicted = h_cca_training_gaussian @ g.T  # (n_components_CCA, n_training)
+        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=0)  # (n_comp_CCA, 1)
         d_modeling_error = \
             d_cca_training \
             - d_ls_predicted \
@@ -97,24 +97,35 @@ class PosteriorIO:
 
         # Computation of the posterior mean in Canonical space
         h_mean = np.column_stack(np.mean(h_cca_training_gaussian, axis=0))  # (n_comp_CCA, 1)
-        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)[0]  # My mean is 0, as expected.
 
+        ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
+        dhh_inv = np.linalg.pinv(h_cov_operator)
+
+        h_posterior_covariance = np.linalg.pinv(
+            dhh_inv +
+            g.T @ ddd_inv @ g
+        )
+
+        h_mean_posterior = h_posterior_covariance @ \
+                           (dhh_inv @ h_mean) + \
+                            g.T @ ddd_inv @ (d_cca_prediction[0] + d_modeling_mean_error - g @ h_mean)
         # Equations from Tarantola:
         # h posterior mean (Canonical space)
-        h_mean_posterior = \
-            h_mean.T \
-            + h_cov_operator @ g \
-            @ np.linalg.pinv(g.T @ h_cov_operator @ g + d_noise_covariance + d_modeling_covariance) \
-            @ (d_cca_prediction + d_modeling_mean_error - h_mean @ g).T  # (n_comp_CCA, 1)
+        # h_mean_posterior = \
+        #     h_mean.T \
+        #     + h_cov_operator @ g.T \
+        #     @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+        #     @ (d_cca_prediction + d_modeling_mean_error - g @ h_mean).T  # (n_comp_CCA, 1)
 
         # h posterior covariance (Canonical space)
-        h_posterior_covariance = \
-            h_cov_operator \
-            - (h_cov_operator @ g) \
-            @ np.linalg.pinv(g.T @ h_cov_operator @ g + d_noise_covariance + d_modeling_covariance) \
-            @ g.T @ h_cov_operator
+        # h_posterior_covariance = \
+        #     h_cov_operator \
+        #     - (h_cov_operator @ g.T) \
+        #     @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
+        #     @ g @ h_cov_operator
 
-        h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
+        # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
         self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
@@ -282,9 +293,9 @@ class PosteriorIO:
 
             # Test using sklearn built-in GPR method
             # self.gaussian_process_regression(d_cca_training.T, h_cca_training_gaussian.T, d_cca_prediction.T)
-            
+
             # self.MOGPR(d_cca_training.T, h_cca_training_gaussian.T, d_cca_prediction.T)
-            
+
             # Set the seed for later use
             if self.seed is None:
                 self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
