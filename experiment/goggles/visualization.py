@@ -826,12 +826,12 @@ class Plot:
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
         labels = ['Training', 'Samples', 'True test']
-        colors = ['blue', 'k', 'red']
+        colors = ['darkblue', 'darkred', 'k']
 
         # Training
         _, well_legend = self.whp(h_training,
-                                  alpha=.1,
-                                  lw=.8,
+                                  alpha=.5,
+                                  lw=.5,
                                   colors=colors[0],
                                   show_wells=True,
                                   well_ids=well_ids,
