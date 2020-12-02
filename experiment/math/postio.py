@@ -5,6 +5,8 @@ from os.path import join as jp
 import joblib
 import numpy as np
 
+from sklearn.preprocessing import PowerTransformer
+
 # Try Gaussian Process from sklearn (however does not support multiple output)
 # import sklearn.gaussian_process as gp
 
@@ -26,6 +28,8 @@ class PosteriorIO:
         self.seed = None
         self.n_posts = None
         self.processing = TargetIO()
+        self.test_h = PowerTransformer(method='yeo-johnson', standardize=True)
+        self.test_d = PowerTransformer(method='yeo-johnson', standardize=True)
         self.directory = directory
 
     def linear_gaussian_regression(self,
@@ -181,7 +185,8 @@ class PosteriorIO:
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
 
-        h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
+        # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
+        h_posts = self.test_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -248,17 +253,22 @@ class PosteriorIO:
 
             # Transform to canonical space
             d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
-            d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+            # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+
+            # Ensure Gaussian distribution in d_cca_training
+            d_cca_training_gaussian = self.test_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
-            h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
+            # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
+            h_cca_training_gaussian = self.test_h.fit_transform(h_cca_training)
 
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_
 
             # Project observed data into canonical space.
             d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-            d_cca_prediction = d_cca_prediction.T
+            # d_cca_prediction = d_cca_prediction.T
+            d_cca_prediction = self.test_d.transform(d_cca_prediction)
 
             # Estimate the posterior mean and covariance (Tarantola)
 

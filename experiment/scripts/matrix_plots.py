@@ -66,5 +66,12 @@ mat_mean_plot(h_mean_posterior, cmap=m, filename='hpost', vmin=vmin, vmax=vmax)
 
 mat_mean_plot(d_cca_prediction.reshape(-1, 1) + d_modeling_mean_error - g @ h_mean,
               cmap=m, filename='mean', vmin=vmin, vmax=vmax)
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+
+from experiment.processing.target import TargetIO
+processing = TargetIO()
+h_cca_prediction_gaussian = processing.gaussian_distribution(h_cca_prediction.T)
+mat_mean_plot(h_cca_prediction_gaussian.T,
+              cmap=m, filename='mean_post_gaussian', vmin=-1.649, vmax=1.590)
+
+
 

@@ -13,6 +13,7 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
+from sklearn.preprocessing import PowerTransformer
 
 
 def proxy_legend(legend1=None,
@@ -225,6 +226,19 @@ def cca_plot(cca_operator,
                                                                         h_obs.reshape(1, -1))
             d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
+            #%%
+            h2 = h.copy()
+            d2 = d.copy()
+            tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
+            h = tfm1.fit_transform(h2.T)
+            h = h.T
+            h_cca_prediction = tfm1.transform(h_cca_prediction.T)
+            h_cca_prediction = h_cca_prediction.T
+
+            tfm2 = PowerTransformer(method='yeo-johnson', standardize=True)
+            d = tfm2.fit_transform(d2.T)
+            d = d.T
+            #%%
             # Choose beautiful color map
             # cube_helix very nice for dark mode
             # light = 0.95 is beautiful for reverse = True
@@ -983,12 +997,16 @@ class Plot:
             d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
             d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
-            # cca_plot(cca_operator,
-            #          d_cca_training,
-            #          h_cca_training,
-            #          d_pc_prediction,
-            #          h_pc_prediction,
-            #          sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
+            # Test 2/12 : Plot gaussian h cca
+            # processing = TargetIO()
+            # h_cca_training = processing.gaussian_distribution(h_cca_training)
+
+            cca_plot(cca_operator,
+                     d_cca_training,
+                     h_cca_training,
+                     d_pc_prediction,
+                     h_pc_prediction,
+                     sdir=os.path.join(os.path.dirname(res_dir), 'cca'))
 
             # CCA coefficient plot
             cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=cca_operator.n_components)
