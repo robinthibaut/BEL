@@ -7,15 +7,6 @@ import numpy as np
 
 from sklearn.preprocessing import PowerTransformer
 
-# Try Gaussian Process from sklearn (however does not support multiple output)
-# import sklearn.gaussian_process as gp
-
-
-# import gpflow as gpf
-# import tensorflow as tf
-# from gpflow.utilities import print_summary
-# from gpflow.ci_utils import ci_niter
-
 from experiment.base.inventory import MySetup
 from experiment.processing.target import TargetIO
 
@@ -92,7 +83,6 @@ class PosteriorIO:
         # (n_comp_CCA, n_training)
 
         # Information about the covariance of the posterior distribution in Canonical space.
-        # d_modeling_covariance = (d_modeling_error.T @ d_modeling_error) / (n_training-1)  # (n_comp_CCA, n_comp_CCA)
         d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Computation of the posterior mean in Canonical space
@@ -101,90 +91,17 @@ class PosteriorIO:
 
         # Inverse of the sample covariance matrix of d ( Sig dd )
         ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
-        # Inverse of the sample covariance matrix of h ( Sig hh )
-        dhh_inv = np.linalg.pinv(h_cov_operator)
-
-        # h_posterior_covariance = np.linalg.pinv(
-        #     dhh_inv +
-        #     g.T @ ddd_inv @ g
-        # )
 
         h_posterior_covariance = h_cov_operator - \
             h_cov_operator @ g.T @ ddd_inv @ g @ h_cov_operator
 
-        # h_mean_posterior = h_posterior_covariance @ \
-        #                    (dhh_inv @ h_mean) + \
-        #                     g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
-
         h_mean_posterior = \
             h_mean + h_cov_operator @ g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
-        # Equations from Tarantola:
-        # h posterior mean (Canonical space)
-        # h_mean_posterior = \
-        #     h_mean.T \
-        #     + h_cov_operator @ g.T \
-        #     @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-        #     @ (d_cca_prediction + d_modeling_mean_error - g @ h_mean).T  # (n_comp_CCA, 1)
-
-        # h posterior covariance (Canonical space)
-        # h_posterior_covariance = \
-        #     h_cov_operator \
-        #     - (h_cov_operator @ g.T) \
-        #     @ np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance) \
-        #     @ g @ h_cov_operator
 
         # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
         self.posterior_mean = h_mean_posterior  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
-
-    # def gaussian_process_regression(self, X_tr, y_tr, X_te):
-    #     # GPR does not work with multiple dimensions output !
-    #     kernel = gp.kernels.RBF()
-    #     model = gp.GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, alpha=0.01, normalize_y=True)
-    #     model.fit(X_tr, y_tr)
-    #     params = model.kernel_.get_params()
-    #     y_pred, cov = model.predict(X_te, return_cov=True)
-    #     print(cov.shape)
-    #     self.posterior_mean = y_pred[0]
-    #     self.posterior_covariance = cov[0]
-
-    # def MOGPR(self, X, Y, test):
-    #     data = X, Y
-    #     P = Y.shape[1]
-    #     M = 20  # Number of inducing points
-    #     idr = np.random.choice(np.arange(X.shape[1]), M)
-    #     Zinit = X[idr]
-    #
-    #     # create multi-output kernel
-    #     kernel = gpf.kernels.SharedIndependent(
-    #         gpf.kernels.SquaredExponential() + gpf.kernels.Linear(), output_dim=P
-    #     )
-    #     # initialization of inducing input locations (M random points from the training inputs)
-    #     Z = Zinit.copy()
-    #     # create multi-output inducing variables from Z
-    #     iv = gpf.inducing_variables.SharedIndependentInducingVariables(
-    #         gpf.inducing_variables.InducingPoints(Z)
-    #     )
-    #
-    #     m = gpf.models.SVGP(kernel, gpf.likelihoods.Gaussian(), inducing_variable=iv, num_latent_gps=P)
-    #
-    #     def optimize_model_with_scipy(model):
-    #         optimizer = gpf.optimizers.Scipy()
-    #         optimizer.minimize(
-    #             model.training_loss_closure(data),
-    #             variables=model.trainable_variables,
-    #             method="l-bfgs-b",
-    #             options={"disp": True, "maxiter": 10000},
-    #         )
-    #
-    #     optimize_model_with_scipy(m)
-    #     print_summary(m)
-    #
-    #     op1, op2 = m.predict_f(test, full_output_cov=True)
-    #
-    #     self.posterior_mean = op1[0]
-    #     self.posterior_covariance = op2[0]
 
     def back_transform(self,
                        h_posts_gaussian,
@@ -277,7 +194,7 @@ class PosteriorIO:
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
-            # d_cca_training = self.test_d.fit_transform(d_cca_training)
+            d_cca_training = self.test_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
             # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
@@ -288,9 +205,8 @@ class PosteriorIO:
 
             # Project observed data into canonical space.
             d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-            # d_cca_prediction = d_cca_prediction.T
 
-            # d_cca_prediction = self.test_d.transform(d_cca_prediction)
+            d_cca_prediction = self.test_d.transform(d_cca_prediction)
 
             # Estimate the posterior mean and covariance (Tarantola)
 
@@ -299,11 +215,6 @@ class PosteriorIO:
                                             d_pc_training,
                                             d_rotations,
                                             d_cca_prediction)
-
-            # Test using sklearn built-in GPR method
-            # self.gaussian_process_regression(d_cca_training.T, h_cca_training_gaussian.T, d_cca_prediction.T)
-
-            # self.MOGPR(d_cca_training.T, h_cca_training_gaussian.T, d_cca_prediction.T)
 
             # Set the seed for later use
             if self.seed is None:
