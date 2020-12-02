@@ -33,7 +33,7 @@ def mat_mean_plot(mat, cmap='coolwarm', filename=None, vmin=None, vmax=None):
 
 #
 # mat_cov_plot(d_noise_covariance)
-# mat_cov_plot(g)
+mat_cov_plot(g)
 # mat_cov_plot(d_modeling_error)
 # mat_cov_plot(d_modeling_covariance)
 
