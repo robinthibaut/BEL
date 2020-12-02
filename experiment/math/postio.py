@@ -99,7 +99,9 @@ class PosteriorIO:
         h_mean = np.column_stack(np.mean(h_cca_training_gaussian, axis=0))  # (n_comp_CCA, 1)
         h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)[0]  # My mean is 0, as expected.
 
+        # Inverse of the sample covariance matrix of d ( Sig dd )
         ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
+        # Inverse of the sample covariance matrix of h ( Sig hh )
         dhh_inv = np.linalg.pinv(h_cov_operator)
 
         h_posterior_covariance = np.linalg.pinv(
@@ -127,7 +129,7 @@ class PosteriorIO:
 
         # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
-        self.posterior_mean = h_mean_posterior.T[0]  # (n_comp_CCA,)
+        self.posterior_mean = h_mean_posterior  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
     # def gaussian_process_regression(self, X_tr, y_tr, X_te):
