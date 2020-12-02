@@ -59,7 +59,7 @@ class PosteriorIO:
         if isinstance(d_pc_training, (list, tuple, np.ndarray)):
             sdpt = np.shape(d_pc_training)  # Shape = (n_training, n_components_PCA)
         if isinstance(d_rotations, (list, tuple, np.ndarray)):
-            sdr = np.shape(d_rotations)  # Shape = (n_components_PCA, n_components_CCA)
+            sdr = np.shape(d_rotations)  # Shape = (n_components_PCA_d, n_components_CCA_h)
         if isinstance(d_cca_prediction, (list, tuple, np.ndarray)):
             sdcp = np.shape(d_cca_prediction)  # Shape = (n_components_CCA, 1)
 
@@ -186,14 +186,14 @@ class PosteriorIO:
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.test_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
+        h_posts = self.test_h.inverse_transform(h_posts_gaussian.T)  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
-        h_pca_reverse = np.matmul(h_posts.T, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+        h_pca_reverse = np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
@@ -256,11 +256,11 @@ class PosteriorIO:
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
-            d_cca_training_gaussian = self.test_d.fit_transform(d_cca_training)
+            d_cca_training = self.test_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
             # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
-            h_cca_training_gaussian = self.test_h.fit_transform(h_cca_training)
+            h_cca_training = self.test_h.fit_transform(h_cca_training)
 
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_
@@ -272,11 +272,11 @@ class PosteriorIO:
 
             # Estimate the posterior mean and covariance (Tarantola)
 
-            self.linear_gaussian_regression(h_cca_training_gaussian,
-                                            d_cca_training,
+            self.linear_gaussian_regression(h_cca_training.T,
+                                            d_cca_training.T,
                                             d_pc_training,
                                             d_rotations,
-                                            d_cca_prediction)
+                                            d_cca_prediction.T)
 
             # Test using sklearn built-in GPR method
             # self.gaussian_process_regression(d_cca_training.T, h_cca_training_gaussian.T, d_cca_prediction.T)
