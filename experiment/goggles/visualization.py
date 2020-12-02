@@ -224,7 +224,7 @@ def cca_plot(cca_operator,
             # Transform to CCA space and transpose
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
-            d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
+            # d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             #%%
             h2 = h.copy()
@@ -232,12 +232,15 @@ def cca_plot(cca_operator,
             tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
             h = tfm1.fit_transform(h2.T)
             h = h.T
-            h_cca_prediction = tfm1.transform(h_cca_prediction.T)
+            h_cca_prediction = tfm1.transform(h_cca_prediction)
             h_cca_prediction = h_cca_prediction.T
 
             tfm2 = PowerTransformer(method='yeo-johnson', standardize=True)
             d = tfm2.fit_transform(d2.T)
             d = d.T
+            d_cca_prediction = tfm2.transform(d_cca_prediction)
+            d_cca_prediction = d_cca_prediction.T
+
             #%%
             # Choose beautiful color map
             # cube_helix very nice for dark mode
