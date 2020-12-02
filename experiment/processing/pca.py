@@ -40,9 +40,8 @@ class PCAIO:
 
         self.scaler = StandardScaler(with_mean=False)
         self.operator = PCA()  # PCA operator (scikit-learn instance)
-        self.transformer = None
         # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
-        self.pipe = make_pipeline(self.scaler, self.operator, self.transformer, verbose=True)
+        self.pipe = make_pipeline(self.scaler, self.operator, verbose=True)
 
         self.n_pc_cut = None  # Number of components to keep
 
@@ -167,7 +166,7 @@ class PCAIO:
             n_comp = self.n_pc_cut
 
         # TODO: (optimization) only fit after dimension check
-        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp), self.transformer)
+        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp))
         op_cut.fit(self.training_physical)
 
         inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])

@@ -96,22 +96,28 @@ class PosteriorIO:
         d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Computation of the posterior mean in Canonical space
-        h_mean = np.column_stack(np.mean(h_cca_training_gaussian, axis=0))  # (n_comp_CCA, 1)
-        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)[0]  # My mean is 0, as expected.
+        h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
 
         # Inverse of the sample covariance matrix of d ( Sig dd )
         ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
         # Inverse of the sample covariance matrix of h ( Sig hh )
         dhh_inv = np.linalg.pinv(h_cov_operator)
 
-        h_posterior_covariance = np.linalg.pinv(
-            dhh_inv +
-            g.T @ ddd_inv @ g
-        )
+        # h_posterior_covariance = np.linalg.pinv(
+        #     dhh_inv +
+        #     g.T @ ddd_inv @ g
+        # )
 
-        h_mean_posterior = h_posterior_covariance @ \
-                           (dhh_inv @ h_mean) + \
-                            g.T @ ddd_inv @ (d_cca_prediction[0] + d_modeling_mean_error - g @ h_mean)
+        h_posterior_covariance = h_cov_operator - \
+            h_cov_operator @ g.T @ ddd_inv @ g @ h_cov_operator
+
+        # h_mean_posterior = h_posterior_covariance @ \
+        #                    (dhh_inv @ h_mean) + \
+        #                     g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
+
+        h_mean_posterior = \
+            h_mean + h_cov_operator @ g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
         # Equations from Tarantola:
         # h posterior mean (Canonical space)
         # h_mean_posterior = \
@@ -201,7 +207,7 @@ class PosteriorIO:
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.test_h.inverse_transform(h_posts_gaussian.T)  # (n_components, n_samples)
+        h_posts = self.test_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -240,7 +246,7 @@ class PosteriorIO:
         np.random.seed(self.seed)
         h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
                                                          cov=self.posterior_covariance,
-                                                         size=n_posts).T
+                                                         size=n_posts)
         return h_posts_gaussian
 
     def bel_predict(self,
@@ -271,7 +277,7 @@ class PosteriorIO:
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
-            d_cca_training = self.test_d.fit_transform(d_cca_training)
+            # d_cca_training = self.test_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
             # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
@@ -283,7 +289,8 @@ class PosteriorIO:
             # Project observed data into canonical space.
             d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
             # d_cca_prediction = d_cca_prediction.T
-            d_cca_prediction = self.test_d.transform(d_cca_prediction)
+
+            # d_cca_prediction = self.test_d.transform(d_cca_prediction)
 
             # Estimate the posterior mean and covariance (Tarantola)
 
