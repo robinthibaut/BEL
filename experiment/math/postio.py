@@ -35,7 +35,7 @@ class PosteriorIO:
         :param d_pc_training: Principal Components of the training data
         :param d_rotations: CCA rotations of the training data (project original data to canonical space)
         :param d_cca_prediction: Canonical Variate of the observation
-        :return: h_mean_posterior, h_posterior_covariance
+        :return: h_posterior_mean, h_posterior_covariance
         :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
@@ -86,18 +86,44 @@ class PosteriorIO:
         h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
         h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
 
+        # Build block matrix
+        s11 = h_cov_operator
+        s12 = h_cov_operator @ g.T
+        s21 = g @ h_cov_operator
+        s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
+        block = np.block([[s11, s12], [s21, s22]])
+        # Inverse
+        delta = np.linalg.pinv(block)
+        # Partition block
+        bshape = h_cov_operator.shape
+        d11 = delta[:bshape[0], :bshape[1]]
+        d12 = delta[:bshape[0], bshape[1]:]
+        d21 = delta[bshape[0]:, :bshape[1]]
+        d22 = delta[bshape[0]:, bshape[1]:]
+
+        # Observe that posterior covariance does not depend on observed d.
+        h_posterior_covariance = np.linalg.pinv(d11)
+        # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
+        h_posterior_mean = h_posterior_covariance @ \
+                           (d11 @ h_mean - d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+
+        # test = np.block([[d11, d12], [d21, d22]])
+        # plt.matshow(test, cmap='coolwarm')
+        # plt.colorbar()
+        # plt.show()
+
+        # Also works:
         # Inverse of the sample covariance matrix of d ( Sig dd )
-        ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
-
-        h_posterior_covariance = h_cov_operator - \
-            h_cov_operator @ g.T @ ddd_inv @ g @ h_cov_operator
-
-        h_mean_posterior = \
-            h_mean + h_cov_operator @ g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
+        # ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
+        # h_posterior_covariance = h_cov_operator - \
+        #     h_cov_operator @ g.T @ ddd_inv @ g @ h_cov_operator
+        #
+        # h_posterior_mean = \
+        #     h_mean + h_cov_operator @ g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
 
         # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
-        self.posterior_mean = h_mean_posterior  # (n_comp_CCA,)
+        self.posterior_mean = h_posterior_mean  # (n_comp_CCA,)
         self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
 
     def back_transform(self,
