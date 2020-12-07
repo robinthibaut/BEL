@@ -6,7 +6,6 @@ import joblib
 import numpy as np
 
 from sklearn.preprocessing import PowerTransformer
-from sklearn.decomposition import FactorAnalysis
 
 from experiment.base.inventory import MySetup
 
