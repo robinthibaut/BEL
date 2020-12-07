@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 
 from sklearn.preprocessing import PowerTransformer
+from sklearn.decomposition import FactorAnalysis
 
 from experiment.base.inventory import MySetup
 
@@ -57,9 +58,10 @@ class PosteriorIO:
 
         # Computation of the posterior mean in Canonical space
         h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
-        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # Mean is 0, as expected.
 
         # Evaluate the covariance in h (in Canonical space)
+        # Very close to the Identity matrix
         h_cov_operator = np.cov(h_cca_training_gaussian.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
