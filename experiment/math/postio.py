@@ -104,7 +104,7 @@ class PosteriorIO:
             :return: Bock #b
             """
 
-            b = pm.shape[0]
+            b = pm.shape[0]//2
 
             if i == 1:
                 return pm[:b, :b]
