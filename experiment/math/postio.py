@@ -94,22 +94,25 @@ class PosteriorIO:
         s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
         block = np.block([[s11, s12], [s21, s22]])
 
-        def get_block(pm, b: int):
+        def get_block(pm, i: int):
             """
             Extracts block from a 2x2 partitioned matrix.
             :param pm: Partitioned matrix
-            :param b: Block index
+            :param i: Block index
             1 2
             3 4
             :return: Bock #b
             """
-            if b == 1:
+
+            b = pm.shape[0]
+
+            if i == 1:
                 return pm[:b, :b]
-            if b == 2:
+            if i == 2:
                 return pm[:b, b:]
-            if b == 3:
+            if i == 3:
                 return pm[b:, :b]
-            if b == 4:
+            if i == 4:
                 return pm[b:, b:]
             else:
                 return 0
