@@ -9,6 +9,7 @@ from sklearn.preprocessing import PowerTransformer
 
 from experiment.base.inventory import MySetup
 
+
 class PosteriorIO:
 
     def __init__(self, directory: str = None):
@@ -54,6 +55,10 @@ class PosteriorIO:
         # Size of the set
         n_training = d_cca_training.shape[0]
 
+        # Computation of the posterior mean in Canonical space
+        h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
+
         # Evaluate the covariance in h (in Canonical space)
         h_cov_operator = np.cov(h_cca_training_gaussian.T)  # (n_comp_CCA, n_comp_CCA)
 
@@ -82,24 +87,38 @@ class PosteriorIO:
         # Information about the covariance of the posterior distribution in Canonical space.
         d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
-        # Computation of the posterior mean in Canonical space
-        h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
-        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # My mean is 0, as expected.
-
         # Build block matrix
         s11 = h_cov_operator
         s12 = h_cov_operator @ g.T
         s21 = g @ h_cov_operator
         s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
         block = np.block([[s11, s12], [s21, s22]])
+
+        def get_block(pm, b: int):
+            """
+            Extracts block from a 2x2 partitioned matrix.
+            :param pm: Partitioned matrix
+            :param b: Block index
+            1 2
+            3 4
+            :return: Bock #b
+            """
+            if b == 1:
+                return pm[:b, :b]
+            if b == 2:
+                return pm[:b, b:]
+            if b == 3:
+                return pm[b:, :b]
+            if b == 4:
+                return pm[b:, b:]
+            else:
+                return 0
+
         # Inverse
         delta = np.linalg.pinv(block)
         # Partition block
-        bshape = h_cov_operator.shape
-        d11 = delta[:bshape[0], :bshape[1]]
-        d12 = delta[:bshape[0], bshape[1]:]
-        d21 = delta[bshape[0]:, :bshape[1]]
-        d22 = delta[bshape[0]:, bshape[1]:]
+        d11 = get_block(delta, 1)
+        d12 = get_block(delta, 2)
 
         # Observe that posterior covariance does not depend on observed d.
         h_posterior_covariance = np.linalg.pinv(d11)
