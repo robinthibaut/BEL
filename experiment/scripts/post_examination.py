@@ -55,7 +55,7 @@ mplot.whp(h=nn,
           bkg_field_array=np.flipud(nn[0]),
           colors='black',
           cmap=None)
-# plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.pdf'),
-#             bbox_inches='tight',
-#             dpi=300, transparent=True)
+plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.png'),
+            bbox_inches='tight',
+            dpi=300, transparent=True)
 plt.show()
