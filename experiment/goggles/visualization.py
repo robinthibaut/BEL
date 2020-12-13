@@ -17,6 +17,7 @@ from sklearn.preprocessing import PowerTransformer
 
 ftype = 'png'
 
+
 def proxy_legend(legend1=None,
                  colors: list = None,
                  labels: list = None,
@@ -67,9 +68,9 @@ def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
     """
 
     legend_a = plt.legend(plt.plot([], linestyle=None, color='w', markeredgecolor=None),
-                          annotation, 
+                          annotation,
                           handlelength=0, handletextpad=0, fancybox=True, loc=loc, fontsize=fz)
-    
+
     return legend_a
 
 
@@ -227,7 +228,7 @@ def cca_plot(cca_operator,
                                                                         h_obs.reshape(1, -1))
             # d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
-            #%%
+            # %%
             h2 = h.copy()
             d2 = d.copy()
             tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
@@ -242,7 +243,7 @@ def cca_plot(cca_operator,
             d_cca_prediction = tfm2.transform(d_cca_prediction)
             d_cca_prediction = d_cca_prediction.T
 
-            #%%
+            # %%
             # Choose beautiful color map
             # cube_helix very nice for dark mode
             # light = 0.95 is beautiful for reverse = True
@@ -923,7 +924,7 @@ class Plot:
                     fig_file = os.path.join(dfig, 'd_exvar.png')
                     explained_variance(d_pco.operator,
                                        n_comp=d_pco.n_pc_cut,
-                                       thr=.9,
+                                       thr=.8,
                                        fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
