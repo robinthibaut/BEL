@@ -13,8 +13,8 @@ epxy = np.load(ep)
 
 plt.close()
 plt.plot(epxy[:, 0], epxy[:, 1], 'ko')
-seed = np.random.randint(2**32 - 1)
-np.random.seed(seed)
+# seed = np.random.randint(2**32 - 1)
+# np.random.seed(seed)
 # sample = np.random.randint(144, size=10)
 sample = np.array([94,  41, 101,  29,  43, 116, 100,  40,  72])
 for i in sample:
@@ -29,10 +29,10 @@ plt.xlabel('X(m)')
 plt.ylabel('Y(m)')
 plt.tick_params(labelsize=11)
 
-# plt.savefig('/Users/robin/Documents/Research/phase1/paper/figures/ep.pdf',
-#             dpi=300, bbox_inches='tight', transparent=True)
+plt.savefig('C:/Users/Robin/OneDrive - UGent/Research/phase1/paper/figures/ep.png',
+            dpi=300, bbox_inches='tight', transparent=True)
 plt.show()
-print(seed)
+# print(seed)
 
 # 4088225279
 # 1440052516 but remove 60
