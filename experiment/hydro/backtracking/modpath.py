@@ -57,7 +57,8 @@ def backtrack(flowmodel, exe_name: str, load: bool = False):
                                 exe_name=exe_name,
                                 model_ws=model_ws)
     # Define porosity
-    porosity_mp = 0.2
+    lpf = flowmodel.lpf  # LPF package
+    porosity_mp = lpf.sy.array  # Porosity loaded from the LPF package = sy
 
     flopy.modpath.Modpath7Bas(mp,
                               porosity=porosity_mp,
