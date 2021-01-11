@@ -68,7 +68,8 @@ def simulation(folder=None):
     opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Files.output_files])
 
     if not opt.all():
-        fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
+        # Resets folder
+        # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
         start_fwd = time.time()
         # Statistical simulation
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
@@ -80,7 +81,7 @@ def simulation(folder=None):
                           hk_array=hk_array, xy_dummy=xy_dummy)
         # Run Transport
         if flow_model:  # If flow simulation succeeds
-            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            # transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on

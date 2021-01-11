@@ -28,7 +28,7 @@ def data_read(file: str = None,
 
 def folder_reset(folder: str,
                  exceptions: list = None):
-    """Deletes files out of folder"""
+    """Deletes files in folder"""
     if not isinstance(exceptions, (list, tuple)):
         exceptions = [exceptions]
     try:

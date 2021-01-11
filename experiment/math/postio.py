@@ -71,7 +71,7 @@ class PosteriorIO:
 
         # Linear modeling h to d (in canonical space) with least-square criterion.
         # Pay attention to the transpose operator.
-        # Computes the vector g that approximatively solves the equation h @ g = d.
+        # Computes the vector g that approximately solves the equation h @ g = d.
         g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
         # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
@@ -105,7 +105,7 @@ class PosteriorIO:
             :return: Bock #b
             """
 
-            b = pm.shape[0]//2
+            b = pm.shape[0] // 2
 
             if i == 1:
                 return pm[:b, :b]
