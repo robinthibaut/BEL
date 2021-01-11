@@ -67,7 +67,7 @@ def simulation(folder=None):
     # Check if forwards have already been computed
     opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Files.output_files])
 
-    if not opt.all():
+    if opt.all():
         # Resets folder
         # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
