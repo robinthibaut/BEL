@@ -69,7 +69,7 @@ def simulation(folder=None):
 
     if opt.all():
         # Resets folder
-        fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
+        # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
         start_fwd = time.time()
         # Statistical simulation
@@ -82,7 +82,7 @@ def simulation(folder=None):
                           hk_array=hk_array, xy_dummy=xy_dummy)
         # Run Transport and Backtracking
         if flow_model:  # If flow simulation succeeds
-            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            # transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
@@ -92,7 +92,7 @@ def simulation(folder=None):
             # Deletes everything except final results
             hl = (time.time()-start_fwd)//60
             print(f'done in {hl} min')
-            if not folder:
+            if folder:
                 fops.keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
