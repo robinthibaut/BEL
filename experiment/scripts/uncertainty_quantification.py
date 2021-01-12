@@ -1,6 +1,7 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
+import random
 
 import joblib
 import matplotlib.pyplot as plt
@@ -269,8 +270,8 @@ if __name__ == '__main__':
     # pot_obs = [f for f in listme if os.path.exists(
     #     os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
 
-    # training_roots = filesio.datread(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
-    # training_roots = [item for sublist in training_roots for item in sublist]
+    training_roots = filesio.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
+    training_roots = [item for sublist in training_roots for item in sublist]
 
     # test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
     # test_roots = [item for sublist in test_roots for item in sublist]
@@ -278,7 +279,7 @@ if __name__ == '__main__':
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6]]
     rt, ro = main(comb=wells,
-                  n_training=200,
+                  roots_training=training_roots,
                   roots_obs=['6a4d614c838442629d7a826cc1f498a8'],
                   # n_observations=50,
                   flag_base=True)

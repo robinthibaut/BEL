@@ -67,9 +67,9 @@ def simulation(folder=None):
     # Check if forwards have already been computed
     opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Files.output_files])
 
-    if opt.all():
+    if not opt.all():
         # Resets folder
-        # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
+        fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
         start_fwd = time.time()
         # Statistical simulation
@@ -82,7 +82,7 @@ def simulation(folder=None):
                           hk_array=hk_array, xy_dummy=xy_dummy)
         # Run Transport and Backtracking
         if flow_model:  # If flow simulation succeeds
-            # transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
@@ -112,6 +112,10 @@ def main(n_sim: int = None):
         # List directories in forwards folder
         listme = os.listdir(MySetup.Directories.hydro_res_dir)
         folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+
+        training_roots = fops.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
+        folders = [item for sublist in training_roots for item in sublist]
+
     else:
         folders = np.zeros(n_sim)
 
