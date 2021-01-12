@@ -67,7 +67,7 @@ def simulation(folder=None):
     # Check if forwards have already been computed
     opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Files.output_files])
 
-    if not opt.all():
+    if opt.all():
         # Resets folder
         fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
@@ -104,7 +104,6 @@ def simulation(folder=None):
 def main(n_sim: int = None):
 
     n_cpu = mp.cpu_count()//2 + 1
-    # n_cpu = 15
     print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 
@@ -113,6 +112,7 @@ def main(n_sim: int = None):
         listme = os.listdir(MySetup.Directories.hydro_res_dir)
         folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
 
+    elif n_sim == -1:
         training_roots = fops.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
         folders = [item for sublist in training_roots for item in sublist]
 
@@ -124,7 +124,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-#    simulation('6de02277697848a8bd093779063d80a6')
+    # simulation('6a4d614c838442629d7a826cc1f498a8')
     main(None)
     end = time.time()
     print(f'TET (hours) {(end - start) / 60 / 60}')
