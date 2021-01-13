@@ -273,15 +273,14 @@ if __name__ == '__main__':
     training_roots = filesio.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    # test_roots = filesio.datread(os.path.join(base_dir, 'test_roots.dat'))
-    # test_roots = [item for sublist in test_roots for item in sublist]
+    test_roots = filesio.data_read(os.path.join(base_dir, 'test_roots.dat'))
+    test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6]]
+    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     rt, ro = main(comb=wells,
                   roots_training=training_roots,
-                  roots_obs=['6a4d614c838442629d7a826cc1f498a8'],
-                  # n_observations=50,
+                  roots_obs=test_roots,
                   flag_base=True)
     # Value info
     # forecast_dir = MySetup.Directories.forecasts_dir

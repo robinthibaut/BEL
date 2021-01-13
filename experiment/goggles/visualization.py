@@ -18,6 +18,19 @@ from sklearn.preprocessing import PowerTransformer
 ftype = 'png'
 
 
+def my_alphabet(az):
+    alphabet = string.ascii_uppercase
+    extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
+
+    if az <= 25:
+        sub = alphabet[az]
+    else:
+        j = az - 26
+        sub = extended_alphabet[j]
+
+    return sub
+
+
 def proxy_legend(legend1=None,
                  colors: list = None,
                  labels: list = None,
@@ -77,6 +90,7 @@ def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
 def explained_variance(pca,
                        n_comp: int = 0,
                        thr: float = 1.,
+                       annotation: list = None,
                        fig_file: str = None,
                        show: bool = False):
     """
@@ -112,6 +126,9 @@ def explained_variance(pca,
     plt.xlabel('PC number', fontsize=11)
     plt.ylabel('Cumulative explained variance (%)', fontsize=11)
 
+    legend_a = proxy_annotate(annotation=annotation)
+    plt.gca().add_artist(legend_a)
+
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
@@ -123,10 +140,11 @@ def explained_variance(pca,
 
 def pca_scores(training,
                prediction,
-               n_comp,
-               fig_file=None,
-               labels=True,
-               show=False):
+               n_comp: int,
+               annotation: list,
+               fig_file: str = None,
+               labels: bool = True,
+               show: bool = False):
     """
     PCA scores plot, displays scores of observations above those of training.
     :param labels:
@@ -178,7 +196,12 @@ def pca_scores(training,
         plt.ylabel('PC')
     plt.tick_params(labelsize=11)
     # Add legend
-    proxy_legend(colors=['blue', 'red'], labels=['Training', 'Test'], marker='o')
+    # Add title inside the box
+    legend_a = proxy_annotate(annotation=annotation, loc=2, fz=14)
+    proxy_legend(legend1=legend_a,
+                 colors=['blue', 'red'],
+                 labels=['Training', 'Test'],
+                 marker='o')
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -276,14 +299,7 @@ def cca_plot(cca_operator,
         # g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 3)}', fontsize=11)
         # Put title inside box
 
-        alphabet = string.ascii_uppercase
-        extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
-
-        if i <= 25:
-            subtitle = alphabet[i]
-        else:
-            j = i - 26
-            subtitle = extended_alphabet[j]
+        subtitle = my_alphabet(i)
 
         # Add title inside the box
         an = [f'{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}']
@@ -665,7 +681,13 @@ class Plot:
 
             plt.plot(to_plot * factor, 'r', alpha=.8)
             plt.plot(v_pred * factor, 'b', alpha=.8)
-            legend1 = plt.legend(['Physical', 'Back transformed'])
+            # Add title inside the box
+            an = ['A']
+            legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
+            proxy_legend(legend1=legend_a,
+                         colors=['red', 'blue'],
+                         labels=['Physical', 'Back transformed'],
+                         marker='-')
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             plt.tick_params(labelsize=labelsize)
@@ -720,7 +742,13 @@ class Plot:
                      labelsize=11, xlabel='X(m)', ylabel='Y(m)',
                      x_lim=[850, 1100], y_lim=[350, 650])
 
-            proxy_legend(colors=['red', 'blue'], labels=['Physical', 'Back transformed'], marker='-')
+            # Add title inside the box
+            an = ['B']
+            legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
+            proxy_legend(legend1=legend_a,
+                         colors=['red', 'blue'],
+                         labels=['Physical', 'Back transformed'],
+                         marker='-')
 
             if fig_dir is not None:
                 filesio.dirmaker(fig_dir)
@@ -906,6 +934,8 @@ class Plot:
             if not isinstance(folders, (list, tuple)):
                 folders = [folders]
 
+        i = 0
+
         if d:
             for f in folders:
                 dfig = os.path.join(subdir, f, 'pca')
@@ -914,17 +944,24 @@ class Plot:
                 d_pco = joblib.load(pcaf)
                 fig_file = os.path.join(dfig, 'd_scores.png')
                 if scores:
+                    annotation = [my_alphabet(i)]
+
                     pca_scores(training=d_pco.training_pc,
                                prediction=d_pco.predict_pc,
                                n_comp=d_pco.n_pc_cut,
+                               annotation=annotation,
                                labels=labels,
                                fig_file=fig_file)
                 # Explained variance plots
                 if exvar:
+                    i += 1
+                    annotation = [my_alphabet(i)]
+
                     fig_file = os.path.join(dfig, 'd_exvar.png')
                     explained_variance(d_pco.operator,
                                        n_comp=d_pco.n_pc_cut,
                                        thr=.8,
+                                       annotation=annotation,
                                        fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
@@ -940,15 +977,26 @@ class Plot:
             # Plot
             fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_scores.png')
             if scores:
+                i += 1
+                annotation = [my_alphabet(i)]
+
                 pca_scores(training=h_pc_training,
                            prediction=h_pc_prediction,
                            n_comp=nho,
+                           annotation=annotation,
                            labels=labels,
                            fig_file=fig_file)
             # Explained variance plots
             if exvar:
+                i += 1
+                annotation = [my_alphabet(i)]
+
                 fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.png')
-                explained_variance(h_pco.operator, n_comp=h_pco.n_pc_cut, thr=.85, fig_file=fig_file)
+                explained_variance(h_pco.operator,
+                                   n_comp=h_pco.n_pc_cut,
+                                   thr=.85,
+                                   annotation=annotation,
+                                   fig_file=fig_file)
 
     @staticmethod
     def cca_vision(root: str = None,
@@ -1101,7 +1149,10 @@ class Plot:
             # Cut desired number of PC components
             h_pco.pca_test_fit_transform(h_pred, test_root=[root])
             h_pco.pca_refresh(hnc0)
-            mplot.h_pca_inverse_plot(h_pco, hnc0, training=False, fig_dir=jp(base_dir, 'roots_whpa'))
+            mplot.h_pca_inverse_plot(h_pco,
+                                     hnc0,
+                                     training=False,
+                                     fig_dir=jp(base_dir, 'roots_whpa'))
 
         # d
         if data:
