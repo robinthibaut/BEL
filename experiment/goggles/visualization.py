@@ -125,9 +125,9 @@ def explained_variance(pca,
 
     plt.xlabel('PC number', fontsize=11)
     plt.ylabel('Cumulative explained variance (%)', fontsize=11)
-
-    legend_a = proxy_annotate(annotation=annotation)
+    legend_a = proxy_annotate(annotation=annotation, loc=2)
     plt.gca().add_artist(legend_a)
+    plt.legend(fontsize=14)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -180,11 +180,19 @@ def pca_scores(training,
         xnew = np.linspace(1, ut, 200)
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
-        plt.plot(xnew - 1, power_smooth, 'red', linewidth=1.2, alpha=.9)
+        plt.plot(xnew - 1,
+                 power_smooth,
+                 'red',
+                 linewidth=1.2,
+                 alpha=.9)
         # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
-                 'ro', markersize=3, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
+                 'ro',
+                 markersize=3,
+                 markeredgecolor='k',
+                 markeredgewidth=.4,
+                 alpha=.8,
                  label=str(sample_n))
         # plt.plot(pc_obs.T[:ut],  # Plot observations scores
         #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
@@ -738,13 +746,23 @@ class Plot:
             # v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
             v_pred = pca_o.custom_inverse_transform(v_pc)
 
-            self.whp(h=v_pred.reshape(1, shape[1], shape[2]), colors='blue', alpha=1, lw=2,
-                     labelsize=11, xlabel='X(m)', ylabel='Y(m)',
-                     x_lim=[850, 1100], y_lim=[350, 650])
+            self.whp(h=v_pred.reshape(1, shape[1], shape[2]),
+                     colors='blue',
+                     alpha=1,
+                     lw=2,
+                     labelsize=11,
+                     xlabel='X(m)',
+                     ylabel='Y(m)',
+                     x_lim=[850, 1100],
+                     y_lim=[350, 650])
 
             # Add title inside the box
             an = ['B']
-            legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
+
+            legend_a = proxy_annotate(annotation=an,
+                                      loc=2,
+                                      fz=14)
+
             proxy_legend(legend1=legend_a,
                          colors=['red', 'blue'],
                          labels=['Physical', 'Back transformed'],
@@ -754,6 +772,7 @@ class Plot:
                 filesio.dirmaker(fig_dir)
                 plt.savefig(jp(fig_dir, f'{r}_h.png'), dpi=300, transparent=True)
                 plt.close()
+
             if show:
                 plt.show()
                 plt.close()
@@ -812,6 +831,7 @@ class Plot:
                     factor=factor,
                     labelsize=labelsize,
                     highlight=[len(tc) - 1])
+
         self.curves(tc=tc,
                     sdir=sdir,
                     xlabel=xlabel,
@@ -821,6 +841,7 @@ class Plot:
                     highlight=[len(tc) - 1],
                     ghost=True,
                     title='curves_ghost')
+
         self.curves_i(tc=tc,
                       xlabel=xlabel,
                       ylabel=ylabel,
@@ -885,7 +906,10 @@ class Plot:
                  labelsize=11)
 
         # Tricky operation to add a second legend:
-        proxy_legend(legend1=well_legend, colors=colors, labels=labels, fig_file=ff)
+        proxy_legend(legend1=well_legend,
+                     colors=colors,
+                     labels=labels,
+                     fig_file=ff)
 
     def plot_K_field(self, root):
         # HK field
@@ -896,7 +920,9 @@ class Plot:
         self.plot_wells(markersize=1)
         plt.colorbar()
         plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.png'),
-                    bbox_inches='tight', dpi=300, transparent=True)
+                    bbox_inches='tight',
+                    dpi=300,
+                    transparent=True)
         plt.close()
 
     @staticmethod
