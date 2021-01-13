@@ -12,7 +12,8 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
-    roots = samples
+    # roots = samples
+    roots = ['818bf1676c424f76b83bd777ae588a1d']
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -23,12 +24,12 @@ if __name__ == '__main__':
     for sample in roots:
         print(f'Plotting root {sample}')
 
-        wells = ['123456']
+        wells = ['123456', '1', '2', '3', '4', '5', '6']
 
         for w in wells:
             print(f'Plotting well {w}')
             mplot.plot_results(root=sample, folder=w)
-        #
+
         mplot.plot_pc_ba(root=sample, data=True, target=True)
         mplot.plot_K_field(sample)
         mplot.plot_whpa(sample)

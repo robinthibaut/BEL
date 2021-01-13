@@ -31,7 +31,7 @@ def value_info(root: Root):
         root: list = [root]
 
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
-    wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well i appears
+    wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well #i appears
 
     for r in root:  # For each root
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
