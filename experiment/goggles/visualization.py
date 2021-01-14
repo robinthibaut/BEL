@@ -527,6 +527,7 @@ class Plot:
             show_wells=False,
             well_ids=None,
             title=None,
+            annotation: list = None,
             fig_file=None,
             show=False):
         """
@@ -596,6 +597,10 @@ class Plot:
 
         # Tick size
         plt.tick_params(labelsize=labelsize, colors='k')
+
+        if annotation:
+            legend = proxy_annotate(annotation=annotation, fz=14, loc=2)
+            plt.gca().add_artist(legend)
 
         if fig_file:
             filesio.dirmaker(os.path.dirname(fig_file))
@@ -701,7 +706,7 @@ class Plot:
             plt.tick_params(labelsize=labelsize)
 
             # Increase y axis by a small percentage for annotation in upper left corner
-            yrange = np.max(to_plot*factor)*1.15
+            yrange = np.max(to_plot * factor) * 1.15
             plt.ylim([0, yrange])
 
             if fig_dir is not None:
@@ -864,7 +869,8 @@ class Plot:
         self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
         colors = ['blue', 'red']
         labels = ['Training', 'Test']
-        proxy_legend(colors=colors, labels=labels, fig_file=ff)
+        legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
+        proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
 
         # WHPs
         ff = jp(md,
@@ -1126,11 +1132,12 @@ class Plot:
         h = joblib.load(fobj)
         h_training = h.training_physical.reshape(h.training_shape)
 
-        mplot.whp(h_training)
+        mplot.whp(h_training, colors='blue', alpha=.5)
 
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
             mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
+                      annotation=['C'],
                       fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
     @staticmethod

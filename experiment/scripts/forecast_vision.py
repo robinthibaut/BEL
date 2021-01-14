@@ -37,5 +37,5 @@ if __name__ == '__main__':
         mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
         mplot.plot_pc_ba(root=sample, data=True, target=True)
 
-        mplot.cca_vision(sample, folders=wells)
+        # mplot.cca_vision(sample, folders=wells)
 
