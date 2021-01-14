@@ -595,7 +595,7 @@ class Plot:
         plt.ylabel(ylabel, fontsize=labelsize)
 
         # Tick size
-        plt.tick_params(labelsize=labelsize)
+        plt.tick_params(labelsize=labelsize, colors='k')
 
         if fig_file:
             filesio.dirmaker(os.path.dirname(fig_file))
@@ -761,7 +761,7 @@ class Plot:
                      y_lim=[350, 650])
 
             # Add title inside the box
-            an = ['C']
+            an = ['B']
 
             legend_a = proxy_annotate(annotation=an,
                                       loc=2,
@@ -975,7 +975,7 @@ class Plot:
                     pca_scores(training=d_pco.training_pc,
                                prediction=d_pco.predict_pc,
                                n_comp=d_pco.n_pc_cut,
-                               annotation=['A'],
+                               annotation=['E'],
                                labels=labels,
                                fig_file=fig_file)
                 # Explained variance plots
@@ -984,7 +984,7 @@ class Plot:
                     explained_variance(d_pco.operator,
                                        n_comp=d_pco.n_pc_cut,
                                        thr=.8,
-                                       annotation=['B'],
+                                       annotation=['C'],
                                        fig_file=fig_file)
         if h:
             hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
@@ -1003,7 +1003,7 @@ class Plot:
                 pca_scores(training=h_pc_training,
                            prediction=h_pc_prediction,
                            n_comp=nho,
-                           annotation=['B'],
+                           annotation=['F'],
                            labels=labels,
                            fig_file=fig_file)
             # Explained variance plots

@@ -9,13 +9,13 @@ import seaborn as sb
 from sklearn.decomposition import PCA
 
 
-from experiment.goggles.visualization import Plot
+from experiment.goggles.visualization import Plot, proxy_annotate
 
 from experiment.base.inventory import MySetup
 
 md = MySetup.Directories()
 
-root = '6a4d614c838442629d7a826cc1f498a8'
+root = '818bf1676c424f76b83bd777ae588a1d'
 sources = '123456'
 sdir = jp(md.forecasts_dir, root, sources)
 # post_obj = joblib.load(jp(sdir, 'obj', 'post.pkl'))
@@ -49,13 +49,18 @@ mplot.whp(h=nn,
           x_lim=x_lim,
           y_lim=[335, 700],
           labelsize=11,
+          alpha=1,
           xlabel='X(m)',
           ylabel='Y(m)',
           cb_title='SD(m)',
           bkg_field_array=np.flipud(nn[0]),
           colors='black',
           cmap=None)
-plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.png'),
+
+legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
+plt.gca().add_artist(legend)
+
+plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.pdf'),
             bbox_inches='tight',
             dpi=300, transparent=True)
 plt.show()
