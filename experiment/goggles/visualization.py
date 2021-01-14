@@ -76,13 +76,17 @@ def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
     Places annotation (or title) within the figure box
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
     :param fz: Fontsize
-    :param loc: Location (default 1 = upper right corner)
+    :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
     :return:
     """
 
-    legend_a = plt.legend(plt.plot([], linestyle=None, color='w', markeredgecolor=None),
+    legend_a = plt.legend(plt.plot([], linestyle=None, color='w', alpha=0, markeredgecolor=None),
                           annotation,
-                          handlelength=0, handletextpad=0, fancybox=True, loc=loc, fontsize=fz)
+                          handlelength=0,
+                          handletextpad=0,
+                          fancybox=True,
+                          loc=loc,
+                          fontsize=fz)
 
     return legend_a
 

@@ -25,19 +25,19 @@ sb.set_theme()
 
 ndor = jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}.npy')
 nn = np.load(ndor)
-nnt = np.flipud(nn[0])
-plt.imshow(nnt)
-plt.colorbar()
-plt.show()
+# nnt = np.flipud(nn[0])
+# plt.imshow(nnt)
+# plt.colorbar()
+# plt.show()
 
-pca = PCA(n_components=20)
-pca.fit(nnt)
-scores = pca.transform(nnt)
+# pca = PCA(n_components=20)
+# pca.fit(nnt)
+# scores = pca.transform(nnt)
 
-inv = pca.inverse_transform(scores).reshape(100, 87)
-plt.imshow(inv)
-plt.colorbar()
-plt.show()
+# inv = pca.inverse_transform(scores).reshape(100, 87)
+# plt.imshow(inv)
+# plt.colorbar()
+# plt.show()
 
 
 #%%
@@ -53,12 +53,13 @@ mplot.whp(h=nn,
           xlabel='X(m)',
           ylabel='Y(m)',
           cb_title='SD(m)',
+          annotation=['B'],
           bkg_field_array=np.flipud(nn[0]),
           colors='black',
           cmap=None)
 
-legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
-plt.gca().add_artist(legend)
+# legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
+# plt.gca().add_artist(legend)
 
 plt.savefig(jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}_SD.pdf'),
             bbox_inches='tight',
