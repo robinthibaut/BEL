@@ -806,8 +806,8 @@ class Plot:
         plt.show()
 
     def plot_results(self,
-                     root,
-                     folder):
+                     root: str,
+                     folder: str):
         """
         Plots forecasts results in the 'uq' folder
         :param root: str: Forward ID
@@ -1027,7 +1027,7 @@ class Plot:
 
     @staticmethod
     def cca_vision(root: str = None,
-                   folders=None):
+                   folders: list = None):
         """
         Loads CCA pickles and plots components for all folders
         :param root:
@@ -1107,6 +1107,11 @@ class Plot:
             # plt.title('Decrease of CCA correlation coefficient with component number')
             plt.ylabel('Correlation coefficient')
             plt.xlabel('Component number')
+
+            # Add annotation
+            legend = proxy_annotate(annotation=['D'], fz=14, loc=1)
+            plt.gca().add_artist(legend)
+
             plt.savefig(os.path.join(os.path.dirname(res_dir), 'cca', 'coefs.pdf'),
                         bbox_inches='tight',
                         dpi=300,

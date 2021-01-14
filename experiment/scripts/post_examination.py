@@ -2,14 +2,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from os.path import join as jp
-import joblib
 
 import seaborn as sb
 
-from sklearn.decomposition import PCA
-
-
-from experiment.goggles.visualization import Plot, proxy_annotate
+from experiment.goggles.visualization import Plot
 
 from experiment.base.inventory import MySetup
 

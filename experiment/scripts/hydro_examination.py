@@ -2,7 +2,7 @@
 import experiment.toolbox.filesio as fops
 import numpy as np
 import matplotlib.pyplot as plt
-from experiment.goggles.visualization import Plot, proxy_annotate
+from experiment.goggles.visualization import proxy_annotate
 
 from os.path import join as jp
 from experiment.base.inventory import MySetup
