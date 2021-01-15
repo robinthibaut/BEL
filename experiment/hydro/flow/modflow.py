@@ -357,5 +357,7 @@ def flow(exe_name: str,
         model = None
     if head.min() == -1e+30:
         model = None
+    else:
+        np.save(jp(model_ws, f'{model_name}_heads.npy'), head)
 
     return model

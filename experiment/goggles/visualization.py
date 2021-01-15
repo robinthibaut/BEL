@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
@@ -952,22 +953,53 @@ class Plot:
         grid_dim = MySetup.GridDimensions
         extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
-        hkf = jp(MySetup.Directories.forecasts_dir, root, 'k_field.pdf')
+        hkf = jp(MySetup.Directories.forecasts_dir, root, 'k_field.png')
 
         if deprecated:
             # HK field
-            plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+            plt.figure()
+            ax = plt.gca()
+            im = ax.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
             plt.xlabel('X(m)', fontsize=11)
             plt.ylabel('Y(m)', fontsize=11)
             self.plot_wells(markersize=3.5)
             well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
-            cb = plt.colorbar()
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            cb = plt.colorbar(im, cax=cax)
             cb.ax.set_title('$Log_{10} m/s$')
             plt.savefig(hkf,
                         bbox_inches='tight',
                         dpi=300,
                         transparent=True)
             plt.close()
+
+    @staticmethod
+    def plot_head_field(root: str = None):
+
+        matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
+        grid_dim = MySetup.GridDimensions
+        extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
+
+        hkf = jp(MySetup.Directories.forecasts_dir, root, 'heads_field.png')
+
+        # HK field
+        plt.figure()
+        ax = plt.gca()
+        im = ax.imshow(matrix[0], cmap='Blues_r', extent=extent)
+        plt.xlabel('X(m)', fontsize=11)
+        plt.ylabel('Y(m)', fontsize=11)
+
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cb = plt.colorbar(im, cax=cax)
+        cb.ax.set_title('Head (m)')
+
+        plt.savefig(hkf,
+                    bbox_inches='tight',
+                    dpi=300,
+                    transparent=True)
+        plt.close()
 
     @staticmethod
     def pca_vision(root,

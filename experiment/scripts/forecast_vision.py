@@ -13,12 +13,15 @@ if __name__ == '__main__':
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
+
     # roots = samples
-    roots = ['818bf1676c424f76b83bd777ae588a1d',
-             'dc996e54728b4bb4a7234ee691729076',
-             '27ec76adab2e406794584fc993188c24',
-             '9a389395bfbe4cd883dfa3e452752978']
-    # roots = ['818bf1676c424f76b83bd777ae588a1d']
+    #
+    # roots = ['818bf1676c424f76b83bd777ae588a1d',
+    #          'dc996e54728b4bb4a7234ee691729076',
+    #          '27ec76adab2e406794584fc993188c24',
+    #          '9a389395bfbe4cd883dfa3e452752978']
+
+    roots = ['818bf1676c424f76b83bd777ae588a1d']
 
     alphabet = string.ascii_uppercase
 
@@ -48,6 +51,7 @@ if __name__ == '__main__':
         #                        d=False)
 
         mplot.plot_K_field(sample)
+        mplot.plot_head_field(sample)
 
         # mplot.plot_whpa(sample)
         #

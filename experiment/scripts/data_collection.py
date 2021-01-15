@@ -15,7 +15,6 @@ compared to all other uncertainties in the model.
 
 """
 
-
 import multiprocessing as mp
 import shutil
 import time
@@ -69,7 +68,7 @@ def simulation(folder=None):
 
     if not opt.all():
         # Resets folder
-        fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
+        # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
         start_fwd = time.time()
         # Statistical simulation
@@ -90,7 +89,7 @@ def simulation(folder=None):
             pzs = end_points[delineation]  # x-y coordinates protection zone
             np.save(jp(results_dir, 'pz'), pzs)  # Save those
             # Deletes everything except final results
-            hl = (time.time()-start_fwd)//60
+            hl = (time.time() - start_fwd) // 60
             print(f'done in {hl} min')
             if not folder:
                 fops.keep_essential(results_dir)
@@ -99,11 +98,17 @@ def simulation(folder=None):
             print(f'terminated f{res_dir}')
     else:
         print(f'pass {res_dir}')
+        hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
+        # Run Flow
+        flow(exe_name=exe_name_mf,
+             model_ws=results_dir,
+             grid_dir=grid_dir,
+             hk_array=hk_array, xy_dummy=xy_dummy)
+        fops.keep_essential(results_dir)
 
 
 def main(n_sim: int = None):
-
-    n_cpu = mp.cpu_count()//2 + 1
+    n_cpu = mp.cpu_count() // 2 + 1
     print(f'working on {n_cpu} cpu - good luck')
     pool = mp.Pool(n_cpu)
 
@@ -124,7 +129,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation('6a4d614c838442629d7a826cc1f498a8')
+    # simulation('818bf1676c424f76b83bd777ae588a1d')
     main(None)
     end = time.time()
     print(f'TET (hours) {(end - start) / 60 / 60}')
