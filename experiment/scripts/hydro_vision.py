@@ -12,12 +12,12 @@ if __name__ == '__main__':
     mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)
 
     # VTK
-    mi = ModelVTK(base=base, folder='6a4d614c838442629d7a826cc1f498a8')
+    mi = ModelVTK(base=base, folder='818bf1676c424f76b83bd777ae588a1d')
     mi.flow_vtk()
-    mi.transport_vtk()
-    mi.conc_vtk()
-    mi.particles_vtk(path=1)
-    mi.wells_vtk()
+    # mi.transport_vtk()
+    # mi.conc_vtk()
+    # mi.particles_vtk(path=1)
+    # mi.wells_vtk()
 
 
 

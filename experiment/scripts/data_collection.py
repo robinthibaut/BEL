@@ -104,7 +104,6 @@ def simulation(folder=None):
              model_ws=results_dir,
              grid_dir=grid_dir,
              hk_array=hk_array, xy_dummy=xy_dummy)
-        fops.keep_essential(results_dir)
 
 
 def main(n_sim: int = None):
@@ -129,7 +128,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-    # simulation('818bf1676c424f76b83bd777ae588a1d')
-    main(None)
+    simulation('818bf1676c424f76b83bd777ae588a1d')
+    # main(None)
     end = time.time()
     print(f'TET (hours) {(end - start) / 60 / 60}')
