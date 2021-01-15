@@ -55,9 +55,9 @@ def value_info(root: Root):
     plt.title('Value of information of each well')
     plt.xlabel('Well ID')
     plt.ylabel('Opposite deviation from mode\'s mean')
-    plt.grid(color='#95a5a6', linestyle='--', linewidth=.5, axis='y', alpha=0.7)
+    plt.grid(color='#95a5a6', linestyle='-', linewidth=.5, axis='y', alpha=0.7)
 
-    legend_a = proxy_annotate(annotation=['A'], loc=2, fz=14)
+    legend_a = proxy_annotate(annotation=['B'], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.pdf'), dpi=300, transparent=True)
@@ -70,11 +70,12 @@ def value_info(root: Root):
     plt.title('Summed MHD distribution for each well')
     plt.xlabel('Summed MHD')
     plt.ylabel('KDE')
-    plt.legend(wid)
+    legend_1 = plt.legend(wid, loc=1)
+    plt.gca().add_artist(legend_1)
     plt.grid(alpha=0.2)
 
     legend_a = proxy_annotate(annotation=['A'], loc=2, fz=14)
-    plt.gca.add_artist(legend_a)
+    plt.gca().add_artist(legend_a)
 
     plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.pdf'), dpi=300, transparent=True)
     plt.close()
