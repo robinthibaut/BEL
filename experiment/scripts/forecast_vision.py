@@ -1,6 +1,7 @@
 #  Copyright (c) 2020. Robin Thibaut, Ghent University
 
 import os
+import string
 
 from experiment.base.inventory import MySetup
 from experiment.goggles.visualization import Plot
@@ -13,7 +14,12 @@ if __name__ == '__main__':
     test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
     # roots = samples
-    roots = ['818bf1676c424f76b83bd777ae588a1d']
+    roots = ['818bf1676c424f76b83bd777ae588a1d',
+             'dc996e54728b4bb4a7234ee691729076',
+             '27ec76adab2e406794584fc993188c24',
+             '9a389395bfbe4cd883dfa3e452752978']
+
+    alphabet = string.ascii_uppercase
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -21,21 +27,24 @@ if __name__ == '__main__':
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
-    for sample in roots:
+    for i, sample in enumerate(roots):
         print(f'Plotting root {sample}')
 
-        wells = ['123456']
-        #
-        # for w in wells:
-        #     print(f'Plotting well {w}')
-        #     mplot.plot_results(root=sample, folder=w)
-        #
-        # mplot.plot_K_field(sample)
-        #
-        # mplot.plot_whpa(sample)
-        #
-        # mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
-        # mplot.plot_pc_ba(root=sample, data=True, target=True)
+        wells = ['123456', '1', '2', '3', '4', '5', '6']
+
+        for w in wells:
+            print(f'Plotting well {w}')
+            mplot.plot_results(root=sample,
+                               folder=w,
+                               annotation=alphabet[i],
+                               d=False)
+
+        mplot.plot_K_field(sample)
+
+        mplot.plot_whpa(sample)
+
+        mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
+        mplot.plot_pc_ba(root=sample, data=True, target=True)
 
         mplot.cca_vision(sample, folders=wells)
 

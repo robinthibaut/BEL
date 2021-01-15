@@ -38,7 +38,8 @@ def proxy_legend(legend1=None,
                  marker: str = '-',
                  pec: list = None,
                  fz: float = 11,
-                 fig_file: str = None):
+                 fig_file: str = None,
+                 extra: list = None):
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
@@ -58,12 +59,17 @@ def proxy_legend(legend1=None,
         labels = []
     if pec is None:
         pec = [None for _ in range(len(colors))]
+    if extra is None:
+        extra = []
 
     proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     plt.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
         plt.gca().add_artist(legend1)
+
+    for el in extra:
+        plt.gca().add_artist(el)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -806,8 +812,11 @@ class Plot:
         plt.show()
 
     def plot_results(self,
-                     root: str,
-                     folder: str):
+                     d: bool = True,
+                     h: bool = True,
+                     root: str = None,
+                     folder: str = None,
+                     annotation: list = None):
         """
         Plots forecasts results in the 'uq' folder
         :param root: str: Forward ID
@@ -818,112 +827,122 @@ class Plot:
         md = jp(MySetup.Directories.forecasts_dir, root, folder)
         # CCA pickle
         cca_operator = joblib.load(jp(md, 'obj', 'cca.pkl'))
+
+        # d pca pickle
+        d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
+
         # h PCA pickle
         hbase = jp(MySetup.Directories.forecasts_dir, 'base')
         pcaf = jp(hbase, 'h_pca.pkl')
         h_pco = joblib.load(pcaf)
 
-        # Curves - d
-        # Plot curves
-        sdir = jp(md, 'data')
-        d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
-        tc = d_pco.training_physical.reshape(d_pco.training_shape)
-        tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
-        tc = np.concatenate((tc, tcp), axis=0)
+        if d:
+            # Curves - d
+            # Plot curves
+            sdir = jp(md, 'data')
 
-        # Plot parameters for predictor
-        xlabel = 'Observation index number'
-        ylabel = 'Concentration ($g/m^{3})$'
-        factor = 1000
-        labelsize = 11
+            tc = d_pco.training_physical.reshape(d_pco.training_shape)
+            tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
+            tc = np.concatenate((tc, tcp), axis=0)
 
-        self.curves(tc=tc,
-                    sdir=sdir,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    factor=factor,
-                    labelsize=labelsize,
-                    highlight=[len(tc) - 1])
+            # Plot parameters for predictor
+            xlabel = 'Observation index number'
+            ylabel = 'Concentration ($g/m^{3})$'
+            factor = 1000
+            labelsize = 11
 
-        self.curves(tc=tc,
-                    sdir=sdir,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    factor=factor,
-                    labelsize=labelsize,
-                    highlight=[len(tc) - 1],
-                    ghost=True,
-                    title='curves_ghost')
+            self.curves(tc=tc,
+                        sdir=sdir,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        factor=factor,
+                        labelsize=labelsize,
+                        highlight=[len(tc) - 1])
 
-        self.curves_i(tc=tc,
-                      xlabel=xlabel,
-                      ylabel=ylabel,
-                      factor=factor,
-                      labelsize=labelsize,
-                      sdir=sdir,
-                      highlight=[len(tc) - 1])
+            self.curves(tc=tc,
+                        sdir=sdir,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        factor=factor,
+                        labelsize=labelsize,
+                        highlight=[len(tc) - 1],
+                        ghost=True,
+                        title='curves_ghost')
 
-        # WHP - h test + training
-        fig_dir = jp(hbase, 'roots_whpa')
-        ff = jp(fig_dir, f'{root}.pdf')  # figure name
-        h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
-        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        # Plots target training + prediction
-        self.whp(h_training, colors='blue', alpha=.2)
-        self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
-        colors = ['blue', 'red']
-        labels = ['Training', 'Test']
-        legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
-        proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+            self.curves_i(tc=tc,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          factor=factor,
+                          labelsize=labelsize,
+                          sdir=sdir,
+                          highlight=[len(tc) - 1])
 
-        # WHPs
-        ff = jp(md,
-                'uq',
-                f'cca_{cca_operator.n_components}.pdf')
-        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
-        forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
-                                                  pca_h=h_pco,
-                                                  cca_obj=cca_operator,
-                                                  n_posts=MySetup.Forecast.n_posts,
-                                                  add_comp=False)
+        if h:
+            # WHP - h test + training
+            fig_dir = jp(hbase, 'roots_whpa')
+            ff = jp(fig_dir, f'{root}.pdf')  # figure name
+            h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
+            h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+            # Plots target training + prediction
+            self.whp(h_training, colors='blue', alpha=.2)
+            self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+            colors = ['blue', 'red']
+            labels = ['Training', 'Test']
+            legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
+            proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
 
-        # I display here the prior h behind the forecasts sampled from the posterior.
-        well_ids = [0] + list(map(int, list(folder)))
-        labels = ['Training', 'Samples', 'True test']
-        colors = ['darkblue', 'darkred', 'k']
+            # WHPs
+            ff = jp(md,
+                    'uq',
+                    f'{root}_cca_{cca_operator.n_components}.pdf')
+            h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+            post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
+            forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
+                                                      pca_h=h_pco,
+                                                      cca_obj=cca_operator,
+                                                      n_posts=MySetup.Forecast.n_posts,
+                                                      add_comp=False)
 
-        # Training
-        _, well_legend = self.whp(h_training,
-                                  alpha=.5,
-                                  lw=.5,
-                                  colors=colors[0],
-                                  show_wells=True,
-                                  well_ids=well_ids,
-                                  show=False)
+            # I display here the prior h behind the forecasts sampled from the posterior.
+            well_ids = [0] + list(map(int, list(folder)))
+            labels = ['Training', 'Samples', 'True test']
+            colors = ['darkblue', 'darkred', 'k']
 
-        # Samples
-        self.whp(forecast_posterior,
-                 colors=colors[1],
-                 lw=1,
-                 alpha=1,
-                 show=False)
+            # Training
+            _, well_legend = self.whp(h_training,
+                                      alpha=.5,
+                                      lw=.5,
+                                      colors=colors[0],
+                                      show_wells=True,
+                                      well_ids=well_ids,
+                                      show=False)
 
-        # True test
-        self.whp(h,
-                 colors=colors[2],
-                 lw=1,
-                 alpha=1,
-                 x_lim=[800, 1200],
-                 xlabel='X(m)',
-                 ylabel='Y(m)',
-                 labelsize=11)
+            # Samples
+            self.whp(forecast_posterior,
+                     colors=colors[1],
+                     lw=1,
+                     alpha=1,
+                     show=False)
 
-        # Tricky operation to add a second legend:
-        proxy_legend(legend1=well_legend,
-                     colors=colors,
-                     labels=labels,
-                     fig_file=ff)
+            # True test
+            self.whp(h,
+                     colors=colors[2],
+                     lw=1,
+                     alpha=1,
+                     x_lim=[800, 1200],
+                     xlabel='X(m)',
+                     ylabel='Y(m)',
+                     labelsize=11)
+
+            # Other tricky operation to add annotation
+            legend_an = proxy_annotate(annotation=annotation, loc=2, fz=14)
+
+            # Tricky operation to add a second legend:
+            proxy_legend(legend1=well_legend,
+                         extra=[legend_an],
+                         colors=colors,
+                         labels=labels,
+                         fig_file=ff)
 
     def plot_K_field(self, root):
         # HK field
