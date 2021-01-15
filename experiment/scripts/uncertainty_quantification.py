@@ -270,21 +270,24 @@ if __name__ == '__main__':
     # pot_obs = [f for f in listme if os.path.exists(
     #     os.path.join(MySetup.Directories.hydro_res_dir, f, f'{MySetup.Directories.project_name}.hds'))]
 
-    training_roots = filesio.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
-    training_roots = [item for sublist in training_roots for item in sublist]
-
-    test_roots = filesio.data_read(os.path.join(base_dir, 'test_roots.dat'))
-    test_roots = [item for sublist in test_roots for item in sublist]
+    # training_roots = filesio.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
+    # training_roots = [item for sublist in training_roots for item in sublist]
+    #
+    # test_roots = filesio.data_read(os.path.join(base_dir, 'test_roots.dat'))
+    # test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro = main(comb=wells,
-                  roots_training=training_roots,
-                  roots_obs=test_roots,
-                  flag_base=True)
+    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    # rt, ro = main(comb=wells,
+    #               # roots_training=training_roots,
+    #               # roots_obs=test_roots,
+    #               n_training=200,
+    #               n_observations=50,
+    #               flag_base=True)
+
     # Value info
-    # forecast_dir = MySetup.Directories.forecasts_dir
-    # listit = os.listdir(forecast_dir)
-    # listit.remove('base')
-    # duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    # value_info(duq)
+    forecast_dir = MySetup.Directories.forecasts_dir
+    listit = os.listdir(forecast_dir)
+    listit.remove('base')
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    value_info(duq)

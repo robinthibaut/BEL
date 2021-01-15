@@ -18,6 +18,7 @@ if __name__ == '__main__':
              'dc996e54728b4bb4a7234ee691729076',
              '27ec76adab2e406794584fc993188c24',
              '9a389395bfbe4cd883dfa3e452752978']
+    # roots = ['818bf1676c424f76b83bd777ae588a1d']
 
     alphabet = string.ascii_uppercase
 
@@ -32,19 +33,26 @@ if __name__ == '__main__':
 
         wells = ['123456', '1', '2', '3', '4', '5', '6']
 
-        for w in wells:
-            print(f'Plotting well {w}')
-            mplot.plot_results(root=sample,
-                               folder=w,
-                               annotation=alphabet[i],
-                               d=False)
+        # for j, w in enumerate(wells):
+        #
+        #     print(f'Plotting well {w}')
+        #
+        #     if w == '123456':
+        #         annotation = alphabet[i]
+        #     else:
+        #         annotation = alphabet[j-1]
+        #
+        #     mplot.plot_results(root=sample,
+        #                        folder=w,
+        #                        annotation=annotation,
+        #                        d=False)
 
         mplot.plot_K_field(sample)
 
-        mplot.plot_whpa(sample)
-
-        mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
-        mplot.plot_pc_ba(root=sample, data=True, target=True)
-
-        mplot.cca_vision(sample, folders=wells)
-
+        # mplot.plot_whpa(sample)
+        #
+        # mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
+        # mplot.plot_pc_ba(root=sample, data=True, target=True)
+        #
+        # mplot.cca_vision(sample, folders=wells)
+        #

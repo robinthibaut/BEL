@@ -944,19 +944,30 @@ class Plot:
                          labels=labels,
                          fig_file=ff)
 
-    def plot_K_field(self, root):
-        # HK field
+    def plot_K_field(self,
+                     root: str = None,
+                     deprecated: bool = True):
+
         matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'hk0.npy'))
         grid_dim = MySetup.GridDimensions
         extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
-        plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
-        self.plot_wells(markersize=1)
-        plt.colorbar()
-        plt.savefig(jp(MySetup.Directories.forecasts_dir, root, 'k_field.pdf'),
-                    bbox_inches='tight',
-                    dpi=300,
-                    transparent=True)
-        plt.close()
+
+        hkf = jp(MySetup.Directories.forecasts_dir, root, 'k_field.pdf')
+
+        if deprecated:
+            # HK field
+            plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
+            plt.xlabel('X(m)', fontsize=11)
+            plt.ylabel('Y(m)', fontsize=11)
+            self.plot_wells(markersize=3.5)
+            well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
+            cb = plt.colorbar()
+            cb.ax.set_title('$Log_{10} m/s$')
+            plt.savefig(hkf,
+                        bbox_inches='tight',
+                        dpi=300,
+                        transparent=True)
+            plt.close()
 
     @staticmethod
     def pca_vision(root,
