@@ -4,6 +4,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.stats
 import string
 import seaborn as sns
 from typing import List
@@ -51,7 +52,7 @@ def value_info(root: Root):
 
     modes = []  # Get MHD corresponding to each well's mode
     for i, m in enumerate(wm):  # For each well, look up its MHD distribution
-        count, values = np.histogram(m)
+        count, values = np.histogram(m, bins='fd')
         idm = np.argmax(count)
         mode = values[idm]
         modes.append(mode)
