@@ -1,2 +1,2 @@
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 

@@ -1,3 +1,5 @@
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import matplotlib.pyplot as plt
 import numpy as np
 

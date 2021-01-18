@@ -23,8 +23,11 @@ def value_info(root: Root):
     :param root: list: List containing the roots whose wells contributions will be taken into account.
     :return:
     """
+
+    fig_name = 'average'
     if not isinstance(root, (list, tuple)):
         root: list = [root]
+        fig_name = root
 
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well #i appears
@@ -60,7 +63,7 @@ def value_info(root: Root):
     legend_a = proxy_annotate(annotation=['B'], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'well_mode.pdf'), dpi=300, transparent=True)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_well_mode.pdf'), dpi=300, transparent=True)
     plt.close()
     # plt.show()
 
@@ -77,7 +80,7 @@ def value_info(root: Root):
     legend_a = proxy_annotate(annotation=['A'], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'hist.pdf'), dpi=300, transparent=True)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_hist.pdf'), dpi=300, transparent=True)
     plt.close()
     # plt.show()
 
@@ -121,7 +124,7 @@ def value_info(root: Root):
     g.set(yticks=[])  # set y ticks to blank
     g.despine(bottom=True, left=True)  # remove 'spines'
 
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, 'facet.pdf'), dpi=300, transparent=True)
+    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_facet.pdf'), dpi=300, transparent=True)
     # plt.show()
 
 
@@ -131,4 +134,6 @@ if __name__ == '__main__':
     listit = os.listdir(forecast_dir)
     listit.remove('base')
     duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
-    value_info(duq)
+
+    # value_info(duq)
+    value_info(['818bf1676c424f76b83bd777ae588a1d'])

@@ -1,4 +1,4 @@
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 from experiment.base.inventory import MySetup
 from os.path import join, dirname

@@ -1,4 +1,4 @@
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 import experiment.toolbox.filesio as fops
 import numpy as np
 import matplotlib.pyplot as plt

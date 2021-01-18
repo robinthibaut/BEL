@@ -1,4 +1,4 @@
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 """
 Grid geometry parameters need to be passed around modules.
 Defining data classes allows to avoid declaring those parameters several times.

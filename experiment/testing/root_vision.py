@@ -1,4 +1,4 @@
-#  Copyright (c) 2020. Robin Thibaut, Ghent University
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import numpy as np
 import pandas as pd
