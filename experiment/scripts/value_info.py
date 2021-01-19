@@ -53,6 +53,9 @@ def value_info(root: Root):
     modes = []  # Get MHD corresponding to each well's mode
     for i, m in enumerate(wm):  # For each well, look up its MHD distribution
         count, values = np.histogram(m, bins='fd')
+        # (Freedman Diaconis Estimator)
+        # Robust (resilient to outliers) estimator that takes into account data variability and data size.
+        # https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
         idm = np.argmax(count)
         mode = values[idm]
         modes.append(mode)
