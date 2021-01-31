@@ -66,7 +66,7 @@ def value_info(root: Root):
 
     # Bar plot
     plt.bar(np.arange(1, 7), -modes, color=colors)
-    plt.title('Value of information of each well')
+    plt.title('Amount of information of each well')
     plt.xlabel('Well ID')
     plt.ylabel('Opposite deviation from mode\'s mean')
     plt.grid(color='#95a5a6', linestyle='-', linewidth=.5, axis='y', alpha=0.7)
