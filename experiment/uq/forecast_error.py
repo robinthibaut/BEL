@@ -20,7 +20,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
-from experiment.math.hausdorff import modified_hausdorff_distance
+from experiment.math.spatial import modified_hausdorff_distance
 from experiment.math.postio import PosteriorIO
 from experiment.math.signed_distance import SignedDistance
 from experiment.toolbox import filesio as fops

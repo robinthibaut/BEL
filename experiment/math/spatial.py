@@ -1,7 +1,27 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
+
+
+def contours_vertices(x, y,
+                      arrays,
+                      c=0):
+    """
+    Extracts contour vertices from a list of matrices
+    :param arrays: list of matrices
+    :param c: Contour value
+    :return: vertices array
+    """
+    if len(arrays.shape) < 3:
+        arrays = [arrays]
+    # First create figures for each forecast.
+    c0s = [plt.contour(x, y, f, [c]) for f in arrays]
+    plt.close()  # Close plots
+    # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
+    v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
+    return v
 
 
 def modified_hausdorff_distance(a, b):

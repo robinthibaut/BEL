@@ -6,7 +6,6 @@ import warnings
 import string
 
 import joblib
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -15,6 +14,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
+from experiment.math import spatial
 from sklearn.preprocessing import PowerTransformer
 
 ftype = 'png'
@@ -388,9 +388,8 @@ class Plot:
         if len(arrays.shape) < 3:
             arrays = [arrays]
         # First create figures for each forecast.
-        plt_vert = matplotlib.pyplot
-        c0s = [plt_vert.contour(self.x, self.y, f, [c]) for f in arrays]
-        plt_vert.close()  # Close plots
+        c0s = [plt.contour(self.x, self.y, f, [c]) for f in arrays]
+        plt.close()  # Close plots
         # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
@@ -582,11 +581,10 @@ class Plot:
         if h is None:
             h = []
 
-        vertices = [self.contours_vertices(arrays=z) for z in h]
-
         for i, z in enumerate(h):  # h is the n square WHPA matrix
-            vx = vertices[i][0, :, 0]
-            vy = vertices[i][0, :, 1]
+            vertices = spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
+            vx = vertices[0, :, 0]
+            vy = vertices[0, :, 1]
             contour = plt.fill(vx, vy, color=colors, alpha=alpha)
             # contour = plt.plot(vx, vy, color=colors, linewidth=lw, alpha=alpha)
             # contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
