@@ -26,7 +26,7 @@ from typing import List
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
-from experiment.math.signed_distance import SignedDistance
+from experiment.math.spatial import Spatial
 from experiment.processing.pca import PCAIO
 from experiment.base.inventory import MySetup
 
@@ -73,12 +73,12 @@ def base_pca(base,
         # Loads the results:
         _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
-        sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+        sd = Spatial(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
         # PCA on signed distance
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
-        h = np.array([sd.compute(pp) for pp in pzs])
+        h = np.array([sd.signed_distance(pp) for pp in pzs])
 
         if check:
             # Load parameters:
@@ -129,7 +129,7 @@ def bel(base,
 
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    sd = SignedDistance(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+    sd = Spatial(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
         base.Wells.combination = well_comb
@@ -211,7 +211,7 @@ def bel(base,
     _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
-        h = np.array([sd.compute(pp) for pp in pzs])
+        h = np.array([sd.signed_distance(pp) for pp in pzs])
         # Perform PCA
         h_pco.pca_test_fit_transform(h, test_root=test_root)
         # Cut desired number of components

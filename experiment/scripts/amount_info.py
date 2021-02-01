@@ -4,7 +4,6 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.stats
 import string
 import seaborn as sns
 from typing import List

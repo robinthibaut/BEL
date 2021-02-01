@@ -11,7 +11,7 @@ import experiment.grid.meshio as mops
 from experiment.base.inventory import Directories
 from experiment.goggles.visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.math.signed_distance import SignedDistance, get_centroids
+from experiment.math.spatial import Spatial, get_centroids
 
 
 def active_zone(modflowmodel):
@@ -55,7 +55,7 @@ def active_zone(modflowmodel):
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
     xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
 
-    sdm = SignedDistance()
+    sdm = Spatial()
     sdm.xys = xy_true
     sdm.nrow = nrow
     sdm.ncol = ncol

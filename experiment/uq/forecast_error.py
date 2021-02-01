@@ -20,9 +20,8 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
-from experiment.math.spatial import modified_hausdorff_distance
 from experiment.math.postio import PosteriorIO
-from experiment.math.signed_distance import SignedDistance
+from experiment.math.spatial import Spatial, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
 
@@ -228,7 +227,7 @@ class UncertaintyQuantification:
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = SignedDistance(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        sd_kd = Spatial(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
         mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
@@ -257,7 +256,7 @@ class UncertaintyQuantification:
         v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array([modified_hausdorff_distance(v_h_true, vt) for vt in self.vertices])
+        mhds = np.array([modified_hausdorff(v_h_true, vt) for vt in self.vertices])
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)

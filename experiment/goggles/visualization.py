@@ -12,9 +12,9 @@ import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+import experiment.math.spatial
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
-from experiment.math import spatial
 from sklearn.preprocessing import PowerTransformer
 
 ftype = 'png'
@@ -582,7 +582,7 @@ class Plot:
             h = []
 
         for i, z in enumerate(h):  # h is the n square WHPA matrix
-            vertices = spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
+            vertices = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
             vx = vertices[0, :, 0]
             vy = vertices[0, :, 1]
             if len(h) > 1:
