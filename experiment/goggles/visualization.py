@@ -367,14 +367,18 @@ class Plot:
         else:
             self.grf = grf
 
-        self.nrow = int(np.diff(self.ylim) / self.grf)  # Number of rows
-        self.ncol = int(np.diff(self.xlim) / self.grf)  # Number of columns
-        self.x, self.y = np.meshgrid(
-            np.linspace(self.xlim[0], self.xlim[1], self.ncol), np.linspace(self.ylim[0], self.ylim[1], self.nrow))
+        self.nrow, self.ncol, self.x, self.y = self.refine_machine(self.grf)
         self.wdir = md.grid_dir
 
         wells_id = list(self.wells.wells_data.keys())
         self.cols = [self.wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
+
+    def refine_machine(self, new_grf):
+        nrow = int(np.diff(self.ylim) / new_grf)  # Number of rows
+        ncol = int(np.diff(self.xlim) / new_grf)  # Number of columns
+        new_x, new_y = np.meshgrid(
+            np.linspace(self.xlim[0], self.xlim[1], ncol), np.linspace(self.ylim[0], self.ylim[1], nrow))
+        return nrow, ncol, new_x, new_y
 
     def contours_vertices(self,
                           arrays,
@@ -583,14 +587,16 @@ class Plot:
             h = []
 
         if len(h) > 1:
+            new_grf = 1
+            _, _, new_x, new_y = self.refine_machine(new_grf=new_grf)
             stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
                                                        y_lim=self.ylim,
-                                                       grf=self.grf)
+                                                       grf=new_grf)
             vertices = experiment.math.spatial.contours_vertices(x=self.x,
                                                                  y=self.y,
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)
-            contour = plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, alpha=alpha)
+            contour = plt.contourf(new_x, new_y, b_low.max() - b_low, [0, b_low.max()], colors=color, alpha=alpha)
             if highlight:
                 for z in h:
                     contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
