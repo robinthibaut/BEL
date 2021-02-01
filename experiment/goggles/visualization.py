@@ -6,6 +6,7 @@ import warnings
 import string
 
 import joblib
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -387,8 +388,9 @@ class Plot:
         if len(arrays.shape) < 3:
             arrays = [arrays]
         # First create figures for each forecast.
-        c0s = [plt.contour(self.x, self.y, f, [c]) for f in arrays]
-        plt.close()  # Close plots
+        plt_vert = matplotlib.pyplot
+        c0s = [plt_vert.contour(self.x, self.y, f, [c]) for f in arrays]
+        plt_vert.close()  # Close plots
         # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
         return v
@@ -580,8 +582,14 @@ class Plot:
         if h is None:
             h = []
 
-        for z in h:  # h is the n square WHPA matrix
-            contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
+        vertices = [self.contours_vertices(arrays=z) for z in h]
+
+        for i, z in enumerate(h):  # h is the n square WHPA matrix
+            vx = vertices[i][0, :, 0]
+            vy = vertices[i][0, :, 1]
+            contour = plt.fill(vx, vy, color=colors, alpha=alpha)
+            # contour = plt.plot(vx, vy, color=colors, linewidth=lw, alpha=alpha)
+            # contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
         # Plot wells

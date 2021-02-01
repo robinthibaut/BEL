@@ -36,22 +36,22 @@ if __name__ == '__main__':
 
         wells = ['123456', '1', '2', '3', '4', '5', '6']
 
-        # for j, w in enumerate(wells):
-        #
-        #     print(f'Plotting well {w}')
-        #
-        #     if w == '123456':
-        #         annotation = alphabet[i]
-        #     else:
-        #         annotation = alphabet[j-1]
-        #
-        #     mplot.plot_results(root=sample,
-        #                        folder=w,
-        #                        annotation=annotation,
-        #                        d=False)
+        for j, w in enumerate(wells):
 
-        mplot.plot_K_field(sample)
-        mplot.plot_head_field(sample)
+            print(f'Plotting well {w}')
+
+            if w == '123456':
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j-1]
+
+            mplot.plot_results(root=sample,
+                               folder=w,
+                               annotation=annotation,
+                               d=False)
+
+        # mplot.plot_K_field(sample)
+        # mplot.plot_head_field(sample)
 
         # mplot.plot_whpa(sample)
         #
