@@ -26,19 +26,39 @@ class Spatial:
                  y_lim: float = None,
                  grf: float = 1):
         if y_lim is None:
-            y_lim = [0, 1000]
+            self.y_lim = [0, 1000]
+        else:
+            self.y_lim = y_lim
         if x_lim is None:
-            x_lim = [0, 1500]
+            self.x_lim = [0, 1500]
+        else:
+            self.x_lim = x_lim
+
         self.grf = grf  # Cell dimension
-        self.nrow = int(np.diff(y_lim) / grf)  # Number of rows
-        self.ncol = int(np.diff(x_lim) / grf)  # Number of columns
+        self.nrow = int(np.diff(self.y_lim) / grf)  # Number of rows
+        self.ncol = int(np.diff(self.x_lim) / grf)  # Number of columns
         array = np.ones((self.nrow, self.ncol))  # Dummy array
-        self.xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)  # Centroids of dummy array
+        self.xys = get_centroids(array, grf) + np.min([self.x_lim, self.y_lim], axis=1)  # Centroids of dummy array
+
+    def binary_stack(self, vertices):
+        """
+        Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
+        """
+        # For this approach we use our SignedDistance module
+        sd_kd = Spatial(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        # Create binary images of WHPA stored in bin_whpa
+        bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / len(vertices), outside=0) for p in vertices]
+        big_sum = np.sum(bin_whpa, axis=0)  # Stack them
+        b_low = np.where(big_sum == 1, 0, big_sum)  # Replace 1 values by 0
+        # b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
+        b_low = np.flipud(b_low)
+
+        return b_low
 
     def matrix_poly_bin(self,
                         pzs,
-                        outside: int = -1,
-                        inside: int = 1):
+                        outside: float = -1,
+                        inside: float = 1):
         """
         Given a polygon whose vertices are given by the array pzs, and a matrix of
         centroids coordinates of the surface discretization, assigns to the matrix a certain value
@@ -75,11 +95,13 @@ class Spatial:
         return sd
 
 
-def contours_vertices(x, y,
-                      arrays,
-                      c=0):
+def contours_vertices(x: list, y: list,
+                      arrays: np.array,
+                      c: float = 0):
     """
-    Extracts contour vertices from a list of matrices
+    Extracts contour vertices from a list of matrices.
+    :param x:
+    :param y:
     :param arrays: list of matrices
     :param c: Contour value
     :return: vertices array
