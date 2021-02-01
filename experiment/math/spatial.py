@@ -45,14 +45,11 @@ class Spatial:
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = Spatial(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / len(vertices), outside=0) for p in vertices]
+        bin_whpa = [self.matrix_poly_bin(pzs=p, inside=1 / (len(vertices)-1), outside=0) for p in vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
-        b_low = np.where(big_sum == 1, 0, big_sum)  # Replace 1 values by 0
+        b_low = np.where(big_sum >= 1, 0, big_sum)  # Replace 1 values by 0
         # b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
-        b_low = np.flipud(b_low)
-
         return b_low
 
     def matrix_poly_bin(self,
@@ -97,7 +94,8 @@ class Spatial:
 
 def contours_vertices(x: list, y: list,
                       arrays: np.array,
-                      c: float = 0):
+                      c: float = 0,
+                      ignore_: bool = True):
     """
     Extracts contour vertices from a list of matrices.
     :param x:
@@ -113,7 +111,10 @@ def contours_vertices(x: list, y: list,
     c0s = [plt.contour(x, y, f, [c]) for f in arrays]
     [plt.close(f) for f in figs]  # Close plots
     # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
-    v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
+    if ignore_:
+        v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
+    else:
+        v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(len(c0.allsegs[0]))], dtype=object)
     return v
 
 

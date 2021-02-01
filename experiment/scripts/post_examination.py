@@ -51,7 +51,7 @@ mplot.whp(h=nn,
           cb_title='SD(m)',
           annotation=['B'],
           bkg_field_array=np.flipud(nn[0]),
-          colors='black',
+          color='black',
           cmap=None)
 
 # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)

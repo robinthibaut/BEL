@@ -522,29 +522,30 @@ class Plot:
             s += 1
 
     def whp(self,
-            h=None,
-            alpha=0.4,
-            lw=.5,
-            bkg_field_array=None,
-            vmin=None,
-            vmax=None,
-            x_lim=None,
-            y_lim=None,
-            xlabel=None,
-            ylabel=None,
-            cb_title=None,
-            labelsize=5,
-            cmap='coolwarm',
-            colors='white',
-            show_wells=False,
-            well_ids=None,
-            title=None,
+            h: np.array = None,
+            alpha: float = 0.4,
+            lw: float = .5,
+            bkg_field_array: np.array = None,
+            vmin: float = None,
+            vmax: float = None,
+            x_lim: list = None,
+            y_lim: list = None,
+            xlabel: str = None,
+            ylabel: str = None,
+            cb_title: str = None,
+            labelsize: float = 5,
+            cmap: str = 'coolwarm',
+            color: str = 'white',
+            show_wells: bool = False,
+            well_ids: list = None,
+            title: str = None,
             annotation: list = None,
-            fig_file=None,
-            show=False):
+            fig_file: str = None,
+            show: bool = False):
         """
         Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+        :param annotation: List of annotations (str)
         :param xlabel:
         :param ylabel:
         :param cb_title:
@@ -559,7 +560,7 @@ class Plot:
         :param h: np.array: Array containing grids of values whose 0 contour will be computed and plotted
         :param alpha: float: opacity of the 0 contour lines
         :param lw: float: Line width
-        :param colors: str: Line color
+        :param color: str: Line color
         :param fig_file: str:
         :param show: bool:
         :param x_lim: [x_min, x_max]
@@ -581,14 +582,26 @@ class Plot:
         if h is None:
             h = []
 
+        stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
+                                                   y_lim=self.ylim,
+                                                   grf=self.grf)
+        vertices = experiment.math.spatial.contours_vertices(x=self.x,
+                                                             y=self.y,
+                                                             arrays=h)
+        b_low = stacking.binary_stack(vertices=vertices)
+        vertices2 = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=b_low, ignore_=False)
+        vx2 = vertices2[0, :, 0]
+        vy2 = vertices2[0, :, 1]
+
+
         for i, z in enumerate(h):  # h is the n square WHPA matrix
             vertices = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
             vx = vertices[0, :, 0]
             vy = vertices[0, :, 1]
             if len(h) > 1:
-                contour = plt.fill(vx, vy, color=colors, alpha=alpha)
+                contour = plt.fill(vx, vy, color=color, alpha=alpha)
             else:
-                contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
+                contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
         # Plot wells
@@ -769,12 +782,12 @@ class Plot:
             else:
                 h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
             self.whp(h=h_to_plot,
-                     colors='red', alpha=1, lw=2)
+                     color='red', alpha=1, lw=2)
             # v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
             v_pred = pca_o.custom_inverse_transform(v_pc)
 
             self.whp(h=v_pred.reshape(1, shape[1], shape[2]),
-                     colors='blue',
+                     color='blue',
                      alpha=1,
                      lw=2,
                      labelsize=11,
@@ -892,8 +905,8 @@ class Plot:
             h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
             h_training = h_pco.training_physical.reshape(h_pco.training_shape)
             # Plots target training + prediction
-            self.whp(h_training, colors='blue', alpha=.2)
-            self.whp(h, colors='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+            self.whp(h_training, color='blue', alpha=.2)
+            self.whp(h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
             colors = ['blue', 'red']
             labels = ['Training', 'Test']
             legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
@@ -918,23 +931,23 @@ class Plot:
 
             # Training
             _, well_legend = self.whp(h_training,
-                                      alpha=1/(len(h_training)*2),
+                                      alpha=1 / (len(h_training) * 2),
                                       lw=.5,
-                                      colors=colors[0],
+                                      color=colors[0],
                                       show_wells=True,
                                       well_ids=well_ids,
                                       show=False)
 
             # Samples
             self.whp(forecast_posterior,
-                     colors=colors[1],
+                     color=colors[1],
                      lw=1,
-                     alpha=1/len(forecast_posterior),
+                     alpha=1 / len(forecast_posterior),
                      show=False)
 
             # True test
             self.whp(h,
-                     colors=colors[2],
+                     color=colors[2],
                      lw=1,
                      alpha=1,
                      x_lim=[800, 1200],
@@ -1210,11 +1223,11 @@ class Plot:
         h = joblib.load(fobj)
         h_training = h.training_physical.reshape(h.training_shape)
 
-        mplot.whp(h_training, colors='blue', alpha=.5)
+        mplot.whp(h_training, color='blue', alpha=.5)
 
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
-            mplot.whp(h=h_pred, colors='red', lw=1, alpha=1,
+            mplot.whp(h=h_pred, color='red', lw=1, alpha=1,
                       annotation=['C'],
                       fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
