@@ -590,7 +590,7 @@ class Plot:
                                                                  y=self.y,
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)
-            plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, linewidths=lw, alpha=alpha)
+            plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, alpha=alpha)
         else:
             contour = plt.contour(self.x, self.y, h[0], [0], colors=color, linewidths=lw, alpha=alpha)
 
