@@ -582,13 +582,17 @@ class Plot:
         if h is None:
             h = []
 
-        stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
-                                                   y_lim=self.ylim,
-                                                   grf=self.grf)
-        vertices = experiment.math.spatial.contours_vertices(x=self.x,
-                                                             y=self.y,
-                                                             arrays=h)
-        b_low = stacking.binary_stack(vertices=vertices)
+        if len(h) > 1:
+            stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
+                                                       y_lim=self.ylim,
+                                                       grf=self.grf)
+            vertices = experiment.math.spatial.contours_vertices(x=self.x,
+                                                                 y=self.y,
+                                                                 arrays=h)
+            b_low = stacking.binary_stack(vertices=vertices)
+            plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, linewidths=lw, alpha=alpha)
+        else:
+            contour = plt.contour(self.x, self.y, h[0], [0], colors=color, linewidths=lw, alpha=alpha)
 
         # vertices2 = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=b_low, ignore_=False)
         # vx2 = vertices2[0, :, 0]
@@ -602,8 +606,6 @@ class Plot:
         #         contour = plt.fill(vx, vy, color=color, alpha=alpha)
         #     else:
         #         contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
-
-        plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, linewidths=lw, alpha=alpha)
 
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
