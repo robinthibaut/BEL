@@ -541,6 +541,7 @@ class Plot:
             title: str = None,
             annotation: list = None,
             fig_file: str = None,
+            highlight: bool = False,
             show: bool = False):
         """
         Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -577,7 +578,6 @@ class Plot:
             cb = plt.colorbar()
             cb.ax.set_title(cb_title)
 
-        contour = None
         # Plot results
         if h is None:
             h = []
@@ -590,7 +590,11 @@ class Plot:
                                                                  y=self.y,
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)
-            plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, alpha=alpha)
+            contour = plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, alpha=alpha)
+            if highlight:
+                for z in h:
+                    contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
+
         else:
             contour = plt.contour(self.x, self.y, h[0], [0], colors=color, linewidths=lw, alpha=alpha)
 
@@ -936,7 +940,7 @@ class Plot:
 
             # Training
             _, well_legend = self.whp(h_training,
-                                      alpha=1 / (len(h_training) * 2),
+                                      alpha=.5,
                                       lw=.5,
                                       color=colors[0],
                                       show_wells=True,
@@ -947,13 +951,14 @@ class Plot:
             self.whp(forecast_posterior,
                      color=colors[1],
                      lw=1,
-                     alpha=1 / len(forecast_posterior),
+                     alpha=.8,
+                     highlight=True,
                      show=False)
 
             # True test
             self.whp(h,
                      color=colors[2],
-                     lw=1,
+                     lw=.8,
                      alpha=1,
                      x_lim=[800, 1200],
                      xlabel='X(m)',
