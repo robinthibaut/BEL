@@ -589,19 +589,22 @@ class Plot:
                                                              y=self.y,
                                                              arrays=h)
         b_low = stacking.binary_stack(vertices=vertices)
-        vertices2 = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=b_low, ignore_=False)
-        vx2 = vertices2[0, :, 0]
-        vy2 = vertices2[0, :, 1]
 
+        # vertices2 = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=b_low, ignore_=False)
+        # vx2 = vertices2[0, :, 0]
+        # vy2 = vertices2[0, :, 1]
+        #
+        # for i, z in enumerate(h):  # h is the n square WHPA matrix
+        #     vertices = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
+        #     vx = vertices[0, :, 0]
+        #     vy = vertices[0, :, 1]
+        #     if len(h) > 1:
+        #         contour = plt.fill(vx, vy, color=color, alpha=alpha)
+        #     else:
+        #         contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
 
-        for i, z in enumerate(h):  # h is the n square WHPA matrix
-            vertices = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
-            vx = vertices[0, :, 0]
-            vy = vertices[0, :, 1]
-            if len(h) > 1:
-                contour = plt.fill(vx, vy, color=color, alpha=alpha)
-            else:
-                contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
+        plt.contourf(self.x, self.y, 1 - b_low, [0, b_low.max()], colors=color, linewidths=lw, alpha=alpha)
+
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
         # Plot wells

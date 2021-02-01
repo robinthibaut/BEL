@@ -111,6 +111,10 @@ def contours_vertices(x: list, y: list,
     c0s = [plt.contour(x, y, f, [c]) for f in arrays]
     [plt.close(f) for f in figs]  # Close plots
     # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
+
+    # /!\ If more than one contours are present for the same values, possibility to include them or not.
+    # How are the contours sorted in c0.allsegs[0][i] ?
+    # It looks like they are sorted by size.
     if ignore_:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     else:
