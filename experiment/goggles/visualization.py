@@ -585,9 +585,10 @@ class Plot:
             vertices = spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
             vx = vertices[0, :, 0]
             vy = vertices[0, :, 1]
-            contour = plt.fill(vx, vy, color=colors, alpha=alpha)
-            # contour = plt.plot(vx, vy, color=colors, linewidth=lw, alpha=alpha)
-            # contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
+            if len(h) > 1:
+                contour = plt.fill(vx, vy, color=colors, alpha=alpha)
+            else:
+                contour = plt.contour(self.x, self.y, z, [0], colors=colors, linewidths=lw, alpha=alpha)
         plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
 
         # Plot wells
@@ -917,7 +918,7 @@ class Plot:
 
             # Training
             _, well_legend = self.whp(h_training,
-                                      alpha=.5,
+                                      alpha=1/(len(h_training)*2),
                                       lw=.5,
                                       colors=colors[0],
                                       show_wells=True,
@@ -928,7 +929,7 @@ class Plot:
             self.whp(forecast_posterior,
                      colors=colors[1],
                      lw=1,
-                     alpha=1,
+                     alpha=1/len(forecast_posterior),
                      show=False)
 
             # True test

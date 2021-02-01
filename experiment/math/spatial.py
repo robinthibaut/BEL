@@ -17,8 +17,9 @@ def contours_vertices(x, y,
     if len(arrays.shape) < 3:
         arrays = [arrays]
     # First create figures for each forecast.
+    figs = [plt.figure() for _ in range(len(arrays))]
     c0s = [plt.contour(x, y, f, [c]) for f in arrays]
-    plt.close()  # Close plots
+    [plt.close(f) for f in figs]  # Close plots
     # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
     v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     return v
