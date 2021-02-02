@@ -4,7 +4,7 @@ import os
 import string
 
 from experiment.base.inventory import MySetup
-from experiment.goggles.visualization import Plot, plot_whpa
+import experiment.goggles.visualization as myvis
 from experiment.toolbox.filesio import data_read
 
 
@@ -27,7 +27,6 @@ if __name__ == '__main__':
 
     fc = MySetup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
-    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
@@ -40,23 +39,34 @@ if __name__ == '__main__':
 
             print(f'Plotting well {w}')
 
-            # if w == '123456':
-            #     annotation = alphabet[i]
-            # else:
-            #     annotation = alphabet[j-1]
-            #
-            # mplot.plot_results(root=sample,
-            #                    folder=w,
-            #                    annotation=annotation,
-            #                    d=False)
+            if w == '123456':
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j-1]
 
-        # mplot.plot_K_field(sample)
-        # mplot.plot_head_field(sample)
+            myvis.plot_results(root=sample,
+                               folder=w,
+                               annotation=annotation,
+                               d=False)
 
-        plot_whpa(sample)
+        myvis.plot_K_field(root=sample)
+
+        myvis.plot_head_field(root=sample)
+
+        myvis.plot_whpa(root=sample)
         #
-        # mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
-        # mplot.plot_pc_ba(root=sample, data=True, target=True)
-        #
-        # mplot.cca_vision(sample, folders=wells)
+        myvis.pca_vision(root=sample,
+                         d=True,
+                         h=True,
+                         exvar=True,
+                         labels=True,
+                         scores=True,
+                         folders=wells)
+
+        myvis.plot_pc_ba(root=sample,
+                         data=True,
+                         target=True)
+
+        myvis.cca_vision(root=sample,
+                         folders=wells)
         #

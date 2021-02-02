@@ -350,8 +350,8 @@ def cca_plot(cca_operator,
             plt.close()
 
 
-def whpa_plot(grf=None,
-              well_comb=None,
+def whpa_plot(grf: float = None,
+              well_comb: list = None,
               whpa: np.array = None,
               alpha: float = 0.4,
               halpha: float = None,
@@ -402,7 +402,6 @@ def whpa_plot(grf=None,
     """
 
     # Get basic settings
-    md = MySetup.Directories()
     focus = MySetup.Focus()
     wells = MySetup.Wells()
 
@@ -527,42 +526,6 @@ def whpa_plot(grf=None,
         plt.close()
 
     return contour, well_legend
-
-
-class Plot:
-
-    def __init__(self,
-                 x_lim=None,
-                 y_lim=None,
-                 grf=None,
-                 well_comb=None):
-
-        # Get basic settings
-        md = MySetup.Directories()
-        focus = MySetup.Focus()
-        self.wells = MySetup.Wells()
-
-        if well_comb is not None:
-            self.wells.combination = well_comb
-
-        if y_lim is None:
-            self.ylim = focus.y_range
-        else:
-            self.ylim = y_lim
-        if x_lim is None:
-            self.xlim = focus.x_range
-        else:
-            self.xlim = x_lim
-        if grf is None:
-            self.grf = focus.cell_dim
-        else:
-            self.grf = grf
-
-        self.nrow, self.ncol, self.x, self.y = refine_machine(self.ylim, self.xlim, self.grf)
-        self.wdir = md.grid_dir
-
-        wells_id = list(self.wells.wells_data.keys())
-        self.cols = [self.wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
 
 def post_examination(root: str,
@@ -816,8 +779,8 @@ def plot_results(d: bool = True,
                      fig_file=ff)
 
 
-def plot_K_field(wells=None,
-                 root: str = None,
+def plot_K_field(root: str = None,
+                 wells=None,
                  deprecated: bool = True):
     if wells is None:
         wells = MySetup.Wells()
@@ -836,7 +799,7 @@ def plot_K_field(wells=None,
         plt.xlabel('X(m)', fontsize=11)
         plt.ylabel('Y(m)', fontsize=11)
         plot_wells(wells, markersize=3.5)
-        well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
+        # well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
@@ -1044,7 +1007,8 @@ def curves_i(cols, tc,
             plt.close()
 
 
-def plot_wells(wells, well_ids=None,
+def plot_wells(wells,
+               well_ids=None,
                markersize: float = 4.):
     if well_ids is None:
         comb = [0] + list(wells.combination)
