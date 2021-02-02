@@ -98,9 +98,9 @@ def active_zone(modflowmodel):
 
     # We have to use flipud for the matrix to correspond.
     po = Plot(grf=grf_dummy)
-    po.whp(bkg_field_array=np.flipud(val_dummy_r),
-           show_wells=True,
-           show=True)
+    po.whpa_plot(bkg_field_array=np.flipud(val_dummy_r),
+                 show_wells=True,
+                 show=True)
 
     grid1 = mops.blocks_from_rc(np.ones(nrow_dummy)*grf_dummy, np.ones(ncol_dummy)*grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)

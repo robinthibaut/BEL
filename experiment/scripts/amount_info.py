@@ -10,7 +10,7 @@ from typing import List
 
 from experiment.base.inventory import MySetup
 
-from experiment.goggles.visualization import Plot, proxy_annotate
+from experiment.goggles.visualization import Plot, proxy_annotate, mode_histo
 
 Root = List[str]
 
@@ -46,7 +46,7 @@ def by_mode(root: Root):
             wm[idw] += mhd  # Add MHD at each well
 
     mp = Plot()
-    mp.mode_histo(an_i=an_i, wm=wm, fig_name=fig_name)
+    mode_histo(mp.cols, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
 if __name__ == '__main__':

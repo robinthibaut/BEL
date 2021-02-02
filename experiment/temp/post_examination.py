@@ -41,18 +41,18 @@ nn = np.load(ndor)
 fc = MySetup.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
-mplot.whp(h=nn,
-          x_lim=x_lim,
-          y_lim=[335, 700],
-          labelsize=11,
-          alpha=1,
-          xlabel='X(m)',
-          ylabel='Y(m)',
-          cb_title='SD(m)',
-          annotation=['B'],
-          bkg_field_array=np.flipud(nn[0]),
-          color='black',
-          cmap=None)
+mplot.whpa_plot(h=nn,
+                x_lim=x_lim,
+                y_lim=[335, 700],
+                labelsize=11,
+                alpha=1,
+                xlabel='X(m)',
+                ylabel='Y(m)',
+                cb_title='SD(m)',
+                annotation=['B'],
+                bkg_field_array=np.flipud(nn[0]),
+                color='black',
+                cmap=None)
 
 # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
 # plt.gca().add_artist(legend)

@@ -4,7 +4,7 @@ import os
 import string
 
 from experiment.base.inventory import MySetup
-from experiment.goggles.visualization import Plot
+from experiment.goggles.visualization import Plot, plot_whpa
 from experiment.toolbox.filesio import data_read
 
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         # mplot.plot_K_field(sample)
         # mplot.plot_head_field(sample)
 
-        mplot.plot_whpa(sample)
+        plot_whpa(sample)
         #
         # mplot.pca_vision(sample, d=True, h=True, exvar=True, labels=True, scores=True, folders=wells)
         # mplot.plot_pc_ba(root=sample, data=True, target=True)

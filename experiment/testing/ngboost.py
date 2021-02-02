@@ -64,7 +64,7 @@ random_samples = random_samples.reshape(n_samples, nhco)
 forecast_posterior = h_pco.custom_inverse_transform(random_samples[:, :15]).reshape((n_samples,
                                                                                      h_pco.shape[1],
                                                                                      h_pco.shape[2]))
-mplot.whp(h=forecast_posterior, show_wells=True, show=True)
+mplot.whpa_plot(h=forecast_posterior, show_wells=True, show=True)
 
 # test Mean Squared Error
 # test_MSE = mean_squared_error(Y_preds, h_pc_prediction)

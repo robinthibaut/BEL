@@ -87,9 +87,9 @@ def base_pca(base,
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
-                mp.whp([e],
-                       lw=1,
-                       fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
+                mp.whpa_plot([e],
+                             lw=1,
+                             fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
 
         # Initiate h pca object
