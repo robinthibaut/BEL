@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import numpy
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
@@ -283,3 +282,27 @@ def binary_stack(xys, nrow, ncol, vertices):
     big_sum -= big_sum.min()
     big_sum /= big_sum.max()
     return big_sum
+
+
+def get_block(pm, i: int):
+    """
+    Extracts block from a 2x2 partitioned matrix.
+    :param pm: Partitioned matrix
+    :param i: Block index
+    1 2
+    3 4
+    :return: Bock #b
+    """
+
+    b = pm.shape[0] // 2
+
+    if i == 1:
+        return pm[:b, :b]
+    if i == 2:
+        return pm[:b, b:]
+    if i == 3:
+        return pm[b:, :b]
+    if i == 4:
+        return pm[b:, b:]
+    else:
+        return 0

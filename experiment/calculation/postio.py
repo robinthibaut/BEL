@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
 from experiment.base.inventory import MySetup
+from experiment.spatial.grid import get_block
 
 
 class PosteriorIO:
@@ -96,29 +97,6 @@ class PosteriorIO:
         s21 = g @ h_cov_operator
         s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
         block = np.block([[s11, s12], [s21, s22]])
-
-        def get_block(pm, i: int):
-            """
-            Extracts block from a 2x2 partitioned matrix.
-            :param pm: Partitioned matrix
-            :param i: Block index
-            1 2
-            3 4
-            :return: Bock #b
-            """
-
-            b = pm.shape[0] // 2
-
-            if i == 1:
-                return pm[:b, :b]
-            if i == 2:
-                return pm[:b, b:]
-            if i == 3:
-                return pm[b:, :b]
-            if i == 4:
-                return pm[b:, b:]
-            else:
-                return 0
 
         # Inverse
         delta = np.linalg.pinv(block)
