@@ -8,7 +8,6 @@ import os
 import platform
 from dataclasses import dataclass
 from os.path import dirname, join
-from typing import List
 
 import numpy as np
 
@@ -26,7 +25,7 @@ class MySetup:
         main_dir: str = dirname(dirname(os.path.abspath(__file__)))
         hydro_res_dir: str = join(main_dir, 'storage', 'forwards')
         forecasts_dir: str = join(main_dir, 'storage', 'forecasts')
-        grid_dir: str = join(main_dir, 'grid', 'parameters')
+        grid_dir: str = join(main_dir, 'spatial', 'parameters')
 
     @dataclass
     class Files:
