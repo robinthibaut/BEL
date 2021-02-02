@@ -230,11 +230,11 @@ class UncertaintyQuantification:
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
         mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [binary_polygon(sd_kd.xys, sd_kd.nrow, sd_kd.ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
+        bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)

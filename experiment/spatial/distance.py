@@ -28,9 +28,17 @@ def grid_parameters(x_lim: list = None,
     return xys, nrow, ncol
 
 
-def signed_distance(xys, nrow, ncol, grf, pzs):
+def signed_distance(xys: np.array,
+                    nrow: int,
+                    ncol: int,
+                    grf: float,
+                    pzs: np.array):
     """
     Given an array of coordinates of polygon vertices, computes its signed distance field.
+    :param xys:
+    :param nrow:
+    :param ncol:
+    :param grf:
     :param pzs: Array of ordered vertices coordinates of a polygon.
     :return: Signed distance matrix
     """

@@ -73,12 +73,12 @@ def base_pca(base,
         # Loads the results:
         _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
-        sd = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+        xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
         # PCA on signed distance
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
-        h = np.array([signed_distance(sd.xys, sd.nrow, sd.ncol, sd.grf, pp) for pp in pzs])
+        h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
 
         if check:
             # Load parameters:
@@ -129,7 +129,7 @@ def bel(base,
 
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    sd = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+    xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
         base.Wells.combination = well_comb
@@ -211,7 +211,7 @@ def bel(base,
     _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
-        h = np.array([signed_distance(sd.xys, sd.nrow, sd.ncol, sd.grf, pp) for pp in pzs])
+        h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
         h_pco.pca_test_fit_transform(h, test_root=test_root)
         # Cut desired number of components
