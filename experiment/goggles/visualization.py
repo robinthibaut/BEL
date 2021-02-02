@@ -11,7 +11,8 @@ import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import experiment.spatial as spt
+from experiment.spatial.distance import grid_parameters
+from experiment.spatial.grid import contours_vertices
 from experiment.base.inventory import MySetup
 from experiment.spatial.grid import binary_stack
 from experiment.toolbox import filesio
@@ -444,13 +445,16 @@ def whpa_plot(grf: float = None,
         _, _, new_x, new_y = refine_machine(ylim,
                                             xlim,
                                             new_grf=new_grf)
-        xys, nrow, ncol = spt.distance.grid_parameters(x_lim=xlim,
-                                                       y_lim=ylim,
-                                                       grf=new_grf)
-        vertices = spt.grid.contours_vertices(x=x,
-                                              y=y,
-                                              arrays=whpa)
-        b_low = binary_stack(xys, nrow, ncol, vertices=vertices)
+        xys, nrow, ncol = grid_parameters(x_lim=xlim,
+                                          y_lim=ylim,
+                                          grf=new_grf)
+        vertices = contours_vertices(x=x,
+                                     y=y,
+                                     arrays=whpa)
+        b_low = binary_stack(xys=xys,
+                             nrow=nrow,
+                             ncol=ncol,
+                             vertices=vertices)
         contour = plt.contourf(new_x,
                                new_y,
                                1 - b_low,  # Trick to be able to fill contours
