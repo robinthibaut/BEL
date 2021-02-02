@@ -350,6 +350,185 @@ def cca_plot(cca_operator,
             plt.close()
 
 
+def whpa_plot(grf=None,
+              well_comb=None,
+              whpa: np.array = None,
+              alpha: float = 0.4,
+              halpha: float = None,
+              lw: float = .5,
+              bkg_field_array: np.array = None,
+              vmin: float = None,
+              vmax: float = None,
+              x_lim: list = None,
+              y_lim: list = None,
+              xlabel: str = None,
+              ylabel: str = None,
+              cb_title: str = None,
+              labelsize: float = 5,
+              cmap: str = 'coolwarm',
+              color: str = 'white',
+              show_wells: bool = False,
+              well_ids: list = None,
+              title: str = None,
+              annotation: list = None,
+              fig_file: str = None,
+              highlight: bool = False,
+              show: bool = False):
+    """
+    Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
+
+    :param highlight: Boolean to display lines on top of filling between contours or not.
+    :param annotation: List of annotations (str)
+    :param xlabel:
+    :param ylabel:
+    :param cb_title:
+    :param well_ids:
+    :param labelsize: Label size
+    :param title: str: plot title
+    :param show_wells: bool: whether to plot well coordinates or not
+    :param cmap: str: colormap name for the background array
+    :param vmax: float: max value to plot for the background array
+    :param vmin: float: max value to plot for the background array
+    :param bkg_field_array: np.array: 2D array whose values will be plotted on the grid
+    :param whpa: np.array: Array containing grids of values whose 0 contour will be computed and plotted
+    :param alpha: float: opacity of the 0 contour lines
+    :param halpha: Alpha value for line plots if highlight is True
+    :param lw: float: Line width
+    :param color: str: Line color
+    :param fig_file: str:
+    :param show: bool:
+    :param x_lim: [x_min, x_max]
+    :param y_lim: [y_min, y_max]
+    """
+
+    # Get basic settings
+    md = MySetup.Directories()
+    focus = MySetup.Focus()
+    wells = MySetup.Wells()
+
+    if well_comb is not None:
+        wells.combination = well_comb
+
+    if y_lim is None:
+        ylim = focus.y_range
+    else:
+        ylim = y_lim
+    if x_lim is None:
+        xlim = focus.x_range
+    else:
+        xlim = x_lim
+    if grf is None:
+        grf = focus.cell_dim
+    else:
+        grf = grf
+
+    nrow, ncol, x, y = refine_machine(ylim, xlim, grf)
+
+    wells_id = list(wells.wells_data.keys())
+    cols = [wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
+
+    # Plot background
+    if bkg_field_array is not None:
+        plt.imshow(bkg_field_array,
+                   extent=(xlim[0], xlim[1], ylim[0], ylim[1]),
+                   vmin=vmin,
+                   vmax=vmax,
+                   cmap=cmap)
+        cb = plt.colorbar()
+        cb.ax.set_title(cb_title)
+
+    if halpha is None:
+        halpha = alpha
+
+    # Plot results
+    if whpa is None:
+        whpa = []
+
+    if len(whpa) > 1:  # New approach is to plot filled contours
+        new_grf = 1  # Refine grid
+        _, _, new_x, new_y = refine_machine(ylim,
+                                            xlim,
+                                            new_grf=new_grf)
+        stacking = experiment.spatial.distance.grid_parameters(x_lim=xlim,
+                                                               y_lim=ylim,
+                                                               grf=new_grf)
+        vertices = experiment.spatial.grid.contours_vertices(x=x,
+                                                             y=y,
+                                                             arrays=whpa)
+        b_low = binary_stack(stacking.xys, stacking.nrow, stacking.ncol, vertices=vertices)
+        contour = plt.contourf(new_x,
+                               new_y,
+                               1 - b_low,  # Trick to be able to fill contours
+                               [np.finfo(float).eps, 1 - np.finfo(float).eps],  # Use machine epsilon
+                               colors=color,
+                               alpha=alpha)
+        if highlight:  # Also display curves
+            for z in whpa:
+                contour = plt.contour(x,
+                                      y,
+                                      z,
+                                      [0],
+                                      colors=color,
+                                      linewidths=lw,
+                                      alpha=halpha)
+
+    else:  # If only one WHPA to display
+        contour = plt.contour(x,
+                              y,
+                              whpa[0],
+                              [0],
+                              colors=color,
+                              linewidths=lw,
+                              alpha=halpha)
+
+    # Grid
+    plt.grid(color='c',
+             linestyle='-',
+             linewidth=.5,
+             alpha=.2)
+
+    # Plot wells
+    well_legend = None
+    if show_wells:
+        plot_wells(wells,
+                   well_ids=well_ids,
+                   markersize=7)
+        well_legend = plt.legend(fontsize=11)
+
+    # Plot limits
+    if x_lim is None:
+        plt.xlim(xlim[0], xlim[1])
+    else:
+        plt.xlim(x_lim[0], x_lim[1])
+    if y_lim is None:
+        plt.ylim(ylim[0], ylim[1])
+    else:
+        plt.ylim(y_lim[0], y_lim[1])
+
+    if title:
+        plt.title(title)
+
+    plt.xlabel(xlabel, fontsize=labelsize)
+    plt.ylabel(ylabel, fontsize=labelsize)
+
+    # Tick size
+    plt.tick_params(labelsize=labelsize, colors='k')
+
+    if annotation:
+        legend = proxy_annotate(annotation=annotation, fz=14, loc=2)
+        plt.gca().add_artist(legend)
+
+    if fig_file:
+        filesio.dirmaker(os.path.dirname(fig_file))
+        plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
+        plt.close()
+    if show:
+        plt.show()
+        plt.close()
+
+    return contour, well_legend
+
+
 class Plot:
 
     def __init__(self,
@@ -385,396 +564,263 @@ class Plot:
         wells_id = list(self.wells.wells_data.keys())
         self.cols = [self.wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
-    def post_examination(self,
-                         root: str,
-                         show: bool = False):
-        md = MySetup.Directories()
-        ndir = jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}.npy')
-        sdir = os.path.dirname(ndir)
-        nn = np.load(ndir)
-        self.whpa_plot(h=nn,
-                       x_lim=self.xlim,
-                       y_lim=[335, 700],
-                       labelsize=11,
-                       alpha=1,
-                       xlabel='X(m)',
-                       ylabel='Y(m)',
-                       cb_title='SD(m)',
-                       annotation=['B'],
-                       bkg_field_array=np.flipud(nn[0]),
-                       color='black',
-                       cmap=None)
 
-        # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
-        # plt.gca().add_artist(legend)
+def post_examination(root: str,
+                     xlim: list = None,
+                     ylim: list = None,
+                     show: bool = False):
+    focus = MySetup.Focus()
+    if xlim is None:
+        xlim = focus.x_range
+    if ylim is None:
+        ylim = focus.y_range  # [335, 700]
+    md = MySetup.Directories()
+    ndir = jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}.npy')
+    sdir = os.path.dirname(ndir)
+    nn = np.load(ndir)
+    whpa_plot(whpa=nn,
+              x_lim=xlim,
+              y_lim=ylim,
+              labelsize=11,
+              alpha=1,
+              xlabel='X(m)',
+              ylabel='Y(m)',
+              cb_title='SD(m)',
+              annotation=['B'],
+              bkg_field_array=np.flipud(nn[0]),
+              color='black',
+              cmap=None)
 
-        plt.savefig(jp(sdir, f'{root}_SD.pdf'),
-                    dpi=300,
-                    bbox_inches='tight',
-                    transparent=True)
-        if show:
-            plt.show()
-        plt.close()
+    # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
+    # plt.gca().add_artist(legend)
 
-    def whpa_plot(self,
-                  h: np.array = None,
-                  alpha: float = 0.4,
-                  halpha: float = None,
-                  lw: float = .5,
-                  bkg_field_array: np.array = None,
-                  vmin: float = None,
-                  vmax: float = None,
-                  x_lim: list = None,
-                  y_lim: list = None,
-                  xlabel: str = None,
-                  ylabel: str = None,
-                  cb_title: str = None,
-                  labelsize: float = 5,
-                  cmap: str = 'coolwarm',
-                  color: str = 'white',
-                  show_wells: bool = False,
-                  well_ids: list = None,
-                  title: str = None,
-                  annotation: list = None,
-                  fig_file: str = None,
-                  highlight: bool = False,
-                  show: bool = False):
-        """
-        Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
+    plt.savefig(jp(sdir, f'{root}_SD.pdf'),
+                dpi=300,
+                bbox_inches='tight',
+                transparent=True)
+    if show:
+        plt.show()
+    plt.close()
 
-        :param highlight: Boolean to display lines on top of filling between contours or not.
-        :param annotation: List of annotations (str)
-        :param xlabel:
-        :param ylabel:
-        :param cb_title:
-        :param well_ids:
-        :param labelsize: Label size
-        :param title: str: plot title
-        :param show_wells: bool: whether to plot well coordinates or not
-        :param cmap: str: colormap name for the background array
-        :param vmax: float: max value to plot for the background array
-        :param vmin: float: max value to plot for the background array
-        :param bkg_field_array: np.array: 2D array whose values will be plotted on the grid
-        :param h: np.array: Array containing grids of values whose 0 contour will be computed and plotted
-        :param alpha: float: opacity of the 0 contour lines
-        :param halpha: Alpha value for line plots if highlight is True
-        :param lw: float: Line width
-        :param color: str: Line color
-        :param fig_file: str:
-        :param show: bool:
-        :param x_lim: [x_min, x_max]
-        :param y_lim: [y_min, y_max]
-        """
 
-        # Plot background
-        if bkg_field_array is not None:
-            plt.imshow(bkg_field_array,
-                       extent=(self.xlim[0], self.xlim[1], self.ylim[0], self.ylim[1]),
-                       vmin=vmin,
-                       vmax=vmax,
-                       cmap=cmap)
-            cb = plt.colorbar()
-            cb.ax.set_title(cb_title)
+def h_pca_inverse_plot(pca_o,
+                       training: bool = True,
+                       fig_dir: str = None,
+                       show: bool = False):
+    """
+    Plot used to compare the reproduction of the original physical space after PCA transformation
+    :param pca_o: signed distance PCA operator
+    :param training: bool:
+    :param fig_dir: str:
+    :param show: bool:
+    :return:
+    """
 
-        if halpha is None:
-            halpha = alpha
+    shape = pca_o.training_shape
 
-        # Plot results
-        if h is None:
-            h = []
+    if training:
+        v_pc = pca_o.training_pc
+        roots = pca_o.roots
+    else:
+        v_pc = pca_o.predict_pc
+        roots = pca_o.test_root
 
-        if len(h) > 1:  # New approach is to plot filled contours
-            new_grf = 1  # Refine grid
-            _, _, new_x, new_y = refine_machine(self.ylim,
-                                                self.xlim,
-                                                new_grf=new_grf)
-            stacking = experiment.spatial.distance.grid_parameters(x_lim=self.xlim,
-                                                                   y_lim=self.ylim,
-                                                                   grf=new_grf)
-            vertices = experiment.spatial.grid.contours_vertices(x=self.x,
-                                                                 y=self.y,
-                                                                 arrays=h)
-            b_low = binary_stack(stacking.xys, stacking.nrow, stacking.ncol, vertices=vertices)
-            contour = plt.contourf(new_x,
-                                   new_y,
-                                   1 - b_low,  # Trick to be able to fill contours
-                                   [np.finfo(float).eps, 1 - np.finfo(float).eps],  # Use machine epsilon
-                                   colors=color,
-                                   alpha=alpha)
-            if highlight:  # Also display curves
-                for z in h:
-                    contour = plt.contour(self.x,
-                                          self.y,
-                                          z,
-                                          [0],
-                                          colors=color,
-                                          linewidths=lw,
-                                          alpha=halpha)
-
-        else:  # If only one WHPA to display
-            contour = plt.contour(self.x,
-                                  self.y,
-                                  h[0],
-                                  [0],
-                                  colors=color,
-                                  linewidths=lw,
-                                  alpha=halpha)
-
-        # Grid
-        plt.grid(color='c',
-                 linestyle='-',
-                 linewidth=.5,
-                 alpha=.2)
-
-        # Plot wells
-        well_legend = None
-        if show_wells:
-            plot_wells(self.wells,
-                       well_ids=well_ids,
-                       markersize=7)
-            well_legend = plt.legend(fontsize=11)
-
-        # Plot limits
-        if x_lim is None:
-            plt.xlim(self.xlim[0], self.xlim[1])
-        else:
-            plt.xlim(x_lim[0], x_lim[1])
-        if y_lim is None:
-            plt.ylim(self.ylim[0], self.ylim[1])
-        else:
-            plt.ylim(y_lim[0], y_lim[1])
-
-        if title:
-            plt.title(title)
-
-        plt.xlabel(xlabel, fontsize=labelsize)
-        plt.ylabel(ylabel, fontsize=labelsize)
-
-        # Tick size
-        plt.tick_params(labelsize=labelsize, colors='k')
-
-        if annotation:
-            legend = proxy_annotate(annotation=annotation, fz=14, loc=2)
-            plt.gca().add_artist(legend)
-
-        if fig_file:
-            filesio.dirmaker(os.path.dirname(fig_file))
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
-
-        return contour, well_legend
-
-    def h_pca_inverse_plot(self,
-                           pca_o,
-                           vn,
-                           training=True,
-                           fig_dir=None,
-                           show=False):
-        """
-        Plot used to compare the reproduction of the original physical space after PCA transformation
-        :param pca_o: signed distance PCA operator
-        :param vn: Number of components to keep while inverse-transforming the data
-        :param training: bool:
-        :param fig_dir: str:
-        :param show: bool:
-        :return:
-        """
-
-        shape = pca_o.training_shape
+    for i, r in enumerate(roots):
 
         if training:
-            v_pc = pca_o.training_pc
-            roots = pca_o.roots
+            h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
         else:
-            v_pc = pca_o.predict_pc
-            roots = pca_o.test_root
+            h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
 
-        for i, r in enumerate(roots):
+        whpa_plot(whpa=h_to_plot,
+                  color='red',
+                  alpha=1,
+                  lw=2)
 
-            if training:
-                h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
-            else:
-                h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
+        v_pred = pca_o.custom_inverse_transform(v_pc)
 
-            self.whpa_plot(h=h_to_plot,
-                           color='red', alpha=1, lw=2)
-            # v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
-            v_pred = pca_o.custom_inverse_transform(v_pc)
+        whpa_plot(whpa=v_pred.reshape(1, shape[1], shape[2]),
+                  color='blue',
+                  alpha=1,
+                  lw=2,
+                  labelsize=11,
+                  xlabel='X(m)',
+                  ylabel='Y(m)',
+                  x_lim=[850, 1100],
+                  y_lim=[350, 650])
 
-            self.whpa_plot(h=v_pred.reshape(1, shape[1], shape[2]),
-                           color='blue',
-                           alpha=1,
-                           lw=2,
-                           labelsize=11,
-                           xlabel='X(m)',
-                           ylabel='Y(m)',
-                           x_lim=[850, 1100],
-                           y_lim=[350, 650])
+        # Add title inside the box
+        an = ['B']
 
-            # Add title inside the box
-            an = ['B']
+        legend_a = proxy_annotate(annotation=an,
+                                  loc=2,
+                                  fz=14)
 
-            legend_a = proxy_annotate(annotation=an,
-                                      loc=2,
-                                      fz=14)
+        proxy_legend(legend1=legend_a,
+                     colors=['red', 'blue'],
+                     labels=['Physical', 'Back transformed'],
+                     marker='-')
 
-            proxy_legend(legend1=legend_a,
-                         colors=['red', 'blue'],
-                         labels=['Physical', 'Back transformed'],
-                         marker='-')
+        if fig_dir is not None:
+            filesio.dirmaker(fig_dir)
+            plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
+            plt.close()
 
-            if fig_dir is not None:
-                filesio.dirmaker(fig_dir)
-                plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
-                plt.close()
-
-            if show:
-                plt.show()
-                plt.close()
-
-    def plot_results(self,
-                     d: bool = True,
-                     h: bool = True,
-                     root: str = None,
-                     folder: str = None,
-                     annotation: list = None):
-        """
-        Plots forecasts results in the 'uq' folder
-        :param annotation: List of annotations
-        :param h: Boolean to plot target or not
-        :param d: Boolean to plot predictor or not
-        :param root: str: Forward ID
-        :param folder: str: Well combination. '123456', '1'...
-        :return:
-        """
-        # Directory
-        md = jp(MySetup.Directories.forecasts_dir, root, folder)
-        # CCA pickle
-        cca_operator = joblib.load(jp(md, 'obj', 'cca.pkl'))
-
-        # d pca pickle
-        d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
-
-        # h PCA pickle
-        hbase = jp(MySetup.Directories.forecasts_dir, 'base')
-        pcaf = jp(hbase, 'h_pca.pkl')
-        h_pco = joblib.load(pcaf)
-
-        if d:
-            # Curves - d
-            # Plot curves
-            sdir = jp(md, 'data')
-
-            tc = d_pco.training_physical.reshape(d_pco.training_shape)
-            tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
-            tc = np.concatenate((tc, tcp), axis=0)
-
-            # Plot parameters for predictor
-            xlabel = 'Observation index number'
-            ylabel = 'Concentration ($g/m^{3})$'
-            factor = 1000
-            labelsize = 11
-
-            curves(self.cols, tc=tc,
-                   sdir=sdir,
-                   xlabel=xlabel,
-                   ylabel=ylabel,
-                   factor=factor,
-                   labelsize=labelsize,
-                   highlight=[len(tc) - 1])
-
-            curves(self.cols, tc=tc,
-                   sdir=sdir,
-                   xlabel=xlabel,
-                   ylabel=ylabel,
-                   factor=factor,
-                   labelsize=labelsize,
-                   highlight=[len(tc) - 1],
-                   ghost=True,
-                   title='curves_ghost')
-
-            curves_i(self.cols, tc=tc,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     factor=factor,
-                     labelsize=labelsize,
-                     sdir=sdir,
-                     highlight=[len(tc) - 1])
-
-        if h:
-            # WHP - h test + training
-            fig_dir = jp(hbase, 'roots_whpa')
-            ff = jp(fig_dir, f'{root}.pdf')  # figure name
-            h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
-            h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-            # Plots target training + prediction
-            self.whpa_plot(h_training, color='blue', alpha=.5)
-            self.whpa_plot(h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
-            colors = ['blue', 'red']
-            labels = ['Training', 'Test']
-            legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
-            proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
-
-            # WHPs
-            ff = jp(md,
-                    'uq',
-                    f'{root}_cca_{cca_operator.n_components}.pdf')
-            h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-            post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
-            forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
-                                                      pca_h=h_pco,
-                                                      cca_obj=cca_operator,
-                                                      n_posts=MySetup.Forecast.n_posts,
-                                                      add_comp=False)
-
-            # I display here the prior h behind the forecasts sampled from the posterior.
-            well_ids = [0] + list(map(int, list(folder)))
-            labels = ['Training', 'Samples', 'True test']
-            colors = ['darkblue', 'darkred', 'k']
-
-            # Training
-            _, well_legend = self.whpa_plot(h_training,
-                                            alpha=.5,
-                                            lw=.5,
-                                            color=colors[0],
-                                            show_wells=True,
-                                            well_ids=well_ids,
-                                            show=False)
-
-            # Samples
-            self.whpa_plot(forecast_posterior,
-                           color=colors[1],
-                           lw=1,
-                           alpha=.8,
-                           highlight=True,
-                           show=False)
-
-            # True test
-            self.whpa_plot(h,
-                           color=colors[2],
-                           lw=.8,
-                           alpha=1,
-                           x_lim=[800, 1200],
-                           xlabel='X(m)',
-                           ylabel='Y(m)',
-                           labelsize=11)
-
-            # Other tricky operation to add annotation
-            legend_an = proxy_annotate(annotation=annotation, loc=2, fz=14)
-
-            # Tricky operation to add a second legend:
-            proxy_legend(legend1=well_legend,
-                         extra=[legend_an],
-                         colors=colors,
-                         labels=labels,
-                         fig_file=ff)
+        if show:
+            plt.show()
+            plt.close()
 
 
-def plot_K_field(wells, root: str = None,
+def plot_results(d: bool = True,
+                 h: bool = True,
+                 root: str = None,
+                 folder: str = None,
+                 annotation: list = None):
+    """
+    Plots forecasts results in the 'uq' folder
+    :param annotation: List of annotations
+    :param h: Boolean to plot target or not
+    :param d: Boolean to plot predictor or not
+    :param root: str: Forward ID
+    :param folder: str: Well combination. '123456', '1'...
+    :return:
+    """
+    # Directory
+    md = jp(MySetup.Directories.forecasts_dir, root, folder)
+
+    # Wells
+    wells = MySetup.Wells()
+    wells_id = list(wells.wells_data.keys())
+    cols = [wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
+
+    # CCA pickle
+    cca_operator = joblib.load(jp(md, 'obj', 'cca.pkl'))
+
+    # d pca pickle
+    d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
+
+    # h PCA pickle
+    hbase = jp(MySetup.Directories.forecasts_dir, 'base')
+    pcaf = jp(hbase, 'h_pca.pkl')
+    h_pco = joblib.load(pcaf)
+
+    if d:
+        # Curves - d
+        # Plot curves
+        sdir = jp(md, 'data')
+
+        tc = d_pco.training_physical.reshape(d_pco.training_shape)
+        tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
+        tc = np.concatenate((tc, tcp), axis=0)
+
+        # Plot parameters for predictor
+        xlabel = 'Observation index number'
+        ylabel = 'Concentration ($g/m^{3})$'
+        factor = 1000
+        labelsize = 11
+
+        curves(cols, tc=tc,
+               sdir=sdir,
+               xlabel=xlabel,
+               ylabel=ylabel,
+               factor=factor,
+               labelsize=labelsize,
+               highlight=[len(tc) - 1])
+
+        curves(cols, tc=tc,
+               sdir=sdir,
+               xlabel=xlabel,
+               ylabel=ylabel,
+               factor=factor,
+               labelsize=labelsize,
+               highlight=[len(tc) - 1],
+               ghost=True,
+               title='curves_ghost')
+
+        curves_i(cols, tc=tc,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 factor=factor,
+                 labelsize=labelsize,
+                 sdir=sdir,
+                 highlight=[len(tc) - 1])
+
+    if h:
+        # WHP - h test + training
+        fig_dir = jp(hbase, 'roots_whpa')
+        ff = jp(fig_dir, f'{root}.pdf')  # figure name
+        h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
+        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+        # Plots target training + prediction
+        whpa_plot(h_training, color='blue', alpha=.5)
+        whpa_plot(h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+        colors = ['blue', 'red']
+        labels = ['Training', 'Test']
+        legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
+        proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+
+        # WHPs
+        ff = jp(md,
+                'uq',
+                f'{root}_cca_{cca_operator.n_components}.pdf')
+        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+        post_obj = joblib.load(jp(md, 'obj', 'post.pkl'))
+        forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
+                                                  pca_h=h_pco,
+                                                  cca_obj=cca_operator,
+                                                  n_posts=MySetup.Forecast.n_posts,
+                                                  add_comp=False)
+
+        # I display here the prior h behind the forecasts sampled from the posterior.
+        well_ids = [0] + list(map(int, list(folder)))
+        labels = ['Training', 'Samples', 'True test']
+        colors = ['darkblue', 'darkred', 'k']
+
+        # Training
+        _, well_legend = whpa_plot(whpa=h_training,
+                                   alpha=.5,
+                                   lw=.5,
+                                   color=colors[0],
+                                   show_wells=True,
+                                   well_ids=well_ids,
+                                   show=False)
+
+        # Samples
+        whpa_plot(whpa=forecast_posterior,
+                  color=colors[1],
+                  lw=1,
+                  alpha=.8,
+                  highlight=True,
+                  show=False)
+
+        # True test
+        whpa_plot(whpa=h,
+                  color=colors[2],
+                  lw=.8,
+                  alpha=1,
+                  x_lim=[800, 1200],
+                  xlabel='X(m)',
+                  ylabel='Y(m)',
+                  labelsize=11)
+
+        # Other tricky operation to add annotation
+        legend_an = proxy_annotate(annotation=annotation,
+                                   loc=2,
+                                   fz=14)
+
+        # Tricky operation to add a second legend:
+        proxy_legend(legend1=well_legend,
+                     extra=[legend_an],
+                     colors=colors,
+                     labels=labels,
+                     fig_file=ff)
+
+
+def plot_K_field(wells=None,
+                 root: str = None,
                  deprecated: bool = True):
+    if wells is None:
+        wells = MySetup.Wells()
 
     matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'hk0.npy'))
     grid_dim = MySetup.GridDimensions
@@ -805,7 +851,6 @@ def plot_K_field(wells, root: str = None,
 def mode_histo(cols, an_i: int,
                wm: np.array,
                fig_name: str = 'average'):
-
     alphabet = string.ascii_uppercase
     colors = cols  # Get default colors from visualization class
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
@@ -900,7 +945,8 @@ def mode_histo(cols, an_i: int,
     # plt.show()
 
 
-def curves(cols, tc,
+def curves(cols: list,
+           tc: np.array,
            highlight=None,
            ghost=False,
            sdir=None,
@@ -1000,7 +1046,6 @@ def curves_i(cols, tc,
 
 def plot_wells(wells, well_ids=None,
                markersize: float = 4.):
-
     if well_ids is None:
         comb = [0] + list(wells.combination)
     else:
@@ -1028,7 +1073,6 @@ def plot_wells(wells, well_ids=None,
 
 
 def plot_head_field(root: str = None):
-
     matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
     grid_dim = MySetup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
@@ -1072,9 +1116,6 @@ def plot_pc_ba(root: str = None,
         else:
             root = root[0]
 
-    x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
-    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
     if target:
         fobj = os.path.join(base_dir, 'h_pca.pkl')
@@ -1086,10 +1127,9 @@ def plot_pc_ba(root: str = None,
         # Cut desired number of PC components
         h_pco.pca_test_fit_transform(h_pred, test_root=[root])
         h_pco.pca_refresh(hnc0)
-        mplot.h_pca_inverse_plot(h_pco,
-                                 hnc0,
-                                 training=False,
-                                 fig_dir=jp(base_dir, 'roots_whpa'))
+        h_pca_inverse_plot(pca_o=h_pco,
+                           training=False,
+                           fig_dir=jp(base_dir, 'roots_whpa'))
 
     # d
     if data:
@@ -1135,30 +1175,27 @@ def plot_whpa(root: str = None):
             root = root[0]
 
     base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    x_lim, y_lim, grf = MySetup.Focus.x_range, MySetup.Focus.y_range, MySetup.Focus.cell_dim
-    mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf)
-
     fobj = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.training_shape)
 
-    mplot.whpa_plot(h_training,
-                    highlight=True,
-                    halpha=.5,
-                    lw=.1,
-                    color='darkblue',
-                    alpha=.5)
+    whpa_plot(whpa=h_training,
+              highlight=True,
+              halpha=.5,
+              lw=.1,
+              color='darkblue',
+              alpha=.5)
 
     if root is not None:
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
-        mplot.whpa_plot(h=h_pred,
-                        color='darkred',
-                        lw=1,
-                        alpha=1,
-                        annotation=['C'],
-                        xlabel='X(m)',
-                        ylabel='Y(m)',
-                        labelsize=11)
+        whpa_plot(whpa=h_pred,
+                  color='darkred',
+                  lw=1,
+                  alpha=1,
+                  annotation=['C'],
+                  xlabel='X(m)',
+                  ylabel='Y(m)',
+                  labelsize=11)
 
         labels = ['Training', 'Test']
         legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
@@ -1347,9 +1384,13 @@ def pca_vision(root,
                                fig_file=fig_file)
 
 
-def check_root(xlim, ylim, root):
+def check_root(xlim: list,
+               ylim: list,
+               root: list):
     """
     Plots raw data of folder 'root'
+    :param xlim:
+    :param ylim:
     :param root:
     :return:
     """
@@ -1430,7 +1471,6 @@ def d_pca_inverse_plot(pca_o,
 
 
 def hydro_examination(root: str):
-
     md = MySetup.Directories()
     ep = jp(md.hydro_res_dir, root, 'tracking_ep.npy')
     epxy = np.load(ep)
