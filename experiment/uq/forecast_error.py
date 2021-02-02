@@ -221,12 +221,11 @@ class UncertaintyQuantification:
         return z
 
 # %% New approach : stack binary WHPA
-    def binary_stack(self):
+    def uq_binary_stack(self):
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
-        # For this approach we use our SignedDistance module
-        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
@@ -249,11 +248,14 @@ class UncertaintyQuantification:
         v_h_true_cut = \
             self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
-        nrow, ncol, x, y = refine_machine(self.y_lim, self.x_lim, self.grf)
+        # Reminder: these are the focus parameters around the pumping well
+        nrow, ncol, x, y = refine_machine(self.y_lim,
+                                          self.x_lim,
+                                          self.grf)
         # Delineation vertices of the true array
-        v_h_true = contours_vertices(x,
-                                     y,
-                                     v_h_true_cut)[0]
+        v_h_true = contours_vertices(x=x,
+                                     y=y,
+                                     arrays=v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
         mhds = np.array([modified_hausdorff(v_h_true, vt) for vt in self.vertices])
