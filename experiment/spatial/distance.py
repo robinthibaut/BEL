@@ -90,7 +90,3 @@ def modified_hausdorff(a, b):
     rhd = np.mean(np.min(d, axis=1))  # Mean of minimum values along columns
 
     return max(fhd, rhd)
-
-
-if __name__ == '__main__':
-    lol = grid_parameters(x_lim=[0, 1500], y_lim=[0, 1000], grf=4)
