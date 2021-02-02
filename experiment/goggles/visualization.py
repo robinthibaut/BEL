@@ -776,9 +776,9 @@ class Plot:
         if len(h) > 1:  # New approach is to plot filled contours
             new_grf = 1  # Refine grid
             _, _, new_x, new_y = self.refine_machine(new_grf=new_grf)
-            stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
-                                                       y_lim=self.ylim,
-                                                       grf=new_grf)
+            stacking = experiment.math.spatial.grid_parameters(x_lim=self.xlim,
+                                                               y_lim=self.ylim,
+                                                               grf=new_grf)
             vertices = experiment.spatial.grid.contours_vertices(x=self.x,
                                                                  y=self.y,
                                                                  arrays=h)

@@ -22,7 +22,7 @@ from sklearn.neighbors import KernelDensity
 from experiment.goggles.visualization import Plot
 from experiment.calculation.postio import PosteriorIO
 from experiment.spatial.grid import binary_polygon
-from experiment.spatial.distance import Spatial, modified_hausdorff
+from experiment.spatial.distance import grid_parameters, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
 
@@ -230,7 +230,7 @@ class UncertaintyQuantification:
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
         # For this approach we use our SignedDistance module
-        sd_kd = Spatial(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
+        sd_kd = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
         mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa

@@ -7,26 +7,25 @@ from scipy.spatial.distance import cdist
 from experiment.spatial.grid import get_centroids, binary_polygon
 
 
-class Spatial:
+def grid_parameters(x_lim: list = None,
+                    y_lim: list = None,
+                    grf: float = 1):
+    if y_lim is None:
+        y_lim = [0, 1000]
+    else:
+        y_lim = y_lim
+    if x_lim is None:
+        x_lim = [0, 1500]
+    else:
+        x_lim = x_lim
 
-    def __init__(self,
-                 x_lim: list = None,
-                 y_lim: list = None,
-                 grf: float = 1):
-        if y_lim is None:
-            self.y_lim = [0, 1000]
-        else:
-            self.y_lim = y_lim
-        if x_lim is None:
-            self.x_lim = [0, 1500]
-        else:
-            self.x_lim = x_lim
+    grf = grf  # Cell dimension
+    nrow = int(np.diff(y_lim) / grf)  # Number of rows
+    ncol = int(np.diff(x_lim) / grf)  # Number of columns
+    array = np.ones((nrow, ncol))  # Dummy array
+    xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)  # Centroids of dummy array
 
-        self.grf = grf  # Cell dimension
-        self.nrow = int(np.diff(self.y_lim) / grf)  # Number of rows
-        self.ncol = int(np.diff(self.x_lim) / grf)  # Number of columns
-        array = np.ones((self.nrow, self.ncol))  # Dummy array
-        self.xys = get_centroids(array, grf) + np.min([self.x_lim, self.y_lim], axis=1)  # Centroids of dummy array
+    return xys, nrow, ncol
 
 
 def signed_distance(xys, nrow, ncol, grf, pzs):
@@ -79,4 +78,4 @@ def modified_hausdorff(a, b):
 
 
 if __name__ == '__main__':
-    lol = Spatial(x_lim=[0, 1500], y_lim=[0, 1000], grf=4)
+    lol = grid_parameters(x_lim=[0, 1500], y_lim=[0, 1000], grf=4)

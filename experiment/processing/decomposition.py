@@ -26,7 +26,7 @@ from typing import List
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
-from experiment.spatial.distance import Spatial, signed_distance
+from experiment.spatial.distance import grid_parameters, signed_distance
 from experiment.processing.pca import PCAIO
 from experiment.base.inventory import MySetup
 
@@ -73,7 +73,7 @@ def base_pca(base,
         # Loads the results:
         _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
-        sd = Spatial(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+        sd = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
         # PCA on signed distance
         # Compute signed distance on pzs.
@@ -129,7 +129,7 @@ def bel(base,
 
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    sd = Spatial(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+    sd = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
         base.Wells.combination = well_comb

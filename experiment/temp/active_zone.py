@@ -11,7 +11,7 @@ import experiment.spatial.grid as mops
 from experiment.base.inventory import Directories
 from experiment.goggles.visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.spatial.distance import Spatial
+from experiment.spatial.distance import grid_parameters
 from experiment.spatial.grid import get_centroids, binary_polygon
 
 
@@ -56,7 +56,7 @@ def active_zone(modflowmodel):
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
     xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
 
-    sdm = Spatial()
+    sdm = grid_parameters()
     sdm.xys = xy_true
     sdm.nrow = nrow
     sdm.ncol = ncol
