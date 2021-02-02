@@ -40,11 +40,11 @@ if __name__ == '__main__':
 
             print(f'Plotting well {w}')
 
-            if w == '123456':
-                annotation = alphabet[i]
-            else:
-                annotation = alphabet[j-1]
-
+            # if w == '123456':
+            #     annotation = alphabet[i]
+            # else:
+            #     annotation = alphabet[j-1]
+            #
             # mplot.plot_results(root=sample,
             #                    folder=w,
             #                    annotation=annotation,

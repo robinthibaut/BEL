@@ -21,6 +21,11 @@ ftype = 'png'
 
 
 def my_alphabet(az):
+    """
+    Method used to make custom figure annotations.
+    :param az:
+    :return:
+    """
     alphabet = string.ascii_uppercase
     extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
 
@@ -53,6 +58,7 @@ def proxy_legend(legend1=None,
     :param pec: List of point edge color, e.g. [None, 'k']
     :param fz: Fontsize
     :param fig_file: Path to figure file
+    :param extra: List of extra elements to be added on the final figure
     :return:
     """
     if colors is None:
@@ -528,6 +534,7 @@ class Plot:
     def whp(self,
             h: np.array = None,
             alpha: float = 0.4,
+            halpha: float = None,
             lw: float = .5,
             bkg_field_array: np.array = None,
             vmin: float = None,
@@ -582,6 +589,9 @@ class Plot:
             cb = plt.colorbar()
             cb.ax.set_title(cb_title)
 
+        if halpha is None:
+            halpha = alpha
+
         # Plot results
         if h is None:
             h = []
@@ -610,7 +620,7 @@ class Plot:
                                           [0],
                                           colors=color,
                                           linewidths=lw,
-                                          alpha=alpha)
+                                          alpha=halpha)
 
         else:  # If only one WHPA to display
             contour = plt.contour(self.x,
@@ -619,7 +629,7 @@ class Plot:
                                   [0],
                                   colors=color,
                                   linewidths=lw,
-                                  alpha=alpha)
+                                  alpha=halpha)
 
         plt.grid(color='c',
                  linestyle='-',
@@ -664,43 +674,6 @@ class Plot:
             plt.close()
 
         return contour, well_legend
-
-    def whp_prediction(self,
-                       forecasts,
-                       h_true,
-                       h_pred=None,
-                       x_lim=None,
-                       y_lim=None,
-                       label=None,
-                       bkg_field_array=None,
-                       fig_file=None,
-                       show_wells=False,
-                       well_ids=None,
-                       title=None,
-                       show=False):
-        warnings.warn('Depecrated funcion')
-        # Plot n forecasts sampled
-        self.whp(h=forecasts,
-                 x_lim=x_lim,
-                 y_lim=y_lim,
-                 show_wells=show_wells,
-                 well_ids=well_ids,
-                 bkg_field_array=bkg_field_array,
-                 title=title)
-
-        # Plot true h
-        plt.contour(self.x, self.y, h_true, [0], colors='red', linewidths=1, alpha=.9, label=label)
-
-        # Plot 'true' h predicted
-        if h_pred is not None:
-            plt.contour(self.x, self.y, h_pred, [0], colors='blue', linewidths=1, alpha=.9)
-        if fig_file:
-            filesio.dirmaker(os.path.dirname(fig_file))
-            plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
 
     @staticmethod
     def d_pca_inverse_plot(pca_o,
@@ -927,7 +900,7 @@ class Plot:
             h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
             h_training = h_pco.training_physical.reshape(h_pco.training_shape)
             # Plots target training + prediction
-            self.whp(h_training, color='blue', alpha=.2)
+            self.whp(h_training, color='blue', alpha=.5)
             self.whp(h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
             colors = ['blue', 'red']
             labels = ['Training', 'Test']
@@ -1248,14 +1221,28 @@ class Plot:
 
         mplot.whp(h_training,
                   highlight=True,
-                  color='blue',
+                  halpha=.5,
+                  lw=.1,
+                  color='darkblue',
                   alpha=.5)
 
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
-            mplot.whp(h=h_pred, color='red', lw=1, alpha=1,
+            mplot.whp(h=h_pred,
+                      color='darkred',
+                      lw=1,
+                      alpha=1,
                       annotation=['C'],
-                      fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
+                      xlabel='X(m)',
+                      ylabel='Y(m)',
+                      labelsize=11)
+
+            labels = ['Training', 'Test']
+            legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
+            proxy_legend(legend1=legend,
+                         colors=['darkblue', 'darkred'],
+                         labels=labels,
+                         fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
     @staticmethod
     def plot_pc_ba(root: str = None,
