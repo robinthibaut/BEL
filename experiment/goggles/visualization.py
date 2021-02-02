@@ -421,7 +421,7 @@ def whpa_plot(grf: float = None,
     else:
         grf = grf
 
-    nrow, ncol, x, y = refine_machine(ylim, xlim, grf)
+    nrow, ncol, x, y = refine_machine(focus.x_range, focus.y_range, grf)
 
     # Plot background
     if bkg_field_array is not None:
@@ -441,12 +441,12 @@ def whpa_plot(grf: float = None,
         whpa = []
 
     if len(whpa) > 1:  # New approach is to plot filled contours
-        new_grf = 1  # Refine grid
-        _, _, new_x, new_y = refine_machine(ylim,
-                                            xlim,
+        new_grf = 4  # Refine grid
+        _, _, new_x, new_y = refine_machine(xlim,
+                                            ylim,
                                             new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(x_lim=xlim,
-                                          y_lim=ylim,
+        xys, nrow, ncol = grid_parameters(x_lim=focus.x_range,
+                                          y_lim=focus.y_range,
                                           grf=new_grf)
         vertices = contours_vertices(x=x,
                                      y=y,
@@ -712,11 +712,11 @@ def plot_results(d: bool = True,
         # WHP - h test + training
         fig_dir = jp(hbase, 'roots_whpa')
         ff = jp(fig_dir, f'{root}.pdf')  # figure name
-        h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
+        h_test = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color='blue', alpha=.5)
-        whpa_plot(whpa=h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+        whpa_plot(whpa=h_test, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
         colors = ['blue', 'red']
         labels = ['Training', 'Test']
         legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
@@ -757,7 +757,7 @@ def plot_results(d: bool = True,
                   show=False)
 
         # True test
-        whpa_plot(whpa=h,
+        whpa_plot(whpa=h_test,
                   color=colors[2],
                   lw=.8,
                   alpha=1,

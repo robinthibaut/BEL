@@ -309,7 +309,7 @@ def get_block(pm, i: int):
         return 0
 
 
-def refine_machine(ylim, xlim, new_grf):
+def refine_machine(xlim, ylim, new_grf):
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
     new_x, new_y = np.meshgrid(

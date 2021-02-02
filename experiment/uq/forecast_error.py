@@ -129,7 +129,7 @@ class UncertaintyQuantification:
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
         """
-        nrow, ncol, x, y = refine_machine(self.y_lim, self.x_lim, self.grf)
+        nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         self.vertices = contours_vertices(x, y, self.forecast_posterior)
         if write_vtk:
             vdir = jp(self.fig_pred_dir, 'vtk')
@@ -249,8 +249,8 @@ class UncertaintyQuantification:
             self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
         # Reminder: these are the focus parameters around the pumping well
-        nrow, ncol, x, y = refine_machine(self.y_lim,
-                                          self.x_lim,
+        nrow, ncol, x, y = refine_machine(self.x_lim,
+                                          self.y_lim,
                                           self.grf)
         # Delineation vertices of the true array
         v_h_true = contours_vertices(x=x,
