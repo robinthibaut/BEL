@@ -26,7 +26,7 @@ from typing import List
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
-from experiment.spatial.spatial import Spatial
+from experiment.spatial.distance import Spatial, signed_distance
 from experiment.processing.pca import PCAIO
 from experiment.base.inventory import MySetup
 
@@ -78,7 +78,7 @@ def base_pca(base,
         # PCA on signed distance
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
-        h = np.array([sd.signed_distance(pp) for pp in pzs])
+        h = np.array([signed_distance(sd.xys, sd.nrow, sd.ncol, sd.grf, pp) for pp in pzs])
 
         if check:
             # Load parameters:
@@ -211,7 +211,7 @@ def bel(base,
     _, pzs, _ = fops.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
-        h = np.array([sd.signed_distance(pp) for pp in pzs])
+        h = np.array([signed_distance(sd.xys, sd.nrow, sd.ncol, sd.grf, pp) for pp in pzs])
         # Perform PCA
         h_pco.pca_test_fit_transform(h, test_root=test_root)
         # Cut desired number of components

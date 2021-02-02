@@ -21,7 +21,8 @@ from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
 from experiment.calculation.postio import PosteriorIO
-from experiment.spatial.spatial import Spatial, modified_hausdorff
+from experiment.spatial.grid import binary_polygon
+from experiment.spatial.distance import Spatial, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
 
@@ -101,7 +102,8 @@ class UncertaintyQuantification:
         self.vertices = None
 
 # %% Random sample from the posterior
-    def sample_posterior(self, n_posts: int = None):
+    def sample_posterior(self,
+                         n_posts: int = None):
         """
         Extracts n_posts random samples from the posterior.
         :param n_posts: int: Desired number of samples
@@ -124,7 +126,8 @@ class UncertaintyQuantification:
         self.shape = self.h_pco.training_shape
 
 # %% extract 0 contours
-    def c0(self, write_vtk: bool = 1):
+    def c0(self,
+           write_vtk: bool = 1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
@@ -231,7 +234,7 @@ class UncertaintyQuantification:
         mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [sd_kd.binary_polygon(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
+        bin_whpa = [binary_polygon(sd_kd.xys, sd_kd.nrow, sd_kd.ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)

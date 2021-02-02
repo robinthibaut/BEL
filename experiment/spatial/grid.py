@@ -1,7 +1,8 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-
+import numpy
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 
 from typing import List
@@ -236,3 +237,42 @@ def contours_vertices(x: list, y: list,
     else:
         v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(len(c0.allsegs[0]))], dtype=object)
     return v
+
+
+def binary_polygon(xys, nrow, ncol, pzs,
+                   outside: float = -1,
+                   inside: float = 1):
+    """
+    Given a polygon whose vertices are given by the array pzs, and a matrix of
+    centroids coordinates of the surface discretization, assigns to the matrix a certain value
+    whether the cell is inside or outside said polygon.
+
+    To compute the signed distance function, we need a negative/positive value.
+
+    :param pzs: Polygon vertices (v, 2)
+    :param outside: Value to assign to the matrix outside of the polygon
+    :param inside: Value to assign to the matrix inside of the polygon
+    :return: phi = the binary matrix
+    """
+
+    poly = Polygon(pzs, True)  # Creates a Polygon abject out of the polygon vertices in pzs
+    ind = np.nonzero(poly.contains_points(xys))[0]  # Checks which points are enclosed by polygon.
+    phi = np.ones((nrow, ncol)) * outside  # SD - create matrix of 'outside'
+    phi = phi.reshape((nrow * ncol))  # Flatten to have same dimension as 'ind'
+    phi[ind] = inside  # Points inside the WHPA are assigned a value of 'inside'
+    phi = phi.reshape((nrow, ncol))  # Reshape
+
+    return phi
+
+
+def binary_stack(xys, nrow, ncol, vertices):
+    """
+    Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
+    """
+    # Create binary images of WHPA stored in bin_whpa
+    bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
+    big_sum = np.sum(bin_whpa, axis=0)  # Stack them
+    # Scale from 0 to 1
+    big_sum -= big_sum.min()
+    big_sum /= big_sum.max()
+    return big_sum

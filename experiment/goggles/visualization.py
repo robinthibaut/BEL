@@ -12,8 +12,9 @@ from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import experiment.spatial.grid
-import experiment.spatial.spatial
+import experiment.spatial.distance
 from experiment.base.inventory import MySetup
+from experiment.spatial.grid import binary_stack
 from experiment.toolbox import filesio
 from sklearn.preprocessing import PowerTransformer
 
@@ -781,7 +782,7 @@ class Plot:
             vertices = experiment.spatial.grid.contours_vertices(x=self.x,
                                                                  y=self.y,
                                                                  arrays=h)
-            b_low = stacking.binary_stack(vertices=vertices)
+            b_low = binary_stack(stacking.xys, stacking.nrow, stacking.ncol, vertices=vertices)
             contour = plt.contourf(new_x,
                                    new_y,
                                    1 - b_low,  # Trick to be able to fill contours
