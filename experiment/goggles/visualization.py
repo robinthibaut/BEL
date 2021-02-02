@@ -379,36 +379,11 @@ class Plot:
         else:
             self.grf = grf
 
-        self.nrow, self.ncol, self.x, self.y = self.refine_machine(self.grf)
+        self.nrow, self.ncol, self.x, self.y = refine_machine(self.ylim, self.xlim, self.grf)
         self.wdir = md.grid_dir
 
         wells_id = list(self.wells.wells_data.keys())
         self.cols = [self.wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
-
-    def refine_machine(self, new_grf):
-        nrow = int(np.diff(self.ylim) / new_grf)  # Number of rows
-        ncol = int(np.diff(self.xlim) / new_grf)  # Number of columns
-        new_x, new_y = np.meshgrid(
-            np.linspace(self.xlim[0], self.xlim[1], ncol), np.linspace(self.ylim[0], self.ylim[1], nrow))
-        return nrow, ncol, new_x, new_y
-
-    def contours_vertices(self,
-                          arrays,
-                          c=0):
-        """
-        Extracts contour vertices from a list of matrices
-        :param arrays: list of matrices
-        :param c: Contour value
-        :return: vertices array
-        """
-        if len(arrays.shape) < 3:
-            arrays = [arrays]
-        # First create figures for each forecast.
-        c0s = [plt.contour(self.x, self.y, f, [c]) for f in arrays]
-        plt.close()  # Close plots
-        # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
-        v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
-        return v
 
     @staticmethod
     def hydro_examination(root: str):
@@ -775,10 +750,10 @@ class Plot:
 
         if len(h) > 1:  # New approach is to plot filled contours
             new_grf = 1  # Refine grid
-            _, _, new_x, new_y = self.refine_machine(new_grf=new_grf)
-            stacking = experiment.math.spatial.grid_parameters(x_lim=self.xlim,
-                                                               y_lim=self.ylim,
-                                                               grf=new_grf)
+            _, _, new_x, new_y = refine_machine(self.ylim, self.xlim, new_grf=new_grf)
+            stacking = experiment.spatial.distance.grid_parameters(x_lim=self.xlim,
+                                                                   y_lim=self.ylim,
+                                                                   grf=new_grf)
             vertices = experiment.spatial.grid.contours_vertices(x=self.x,
                                                                  y=self.y,
                                                                  arrays=h)
@@ -1487,3 +1462,11 @@ class Plot:
                                          factor=factor,
                                          training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
+
+
+def refine_machine(ylim, xlim, new_grf):
+    nrow = int(np.diff(ylim) / new_grf)  # Number of rows
+    ncol = int(np.diff(xlim) / new_grf)  # Number of columns
+    new_x, new_y = np.meshgrid(
+        np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow))
+    return nrow, ncol, new_x, new_y

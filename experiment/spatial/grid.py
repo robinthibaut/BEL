@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import numpy
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, pyplot
 from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 
@@ -239,7 +239,10 @@ def contours_vertices(x: list, y: list,
     return v
 
 
-def binary_polygon(xys, nrow, ncol, pzs,
+def binary_polygon(xys: np.array,
+                   nrow: int,
+                   ncol: int,
+                   pzs: np.array,
                    outside: float = -1,
                    inside: float = 1):
     """
@@ -249,6 +252,10 @@ def binary_polygon(xys, nrow, ncol, pzs,
 
     To compute the signed distance function, we need a negative/positive value.
 
+    :param xys: Centroids of a grid' cells
+    :param nrow: Number of rows
+    :param ncol: Number of columns
+    :param pzs: Array of ordered vertices coordinates of a polygon.
     :param pzs: Polygon vertices (v, 2)
     :param outside: Value to assign to the matrix outside of the polygon
     :param inside: Value to assign to the matrix inside of the polygon

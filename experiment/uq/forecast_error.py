@@ -21,7 +21,7 @@ from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
 from experiment.calculation.postio import PosteriorIO
-from experiment.spatial.grid import binary_polygon
+from experiment.spatial.grid import binary_polygon, contours_vertices
 from experiment.spatial.distance import grid_parameters, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
@@ -132,7 +132,7 @@ class UncertaintyQuantification:
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
         """
-        self.vertices = self.mplot.contours_vertices(self.forecast_posterior)
+        self.vertices = contours_vertices(self.mplot.x, self.mplot.y, self.forecast_posterior)
         if write_vtk:
             vdir = jp(self.fig_pred_dir, 'vtk')
             fops.dirmaker(vdir)
@@ -256,7 +256,7 @@ class UncertaintyQuantification:
             self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
         # Delineation vertices of the true array
-        v_h_true = self.mplot.contours_vertices(v_h_true_cut)[0]
+        v_h_true = contours_vertices(self.mplot.x, self.mplot.y, v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
         mhds = np.array([modified_hausdorff(v_h_true, vt) for vt in self.vertices])
