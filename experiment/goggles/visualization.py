@@ -12,7 +12,7 @@ from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from experiment.spatial.distance import grid_parameters
-from experiment.spatial.grid import contours_vertices
+from experiment.spatial.grid import contours_vertices, refine_machine
 from experiment.base.inventory import MySetup
 from experiment.spatial.grid import binary_stack
 from experiment.toolbox import filesio
@@ -1473,9 +1473,3 @@ def hydro_examination(root: str):
     plt.show()
 
 
-def refine_machine(ylim, xlim, new_grf):
-    nrow = int(np.diff(ylim) / new_grf)  # Number of rows
-    ncol = int(np.diff(xlim) / new_grf)  # Number of columns
-    new_x, new_y = np.meshgrid(
-        np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow))
-    return nrow, ncol, new_x, new_y

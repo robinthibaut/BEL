@@ -20,9 +20,8 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.calculation.postio import PosteriorIO
-from experiment.goggles.visualization import Plot
 from experiment.spatial.distance import grid_parameters, modified_hausdorff
-from experiment.spatial.grid import binary_polygon, contours_vertices
+from experiment.spatial.grid import binary_polygon, contours_vertices, refine_machine
 from experiment.toolbox import filesio as fops
 
 
@@ -55,14 +54,12 @@ class UncertaintyQuantification:
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
-        self.mplot = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf, well_comb=self.wel_comb)
 
         # Directories & files paths
         md = self.base.Directories()
         self.main_dir = md.main_dir
 
         self.grid_dir = md.grid_dir
-        self.mplot.wdir = self.grid_dir
 
         # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
@@ -132,7 +129,8 @@ class UncertaintyQuantification:
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
         """
-        self.vertices = contours_vertices(self.mplot.x, self.mplot.y, self.forecast_posterior)
+        nrow, ncol, x, y = refine_machine(self.y_lim, self.x_lim, self.grf)
+        self.vertices = contours_vertices(x, y, self.forecast_posterior)
         if write_vtk:
             vdir = jp(self.fig_pred_dir, 'vtk')
             fops.dirmaker(vdir)
@@ -173,8 +171,6 @@ class UncertaintyQuantification:
         # TODO: create a function to copy/paste values on differently refined grids
         # Prepare the Plot instance with right dimensions
         grf_kd = 4
-        mpkde = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=grf_kd)
-        mpkde.wdir = self.grid_dir
         cell_dim = grf_kd
         xgrid = np.arange(xmin, xmax, cell_dim)
         ygrid = np.arange(ymin, ymax, cell_dim)
@@ -231,8 +227,6 @@ class UncertaintyQuantification:
         """
         # For this approach we use our SignedDistance module
         xys, nrow, ncol = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=4)  # Initiate SD object
-        mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
-        mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
@@ -255,8 +249,11 @@ class UncertaintyQuantification:
         v_h_true_cut = \
             self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
+        nrow, ncol, x, y = refine_machine(self.y_lim, self.x_lim, self.grf)
         # Delineation vertices of the true array
-        v_h_true = contours_vertices(self.mplot.x, self.mplot.y, v_h_true_cut)[0]
+        v_h_true = contours_vertices(x,
+                                     y,
+                                     v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
         mhds = np.array([modified_hausdorff(v_h_true, vt) for vt in self.vertices])

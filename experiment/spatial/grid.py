@@ -207,7 +207,8 @@ def get_centroids(array,
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
-def contours_vertices(x: list, y: list,
+def contours_vertices(x: list,
+                      y: list,
                       arrays: np.array,
                       c: float = 0,
                       ignore_: bool = True):
@@ -306,3 +307,11 @@ def get_block(pm, i: int):
         return pm[b:, b:]
     else:
         return 0
+
+
+def refine_machine(ylim, xlim, new_grf):
+    nrow = int(np.diff(ylim) / new_grf)  # Number of rows
+    ncol = int(np.diff(xlim) / new_grf)  # Number of columns
+    new_x, new_y = np.meshgrid(
+        np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow))
+    return nrow, ncol, new_x, new_y
