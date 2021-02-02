@@ -20,8 +20,8 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
-from experiment.math.postio import PosteriorIO
-from experiment.math.spatial import Spatial, modified_hausdorff
+from experiment.calculation.postio import PosteriorIO
+from experiment.calculation.spatial import Spatial, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
 

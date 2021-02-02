@@ -11,7 +11,7 @@ import experiment.grid.meshio as mops
 from experiment.base.inventory import Directories
 from experiment.goggles.visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.math.spatial import Spatial, get_centroids
+from experiment.calculation.spatial import Spatial, get_centroids
 
 
 def active_zone(modflowmodel):

@@ -11,7 +11,9 @@ from experiment.base.inventory import MySetup
 
 
 class PosteriorIO:
-
+    """
+    Heart of the framework.
+    """
     def __init__(self, directory: str = None):
         self.posterior_mean = None
         self.posterior_covariance = None

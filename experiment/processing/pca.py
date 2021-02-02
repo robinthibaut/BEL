@@ -1,6 +1,5 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-
 """
 Collection of functions to use the PCA class from scikit-learn.
 """

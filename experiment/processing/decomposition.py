@@ -26,7 +26,7 @@ from typing import List
 import experiment.goggles.visualization as plot
 import experiment.processing.predictor as dops
 import experiment.toolbox.filesio as fops
-from experiment.math.spatial import Spatial
+from experiment.calculation.spatial import Spatial
 from experiment.processing.pca import PCAIO
 from experiment.base.inventory import MySetup
 

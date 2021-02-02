@@ -30,7 +30,7 @@ from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.math.sgsim import sgsim
+from experiment.calculation.sgsim import sgsim
 
 
 def simulation(folder=None):

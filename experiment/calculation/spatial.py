@@ -103,6 +103,7 @@ def contours_vertices(x: list, y: list,
     :param y:
     :param arrays: list of matrices
     :param c: Contour value
+    :param ignore_: Bool value to consider multiple contours or not (see comments)
     :return: vertices array
     """
     if len(arrays.shape) < 3:

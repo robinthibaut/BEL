@@ -12,7 +12,7 @@ import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import experiment.math.spatial
+import experiment.calculation.spatial
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 from sklearn.preprocessing import PowerTransformer
@@ -1486,4 +1486,3 @@ class Plot:
                                          factor=factor,
                                          training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
-
