@@ -15,9 +15,9 @@ from experiment.goggles.visualization import Plot, proxy_annotate
 Root = List[str]
 
 
-def value_info(root: Root):
+def by_mode(root: Root):
     """
-    Computes the combined value of information for n observations.
+    Computes the combined amount of information for n observations.
     see also
     https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
     :param root: list: List containing the roots whose wells contributions will be taken into account.
@@ -146,5 +146,5 @@ if __name__ == '__main__':
     listit.remove('base')
     duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
 
-    value_info(duq)
-    value_info(['818bf1676c424f76b83bd777ae588a1d'])
+    by_mode(duq)
+    by_mode(['818bf1676c424f76b83bd777ae588a1d'])
