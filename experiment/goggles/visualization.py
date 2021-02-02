@@ -1486,3 +1486,4 @@ class Plot:
                                          factor=factor,
                                          training=False,
                                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
+
