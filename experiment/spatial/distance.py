@@ -10,6 +10,13 @@ from experiment.spatial.grid import get_centroids, binary_polygon
 def grid_parameters(x_lim: list = None,
                     y_lim: list = None,
                     grf: float = 1):
+    """
+    Generates grid parameters necessary prior to SD calculation.
+    :param x_lim:
+    :param y_lim:
+    :param grf:
+    :return:
+    """
     if y_lim is None:
         y_lim = [0, 1000]
     else:
@@ -35,10 +42,10 @@ def signed_distance(xys: np.array,
                     pzs: np.array):
     """
     Given an array of coordinates of polygon vertices, computes its signed distance field.
-    :param xys:
-    :param nrow:
-    :param ncol:
-    :param grf:
+    :param xys: Centroids of a grid' cells
+    :param nrow: Number of rows
+    :param ncol: Number of columns
+    :param grf: Grid dimension (uniform grid)
     :param pzs: Array of ordered vertices coordinates of a polygon.
     :return: Signed distance matrix
     """

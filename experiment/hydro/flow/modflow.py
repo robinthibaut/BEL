@@ -16,8 +16,8 @@ from experiment.base.inventory import MySetup
 def flow(exe_name: str,
          model_ws: str,
          grid_dir: str,
-         hk_array,
-         xy_dummy):
+         hk_array: np.array,
+         xy_dummy: np.array):
     """
     Builds and run customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
