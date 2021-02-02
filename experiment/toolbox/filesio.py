@@ -2,7 +2,6 @@
 
 import os
 import shutil
-from collections import deque
 from typing import List
 from os.path import join as jp
 

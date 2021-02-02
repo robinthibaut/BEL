@@ -6,7 +6,9 @@ from scipy.spatial import distance_matrix
 from typing import List
 
 
-def block_shaped(arr, nrows, ncols):
+def block_shaped(arr: np.array,
+                 nrows: float,
+                 ncols: float):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -101,7 +103,7 @@ def refine_axis(widths: List[float],
     return x0
 
 
-def rc_from_blocks(blocks):
+def rc_from_blocks(blocks: np.array):
     """
     Computes the x and y dimensions of each block
     :param blocks:
@@ -113,7 +115,8 @@ def rc_from_blocks(blocks):
     return dc, dr
 
 
-def blocks_from_rc_3d(rows, columns):
+def blocks_from_rc_3d(rows: np.array,
+                      columns: np.array):
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
@@ -138,7 +141,8 @@ def blocks_from_rc_3d(rows, columns):
     return blocks
 
 
-def blocks_from_rc(rows, columns):
+def blocks_from_rc(rows: np.array,
+                   columns: np.array):
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
