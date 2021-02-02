@@ -586,8 +586,8 @@ class Plot:
         if h is None:
             h = []
 
-        if len(h) > 1:
-            new_grf = 1
+        if len(h) > 1:  # New approach is to plot filled contours
+            new_grf = 1  # Refine grid
             _, _, new_x, new_y = self.refine_machine(new_grf=new_grf)
             stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
                                                        y_lim=self.ylim,
@@ -598,31 +598,33 @@ class Plot:
             b_low = stacking.binary_stack(vertices=vertices)
             contour = plt.contourf(new_x,
                                    new_y,
-                                   1-b_low, # Trick to be able to fill contours
-                                   [np.finfo(float).eps, 1-np.finfo(float).eps],  # Use machine epsilon
+                                   1 - b_low,  # Trick to be able to fill contours
+                                   [np.finfo(float).eps, 1 - np.finfo(float).eps],  # Use machine epsilon
                                    colors=color,
                                    alpha=alpha)
-            if highlight:
+            if highlight:  # Also display curves
                 for z in h:
-                    contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
+                    contour = plt.contour(self.x,
+                                          self.y,
+                                          z,
+                                          [0],
+                                          colors=color,
+                                          linewidths=lw,
+                                          alpha=alpha)
 
-        else:
-            contour = plt.contour(self.x, self.y, h[0], [0], colors=color, linewidths=lw, alpha=alpha)
+        else:  # If only one WHPA to display
+            contour = plt.contour(self.x,
+                                  self.y,
+                                  h[0],
+                                  [0],
+                                  colors=color,
+                                  linewidths=lw,
+                                  alpha=alpha)
 
-        # vertices2 = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=b_low, ignore_=False)
-        # vx2 = vertices2[0, :, 0]
-        # vy2 = vertices2[0, :, 1]
-        #
-        # for i, z in enumerate(h):  # h is the n square WHPA matrix
-        #     vertices = experiment.math.spatial.contours_vertices(x=self.x, y=self.y, arrays=z)
-        #     vx = vertices[0, :, 0]
-        #     vy = vertices[0, :, 1]
-        #     if len(h) > 1:
-        #         contour = plt.fill(vx, vy, color=color, alpha=alpha)
-        #     else:
-        #         contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
-
-        plt.grid(color='c', linestyle='-', linewidth=.5, alpha=.2)
+        plt.grid(color='c',
+                 linestyle='-',
+                 linewidth=.5,
+                 alpha=.2)
 
         # Plot wells
         well_legend = None
@@ -1244,7 +1246,10 @@ class Plot:
         h = joblib.load(fobj)
         h_training = h.training_physical.reshape(h.training_shape)
 
-        mplot.whp(h_training, color='blue', alpha=.5)
+        mplot.whp(h_training,
+                  highlight=True,
+                  color='blue',
+                  alpha=.5)
 
         if root is not None:
             h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
