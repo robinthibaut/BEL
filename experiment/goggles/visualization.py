@@ -397,8 +397,8 @@ def whpa_plot(grf: float = None,
     :param color: str: Line color
     :param fig_file: str:
     :param show: bool:
-    :param x_lim: [x_min, x_max]
-    :param y_lim: [y_min, y_max]
+    :param x_lim: [x_min, x_max] For the figure
+    :param y_lim: [y_min, y_max] For the figure
     """
 
     # Get basic settings
@@ -441,7 +441,7 @@ def whpa_plot(grf: float = None,
         whpa = []
 
     if len(whpa) > 1:  # New approach is to plot filled contours
-        new_grf = 4  # Refine grid
+        new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim,
                                             ylim,
                                             new_grf=new_grf)
