@@ -61,6 +61,8 @@ def proxy_legend(legend1=None,
     :param extra: List of extra elements to be added on the final figure
     :return:
     """
+
+    # Default parameters
     if colors is None:
         colors = ['w']
     if labels is None:
@@ -70,6 +72,7 @@ def proxy_legend(legend1=None,
     if extra is None:
         extra = []
 
+    # Proxy figures (empty plots)
     proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     plt.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
@@ -85,7 +88,9 @@ def proxy_legend(legend1=None,
         plt.close()
 
 
-def proxy_annotate(annotation: list, loc: int = 1, fz: float = 11):
+def proxy_annotate(annotation: list,
+                   loc: int = 1,
+                   fz: float = 11):
     """
     Places annotation (or title) within the figure box
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
@@ -116,6 +121,7 @@ def explained_variance(pca,
     :param pca: PCA operator
     :param n_comp: Number of components to display
     :param thr: float: Threshold
+    :param annotation: List of annotation(s)
     :param fig_file:
     :param show:
     :return:
@@ -124,7 +130,6 @@ def explained_variance(pca,
     if not n_comp:
         n_comp = pca.n_components_
 
-    # plt.xticks(np.arange(n_comp), fontsize=xfs)
     # Index where explained variance is below threshold:
     ny = len(np.where(np.cumsum(pca.explained_variance_ratio_) < thr)[0])
     # Explained variance vector:
@@ -140,9 +145,10 @@ def explained_variance(pca,
     plt.plot(np.arange(n_comp),
              np.cumsum(pca.explained_variance_ratio_[:n_comp]) * 100,
              '-o', linewidth=.5, markersize=1.5, alpha=.8)
-
+    # Axes labels
     plt.xlabel('PC number', fontsize=11)
     plt.ylabel('Cumulative explained variance (%)', fontsize=11)
+    # Legend
     legend_a = proxy_annotate(annotation=annotation, loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
@@ -168,6 +174,7 @@ def pca_scores(training,
     :param training: Training scores
     :param prediction: Test scores
     :param n_comp: How many components to show
+    :param annotation: List of annotation(s)
     :param fig_file:
     :param show:
     :return:
@@ -182,27 +189,29 @@ def pca_scores(training,
     # Plot all training scores
     plt.plot(training.T[:ut], 'ob', markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
-    # Choose seaborn cmap
-    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
-    # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
-    # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
-    # KDE plot
-    # sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
-    plt.xlim(0.5, ut)  # Define x limits [start, end]
+    kde = False
+    if kde:  # Option to plot KDE
+        # Choose seaborn cmap
+        # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
+        # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
+        cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+        # KDE plot
+        sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+        plt.xlim(0.5, ut)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
+        # Select observation
         pc_obs = prediction[sample_n]
-
-        # Crete beautiful spline to follow prediction scores
-        xnew = np.linspace(1, ut, 200)
+        # Create beautiful spline to follow prediction scores
+        xnew = np.linspace(1, ut, 200)  # New points for plotting curve
         spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
         power_smooth = spl(xnew)
+        # I forgot why I had to put '-1'
         plt.plot(xnew - 1,
                  power_smooth,
                  'red',
                  linewidth=1.2,
                  alpha=.9)
-        # plt.plot(xnew - 1, power_smooth, 'y', linewidth=.3, alpha=.5)
 
         plt.plot(pc_obs.T[:ut],  # Plot observations scores
                  'ro',
@@ -211,9 +220,6 @@ def pca_scores(training,
                  markeredgewidth=.4,
                  alpha=.8,
                  label=str(sample_n))
-        # plt.plot(pc_obs.T[:ut],  # Plot observations scores
-        #          'o', markersize=2.5, markeredgecolor='k', markeredgewidth=.4, alpha=.8,
-        #          label=str(sample_n))
 
     if labels:
         plt.title('Principal Components of training and test dataset')
@@ -234,8 +240,6 @@ def pca_scores(training,
         plt.close()
     if show:
         plt.show()
-        plt.close()
-
 
 def cca_plot(cca_operator,
              d,
@@ -274,7 +278,6 @@ def cca_plot(cca_operator,
             # Transform to CCA space and transpose
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
-            # d_cca_prediction, h_cca_prediction = d_cca_prediction.T, h_cca_prediction.T
 
             # %%
             h2 = h.copy()
@@ -310,7 +313,7 @@ def cca_plot(cca_operator,
             plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                      'ro', markersize=4.5, markeredgecolor='k', alpha=1,
                      label=f'{sample_n}')
-            # Plot predicted canonical variate mean
+            # Plot predicted canonical variate mean, or not
             # plt.plot(np.ones(post_obj.n_posts)*d_cca_prediction[comp_n], h_samples[comp_n],
             #          'bo', markersize=4.5, markeredgecolor='w', alpha=.7,
             #          label='{}'.format(sample_n))
@@ -353,6 +356,7 @@ class Plot:
                  grf=None,
                  well_comb=None):
 
+        # Get basic settings
         md = MySetup.Directories()
         focus = MySetup.Focus()
         self.wells = MySetup.Wells()
@@ -557,6 +561,7 @@ class Plot:
         """
         Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+        :param highlight: Boolean to display lines on top of filling between contours or not.
         :param annotation: List of annotations (str)
         :param xlabel:
         :param ylabel:
@@ -571,6 +576,7 @@ class Plot:
         :param bkg_field_array: np.array: 2D array whose values will be plotted on the grid
         :param h: np.array: Array containing grids of values whose 0 contour will be computed and plotted
         :param alpha: float: opacity of the 0 contour lines
+        :param halpha: Alpha value for line plots if highlight is True
         :param lw: float: Line width
         :param color: str: Line color
         :param fig_file: str:
@@ -631,6 +637,7 @@ class Plot:
                                   linewidths=lw,
                                   alpha=halpha)
 
+        # Grid
         plt.grid(color='c',
                  linestyle='-',
                  linewidth=.5,
@@ -685,9 +692,7 @@ class Plot:
                            fig_dir=None,
                            show=False):
         """
-
         Plot used to compare the reproduction of the original physical space after PCA transformation.
-
         :param xlabel:
         :param ylabel:
         :param labelsize:
@@ -750,9 +755,7 @@ class Plot:
                            fig_dir=None,
                            show=False):
         """
-
         Plot used to compare the reproduction of the original physical space after PCA transformation
-
         :param pca_o: signed distance PCA operator
         :param vn: Number of components to keep while inverse-transforming the data
         :param training: bool:
@@ -776,6 +779,7 @@ class Plot:
                 h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
             else:
                 h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
+
             self.whp(h=h_to_plot,
                      color='red', alpha=1, lw=2)
             # v_pred = (np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_)
@@ -835,6 +839,9 @@ class Plot:
                      annotation: list = None):
         """
         Plots forecasts results in the 'uq' folder
+        :param annotation: List of annotations
+        :param h: Boolean to plot target or not
+        :param d: Boolean to plot predictor or not
         :param root: str: Forward ID
         :param folder: str: Well combination. '123456', '1'...
         :return:
