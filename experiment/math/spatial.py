@@ -48,14 +48,10 @@ class Spatial:
         # Create binary images of WHPA stored in bin_whpa
         bin_whpa = [self.matrix_poly_bin(pzs=p, inside=1, outside=-1) for p in vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
-        # b_low = np.where(big_sum < 1, (len(vertices)-2)*2, big_sum)  # Replace 1 values by 0
+        # Scale from 0 to 1
         big_sum -= big_sum.min()
         big_sum /= big_sum.max()
-        b_low = np.where(big_sum == big_sum.max(), 1, big_sum)  # Replace 1 values by 0
-        b_low = b_low/b_low.max()
-        b_low = np.where(b_low == b_low.min(), -1, b_low)  # Replace 1 values by 0
-        # b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
-        return b_low
+        return big_sum
 
     def matrix_poly_bin(self,
                         pzs,

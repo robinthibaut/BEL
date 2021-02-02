@@ -597,10 +597,10 @@ class Plot:
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)
             contour = plt.contourf(new_x,
-                                   new_x,
-                                   1-b_low,
-                                   [np.finfo(float).eps, 1-np.finfo(float).eps],
-                                   color=color,
+                                   new_y,
+                                   1-b_low, # Trick to be able to fill contours
+                                   [np.finfo(float).eps, 1-np.finfo(float).eps],  # Use machine epsilon
+                                   colors=color,
                                    alpha=alpha)
             if highlight:
                 for z in h:
