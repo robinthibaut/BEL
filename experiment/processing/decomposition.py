@@ -23,9 +23,9 @@ import numpy as np
 from sklearn.cross_decomposition import CCA
 from typing import List
 
-import experiment.goggles.visualization as plot
 import experiment.processing.curves_interp as dops
 import experiment.toolbox.filesio as fops
+from experiment.goggles.visualization import whpa_plot
 from experiment.spatial.distance import grid_parameters, signed_distance
 from experiment.processing.pca import PCAIO
 from experiment.base.inventory import MySetup
@@ -82,14 +82,16 @@ def base_pca(base,
 
         if check:
             # Load parameters:
-            mp = plot.Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)  # Initiate Plot
             # instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
             fops.dirmaker(fig_dir)
             for i, e in enumerate(h):
-                mp.whpa_plot([e],
-                             lw=1,
-                             fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
+                whpa_plot(whpa=[e],
+                          x_lim=x_lim,
+                          y_lim=y_lim,
+                          well_comb=base.Wells.combination,
+                          lw=1,
+                          fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
 
         # Initiate h pca object
