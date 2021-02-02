@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.spatial import distance_matrix
 
 from typing import List
@@ -193,3 +194,45 @@ def h_sub(h,
 
     return h_u
 
+
+def get_centroids(array,
+                  grf: float):
+    """
+    Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
+    centroids.
+    :param array: (m, n) array
+    :param grf: float: Cell dimension
+    """
+    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2))  # Getting centroids
+    return xys.reshape((array.shape[0] * array.shape[1], 2))
+
+
+def contours_vertices(x: list, y: list,
+                      arrays: np.array,
+                      c: float = 0,
+                      ignore_: bool = True):
+    """
+    Extracts contour vertices from a list of matrices.
+    :param x:
+    :param y:
+    :param arrays: list of matrices
+    :param c: Contour value
+    :param ignore_: Bool value to consider multiple contours or not (see comments)
+    :return: vertices array
+    """
+    if len(arrays.shape) < 3:
+        arrays = [arrays]
+    # First create figures for each forecast.
+    figs = [plt.figure() for _ in range(len(arrays))]
+    c0s = [plt.contour(x, y, f, [c]) for f in arrays]
+    [plt.close(f) for f in figs]  # Close plots
+    # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
+
+    # /!\ If more than one contours are present for the same values, possibility to include them or not.
+    # How are the contours sorted in c0.allsegs[0][i] ?
+    # It looks like they are sorted by size.
+    if ignore_:
+        v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
+    else:
+        v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(len(c0.allsegs[0]))], dtype=object)
+    return v

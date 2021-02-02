@@ -21,7 +21,7 @@ from sklearn.neighbors import KernelDensity
 
 from experiment.goggles.visualization import Plot
 from experiment.calculation.postio import PosteriorIO
-from experiment.calculation.spatial import Spatial, modified_hausdorff
+from experiment.spatial.spatial import Spatial, modified_hausdorff
 from experiment.toolbox import filesio as fops
 
 
@@ -231,7 +231,7 @@ class UncertaintyQuantification:
         mpbin = Plot(x_lim=self.x_lim, y_lim=self.y_lim, grf=4, well_comb=self.wel_comb)  # Initiate Plot tool
         mpbin.wdir = self.grid_dir
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [sd_kd.matrix_poly_bin(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
+        bin_whpa = [sd_kd.binary_polygon(pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)

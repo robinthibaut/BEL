@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from diavatly import model_map
 
-import experiment.grid.meshio as mops
+import experiment.spatial.grid as mops
 from experiment.base.inventory import Directories
 from experiment.goggles.visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.calculation.spatial import Spatial, get_centroids
+from experiment.spatial.spatial import Spatial
+from experiment.spatial.grid import get_centroids
 
 
 def active_zone(modflowmodel):
@@ -77,7 +78,7 @@ def active_zone(modflowmodel):
     poly_deli = tsp(xyw_scaled)  # Get polygon delineation
     poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
     # Assign 0|1 value
-    icbund = sdm.matrix_poly_bin(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
+    icbund = sdm.binary_polygon(poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
 
     mt_icbund_file = jp(Directories().grid_dir, 'mt3d_icbund.npy')
     np.save(mt_icbund_file, icbund)  # Save active zone

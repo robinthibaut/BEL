@@ -2,7 +2,6 @@
 import itertools
 import os
 from os.path import join as jp
-import warnings
 import string
 
 import joblib
@@ -12,7 +11,8 @@ import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import experiment.calculation.spatial
+import experiment.spatial.grid
+import experiment.spatial.spatial
 from experiment.base.inventory import MySetup
 from experiment.toolbox import filesio
 from sklearn.preprocessing import PowerTransformer
@@ -778,7 +778,7 @@ class Plot:
             stacking = experiment.math.spatial.Spatial(x_lim=self.xlim,
                                                        y_lim=self.ylim,
                                                        grf=new_grf)
-            vertices = experiment.math.spatial.contours_vertices(x=self.x,
+            vertices = experiment.spatial.grid.contours_vertices(x=self.x,
                                                                  y=self.y,
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)

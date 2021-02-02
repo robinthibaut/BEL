@@ -11,7 +11,7 @@ import vtk
 from flopy.export import vtk as vtk_flow
 
 from experiment.base.inventory import MySetup
-import experiment.grid.meshio as mops
+import experiment.spatial.grid as mops
 import experiment.toolbox.filesio as fops
 
 
