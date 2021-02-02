@@ -596,7 +596,12 @@ class Plot:
                                                                  y=self.y,
                                                                  arrays=h)
             b_low = stacking.binary_stack(vertices=vertices)
-            contour = plt.contourf(new_x, new_y, b_low.max() - b_low, [0, b_low.max()], colors=color, alpha=alpha)
+            contour = plt.contourf(new_x,
+                                   new_x,
+                                   1-b_low,
+                                   [np.finfo(float).eps, 1-np.finfo(float).eps],
+                                   color=color,
+                                   alpha=alpha)
             if highlight:
                 for z in h:
                     contour = plt.contour(self.x, self.y, z, [0], colors=color, linewidths=lw, alpha=alpha)
