@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import numpy
 import numpy as np
-from matplotlib import pyplot as plt, pyplot
+from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 
