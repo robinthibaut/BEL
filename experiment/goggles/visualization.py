@@ -11,8 +11,7 @@ import seaborn as sns
 from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import experiment.spatial.grid
-import experiment.spatial.distance
+import experiment.spatial as spt
 from experiment.base.inventory import MySetup
 from experiment.spatial.grid import binary_stack
 from experiment.toolbox import filesio
@@ -423,9 +422,6 @@ def whpa_plot(grf: float = None,
 
     nrow, ncol, x, y = refine_machine(ylim, xlim, grf)
 
-    wells_id = list(wells.wells_data.keys())
-    cols = [wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
-
     # Plot background
     if bkg_field_array is not None:
         plt.imshow(bkg_field_array,
@@ -448,13 +444,13 @@ def whpa_plot(grf: float = None,
         _, _, new_x, new_y = refine_machine(ylim,
                                             xlim,
                                             new_grf=new_grf)
-        stacking = experiment.spatial.distance.grid_parameters(x_lim=xlim,
-                                                               y_lim=ylim,
-                                                               grf=new_grf)
-        vertices = experiment.spatial.grid.contours_vertices(x=x,
-                                                             y=y,
-                                                             arrays=whpa)
-        b_low = binary_stack(stacking.xys, stacking.nrow, stacking.ncol, vertices=vertices)
+        xys, nrow, ncol = spt.distance.grid_parameters(x_lim=xlim,
+                                                       y_lim=ylim,
+                                                       grf=new_grf)
+        vertices = spt.grid.contours_vertices(x=x,
+                                              y=y,
+                                              arrays=whpa)
+        b_low = binary_stack(xys, nrow, ncol, vertices=vertices)
         contour = plt.contourf(new_x,
                                new_y,
                                1 - b_low,  # Trick to be able to fill contours
@@ -715,8 +711,8 @@ def plot_results(d: bool = True,
         h = np.load(jp(fig_dir, f'{root}.npy')).reshape(h_pco.obs_shape)
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
-        whpa_plot(h_training, color='blue', alpha=.5)
-        whpa_plot(h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+        whpa_plot(whpa=h_training, color='blue', alpha=.5)
+        whpa_plot(whpa=h, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
         colors = ['blue', 'red']
         labels = ['Training', 'Test']
         legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
