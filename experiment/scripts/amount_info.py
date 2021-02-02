@@ -47,6 +47,9 @@ def by_mode(root: Root):
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
 
+    mp = Plot()
+    mp.mode_histo(an_i=an_i, wm=wm, fig_name=fig_name)
+
     colors = Plot().cols  # Get default colors from visualization class
 
     modes = []  # Get MHD corresponding to each well's mode
