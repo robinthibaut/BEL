@@ -811,11 +811,11 @@ def plot_K_field(root: str = None,
         plt.close()
 
 
-def mode_histo(cols, an_i: int,
+def mode_histo(colors: list,
+               an_i: int,
                wm: np.array,
                fig_name: str = 'average'):
     alphabet = string.ascii_uppercase
-    colors = cols  # Get default colors from visualization class
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
 
     modes = []  # Get MHD corresponding to each well's mode

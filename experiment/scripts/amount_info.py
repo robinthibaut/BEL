@@ -10,7 +10,7 @@ from typing import List
 
 from experiment.base.inventory import MySetup
 
-from experiment.goggles.visualization import Plot, proxy_annotate, mode_histo
+from experiment.goggles.visualization import proxy_annotate, mode_histo
 
 Root = List[str]
 
@@ -36,6 +36,7 @@ def by_mode(root: Root):
 
     wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
     wm = np.zeros((len(wid), MySetup.Forecast.n_posts))  # Summed MHD when well #i appears
+    colors = MySetup.Wells.colors
 
     for r in root:  # For each root
         droot = os.path.join(MySetup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
@@ -45,8 +46,7 @@ def by_mode(root: Root):
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
 
-    mp = Plot()
-    mode_histo(mp.cols, an_i=an_i, wm=wm, fig_name=fig_name)
+    mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
 if __name__ == '__main__':

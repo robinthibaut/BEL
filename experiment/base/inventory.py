@@ -120,6 +120,7 @@ class MySetup:
         }
 
         combination = np.arange(1, len(wells_data))  # Injection wells in use for prediction (default: all)
+        colors = ['w', 'g', 'r', 'c', 'm', 'y']
 
     @dataclass
     class Forecast:

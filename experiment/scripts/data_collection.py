@@ -29,7 +29,7 @@ from experiment.base.inventory import Machine, MySetup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
-from experiment.hydro.whpa.travelling_particles import tsp
+from experiment.processing.travelling_particles import tsp
 from experiment.calculation.sgsim import sgsim
 
 
