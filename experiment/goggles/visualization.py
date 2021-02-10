@@ -247,7 +247,7 @@ def cca_plot(cca_operator,
              d: np.array,
              h: np.array,
              d_pc_prediction: np.array,
-             h_pc_prediction:np.array,
+             h_pc_prediction: np.array,
              sdir: str = None,
              show: bool = False):
     """
@@ -281,7 +281,7 @@ def cca_plot(cca_operator,
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                         h_obs.reshape(1, -1))
 
-            # %%
+            # %%  Watch out for the transpose operator.
             h2 = h.copy()
             d2 = d.copy()
             tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
@@ -1471,5 +1471,3 @@ def hydro_examination(root: str):
                 bbox_inches='tight',
                 transparent=True)
     plt.show()
-
-
