@@ -244,16 +244,16 @@ def pca_scores(training,
 
 
 def cca_plot(cca_operator,
-             d,
-             h,
-             d_pc_prediction,
-             h_pc_prediction,
-             sdir=None,
-             show=False):
+             d: np.array,
+             h: np.array,
+             d_pc_prediction: np.array,
+             h_pc_prediction:np.array,
+             sdir: str = None,
+             show: bool = False):
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-    :param cca_operator: CCA operator
+    :param cca_operator: CCA operator (pickle)
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
@@ -552,7 +552,7 @@ def post_examination(root: str,
               annotation=['B'],
               bkg_field_array=np.flipud(nn[0]),
               color='black',
-              cmap=None)
+              cmap='coolwarm')
 
     # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
     # plt.gca().add_artist(legend)
