@@ -4,21 +4,22 @@ import math
 import warnings
 import pandas as pd
 import numpy as np
-from scipy import stats
+from scipy import stats, ndimage
 
 import matplotlib.pyplot as plt
 
 
 class KDE:
     """Bivariate kernel density estimator."""
+
     def __init__(
-        self, *,
-        bw_method=None,
-        bw_adjust=1,
-        gridsize=200,
-        cut=3,
-        clip=None,
-        cumulative=False,
+            self, *,
+            bw_method=None,
+            bw_adjust=1,
+            gridsize=200,
+            cut=3,
+            clip=None,
+            cumulative=False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -124,11 +125,11 @@ class KDE:
 
         return density, support
 
-    def __call__(self, x1, x2=None, weights=None):
+    def __call__(self, x1, x2, weights=None):
         """Fit and evaluate on univariate or bivariate data."""
         return self._eval_bivariate(x1, x2, weights)
-        
-        
+
+
 def bivariate_density(
         data,
         estimate_kws,
@@ -139,7 +140,7 @@ def bivariate_density(
     :param estimate_kws: 
     :return: 
     """
-    
+
     estimator = KDE(**estimate_kws)
 
     all_data = data.dropna()
@@ -215,7 +216,6 @@ def kdeplot(
 
 
 if __name__ == '__main__':
-
     rs = np.random.RandomState(5)
     mean = [0, 0]
     cov = [(1, .98), (.98, 1)]
@@ -226,4 +226,17 @@ if __name__ == '__main__':
     xg, yg = sup
 
     plt.imshow(np.flipud(dens))
+    plt.show()
+
+    # -- Extract the line...
+    # Make a line with "num" points...
+    x0, y0 = 100, 0  # These are in _pixel_ coordinates!!
+    x1, y1 = 100, 200
+    num = 200
+    x_, y_ = np.linspace(x0, x1, num), np.linspace(y0, y1, num)
+
+    # Extract the values along the line, using cubic interpolation
+    zi = ndimage.map_coordinates(dens, np.vstack((x_, y_)))
+
+    plt.plot(zi)
     plt.show()
