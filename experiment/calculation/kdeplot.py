@@ -157,9 +157,9 @@ class KDE:
     def __call__(self, x1, x2=None, weights=None):
         """Fit and evaluate on univariate or bivariate data."""
         if x2 is None:
-            return self._eval_bivariate(x1, x2, weights)
-        else:
             return self._eval_univariate(x1, weights)
+        else:
+            return self._eval_bivariate(x1, x2, weights)
 
 
 def univariate_density(
@@ -230,8 +230,7 @@ def kde_params(
         bw=None,
         gridsize=200,
         cut=3, clip=None, cumulative=False,
-        bw_method="scott", bw_adjust=1,
-        multiple="layer"
+        bw_method="scott", bw_adjust=1
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
