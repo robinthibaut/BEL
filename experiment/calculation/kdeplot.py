@@ -101,6 +101,24 @@ class KDE:
 
         return kde
 
+    def _eval_univariate(self, x, weights=None):
+        """Fit and evaluate a univariate on univariate data."""
+        support = self.support
+        if support is None:
+            support = self.define_support(x, cache=False)
+
+        kde = self._fit(x, weights)
+
+        if self.cumulative:
+            s_0 = support[0]
+            density = np.array([
+                kde.integrate_box_1d(s_0, s_i) for s_i in support
+            ])
+        else:
+            density = kde(support)
+
+        return density, support
+
     def _eval_bivariate(self, x1, x2, weights=None):
         """Fit and evaluate a univariate on bivariate data."""
         support = self.support
@@ -123,9 +141,12 @@ class KDE:
 
         return density, support
 
-    def __call__(self, x1, x2, weights=None):
+    def __call__(self, x1, x2=None, weights=None):
         """Fit and evaluate on univariate or bivariate data."""
-        return self._eval_bivariate(x1, x2, weights)
+        if x2 is None:
+            return self._eval_bivariate(x1, x2, weights)
+        else:
+            return self._eval_bivariate(x1, weights)
 
 
 def bivariate_density(
