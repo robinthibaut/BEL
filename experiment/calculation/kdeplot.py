@@ -63,15 +63,6 @@ class KDE:
         gridmax = min(x.max() + bw * cut, clip_hi)
         return np.linspace(gridmin, gridmax, gridsize)
 
-    def _define_support_univariate(self, x, weights):
-        """Create a 1D grid of evaluation points."""
-        kde = self._fit(x, weights)
-        bw = np.sqrt(kde.covariance.squeeze())
-        grid = self._define_support_grid(
-            x, bw, self.cut, self.clip, self.gridsize
-        )
-        return grid
-
     def _define_support_bivariate(self, x1, x2, weights):
         """Create a 2D grid of evaluation points."""
         clip = self.clip
@@ -92,11 +83,7 @@ class KDE:
 
     def define_support(self, x1, x2=None, weights=None, cache=True):
         """Create the evaluation grid for a given data set."""
-        if x2 is None:
-            support = self._define_support_univariate(x1, weights)
-        else:
-            support = self._define_support_bivariate(x1, x2, weights)
-
+        support = self._define_support_bivariate(x1, x2, weights)
         if cache:
             self.support = support
 
@@ -236,7 +223,7 @@ if __name__ == '__main__':
 
     dens, sup = kdeplot(x=d, y=h)
 
-    xx, yy = sup
+    xg, yg = sup
 
-    plt.imshow(dens)
-
+    plt.imshow(np.flipud(dens))
+    plt.show()
