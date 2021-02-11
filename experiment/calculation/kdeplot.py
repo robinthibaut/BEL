@@ -257,13 +257,7 @@ def conditional_distribution(x: float,
     return zi
 
 
-if __name__ == '__main__':
-    # Generate some 2D data
-    rs = np.random.RandomState(5)
-    mean = [0, 0]
-    cov = [(1, .98), (.98, 1)]
-    d, h = rs.multivariate_normal(mean, cov, 200).T
-
+def posterior_conditional(d, h, d_c):
     # Compute KDE
     dens, sup = kde_params(x=d, y=h)
     # Grid parameters
@@ -275,9 +269,22 @@ if __name__ == '__main__':
     plt.show()
 
     # Extract the density values along the line, using cubic interpolation
-    post = conditional_distribution(x=0,
+    post = conditional_distribution(x=d_c,
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
-    plt.plot(post)
+    return post
+
+
+if __name__ == '__main__':
+    # Generate some 2D data
+    rs = np.random.RandomState(5)
+    mean = [0, 0]
+    cov = [(1, .98), (.98, 1)]
+    predictor, target = rs.multivariate_normal(mean, cov, 200).T
+
+    conditional_value = 0
+    h_post = posterior_conditional(predictor, target, conditional_value)
+
+    plt.plot(h_post)
     plt.show()
