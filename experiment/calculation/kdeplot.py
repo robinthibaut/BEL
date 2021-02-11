@@ -301,7 +301,7 @@ def pixel_coordinate(x: float,
     xf, yf = x_index, n_pix_y
     #
     num = len(y_1d)
-    x_, y_ = np.linspace(xo, xf, num), np.linspace(yo, yf, num)
+    x_, y_ = np.ones(num)*x_index, np.linspace(yo, yf, num)
 
     return x_, y_
 
@@ -330,7 +330,7 @@ def posterior_conditional(d, h, d_c):
     dens, sup = kde_params(x=d, y=h)
     # Grid parameters
     xg, yg = sup
-
+    sup = yg
     # Extract the density values along the line, using cubic interpolation
     post = conditional_distribution(x=d_c,
                                     x_array=xg,
