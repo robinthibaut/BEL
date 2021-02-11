@@ -82,7 +82,7 @@ class KDE:
 
         return grid1, grid2
 
-    def define_support(self, x1, x2=None, weights=None, cache=True):
+    def define_support(self, x1, x2, weights=None, cache=True):
         """Create the evaluation grid for a given data set."""
         support = self._define_support_bivariate(x1, x2, weights)
         if cache:
@@ -110,7 +110,6 @@ class KDE:
         kde = self._fit([x1, x2], weights)
 
         if self.cumulative:
-
             grid1, grid2 = support
             density = np.zeros((grid1.size, grid2.size))
             p0 = min(grid1), min(grid2)
@@ -119,7 +118,6 @@ class KDE:
                     density[i, j] = kde.integrate_box(p0, (xi, xj))
 
         else:
-
             xx1, xx2 = np.meshgrid(*support)
             density = kde([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
 
@@ -135,9 +133,9 @@ def bivariate_density(
         estimate_kws,
 ):
     """
-    
-    :param data: 
-    :param estimate_kws: 
+    Estimate bivariate KDE
+    :param data: DataFrame containing (x, y) data
+    :param estimate_kws: KDE parameters
     :return: 
     """
 
@@ -281,6 +279,5 @@ if __name__ == '__main__':
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
-
     plt.plot(post)
     plt.show()
