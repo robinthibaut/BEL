@@ -167,13 +167,13 @@ def bivariate_density(
     return density, support
 
 
-def kdeplot(
+def kde_params(
         x=None,
         y=None,
         bw=None,
         gridsize=200,
         cut=3, clip=None, cumulative=False,
-        bw_method="scott", bw_adjust=1, log_scale=None,
+        bw_method="scott", bw_adjust=1
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -186,8 +186,7 @@ def kdeplot(
     :param cumulative: 
     :param bw_method: 
     :param bw_adjust: 
-    :param log_scale: 
-    :return: 
+    :return:
     """
 
     data = {'x': x, 'y': y}
@@ -261,22 +260,27 @@ def conditional_distribution(x: float,
 
 
 if __name__ == '__main__':
+    # Generate some 2D data
     rs = np.random.RandomState(5)
     mean = [0, 0]
     cov = [(1, .98), (.98, 1)]
     d, h = rs.multivariate_normal(mean, cov, 200).T
 
-    dens, sup = kdeplot(x=d, y=h)
-
+    # Compute KDE
+    dens, sup = kde_params(x=d, y=h)
+    # Grid parameters
     xg, yg = sup
-
+    # Grid extents (kde coordinates)
     extent = [min(xg), max(xg), min(yg), max(yg)]
 
     plt.imshow(np.flipud(dens), extent=extent)
     plt.show()
 
     # Extract the density values along the line, using cubic interpolation
-    post = conditional_distribution(d, xg, yg, dens)
+    post = conditional_distribution(x=d,
+                                    x_array=xg,
+                                    y_array=yg,
+                                    y_kde=dens)
 
     plt.plot(post)
     plt.show()
