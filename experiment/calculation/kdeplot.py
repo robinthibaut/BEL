@@ -268,7 +268,7 @@ def posterior_conditional(d, h, d_c):
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
-    return post
+    return post, sup
 
 
 if __name__ == '__main__':
@@ -279,7 +279,7 @@ if __name__ == '__main__':
     predictor, target = rs.multivariate_normal(mean, cov, 200).T
 
     conditional_value = 0
-    h_post = posterior_conditional(predictor, target, conditional_value)
+    h_post, sup = posterior_conditional(predictor, target, conditional_value)
 
     plt.plot(h_post)
     plt.show()
