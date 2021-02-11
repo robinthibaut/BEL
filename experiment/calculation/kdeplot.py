@@ -113,7 +113,7 @@ class KDE:
 
             grid1, grid2 = support
             density = np.zeros((grid1.size, grid2.size))
-            p0 = grid1.min(), grid2.min()
+            p0 = min(grid1), min(grid2)
             for i, xi in enumerate(grid1):
                 for j, xj in enumerate(grid2):
                     density[i, j] = kde.integrate_box(p0, (xi, xj))
@@ -215,6 +215,32 @@ def kdeplot(
     return density, support
 
 
+def pixel_coordinate(x: float,
+                     x_1d: np.array,
+                     y_1d: np.array):
+    """
+    Gets the pixel coordinate of the value x, in order to get posterior conditional probability given a KDE.
+    :param x: Value along the horizontal axis
+    :param x_1d: List of x coordinates along the axis
+    :param y_1d: List of y coordinates along the axis
+    :return:
+    """
+
+    n_pix_y = len(y_1d)  # pixels in y-axis
+
+    x_index = np.argmin(np.abs(x_1d - x))  # pixel index of x value
+
+    # Extract the line (pixel coordinates)
+    # Limits:
+    xo, yo = x_index, 0
+    xf, yf = x_index, n_pix_y
+    #
+    num = len(y_1d)
+    x_, y_ = np.linspace(xo, xf, num), np.linspace(yo, yf, num)
+
+    return x_, y_
+
+
 if __name__ == '__main__':
     rs = np.random.RandomState(5)
     mean = [0, 0]
@@ -230,33 +256,9 @@ if __name__ == '__main__':
     plt.imshow(np.flipud(dens), extent=extent)
     plt.show()
 
-    def pixel_coordinate(x, x_1d, y_1d):
-        """
-        Gets the pixel coordinate of the value x.
-        :param x: Value along the horizontal axis
-        :param x_1d: List of x coordinates along the axis
-        :param y_1d: List of y coordinates along the axis
-        :return: 
-        """
-        
-        n_pix_y = len(y_1d)  # pixels in y-axis
-
-        x_index = np.argmin(np.abs(x_1d - x))  # pixel index of x value
-        
-        # Extract the line (pixel coordinates)
-        # Limits:
-        xo, yo = x_index, 0 
-        xf, yf = x_index, n_pix_y
-        # 
-        num = len(y_1d)
-        x_, y_ = np.linspace(xo, xf, num), np.linspace(yo, yf, num)
-        
-        return x_, y_
-
-
-    x_, y_ = pixel_coordinate(0, xg, yg)
-    # Extract the values along the line, using cubic interpolation
-    zi = ndimage.map_coordinates(dens, np.vstack((x_, y_)))
+    x_i, y_i = pixel_coordinate(0, xg, yg)
+    # Extract the density values along the line, using cubic interpolation
+    zi = ndimage.map_coordinates(dens, np.vstack((x_i, y_i)))
 
     plt.plot(zi)
     plt.show()
