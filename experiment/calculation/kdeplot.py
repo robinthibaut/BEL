@@ -277,7 +277,7 @@ if __name__ == '__main__':
     plt.show()
 
     # Extract the density values along the line, using cubic interpolation
-    post = conditional_distribution(x=d,
+    post = conditional_distribution(x=0,
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
