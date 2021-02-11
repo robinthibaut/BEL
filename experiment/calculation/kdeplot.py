@@ -225,16 +225,36 @@ if __name__ == '__main__':
 
     xg, yg = sup
 
-    plt.imshow(np.flipud(dens))
+    extent = [min(xg), max(xg), min(yg), max(yg)]
+
+    plt.imshow(np.flipud(dens), extent=extent)
     plt.show()
 
-    # -- Extract the line...
-    # Make a line with "num" points...
-    x0, y0 = 100, 0  # These are in _pixel_ coordinates!!
-    x1, y1 = 100, 200
-    num = 200
-    x_, y_ = np.linspace(x0, x1, num), np.linspace(y0, y1, num)
+    def pixel_coordinate(x, x_1d, y_1d):
+        """
+        Gets the pixel coordinate of the value x.
+        :param x: Value along the horizontal axis
+        :param x_1d: List of x coordinates along the axis
+        :param y_1d: List of y coordinates along the axis
+        :return: 
+        """
+        
+        n_pix_y = len(y_1d)  # pixels in y-axis
 
+        x_index = np.argmin(np.abs(x_1d - x))  # pixel index of x value
+        
+        # Extract the line (pixel coordinates)
+        # Limits:
+        xo, yo = x_index, 0 
+        xf, yf = x_index, n_pix_y
+        # 
+        num = len(y_1d)
+        x_, y_ = np.linspace(xo, xf, num), np.linspace(yo, yf, num)
+        
+        return x_, y_
+
+
+    x_, y_ = pixel_coordinate(0, xg, yg)
     # Extract the values along the line, using cubic interpolation
     zi = ndimage.map_coordinates(dens, np.vstack((x_, y_)))
 
