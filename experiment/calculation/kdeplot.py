@@ -241,6 +241,25 @@ def pixel_coordinate(x: float,
     return x_, y_
 
 
+def conditional_distribution(x: float,
+                             y_kde: np.array,
+                             x_array: np.array,
+                             y_array: np.array,
+                             ):
+    """
+    Compute the conditional posterior distribution p(x|y) given d.
+    :param x: Observed data
+    :param y_kde: KDE of the prediction
+    :param x_array: X grid (1D)
+    :param y_array: Y grid (1D)
+    :return:
+    """
+    x_i, y_i = pixel_coordinate(x, x_array, y_array)
+    # Extract the density values along the line, using cubic interpolation
+    zi = ndimage.map_coordinates(y_kde, np.vstack((x_i, y_i)))
+    return zi
+
+
 if __name__ == '__main__':
     rs = np.random.RandomState(5)
     mean = [0, 0]
@@ -256,9 +275,8 @@ if __name__ == '__main__':
     plt.imshow(np.flipud(dens), extent=extent)
     plt.show()
 
-    x_i, y_i = pixel_coordinate(0, xg, yg)
     # Extract the density values along the line, using cubic interpolation
-    zi = ndimage.map_coordinates(dens, np.vstack((x_i, y_i)))
+    post = conditional_distribution(d, xg, yg, dens)
 
-    plt.plot(zi)
+    plt.plot(post)
     plt.show()
