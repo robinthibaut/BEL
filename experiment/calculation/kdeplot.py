@@ -262,11 +262,6 @@ def posterior_conditional(d, h, d_c):
     dens, sup = kde_params(x=d, y=h)
     # Grid parameters
     xg, yg = sup
-    # Grid extents (kde coordinates)
-    extent = [min(xg), max(xg), min(yg), max(yg)]
-
-    plt.imshow(np.flipud(dens), extent=extent)
-    plt.show()
 
     # Extract the density values along the line, using cubic interpolation
     post = conditional_distribution(x=d_c,
