@@ -162,6 +162,31 @@ class KDE:
             return self._eval_univariate(x1, weights)
 
 
+def univariate_density(
+        data_variable,
+        estimate_kws,
+):
+
+    # Initialize the estimator object
+    estimator = KDE(**estimate_kws)
+
+    all_data = data_variable.dropna()
+
+    # Extract the data points from this sub set and remove nulls
+    sub_data = all_data.dropna()
+    observations = sub_data[data_variable]
+
+    observation_variance = observations.var()
+    if math.isclose(observation_variance, 0) or np.isnan(observation_variance):
+        msg = "Dataset has 0 variance; skipping density estimate."
+        warnings.warn(msg, UserWarning)
+
+    # Estimate the density of observations at this level
+    density, support = estimator(observations, weights=None)
+
+    return density, support
+
+
 def bivariate_density(
         data,
         estimate_kws,
@@ -205,11 +230,12 @@ def kde_params(
         bw=None,
         gridsize=200,
         cut=3, clip=None, cumulative=False,
-        bw_method="scott", bw_adjust=1
+        bw_method="scott", bw_adjust=1,
+        multiple="layer"
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
-    :param x: 
+    :param x:
     :param y: 
     :param bw: 
     :param gridsize: 
@@ -217,7 +243,8 @@ def kde_params(
     :param clip: 
     :param cumulative: 
     :param bw_method: 
-    :param bw_adjust: 
+    :param bw_adjust:
+    :param multiple:
     :return:
     """
 
@@ -238,10 +265,18 @@ def kde_params(
         cumulative=cumulative,
     )
 
-    density, support = bivariate_density(
-        data=frame,
-        estimate_kws=estimate_kws,
-    )
+    if y is None:
+        density, support = univariate_density(
+            data_variable=frame,
+            estimate_kws=estimate_kws
+        )
+
+    else:
+
+        density, support = bivariate_density(
+            data=frame,
+            estimate_kws=estimate_kws,
+        )
 
     return density, support
 
