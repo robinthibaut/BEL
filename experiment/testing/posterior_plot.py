@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import joblib
 import matplotlib.pyplot as plt
 from numpy import ma
 
@@ -15,17 +16,27 @@ from experiment.goggles.visualization import despine
 # https://peterroelants.github.io/posts/multivariate-normal-primer/
 
 # Generate a random correlated bivariate dataset
-rs = np.random.RandomState(5)
-mean = [0, 0]
-cov = [(1, .96), (.96, 1)]
-x1, x2 = rs.multivariate_normal(mean, cov, 200).T
-d = pd.Series(x1, name="$X_1$")
-h = pd.Series(x2, name="$X_2$")
+# rs = np.random.RandomState(5)
+# mean = [0, 0]
+# cov = [(1, .96), (.96, 1)]
+# x1, x2 = rs.multivariate_normal(mean, cov, 200).T
+# d = pd.Series(x1, name="$X_1$")
+# h = pd.Series(x2, name="$X_2$")
 
 d_cca_prediction = [0]
 h_cca_prediction = [0]
 comp_n = 0
 sample_n = 0
+
+ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
+d = ccalol.x_scores_[:, 0]
+h = ccalol.y_scores_[:, 0]
+
+
+# load prediction object
+lol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl')
+post_test = lol.random_sample(200)
+y_samp = post_test[:, 0]
 
 cmap = sns.color_palette("Blues", as_cmap=True)
 
@@ -37,9 +48,12 @@ marginal_eval = kdeplot.KDE()
 
 kde_x, sup_x = marginal_eval(d)
 kde_y, sup_y = marginal_eval(h)
+kde_y_samp, sup_samp = marginal_eval(y_samp)
 
 xmin, xmax = min(sup_x), max(sup_x)
 ymin, ymax = min(sup_y), max(sup_y)
+
+
 
 # # %%
 # # Choose beautiful color map
@@ -203,6 +217,9 @@ ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
 ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
 # ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
+# Test with BEL
+ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
+ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
 # Conditional distribution
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 ax_marg_y.plot(hp, sup, 'r', alpha=0)

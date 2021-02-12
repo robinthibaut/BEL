@@ -22,7 +22,7 @@ class MySetup:
         """Define main directories and file names"""
 
         # Content directory
-        main_dir: str = dirname(dirname(os.path.abspath(__file__)))
+        main_dir: str = dirname(os.path.abspath(__file__))
         hydro_res_dir: str = join(main_dir, 'storage', 'forwards')
         forecasts_dir: str = join(main_dir, 'storage', 'forecasts')
         grid_dir: str = join(main_dir, 'spatial', 'parameters')
