@@ -10,7 +10,7 @@ import numpy as np
 import vtk
 from flopy.export import vtk as vtk_flow
 
-from experiment._core import _setup
+from experiment._core import setup
 import experiment.spatial.grid as mops
 import experiment.toolbox.filesio as fops
 
@@ -38,7 +38,7 @@ class ModelVTK:
     """
     def __init__(self, base=None, folder=None):
         self.base = base
-        md = self.base.Directories()
+        md = self.base.directories()
         self.rn = folder
         self.bdir = md.main_dir
         self.results_dir = jp(md.hydro_res_dir, self.rn)
@@ -63,7 +63,7 @@ class ModelVTK:
             mt_load = jp(self.results_dir, 'whpa.mtnam')
             self.transport_model = fops.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
             ucn_files = [jp(self.results_dir, f'MT3D00{i}.UCN') for i in
-                         _setup._wells.combination]  # Files containing concentration
+                         setup.wells.combination]  # Files containing concentration
             ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
             self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
             self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
@@ -308,7 +308,7 @@ class ModelVTK:
     def wells_vtk(self):
         """Exports wells coordinates to VTK"""
 
-        wbd = self.base._wells().wells_data
+        wbd = self.base.wells().wells_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
         wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z

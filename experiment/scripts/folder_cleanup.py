@@ -3,11 +3,11 @@
 import os
 
 import experiment.toolbox.filesio as fops
-from experiment._core import _setup
+from experiment._core import setup
 
 
 def cleanup():
-    res_tree = _setup.Directories.hydro_res_dir
+    res_tree = setup.directories.hydro_res_dir
     # r=root, d=directories, f = files
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
@@ -18,7 +18,7 @@ def cleanup():
 
 
 def filter_file(crit):
-    res_tree = _setup.Directories.hydro_res_dir
+    res_tree = setup.directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.remove_bad_bkt(r)
@@ -27,7 +27,7 @@ def filter_file(crit):
 
 
 def spare_me():
-    res_tree = _setup.Directories.hydro_res_dir
+    res_tree = setup.directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
             fops.keep_essential(r)

@@ -11,7 +11,7 @@ from ngboost import NGBRegressor
 from ngboost.distns import Normal
 from sklearn.metrics import mean_squared_error
 
-fc = base._focus()
+fc = base.focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
@@ -20,7 +20,7 @@ mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 
 res_dir, folder = '6623dd4fb5014a978d59b9acb03946d2', '123456'
 
-subdir = os.path.join(base.Directories.forecasts_dir, res_dir)
+subdir = os.path.join(base.directories.forecasts_dir, res_dir)
 
 #%% Load d
 pcaf = os.path.join(subdir, folder, 'obj', 'd_pca.pkl')
@@ -30,7 +30,7 @@ d_pc_training = d_pco.training_pc[:, :ndco]
 d_pc_test = d_pco.predict_pc.flatten()[:ndco].reshape(1, -1)
 
 #%% Load h
-hbase = os.path.join(base.Directories.forecasts_dir, 'base')
+hbase = os.path.join(base.directories.forecasts_dir, 'base')
 # Load h pickle
 pcaf = os.path.join(hbase, 'h_pca.pkl')
 h_pco = joblib.load(pcaf)

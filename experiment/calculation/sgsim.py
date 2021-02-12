@@ -9,7 +9,7 @@ from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
-from experiment._core import _setup
+from experiment._core import setup
 from experiment.toolbox.filesio import data_read
 
 
@@ -54,13 +54,13 @@ def sgsim(model_ws: str,
     else:
         hku = wells_hk
 
-    if not os.path.exists(jp(model_ws, _setup._files.sgems_file)):
+    if not os.path.exists(jp(model_ws, setup.files.sgems_file)):
         hd.dataframe['hd'] = hku
         hd.export_01('hd')  # Exports modified dataset in binary
 
     # %% Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
-    gd = _setup._grid_dimensions()
+    gd = setup.grid_dimensions()
     Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
 
     # Get sgems grid centers coordinates:

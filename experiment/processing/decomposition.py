@@ -28,7 +28,7 @@ import experiment.toolbox.filesio as fops
 from experiment.goggles.visualization import whpa_plot
 from experiment.spatial.distance import grid_parameters, signed_distance
 from experiment.processing.pca import PCAIO
-from experiment._core import _setup
+from experiment._core import setup
 
 Root = List[str]
 Combination = List[int]
@@ -67,7 +67,7 @@ def base_pca(base,
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
-    x_lim, y_lim, grf = base._focus.x_range, base._focus.y_range, base._focus.cell_dim
+    x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim
 
     if h_pca_obj is not None:
         # Loads the results:
@@ -89,7 +89,7 @@ def base_pca(base,
                 whpa_plot(whpa=[e],
                           x_lim=x_lim,
                           y_lim=y_lim,
-                          well_comb=base._wells.combination,
+                          well_comb=base.wells.combination,
                           lw=1,
                           fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
@@ -100,7 +100,7 @@ def base_pca(base,
         h_pco.pca_training_fit_transform()
         # Define number of components to keep
         # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
-        h_pco.n_pc_cut = _setup._target.n_pc
+        h_pco.n_pc_cut = setup.target.n_pc
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
@@ -130,14 +130,14 @@ def bel(base,
     """
 
     # Load parameters:
-    x_lim, y_lim, grf = base._focus.x_range, base._focus.y_range, base._focus.cell_dim
+    x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim
     xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
-        base._wells.combination = well_comb
+        base.wells.combination = well_comb
 
     # Directories
-    md = base.Directories()
+    md = base.directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
     # Parse test_root
@@ -151,7 +151,7 @@ def bel(base,
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    new_dir = ''.join(list(map(str, base._wells.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.wells.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -181,7 +181,7 @@ def bel(base,
         tc = np.load(tsub)
 
     # %% Select wells:
-    selection = [wc - 1 for wc in base._wells.combination]
+    selection = [wc - 1 for wc in base.wells.combination]
     tc = tc[:, selection, :]
 
     # %%  PCA
@@ -192,9 +192,9 @@ def bel(base,
     d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.pca_training_fit_transform()
     # PCA on transport curves
-    d_pco.n_pc_cut = _setup._predictor.n_pc
+    d_pco.n_pc_cut = setup.predictor.n_pc
     ndo = d_pco.n_pc_cut
-    n_time_steps = _setup._predictor.n_tstp
+    n_time_steps = setup.predictor.n_tstp
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:

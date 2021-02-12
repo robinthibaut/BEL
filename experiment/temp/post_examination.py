@@ -9,7 +9,7 @@ from experiment.goggles.visualization import Plot
 
 from experiment.base.inventory import MySetup
 
-md = MySetup.Directories()
+md = MySetup.directories()
 
 root = '818bf1676c424f76b83bd777ae588a1d'
 sources = '123456'
@@ -38,7 +38,7 @@ nn = np.load(ndor)
 
 #%%
 
-fc = MySetup._focus()
+fc = MySetup.focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 mplot.whpa_plot(h=nn,

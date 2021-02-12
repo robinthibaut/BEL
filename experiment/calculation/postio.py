@@ -7,7 +7,7 @@ import numpy as np
 
 from sklearn.preprocessing import PowerTransformer
 
-from experiment._core import _setup
+from experiment._core import setup
 from experiment.spatial.grid import get_block
 
 
@@ -247,7 +247,7 @@ class PosteriorIO:
                 self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
 
             if n_posts is None:
-                self.n_posts = _setup._forecast.n_posts
+                self.n_posts = setup.forecast.n_posts
             else:
                 self.n_posts = n_posts
 

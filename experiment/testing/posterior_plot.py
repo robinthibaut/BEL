@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -5,14 +7,13 @@ import joblib
 import matplotlib.pyplot as plt
 from numpy import ma
 
+from experiment._core import setup
 from experiment.calculation import kdeplot
-from experiment.goggles.visualization import despine
+from experiment.goggles.visualization import despine, my_alphabet, proxy_annotate, proxy_legend
 
 # https://stackoverflow.com/questions/35920885/how-to-overlay-a-seaborn-jointplot-with-a-marginal-distribution-histogram-fr
 # You can plot directly onto the JointGrid.ax_marg_x and JointGrid.ax_marg_y attributes,
 # which are the underlying matplotlib axes.
-
-
 # https://peterroelants.github.io/posts/multivariate-normal-primer/
 
 # Generate a random correlated bivariate dataset
@@ -28,17 +29,35 @@ h_cca_prediction = [0]
 comp_n = 0
 sample_n = 0
 
+res_dir = 'experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/'
 ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
 d = ccalol.x_scores_[:, 0]
 h = ccalol.y_scores_[:, 0]
 
+f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
+cca_operator, d_pco = list(map(joblib.load, f_names))
+
+base_dir = setup.files.base_dir
+h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
+h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+
+# Inspect transformation between physical and PC space
+dnc0 = d_pco.n_pc_cut
+hnc0 = h_pco.n_pc_cut
+
+# Cut desired number of PC components
+d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
+h_pco.pca_test_fit_transform(h_pred, test_root=[root])
+h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
+
+# CCA plots
+d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
+d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
 # load prediction object
 lol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl')
 post_test = lol.random_sample(200)
 y_samp = post_test[:, 0]
-
-cmap = sns.color_palette("Blues", as_cmap=True)
 
 # Plot h posterior given d
 density, support = kdeplot.kde_params(x=d, y=h)
@@ -52,84 +71,6 @@ kde_y_samp, sup_samp = marginal_eval(y_samp)
 
 xmin, xmax = min(sup_x), max(sup_x)
 ymin, ymax = min(sup_y), max(sup_y)
-
-
-
-# # %%
-# # Choose beautiful color map
-# # cube_helix very nice for dark mode
-# # light = 0.95 is beautiful for reverse = True
-# # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
-# # Seaborn 'joinplot' between d & h training CCA scores
-# g = sns.jointplot(d, h,
-#                   cmap=cmap, n_levels=80, shade=True,
-#                   kind='kde')
-# g.plot_joint(plt.scatter, c='w', marker='o', s=2, alpha=.7)
-# g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1, color='r', head_width=0, head_length=0, lw=2)
-# g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0, color='r', head_width=0, head_length=0, lw=2)
-# # Plot prediction (d, h) in canonical space
-# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
-#          label=f'{sample_n}')
-# # plt.grid('w', linewidth=.3, alpha=.4)
-# # plt.tick_params(labelsize=8)
-# plt.xlabel('$d^{c}$', fontsize=14)
-# plt.ylabel('$h^{c}$', fontsize=14)
-# plt.subplots_adjust(top=0.9)
-# plt.tick_params(labelsize=14)
-#
-# plt.show()
-#
-# # %%
-# # Define grid for subplots
-# # gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 4])
-# gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
-#
-# # Create density plot
-# fig = pp.figure()
-# ax = pp.subplot(gs[1, 0])
-# cax = ax.imshow(density,
-#                 origin='lower',
-#                 cmap=cmap,
-#                 extent=[min(xx), max(xx), min(yy), max(yy)])
-# ax.set_ylim((xmin, xmax))
-# ax.set_ylim((ymin, ymax))
-# ax.spines["top"].set_visible(False)
-# ax.spines["right"].set_visible(False)
-# ax.axvline(x=d_cca_prediction[0], color='r')
-# plt.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
-# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
-#          label=f'{sample_n}')
-#
-# # Create Y-marginal (right)
-# axr = pp.subplot(gs[1, 1],
-#                  sharey=ax,
-#                  xticks=[], yticks=[],
-#                  frameon=False,
-#                  xlim=(0, 1.4 * kde_y.max()),
-#                  ylim=(ymin, ymax))
-# axr.plot(kde_y, sup_y, color='black')
-# axr.fill_betweenx(sup_y, 0, kde_y, alpha=.5, color='#5673E0')
-#
-# # Create X-marginal (top)
-# axt = pp.subplot(gs[0, 0],
-#                  sharex=ax, frameon=False,
-#                  xticks=[], yticks=[],
-#                  xlim=(xmin, xmax),
-#                  ylim=(0, 1.4 * kde_x.max()),
-#                  aspect='auto')
-# axt.plot(sup_x, kde_x, color='black')
-# axt.fill_between(sup_x, 0, kde_x, alpha=.5, color='#5673E0')
-#
-# # Bring the marginals closer to the contour plot
-# fig.tight_layout(pad=.5)
-#
-# # plt.xlabel('$d^{c}$', fontsize=14)
-# # plt.ylabel('$h^{c}$', fontsize=14)
-# # plt.subplots_adjust(top=0.9)
-# # plt.tick_params(labelsize=14)
-# plt.show()
 
 # %%
 height = 6
@@ -211,12 +152,10 @@ ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
 ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=0)
 ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
 ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
-# ax_marg_x.arrow(d_cca_prediction[0], 0, 0, .05, color='blue', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 # Marginal y plot
 ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
 ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
-# ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 # Test with BEL
 ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
@@ -230,4 +169,93 @@ ax_joint.set_ylabel('$h^{c}$', fontsize=14)
 # plt.subplots_adjust(top=0.9)
 plt.tick_params(labelsize=14)
 
+subtitle = my_alphabet(comp_n)
+# Add title inside the box
+an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+legend_a = proxy_annotate(annotation=an,
+                          loc=2,
+                          fz=14)
+
+proxy_legend(legend1=legend_a,
+             colors=['black', 'white'],
+             labels=['Training', 'Test'],
+             marker='o',
+             pec=['k', 'k'])
+
 plt.show()
+
+# # %%
+# # Choose beautiful color map
+# # cube_helix very nice for dark mode
+# # light = 0.95 is beautiful for reverse = True
+# # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
+# # Seaborn 'joinplot' between d & h training CCA scores
+# g = sns.jointplot(d, h,
+#                   cmap=cmap, n_levels=80, shade=True,
+#                   kind='kde')
+# g.plot_joint(plt.scatter, c='w', marker='o', s=2, alpha=.7)
+# g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1, color='r', head_width=0, head_length=0, lw=2)
+# g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0, color='r', head_width=0, head_length=0, lw=2)
+# # Plot prediction (d, h) in canonical space
+# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
+#          label=f'{sample_n}')
+# # plt.grid('w', linewidth=.3, alpha=.4)
+# # plt.tick_params(labelsize=8)
+# plt.xlabel('$d^{c}$', fontsize=14)
+# plt.ylabel('$h^{c}$', fontsize=14)
+# plt.subplots_adjust(top=0.9)
+# plt.tick_params(labelsize=14)
+#
+# plt.show()
+#
+# # %%
+# # Define grid for subplots
+# # gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 4])
+# gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
+#
+# # Create density plot
+# fig = pp.figure()
+# ax = pp.subplot(gs[1, 0])
+# cax = ax.imshow(density,
+#                 origin='lower',
+#                 cmap=cmap,
+#                 extent=[min(xx), max(xx), min(yy), max(yy)])
+# ax.set_ylim((xmin, xmax))
+# ax.set_ylim((ymin, ymax))
+# ax.spines["top"].set_visible(False)
+# ax.spines["right"].set_visible(False)
+# ax.axvline(x=d_cca_prediction[0], color='r')
+# plt.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
+# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
+#          label=f'{sample_n}')
+#
+# # Create Y-marginal (right)
+# axr = pp.subplot(gs[1, 1],
+#                  sharey=ax,
+#                  xticks=[], yticks=[],
+#                  frameon=False,
+#                  xlim=(0, 1.4 * kde_y.max()),
+#                  ylim=(ymin, ymax))
+# axr.plot(kde_y, sup_y, color='black')
+# axr.fill_betweenx(sup_y, 0, kde_y, alpha=.5, color='#5673E0')
+#
+# # Create X-marginal (top)
+# axt = pp.subplot(gs[0, 0],
+#                  sharex=ax, frameon=False,
+#                  xticks=[], yticks=[],
+#                  xlim=(xmin, xmax),
+#                  ylim=(0, 1.4 * kde_x.max()),
+#                  aspect='auto')
+# axt.plot(sup_x, kde_x, color='black')
+# axt.fill_between(sup_x, 0, kde_x, alpha=.5, color='#5673E0')
+#
+# # Bring the marginals closer to the contour plot
+# fig.tight_layout(pad=.5)
+#
+# # plt.xlabel('$d^{c}$', fontsize=14)
+# # plt.ylabel('$h^{c}$', fontsize=14)
+# # plt.subplots_adjust(top=0.9)
+# # plt.tick_params(labelsize=14)
+# plt.show()

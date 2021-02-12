@@ -6,7 +6,7 @@ from experiment.goggles.visualization import proxy_annotate
 
 from os.path import join as jp
 from experiment.base.inventory import MySetup
-md = MySetup.Directories()
+md = MySetup.directories()
 
 # model_nam = '/Users/robin/PycharmProjects/BEL/experiment/storage/forwards/6a4d614c838442629d7a826cc1f498a8/whpa.nam'
 #
