@@ -295,18 +295,18 @@ ax_joint.axhline(y=h_cca_prediction[0], color='red', linewidth=.5, alpha=.5)
 ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
 # Point
 ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-              'ro', markersize=4.5, markeredgecolor='k', alpha=1,
+              'wo', markersize=5, markeredgecolor='k', alpha=1,
               label=f'{sample_n}')
 # Marginal x plot
 ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=0)
 ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
-# ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
-ax_marg_x.arrow(d_cca_prediction[0], 0, 0, .05, color='blue', head_width=.05, head_length=.05, lw=.5, alpha=.5)
+ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
+# ax_marg_x.arrow(d_cca_prediction[0], 0, 0, .05, color='blue', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 # Marginal y plot
 ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
-# ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
-ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
+ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
+# ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 # Conditional distribution
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 ax_marg_y.plot(hp, sup, 'r', alpha=0)
