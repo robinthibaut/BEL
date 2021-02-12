@@ -303,4 +303,9 @@ hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 ax_marg_y.plot(hp, sup, 'r')
 ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.3, color='red')
 
+ax_joint.set_xlabel('$d^{c}$', fontsize=14)
+ax_joint.set_ylabel('$h^{c}$', fontsize=14)
+# plt.subplots_adjust(top=0.9)
+plt.tick_params(labelsize=14)
+
 plt.show()

@@ -283,7 +283,7 @@ def pixel_coordinate(line: list,
                      y_1d: np.array):
     """
     Gets the pixel coordinate of the value x, in order to get posterior conditional probability given a KDE.
-    :param x: Value along the horizontal axis
+    :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
     :param x_1d: List of x coordinates along the axis
     :param y_1d: List of y coordinates along the axis
     :return:
@@ -314,11 +314,6 @@ def conditional_distribution(x: float,
     :param y_array: Y grid (1D)
     :return:
     """
-    # x_i, y_i = pixel_coordinate(x, x_array, y_array)
-    # # Extract the density values along the line, using cubic interpolation
-    # zi = ndimage.map_coordinates(y_kde, np.vstack((x_i, y_i)))
-
-    ##############
     # Coordinates of the line we'd like to sample along
     line = [(x, min(y_array)), (x, max(y_array))]
 
