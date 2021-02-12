@@ -56,20 +56,22 @@ class KDE:
         self.support = None
 
     @staticmethod
-    def _define_support_grid(x, bw, cut, clip, gridsize):
+    def _define_support_grid(x, bw, cut, clip, gridsize, lim=None):
         """Create the grid of evaluation points depending for vector x."""
+        if lim is not None:
+            x = lim
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
         gridmin = max(x.min() - bw * cut, clip_lo)
         gridmax = min(x.max() + bw * cut, clip_hi)
         return np.linspace(gridmin, gridmax, gridsize)
 
-    def _define_support_univariate(self, x, weights):
+    def _define_support_univariate(self, x, weights, lim=None):
         """Create a 1D grid of evaluation points."""
         kde = self._fit(x, weights)
         bw = np.sqrt(kde.covariance.squeeze())
         grid = self._define_support_grid(
-            x, bw, self.cut, self.clip, self.gridsize
+            x, bw, self.cut, self.clip, self.gridsize, lim=lim
         )
         return grid
 
@@ -91,10 +93,10 @@ class KDE:
 
         return grid1, grid2
 
-    def define_support(self, x1, x2=None, weights=None, cache=True):
+    def define_support(self, x1, x2=None, weights=None, cache=True, lim=None):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
-            support = self._define_support_univariate(x1, weights)
+            support = self._define_support_univariate(x1, weights, lim=lim)
         else:
             support = self._define_support_bivariate(x1, x2, weights)
 
@@ -114,11 +116,11 @@ class KDE:
 
         return kde
 
-    def _eval_univariate(self, x, weights=None):
+    def _eval_univariate(self, x, weights=None, lim=None):
         """Fit and evaluate a univariate on univariate data."""
         support = self.support
         if support is None:
-            support = self.define_support(x, cache=False)
+            support = self.define_support(x, cache=False, lim=lim)
 
         kde = self._fit(x, weights)
 
@@ -154,10 +156,10 @@ class KDE:
 
         return density, support
 
-    def __call__(self, x1, x2=None, weights=None):
+    def __call__(self, x1, x2=None, weights=None, lim=None):
         """Fit and evaluate on univariate or bivariate data."""
         if x2 is None:
-            return self._eval_univariate(x1, weights)
+            return self._eval_univariate(x1, weights, lim=lim)
         else:
             return self._eval_bivariate(x1, x2, weights)
 

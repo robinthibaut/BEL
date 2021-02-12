@@ -29,8 +29,8 @@ from experiment.goggles.visualization import despine, my_alphabet, proxy_annotat
 # h_cca_prediction = [0]
 comp_n = 0
 sample_n = 0
-
-res_dir = 'experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/'
+base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
+res_dir = os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/')
 # ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
 # d = ccalol.x_scores_[:, 0]
 # h = ccalol.y_scores_[:, 0]
@@ -39,7 +39,7 @@ root = '818bf1676c424f76b83bd777ae588a1d'
 f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
 cca_operator, d_pco = list(map(joblib.load, f_names))
 
-base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
+
 h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
@@ -86,7 +86,7 @@ h_cca_prediction = h_cca_prediction[0]
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 
 # load prediction object
-lol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl')
+lol = joblib.load(os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl'))
 post_test = lol.random_sample(200)
 post_test_t = tfm1.transform(post_test).T
 y_samp = post_test_t[0]
@@ -99,7 +99,7 @@ marginal_eval = kdeplot.KDE()
 
 kde_x, sup_x = marginal_eval(d)
 kde_y, sup_y = marginal_eval(h)
-kde_y_samp, sup_samp = marginal_eval(y_samp)
+kde_y_samp, sup_samp = marginal_eval(y_samp, lim=h)
 
 xmin, xmax = min(sup_x), max(sup_x)
 ymin, ymax = min(sup_y), max(sup_y)
