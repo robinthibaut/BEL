@@ -65,6 +65,8 @@ def proxy_legend(legend1=None,
     :return:
     """
 
+    obj = plt
+
     # Default parameters
     if colors is None:
         colors = ['w']
@@ -76,14 +78,14 @@ def proxy_legend(legend1=None,
         extra = []
 
     # Proxy figures (empty plots)
-    proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
-    plt.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
+    proxys = [obj.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
+    obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
-        plt.gca().add_artist(legend1)
+        obj.gca().add_artist(legend1)
 
     for el in extra:
-        plt.gca().add_artist(el)
+        obj.gca().add_artist(el)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -91,7 +93,7 @@ def proxy_legend(legend1=None,
         plt.close()
 
 
-def proxy_annotate(annotation: list,
+def proxy_annotate(annotation: list = None,
                    loc: int = 1,
                    fz: float = 11):
     """
@@ -101,8 +103,9 @@ def proxy_annotate(annotation: list,
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
     :return:
     """
+    obj = plt
 
-    legend_a = plt.legend(plt.plot([], linestyle=None, color='w', alpha=0, markeredgecolor=None),
+    legend_a = plt.legend(obj.plot([], linestyle=None, color='w', alpha=0, markeredgecolor=None),
                           annotation,
                           handlelength=0,
                           handletextpad=0,
@@ -392,9 +395,9 @@ def cca_plot(cca_operator,
             z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
             ax_joint.contourf(xx, yy, z, cmap='Greens', levels=69)
             # Vertical line
-            ax_joint.axvline(x=d_cca_prediction[0], color='blue', linewidth=.5, alpha=.5)
+            ax_joint.axvline(x=d_cca_prediction[comp_n], color='blue', linewidth=.5, alpha=.5)
             # Horizontal line
-            ax_joint.axhline(y=h_cca_prediction[0], color='red', linewidth=.5, alpha=.5)
+            ax_joint.axhline(y=h_cca_prediction[comp_n], color='red', linewidth=.5, alpha=.5)
             # Horizontal line
             # ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
             # Scatter plot
@@ -406,16 +409,16 @@ def cca_plot(cca_operator,
             # Marginal x plot
             ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=0)
             ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
-            ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
+            ax_marg_x.axvline(x=d_cca_prediction[comp_n], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
             # ax_marg_x.arrow(d_cca_prediction[0], 0, 0, .05, color='blue', head_width=.05, head_length=.05, lw=.5, alpha=.5)
             # Marginal y plot
             ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
             ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
-            ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
+            ax_marg_y.axhline(y=h_cca_prediction[comp_n], xmax=0.25, color='red', linewidth=.5, alpha=.5)
             # ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 
             # Conditional distribution
-            hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
+            hp, sup = kdeplot.posterior_conditional(d[comp_n], h[comp_n], d_cca_prediction[comp_n][0])
             ax_marg_y.plot(hp, sup, 'r', alpha=0)
             ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red')
             # Labels
@@ -426,10 +429,10 @@ def cca_plot(cca_operator,
 
         # plt.grid('w', linewidth=.3, alpha=.4)
         # plt.tick_params(labelsize=8)
-        plt.xlabel('$d^{c}$', fontsize=14)
-        plt.ylabel('$h^{c}$', fontsize=14)
-        plt.subplots_adjust(top=0.9)
-        plt.tick_params(labelsize=14)
+        # plt.xlabel('$d^{c}$', fontsize=14)
+        # plt.ylabel('$h^{c}$', fontsize=14)
+        # plt.subplots_adjust(top=0.9)
+        # plt.tick_params(labelsize=14)
         # g.fig.suptitle(f'Pair {i + 1} - R = {round(cca_coefficient[i], 3)}', fontsize=11)
         # Put title inside box
 
