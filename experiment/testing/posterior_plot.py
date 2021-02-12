@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from numpy import ma
 from matplotlib import pyplot as pp
 from matplotlib import gridspec
 
@@ -119,7 +120,7 @@ def despine(fig=None, ax=None, top=True, right=True, left=False,
 # Generate a random correlated bivariate dataset
 rs = np.random.RandomState(5)
 mean = [0, 0]
-cov = [(1, .95), (.95, 1)]
+cov = [(1, .99), (.99, 1)]
 x1, x2 = rs.multivariate_normal(mean, cov, 200).T
 d = pd.Series(x1, name="$X_1$")
 h = pd.Series(x2, name="$X_2$")
@@ -282,7 +283,8 @@ space = .2
 f.subplots_adjust(hspace=space, wspace=space)
 
 # Filled contour plot
-ax_joint.contourf(xx, yy, density, cmap=cmap, levels=80)
+z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
+cs = ax_joint.contourf(xx, yy, z, cmap=cmap, levels=80)
 # Vertical line
 ax_joint.axvline(x=d_cca_prediction[0], color='r', linewidth=.5)
 # Horizontal line
@@ -301,7 +303,7 @@ ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='blue')
 # Conditional distribution
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
-ax_marg_y.plot(hp, sup, 'r')
+ax_marg_y.plot(hp, sup, 'r', alpha=0)
 ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.3, color='red')
 # Labels
 ax_joint.set_xlabel('$d^{c}$', fontsize=14)
