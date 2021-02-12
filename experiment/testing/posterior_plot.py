@@ -95,11 +95,14 @@ y_samp = post_test_t[0]
 density, support = kdeplot.kde_params(x=d, y=h)
 xx, yy = support
 
-marginal_eval = kdeplot.KDE()
+marginal_eval_x = kdeplot.KDE()
+marginal_eval_y = kdeplot.KDE()
 
-kde_x, sup_x = marginal_eval(d)
-kde_y, sup_y = marginal_eval(h)
-kde_y_samp, sup_samp = marginal_eval(y_samp, lim=h)
+# support is cached
+kde_x, sup_x = marginal_eval_x(d)
+kde_y, sup_y = marginal_eval_y(h)
+# use the same support as y
+kde_y_samp, sup_samp = marginal_eval_y(y_samp)
 
 xmin, xmax = min(sup_x), max(sup_x)
 ymin, ymax = min(sup_y), max(sup_y)
