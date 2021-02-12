@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import numpy as np
-from experiment.base.inventory import MySetup as base
+from experiment._core import MySetup as base
 from experiment.goggles.vtkio import ModelVTK
 from experiment.toolbox import filesio
 

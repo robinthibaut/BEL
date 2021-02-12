@@ -3,7 +3,7 @@
 import os
 import string
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 import experiment.goggles.visualization as myvis
 from experiment.toolbox.filesio import data_read
 

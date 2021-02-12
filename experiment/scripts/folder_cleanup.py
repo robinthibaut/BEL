@@ -3,7 +3,7 @@
 import os
 
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 
 
 def cleanup():

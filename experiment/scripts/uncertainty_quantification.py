@@ -6,7 +6,7 @@ from typing import List
 import joblib
 import numpy as np
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 from experiment.processing import decomposition as dcp
 from experiment.toolbox import filesio, utils
 from experiment.uq.forecast_error import UncertaintyQuantification

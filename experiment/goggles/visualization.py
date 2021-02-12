@@ -1,23 +1,22 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import itertools
 import os
-from os.path import join as jp
 import string
+from os.path import join as jp
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
-from scipy.interpolate import make_interp_spline, BSpline
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-from experiment.spatial.distance import grid_parameters
-from experiment.spatial.grid import contours_vertices, refine_machine
-from experiment._core import MySetup
-from experiment.spatial.grid import binary_stack
-from experiment.toolbox import filesio
+from scipy.interpolate import make_interp_spline, BSpline
 from sklearn.preprocessing import PowerTransformer
+
+from experiment._core import MySetup
+from experiment.spatial.distance import grid_parameters
+from experiment.spatial.grid import binary_stack
+from experiment.spatial.grid import contours_vertices, refine_machine
+from experiment.toolbox import filesio
 
 ftype = 'png'
 

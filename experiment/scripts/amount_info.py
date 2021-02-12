@@ -8,7 +8,7 @@ import string
 import seaborn as sns
 from typing import List
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 
 from experiment.goggles.visualization import proxy_annotate, mode_histo
 
