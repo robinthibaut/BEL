@@ -6,6 +6,7 @@ import seaborn as sns
 import joblib
 import matplotlib.pyplot as plt
 from numpy import ma
+from sklearn.preprocessing import PowerTransformer
 
 from experiment._core import setup
 from experiment.calculation import kdeplot
@@ -24,20 +25,21 @@ from experiment.goggles.visualization import despine, my_alphabet, proxy_annotat
 # d = pd.Series(x1, name="$X_1$")
 # h = pd.Series(x2, name="$X_2$")
 
-d_cca_prediction = [0]
-h_cca_prediction = [0]
+# d_cca_prediction = [0]
+# h_cca_prediction = [0]
 comp_n = 0
 sample_n = 0
 
 res_dir = 'experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/'
-ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
-d = ccalol.x_scores_[:, 0]
-h = ccalol.y_scores_[:, 0]
+# ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
+# d = ccalol.x_scores_[:, 0]
+# h = ccalol.y_scores_[:, 0]
 
+root = '818bf1676c424f76b83bd777ae588a1d'
 f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
 cca_operator, d_pco = list(map(joblib.load, f_names))
 
-base_dir = setup.files.base_dir
+base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
 h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
@@ -52,12 +54,42 @@ h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
 # CCA plots
 d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
-d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
+d, h = d_cca_training.T, h_cca_training.T
+
+d_obs = d_pc_prediction[sample_n]
+h_obs = h_pc_prediction[sample_n]
+
+# # Transform to CCA space and transpose
+d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
+                                                            h_obs.reshape(1, -1))
+
+# %%  Watch out for the transpose operator.
+h2 = h.copy()
+d2 = d.copy()
+tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
+h = tfm1.fit_transform(h2.T)
+h = h.T
+h_cca_prediction = tfm1.transform(h_cca_prediction)
+h_cca_prediction = h_cca_prediction.T
+
+tfm2 = PowerTransformer(method='yeo-johnson', standardize=True)
+d = tfm2.fit_transform(d2.T)
+d = d.T
+d_cca_prediction = tfm2.transform(d_cca_prediction)
+d_cca_prediction = d_cca_prediction.T
+
+d = d[comp_n]
+h = h[comp_n]
+d_cca_prediction = d_cca_prediction[0]
+h_cca_prediction = h_cca_prediction[0]
+# Conditional:
+hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 
 # load prediction object
 lol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl')
 post_test = lol.random_sample(200)
-y_samp = post_test[:, 0]
+post_test_t = tfm1.transform(post_test).T
+y_samp = post_test_t[0]
 
 # Plot h posterior given d
 density, support = kdeplot.kde_params(x=d, y=h)
@@ -160,7 +192,6 @@ ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, a
 ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
 # Conditional distribution
-hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 ax_marg_y.plot(hp, sup, 'r', alpha=0)
 ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red')
 # Labels
