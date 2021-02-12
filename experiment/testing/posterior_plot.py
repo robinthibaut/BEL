@@ -87,8 +87,8 @@ hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 
 # load prediction object
 lol = joblib.load(os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl'))
-post_test = lol.random_sample(200)
-post_test_t = tfm1.transform(post_test).T
+post_test = lol.random_sample(200).T
+post_test_t = tfm1.transform(post_test.T).T
 y_samp = post_test_t[0]
 
 # Plot h posterior given d
@@ -109,7 +109,7 @@ ymin, ymax = min(sup_y), max(sup_y)
 
 # %%
 height = 6
-ratio = 5
+ratio = 6
 space = 0
 dropna = False
 xlim = None
@@ -192,8 +192,8 @@ ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
 ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
 # Test with BEL
-ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
-ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
+# ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
+# ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
 # Conditional distribution
 ax_marg_y.plot(hp, sup, 'r', alpha=0)
 ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red')
@@ -206,15 +206,15 @@ plt.tick_params(labelsize=14)
 subtitle = my_alphabet(comp_n)
 # Add title inside the box
 an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
-legend_a = proxy_annotate(annotation=an,
-                          loc=2,
-                          fz=14)
-
-proxy_legend(legend1=legend_a,
-             colors=['black', 'white'],
-             labels=['Training', 'Test'],
-             marker='o',
-             pec=['k', 'k'])
+# legend_a = proxy_annotate(annotation=an,
+#                           loc=2,
+#                           fz=14)
+#
+# proxy_legend(legend1=legend_a,
+#              colors=['black', 'white'],
+#              labels=['Training', 'Test'],
+#              marker='o',
+#              pec=['k', 'k'])
 
 plt.show()
 
