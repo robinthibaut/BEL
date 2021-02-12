@@ -50,7 +50,7 @@ class UncertaintyQuantification:
 
         self.base = base
 
-        fc = self.base.Focus()
+        fc = self.base._focus()
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
@@ -88,7 +88,7 @@ class UncertaintyQuantification:
 
         # Sampling
         self.n_training = len(d_pc_training)
-        self.n_posts = self.base.Forecast.n_posts
+        self.n_posts = self.base._forecast.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
         self.shape = None

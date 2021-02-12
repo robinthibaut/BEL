@@ -25,7 +25,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.toolbox.filesio as fops
-from experiment._core import Machine, MySetup
+from experiment._core import _machine, _setup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -37,11 +37,11 @@ def simulation(folder=None):
     if folder == 0:
         folder = None
     # Directories
-    main_dir = MySetup.Directories.main_dir
+    main_dir = _setup.Directories.main_dir
     exe_loc = jp(main_dir, 'hydro', 'exe')  #
     # directory
     # EXE files directory.
-    if Machine.computer == 'MacBook-Pro.local':
+    if _machine.computer == 'MacBook-Pro.local':
         exe_name_mf = jp(exe_loc, 'mf2005')
         exe_name_mt = jp(exe_loc, 'mt3dms')
         exe_name_mp = jp(exe_loc, 'mp7')
@@ -56,15 +56,15 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(MySetup.Directories.hydro_res_dir, res_dir)
+    results_dir = jp(_setup.Directories.hydro_res_dir, res_dir)
 
-    grid_dir = MySetup.Directories.grid_dir
+    grid_dir = _setup.Directories.grid_dir
     # Generates the result directory
     fops.dirmaker(results_dir)
 
     print(f'fwd {res_dir}')
     # Check if forwards have already been computed
-    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in MySetup.Files.output_files])
+    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in _setup._files.output_files])
 
     if not opt.all():
         # Resets folder
@@ -113,11 +113,11 @@ def main(n_sim: int = None):
 
     if n_sim is None:
         # List directories in forwards folder
-        listme = os.listdir(MySetup.Directories.hydro_res_dir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(MySetup.Directories.hydro_res_dir, d)), listme))
+        listme = os.listdir(_setup.Directories.hydro_res_dir)
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(_setup.Directories.hydro_res_dir, d)), listme))
 
     elif n_sim == -1:
-        training_roots = fops.data_read(os.path.join(MySetup.Directories.forecasts_dir, 'base', 'roots.dat'))
+        training_roots = fops.data_read(os.path.join(_setup.Directories.forecasts_dir, 'base', 'roots.dat'))
         folders = [item for sublist in training_roots for item in sublist]
 
     else:

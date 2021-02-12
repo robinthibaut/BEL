@@ -6,7 +6,7 @@ from typing import List
 import joblib
 import numpy as np
 
-from experiment._core import MySetup
+from experiment._core import _setup
 from experiment.processing import decomposition as dcp
 from experiment.toolbox import filesio, utils
 from experiment.uq.forecast_error import UncertaintyQuantification
@@ -47,7 +47,7 @@ def scan_roots(base,
             sf = dcp.bel(base=base, training_roots=training, test_root=r_, well_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=MySetup.Forecast.n_posts)  # Sample posterior
+            uq.sample_posterior(n_posts=_setup._forecast.n_posts)  # Sample posterior
             uq.c0(write_vtk=False)  # Extract 0 contours
             uq.mhd()  # Modified Hausdorff
             # uq.binary_stack()
@@ -83,7 +83,7 @@ def main(comb: List[List[int]] = None,
 
     """
     # Results location
-    md = MySetup.Directories.hydro_res_dir
+    md = _setup.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
@@ -104,7 +104,7 @@ def main(comb: List[List[int]] = None,
     else:
         n_training = len(roots_training)
 
-    MySetup.Forecast.n_posts = n_training
+    _setup._forecast.n_posts = n_training
 
     if roots_obs is None:  # If no observation provided
         if n_training + n_observations <= len(folders):
@@ -129,12 +129,12 @@ def main(comb: List[List[int]] = None,
         [swap_root(ts) for ts in to_swap]
 
     # Perform PCA on target (whpa) and store the object in a base folder
-    obj_path = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    obj_path = os.path.join(_setup.Directories.forecasts_dir, 'base')
     fb = filesio.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
-        dcp.base_pca(base=MySetup,
+        dcp.base_pca(base=_setup,
                      base_dir=obj_path,
                      roots=roots_training,
                      test_roots=roots_obs,
@@ -142,13 +142,13 @@ def main(comb: List[List[int]] = None,
                      check=False)
 
     if comb is None:
-        comb = MySetup.Wells.combination  # Get default combination (all)
+        comb = _setup._wells.combination  # Get default combination (all)
         belcomb = utils.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
 
     # Perform base decomposition on the m roots
-    scan_roots(base=MySetup,
+    scan_roots(base=_setup,
                training=roots_training,
                obs=roots_obs,
                combinations=belcomb,
@@ -159,7 +159,7 @@ def main(comb: List[List[int]] = None,
 
 if __name__ == '__main__':
     # List directories in forwards folder
-    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    base_dir = os.path.join(_setup.Directories.forecasts_dir, 'base')
 
     training_roots = filesio.data_read(os.path.join(base_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]

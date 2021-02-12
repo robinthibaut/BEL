@@ -8,7 +8,7 @@ from os.path import join as jp
 import flopy
 import numpy as np
 
-from experiment._core import MySetup
+from experiment._core import _setup
 
 
 def data_read(file: str = None,
@@ -53,7 +53,7 @@ def empty_figs(root: str):
         else:
             root = root[0]
 
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    subdir = os.path.join(_setup.Directories.forecasts_dir, root)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
@@ -145,7 +145,7 @@ def remove_incomplete(res_tree: str, crit: str = None):
     """
 
     if crit is None:
-        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in MySetup.Files.output_files])
+        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in _setup._files.output_files])
     else:
         ck = np.array([os.path.isfile(jp(res_tree, crit))])
 
@@ -223,7 +223,7 @@ def data_loader(res_dir: str = None,
 
     # If no res_dir specified, then uses default
     if res_dir is None:
-        res_dir = MySetup.Directories.hydro_res_dir
+        res_dir = _setup.Directories.hydro_res_dir
 
     bkt_files = []  # Breakthrough curves files
     sd_files = []  # Signed-distance files

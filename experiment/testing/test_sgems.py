@@ -31,7 +31,7 @@ def test_sgems(folder=None):
     fops.dirmaker(results_dir)
 
     # Statistical simulation
-    wells_values = np.ones(len(MySetup.Wells.combination) + 1) * -9966699
+    wells_values = np.ones(len(MySetup._wells.combination) + 1) * -9966699
     hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir, wells_hk=wells_values)
 
 

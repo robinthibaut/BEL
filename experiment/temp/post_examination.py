@@ -38,7 +38,7 @@ nn = np.load(ndor)
 
 #%%
 
-fc = MySetup.Focus()
+fc = MySetup._focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
 mplot.whpa_plot(h=nn,

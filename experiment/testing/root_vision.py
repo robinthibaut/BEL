@@ -11,9 +11,9 @@ from experiment.base.inventory import MySetup as base
 from experiment.goggles.visualization import Plot
 from experiment.toolbox import filesio as fops
 
-x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
+x_lim, y_lim, grf = base._focus.x_range, base._focus.y_range, base._focus.cell_dim
 # Initiate Plot instance
-mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base.Wells.combination)
+mp = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=base._wells.combination)
 
 tc0, sd, r = fops.data_loader(res_dir=base.Directories.hydro_res_dir,
                               roots=['6a4d614c838442629d7a826cc1f498a8'],

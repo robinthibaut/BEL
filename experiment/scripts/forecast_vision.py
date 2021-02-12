@@ -3,14 +3,14 @@
 import os
 import string
 
-from experiment._core import MySetup
+from experiment._core import _setup
 import experiment.goggles.visualization as myvis
 from experiment.toolbox.filesio import data_read
 
 
 if __name__ == '__main__':
 
-    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    base_dir = os.path.join(_setup.Directories.forecasts_dir, 'base')
     test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
     samples = [item for sublist in test_roots for item in sublist]
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     alphabet = string.ascii_uppercase
 
-    fc = MySetup.Focus()
+    fc = _setup._focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
     # ['123456', '1', '2', '3', '4', '5', '6']

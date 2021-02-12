@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import experiment.spatial.grid as mops
-from experiment._core import MySetup
+from experiment._core import _setup
 
 
 def flow(exe_name: str,
@@ -29,7 +29,7 @@ def flow(exe_name: str,
     :return:
     """
     # Model name
-    model_name = MySetup.Files.project_name
+    model_name = _setup._files.project_name
     # %% Modflow
     model = flopy.modflow.Modflow(modelname=model_name,
                                   namefile_ext='nam',
@@ -55,7 +55,7 @@ def flow(exe_name: str,
 
     lenuni = 2  # Distance units = meters
 
-    gd = MySetup.GridDimensions()
+    gd = _setup._grid_dimensions()
 
     x_lim = gd.x_lim
     y_lim = gd.y_lim
@@ -69,7 +69,7 @@ def flow(exe_name: str,
     nlay = gd.nlay  # Number of layers
 
     # Refinement
-    wcd = MySetup.Wells()
+    wcd = _setup._wells()
     pw_d = wcd.wells_data['pumping0']
     # Point around which refinement will occur
     pt = pw_d['coordinates']

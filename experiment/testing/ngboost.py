@@ -11,7 +11,7 @@ from ngboost import NGBRegressor
 from ngboost.distns import Normal
 from sklearn.metrics import mean_squared_error
 
-fc = base.Focus()
+fc = base._focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
 mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)

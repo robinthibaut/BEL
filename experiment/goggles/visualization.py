@@ -13,7 +13,7 @@ from numpy import ma
 from scipy.interpolate import make_interp_spline, BSpline
 from sklearn.preprocessing import PowerTransformer
 
-from experiment._core import MySetup
+from experiment._core import _setup
 from experiment.calculation import kdeplot
 from experiment.spatial.distance import grid_parameters
 from experiment.spatial.grid import binary_stack
@@ -509,8 +509,8 @@ def whpa_plot(grf: float = None,
     """
 
     # Get basic settings
-    focus = MySetup.Focus()
-    wells = MySetup.Wells()
+    focus = _setup._focus()
+    wells = _setup._wells()
 
     if well_comb is not None:
         wells.combination = well_comb
@@ -639,12 +639,12 @@ def post_examination(root: str,
                      xlim: list = None,
                      ylim: list = None,
                      show: bool = False):
-    focus = MySetup.Focus()
+    focus = _setup._focus()
     if xlim is None:
         xlim = focus.x_range
     if ylim is None:
         ylim = focus.y_range  # [335, 700]
-    md = MySetup.Directories()
+    md = _setup.Directories()
     ndir = jp(md.forecasts_dir, 'base', 'roots_whpa', f'{root}.npy')
     sdir = os.path.dirname(ndir)
     nn = np.load(ndir)
@@ -756,10 +756,10 @@ def plot_results(d: bool = True,
     :return:
     """
     # Directory
-    md = jp(MySetup.Directories.forecasts_dir, root, folder)
+    md = jp(_setup.Directories.forecasts_dir, root, folder)
 
     # Wells
-    wells = MySetup.Wells()
+    wells = _setup._wells()
     wells_id = list(wells.wells_data.keys())
     cols = [wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
 
@@ -770,7 +770,7 @@ def plot_results(d: bool = True,
     d_pco = joblib.load(jp(md, 'obj', 'd_pca.pkl'))
 
     # h PCA pickle
-    hbase = jp(MySetup.Directories.forecasts_dir, 'base')
+    hbase = jp(_setup.Directories.forecasts_dir, 'base')
     pcaf = jp(hbase, 'h_pca.pkl')
     h_pco = joblib.load(pcaf)
 
@@ -838,7 +838,7 @@ def plot_results(d: bool = True,
         forecast_posterior = post_obj.bel_predict(pca_d=d_pco,
                                                   pca_h=h_pco,
                                                   cca_obj=cca_operator,
-                                                  n_posts=MySetup.Forecast.n_posts,
+                                                  n_posts=_setup._forecast.n_posts,
                                                   add_comp=False)
 
         # I display here the prior h behind the forecasts sampled from the posterior.
@@ -890,13 +890,13 @@ def plot_K_field(root: str = None,
                  wells=None,
                  deprecated: bool = True):
     if wells is None:
-        wells = MySetup.Wells()
+        wells = _setup._wells()
 
-    matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'hk0.npy'))
-    grid_dim = MySetup.GridDimensions
+    matrix = np.load(jp(_setup.Directories.hydro_res_dir, root, 'hk0.npy'))
+    grid_dim = _setup._grid_dimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
-    hkf = jp(MySetup.Directories.forecasts_dir, root, 'k_field.png')
+    hkf = jp(_setup.Directories.forecasts_dir, root, 'k_field.png')
 
     if deprecated:
         # HK field
@@ -923,7 +923,7 @@ def mode_histo(colors: list,
                wm: np.array,
                fig_name: str = 'average'):
     alphabet = string.ascii_uppercase
-    wid = list(map(str, MySetup.Wells.combination))  # Wel identifiers (n)
+    wid = list(map(str, _setup._wells.combination))  # Wel identifiers (n)
 
     modes = []  # Get MHD corresponding to each well's mode
     for i, m in enumerate(wm):  # For each well, look up its MHD distribution
@@ -948,7 +948,7 @@ def mode_histo(colors: list,
     legend_a = proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_well_mode.pdf'), dpi=300,
+    plt.savefig(os.path.join(_setup.Directories.forecasts_dir, f'{fig_name}_well_mode.pdf'), dpi=300,
                 transparent=True)
     plt.close()
     # plt.show()
@@ -966,7 +966,7 @@ def mode_histo(colors: list,
     legend_a = proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_hist.pdf'), dpi=300, transparent=True)
+    plt.savefig(os.path.join(_setup.Directories.forecasts_dir, f'{fig_name}_hist.pdf'), dpi=300, transparent=True)
     plt.close()
     # plt.show()
 
@@ -1144,11 +1144,11 @@ def plot_wells(wells,
 
 
 def plot_head_field(root: str = None):
-    matrix = np.load(jp(MySetup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
-    grid_dim = MySetup.GridDimensions
+    matrix = np.load(jp(_setup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
+    grid_dim = _setup._grid_dimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
-    hkf = jp(MySetup.Directories.forecasts_dir, root, 'heads_field.png')
+    hkf = jp(_setup.Directories.forecasts_dir, root, 'heads_field.png')
 
     # HK field
     plt.figure()
@@ -1187,7 +1187,7 @@ def plot_pc_ba(root: str = None,
         else:
             root = root[0]
 
-    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    base_dir = os.path.join(_setup.Directories.forecasts_dir, 'base')
     if target:
         fobj = os.path.join(base_dir, 'h_pca.pkl')
         h_pco = joblib.load(fobj)
@@ -1204,7 +1204,7 @@ def plot_pc_ba(root: str = None,
 
     # d
     if data:
-        subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+        subdir = os.path.join(_setup.Directories.forecasts_dir, root)
         listme = os.listdir(subdir)
         folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
@@ -1245,8 +1245,8 @@ def plot_whpa(root: str = None):
         else:
             root = root[0]
 
-    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
-    fobj = os.path.join(MySetup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
+    base_dir = os.path.join(_setup.Directories.forecasts_dir, 'base')
+    fobj = os.path.join(_setup.Directories.forecasts_dir, 'base', 'h_pca.pkl')
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.training_shape)
 
@@ -1273,7 +1273,7 @@ def plot_whpa(root: str = None):
         proxy_legend(legend1=legend,
                      colors=['darkblue', 'darkred'],
                      labels=labels,
-                     fig_file=os.path.join(MySetup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
+                     fig_file=os.path.join(_setup.Directories.forecasts_dir, root, 'whpa_training.pdf'))
 
 
 def cca_vision(root: str = None,
@@ -1292,7 +1292,7 @@ def cca_vision(root: str = None,
         else:
             root = root[0]
 
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    subdir = os.path.join(_setup.Directories.forecasts_dir, root)
 
     if folders is None:
         listme = os.listdir(subdir)
@@ -1303,7 +1303,7 @@ def cca_vision(root: str = None,
         else:
             pass
 
-    base_dir = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+    base_dir = os.path.join(_setup.Directories.forecasts_dir, 'base')
 
     for f in folders:
         res_dir = os.path.join(subdir, f, 'obj')
@@ -1395,7 +1395,7 @@ def pca_vision(root,
         else:
             root = root[0]
 
-    subdir = os.path.join(MySetup.Directories.forecasts_dir, root)
+    subdir = os.path.join(_setup.Directories.forecasts_dir, root)
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
@@ -1426,7 +1426,7 @@ def pca_vision(root,
                                    annotation=['C'],
                                    fig_file=fig_file)
     if h:
-        hbase = os.path.join(MySetup.Directories.forecasts_dir, 'base')
+        hbase = os.path.join(_setup.Directories.forecasts_dir, 'base')
         # Load h pickle
         pcaf = os.path.join(hbase, 'h_pca.pkl')
         h_pco = joblib.load(pcaf)
@@ -1542,7 +1542,7 @@ def d_pca_inverse_plot(pca_o,
 
 
 def hydro_examination(root: str):
-    md = MySetup.Directories()
+    md = _setup.Directories()
     ep = jp(md.hydro_res_dir, root, 'tracking_ep.npy')
     epxy = np.load(ep)
 
