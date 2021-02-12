@@ -14,7 +14,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from experiment.spatial.distance import grid_parameters
 from experiment.spatial.grid import contours_vertices, refine_machine
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 from experiment.spatial.grid import binary_stack
 from experiment.toolbox import filesio
 from sklearn.preprocessing import PowerTransformer

@@ -9,7 +9,7 @@ from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 from experiment.toolbox.filesio import data_read
 
 

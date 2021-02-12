@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import experiment.spatial.grid as mops
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 
 
 def flow(exe_name: str,

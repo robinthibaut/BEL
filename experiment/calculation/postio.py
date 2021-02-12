@@ -7,7 +7,7 @@ import numpy as np
 
 from sklearn.preprocessing import PowerTransformer
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 from experiment.spatial.grid import get_block
 
 

@@ -8,7 +8,7 @@ from os.path import join as jp
 import flopy
 import numpy as np
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 
 
 def data_read(file: str = None,

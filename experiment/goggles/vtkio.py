@@ -10,7 +10,7 @@ import numpy as np
 import vtk
 from flopy.export import vtk as vtk_flow
 
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 import experiment.spatial.grid as mops
 import experiment.toolbox.filesio as fops
 

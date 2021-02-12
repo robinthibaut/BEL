@@ -28,7 +28,7 @@ import experiment.toolbox.filesio as fops
 from experiment.goggles.visualization import whpa_plot
 from experiment.spatial.distance import grid_parameters, signed_distance
 from experiment.processing.pca import PCAIO
-from experiment.base.inventory import MySetup
+from experiment._core import MySetup
 
 Root = List[str]
 Combination = List[int]
