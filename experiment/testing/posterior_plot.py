@@ -281,28 +281,29 @@ f.tight_layout()
 space = .2
 f.subplots_adjust(hspace=space, wspace=space)
 
-# ax_joint.imshow(density,
-#                 origin='lower',
-#                 cmap=cmap,
-#                 extent=[min(xx), max(xx), min(yy), max(yy)])
+# Filled contour plot
 ax_joint.contourf(xx, yy, density, cmap=cmap, levels=80)
+# Vertical line
 ax_joint.axvline(x=d_cca_prediction[0], color='r', linewidth=.5)
+# Horizontal line
 ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
+# Scatter plot
 ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
+# Point
 ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
               'ro', markersize=4.5, markeredgecolor='k', alpha=1,
               label=f'{sample_n}')
+# Marginal x plot
 ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5)
 ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='blue')
-
+# Marginal y plot
 ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='blue')
-
+# Conditional distribution
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
-
 ax_marg_y.plot(hp, sup, 'r')
 ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.3, color='red')
-
+# Labels
 ax_joint.set_xlabel('$d^{c}$', fontsize=14)
 ax_joint.set_ylabel('$h^{c}$', fontsize=14)
 # plt.subplots_adjust(top=0.9)
