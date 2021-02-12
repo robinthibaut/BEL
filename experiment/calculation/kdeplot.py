@@ -243,7 +243,6 @@ def kde_params(
     :param cumulative: 
     :param bw_method: 
     :param bw_adjust:
-    :param multiple:
     :return:
     """
 
@@ -271,7 +270,6 @@ def kde_params(
         )
 
     else:
-
         density, support = bivariate_density(
             data=frame,
             estimate_kws=estimate_kws,
@@ -280,7 +278,7 @@ def kde_params(
     return density, support
 
 
-def pixel_coordinate(x: float,
+def pixel_coordinate(line: list,
                      x_1d: np.array,
                      y_1d: np.array):
     """
@@ -290,20 +288,17 @@ def pixel_coordinate(x: float,
     :param y_1d: List of y coordinates along the axis
     :return:
     """
+    # https://stackoverflow.com/questions/18920614/plot-cross-section-through-heat-map
+    # Convert the line to pixel/index coordinates
+    x_world, y_world = np.array(list(zip(*line)))
+    col = y_1d.shape * (x_world - min(x_1d)) / x_1d.ptp()
+    row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
-    n_pix_y = len(y_1d)  # pixels in y-axis
+    # Interpolate the line at "num" points...
+    num = 200
+    row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
-    x_index = np.argmin(np.abs(x_1d - x))  # pixel index of x value
-
-    # Extract the line (pixel coordinates)
-    # Limits:
-    xo, yo = x_index, 0
-    xf, yf = x_index, n_pix_y
-    #
-    num = len(y_1d)
-    x_, y_ = np.ones(num)*x_index, np.linspace(yo, yf, num)
-
-    return x_, y_
+    return row, col
 
 
 def conditional_distribution(x: float,
@@ -319,9 +314,19 @@ def conditional_distribution(x: float,
     :param y_array: Y grid (1D)
     :return:
     """
-    x_i, y_i = pixel_coordinate(x, x_array, y_array)
-    # Extract the density values along the line, using cubic interpolation
-    zi = ndimage.map_coordinates(y_kde, np.vstack((x_i, y_i)))
+    # x_i, y_i = pixel_coordinate(x, x_array, y_array)
+    # # Extract the density values along the line, using cubic interpolation
+    # zi = ndimage.map_coordinates(y_kde, np.vstack((x_i, y_i)))
+
+    ##############
+    # Coordinates of the line we'd like to sample along
+    line = [(x, min(y_array)), (x, max(y_array))]
+
+    row, col = pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
+
+    # Extract the values along the line, using cubic interpolation
+    zi = ndimage.map_coordinates(y_kde, np.vstack((row, col)))
+
     return zi
 
 
@@ -336,6 +341,7 @@ def posterior_conditional(d, h, d_c):
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
+
     return post, sup
 
 
@@ -344,10 +350,19 @@ if __name__ == '__main__':
     rs = np.random.RandomState(5)
     mean = [0, 0]
     cov = [(1, .98), (.98, 1)]
-    predictor, target = rs.multivariate_normal(mean, cov, 200).T
+    predictor, target = rs.multivariate_normal(mean, cov, 100).T
 
-    conditional_value = 0
+    mean2 = [1, 1]
+    cov2 = [(1, -.98), (-.98, 1)]
+    predictor2, target2 = rs.multivariate_normal(mean2, cov2, 100).T
+
+    predictor = np.concatenate((predictor, predictor2), axis=0)
+    target = np.concatenate((target, target2), axis=0)
+
+    conditional_value = -0.5
     h_post, sup = posterior_conditional(predictor, target, conditional_value)
 
+    plt.plot(predictor, target, 'ko')
+    plt.show()
     plt.plot(h_post)
     plt.show()

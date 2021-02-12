@@ -124,7 +124,7 @@ x1, x2 = rs.multivariate_normal(mean, cov, 200).T
 d = pd.Series(x1, name="$X_1$")
 h = pd.Series(x2, name="$X_2$")
 
-d_cca_prediction = [0.5]
+d_cca_prediction = [0]
 h_cca_prediction = [1]
 comp_n = 0
 sample_n = 0
@@ -286,7 +286,8 @@ f.subplots_adjust(hspace=space, wspace=space)
 #                 cmap=cmap,
 #                 extent=[min(xx), max(xx), min(yy), max(yy)])
 ax_joint.contourf(xx, yy, density, cmap=cmap, levels=80)
-ax_joint.axvline(x=d_cca_prediction[0], color='r')
+ax_joint.axvline(x=d_cca_prediction[0], color='r', linewidth=.5)
+ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
 ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
 ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
               'ro', markersize=4.5, markeredgecolor='k', alpha=1,
@@ -300,5 +301,6 @@ ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='blue')
 hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
 
 ax_marg_y.plot(hp, sup, 'r')
+ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.3, color='red')
 
 plt.show()
