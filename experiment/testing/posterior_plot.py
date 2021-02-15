@@ -184,19 +184,19 @@ ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
               'wo', markersize=5, markeredgecolor='k', alpha=1,
               label=f'{sample_n}')
 # Marginal x plot
-ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=0)
+ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=1)
 ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
-ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5)
+ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5, label='$p(d^{c})$')
 # Marginal y plot
-ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=0)
+ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=1)
 ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
-ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5)
+ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5, label='$p(h^{c})')
 # Test with BEL
-# ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=0)
-# ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.1, color='gray')
+ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=1)
+ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
 # Conditional distribution
 ax_marg_y.plot(hp, sup, 'r', alpha=0)
-ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red')
+ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
 # Labels
 ax_joint.set_xlabel('$d^{c}$', fontsize=14)
 ax_joint.set_ylabel('$h^{c}$', fontsize=14)
@@ -205,7 +205,7 @@ plt.tick_params(labelsize=14)
 
 subtitle = my_alphabet(comp_n)
 # Add title inside the box
-an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+# an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
 # legend_a = proxy_annotate(annotation=an,
 #                           loc=2,
 #                           fz=14)
@@ -216,7 +216,32 @@ an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
 #              marker='o',
 #              pec=['k', 'k'])
 
+# plt.savefig('plot2.png', bbox_inches='tight', dpi=300)
+plt.legend(loc=2)
 plt.show()
+
+# prior
+plt.plot(sup_y, kde_y, color='black', linewidth=.5, alpha=1)
+plt.fill_between(sup_y, 0, kde_y, alpha=.2, color='red', label='$p(h^{c})$')
+# posterior kde
+plt.plot(sup, hp, color='black', linewidth=.5, alpha=1)
+plt.fill_between(sup, 0, hp, alpha=.5, color='darkred', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+# posterior bel
+plt.plot(sup_samp, kde_y_samp, color='black', linewidth=.5, alpha=1)
+plt.fill_between(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+
+plt.axvline(x=h_cca_prediction[0], linewidth=3, alpha=.4, label='True $h^{c}$')
+plt.grid(alpha=.2)
+
+plt.ylabel('Density')
+plt.xlabel('$h^{c}$')
+
+plt.legend()
+
+plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+
+plt.show()
+
 
 # # %%
 # # Choose beautiful color map
