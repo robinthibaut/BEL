@@ -191,8 +191,8 @@ def univariate_density(
 
 
 def bivariate_density(
-        data,
-        estimate_kws,
+        data: pd.DataFrame,
+        estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -228,12 +228,12 @@ def bivariate_density(
 
 
 def kde_params(
-        x=None,
-        y=None,
-        bw=None,
-        gridsize=200,
-        cut=3, clip=None, cumulative=False,
-        bw_method="scott", bw_adjust=1
+        x: np.array = None,
+        y: np.array = None,
+        bw: float = None,
+        gridsize: int = 200,
+        cut: float = 3, clip=None, cumulative: bool = False,
+        bw_method: str = "scott", bw_adjust: int = 1
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
