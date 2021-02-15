@@ -216,19 +216,19 @@ subtitle = my_alphabet(comp_n)
 #              marker='o',
 #              pec=['k', 'k'])
 
-# plt.savefig('plot2.png', bbox_inches='tight', dpi=300)
-plt.legend(loc=2)
+plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
+# plt.legend(loc=2)
 plt.show()
 
 # prior
 plt.plot(sup_y, kde_y, color='black', linewidth=.5, alpha=1)
 plt.fill_between(sup_y, 0, kde_y, alpha=.2, color='red', label='$p(h^{c})$')
 # posterior kde
-plt.plot(sup, hp, color='black', linewidth=.5, alpha=1)
+plt.plot(sup, hp, color='darkred', linewidth=.5, alpha=1)
 plt.fill_between(sup, 0, hp, alpha=.5, color='darkred', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
 # posterior bel
 plt.plot(sup_samp, kde_y_samp, color='black', linewidth=.5, alpha=1)
-plt.fill_between(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+plt.fill_between(sup_samp, 0, kde_y_samp, alpha=.5, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
 
 plt.axvline(x=h_cca_prediction[0], linewidth=3, alpha=.4, label='True $h^{c}$')
 plt.grid(alpha=.2)
@@ -238,7 +238,7 @@ plt.xlabel('$h^{c}$')
 
 plt.legend()
 
-# plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
 
 plt.show()
 

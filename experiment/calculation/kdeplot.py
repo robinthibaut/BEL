@@ -4,7 +4,7 @@ import math
 import warnings
 import pandas as pd
 import numpy as np
-from scipy import stats, ndimage, interpolate, integrate
+from scipy import stats, ndimage, integrate
 
 import matplotlib.pyplot as plt
 
@@ -115,7 +115,7 @@ class KDE:
         return kde
 
     def _eval_univariate(self, x, weights=None):
-        """Fit and evaluate a univariate on univariate data."""
+        """Fit and evaluate on univariate data."""
         support = self.support
         if support is None:
             support = self.define_support(x, cache=True)
@@ -133,7 +133,7 @@ class KDE:
         return density, support
 
     def _eval_bivariate(self, x1, x2, weights=None):
-        """Fit and evaluate a univariate on bivariate data."""
+        """Fit and evaluate on bivariate data."""
         support = self.support
         if support is None:
             support = self.define_support(x1, x2, cache=False)
@@ -166,7 +166,6 @@ def univariate_density(
         data_variable,
         estimate_kws,
 ):
-
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
 
@@ -319,6 +318,7 @@ def conditional_distribution(x: float,
     # Coordinates of the line we'd like to sample along
     line = [(x, min(y_array)), (x, max(y_array))]
 
+    # Convert line to row/column
     row, col = pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
 
     # Extract the values along the line, using cubic interpolation
@@ -327,7 +327,8 @@ def conditional_distribution(x: float,
     return zi
 
 
-def normalize_distribution(post, support):
+def normalize_distribution(post: np.array,
+                           support: np.array):
     """
     When a cross-section is performed along a bivariate KDE, the integral might not = 1.
     This function normalizes such functions so that their integral = 1.
@@ -336,10 +337,10 @@ def normalize_distribution(post, support):
     :return: 
     """
     a = integrate.simps(y=np.abs(post), x=support)
-    
+
     if np.abs(a - 1) > 1e-4:  # Rule of thumb
-        post *= 1/a
-        
+        post *= 1 / a
+
     return post
 
 
@@ -365,9 +366,9 @@ def posterior_conditional(d: np.array,
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
-    
+
     post = normalize_distribution(post, support)
-    
+
     return post, support
 
 
