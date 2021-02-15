@@ -238,7 +238,7 @@ plt.xlabel('$h^{c}$')
 
 plt.legend()
 
-plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+# plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
 
 plt.show()
 

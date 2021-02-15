@@ -4,7 +4,7 @@ import math
 import warnings
 import pandas as pd
 import numpy as np
-from scipy import stats, ndimage
+from scipy import stats, ndimage, interpolate, integrate
 
 import matplotlib.pyplot as plt
 
@@ -315,6 +315,7 @@ def conditional_distribution(x: float,
     :param y_array: Y grid (1D)
     :return:
     """
+
     # Coordinates of the line we'd like to sample along
     line = [(x, min(y_array)), (x, max(y_array))]
 
@@ -324,6 +325,22 @@ def conditional_distribution(x: float,
     zi = ndimage.map_coordinates(y_kde, np.vstack((row, col)))
 
     return zi
+
+
+def normalize_distribution(post, support):
+    """
+    When a cross-section is performed along a bivariate KDE, the integral might not = 1.
+    This function normalizes such functions so that their integral = 1.
+    :param post: 
+    :param support: 
+    :return: 
+    """
+    a = integrate.simps(y=np.abs(post), x=support)
+    
+    if np.abs(a - 1) > np.finfo(np.float32).eps:
+        post *= 1/a
+        
+    return post
 
 
 def posterior_conditional(d: np.array,
@@ -348,7 +365,9 @@ def posterior_conditional(d: np.array,
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
-
+    
+    post = normalize_distribution(post, support)
+    
     return post, support
 
 
