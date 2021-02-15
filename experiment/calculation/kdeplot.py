@@ -10,7 +10,11 @@ import matplotlib.pyplot as plt
 
 
 class KDE:
-    """Bivariate kernel density estimator."""
+    """
+    Bivariate kernel density estimator.
+    This class is adapted from the class of the same name in the package Seaborn 0.11.1
+    https://seaborn.pydata.org/generated/seaborn.kdeplot.html
+       """
 
     def __init__(
             self, *,
@@ -324,7 +328,7 @@ def conditional_distribution(kde_array: np.array,
     elif y is not None:
         line = [(min(x_array), y), (max(x_array), y)]
     else:
-        msg = "No observations point included."
+        msg = "No observation point included."
         warnings.warn(msg, UserWarning)
         return 0
 
@@ -359,12 +363,11 @@ def posterior_conditional(x: np.array,
                           x_obs: float = None,
                           y_obs: float = None):
     """
-    Computes the posterior distribution p(h|d_c) by doing a cross section of the KDE of (d, h).
-    Only cross section in the y axis are now supported.
-    Possibility to extend if needed.
+    Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
     :param x: Predictor (x-axis)
     :param y: Target (y-axis)
     :param x_obs: Observation (predictor, x-axis)
+    :param y_obs: Observation (target, y-axis)
     :return:
     """
     # Compute KDE
@@ -388,7 +391,7 @@ def posterior_conditional(x: np.array,
                                         kde_array=dens)
 
     else:
-        msg = "No observations point included."
+        msg = "No observation point included."
         warnings.warn(msg, UserWarning)
         return 0
 
