@@ -337,7 +337,7 @@ def normalize_distribution(post, support):
     """
     a = integrate.simps(y=np.abs(post), x=support)
     
-    if np.abs(a - 1) > np.finfo(np.float32).eps:
+    if np.abs(a - 1) > 1e-4:  # Rule of thumb
         post *= 1/a
         
     return post
