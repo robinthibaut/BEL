@@ -104,7 +104,7 @@ class KDE:
         return support
 
     def _fit(self, fit_data, weights=None):
-        """Fit the scipy kde while adding bw_adjust logic and version check."""
+        """Fit the scipy kde"""
         fit_kws = {"bw_method": self.bw_method}
         if weights is not None:
             fit_kws["weights"] = weights
