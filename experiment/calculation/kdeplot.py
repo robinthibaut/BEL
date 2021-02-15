@@ -281,7 +281,7 @@ def pixel_coordinate(line: list,
                      x_1d: np.array,
                      y_1d: np.array):
     """
-    Gets the pixel coordinate of the value x, in order to get posterior conditional probability given a KDE.
+    Gets the pixel coordinate of the value x or y, in order to get posterior conditional probability given a KDE.
     :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
     :param x_1d: List of x coordinates along the axis
     :param y_1d: List of y coordinates along the axis
@@ -300,29 +300,39 @@ def pixel_coordinate(line: list,
     return row, col
 
 
-def conditional_distribution(x: float,
-                             y_kde: np.array,
+def conditional_distribution(kde_array: np.array,
                              x_array: np.array,
                              y_array: np.array,
+                             x: float = None,
+                             y: float = None
                              ):
     """
-    Compute the conditional posterior distribution p(x_array|y_array) given x.
+    Compute the conditional posterior distribution p(x_array|y_array) given x or y.
+    Provide only one observation ! Either x or y.
     Perform a cross-section in the KDE along the y axis.
-    :param x: Observed data
-    :param y_kde: KDE of the prediction
+    :param x: Observed data (horizontal axis)
+    :param y: Observed data (vertical axis)
+    :param kde_array: KDE of the prediction
     :param x_array: X grid (1D)
     :param y_array: Y grid (1D)
     :return:
     """
 
     # Coordinates of the line we'd like to sample along
-    line = [(x, min(y_array)), (x, max(y_array))]
+    if x is not None:
+        line = [(x, min(y_array)), (x, max(y_array))]
+    elif y is not None:
+        line = [(min(x_array), y), (max(x_array), y)]
+    else:
+        msg = "No observations point included."
+        warnings.warn(msg, UserWarning)
+        return 0
 
     # Convert line to row/column
     row, col = pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
 
     # Extract the values along the line, using cubic interpolation
-    zi = ndimage.map_coordinates(y_kde, np.vstack((row, col)))
+    zi = ndimage.map_coordinates(kde_array, np.vstack((row, col)))
 
     return zi
 
@@ -332,8 +342,8 @@ def normalize_distribution(post: np.array,
     """
     When a cross-section is performed along a bivariate KDE, the integral might not = 1.
     This function normalizes such functions so that their integral = 1.
-    :param post: 
-    :param support: 
+    :param post: Values of the KDE cross-section
+    :param support: Corresponding support
     :return: 
     """
     a = integrate.simps(y=np.abs(post), x=support)
@@ -344,28 +354,43 @@ def normalize_distribution(post: np.array,
     return post
 
 
-def posterior_conditional(d: np.array,
-                          h: np.array,
-                          d_c: float):
+def posterior_conditional(x: np.array,
+                          y: np.array,
+                          x_obs: float = None,
+                          y_obs: float = None):
     """
     Computes the posterior distribution p(h|d_c) by doing a cross section of the KDE of (d, h).
     Only cross section in the y axis are now supported.
     Possibility to extend if needed.
-    :param d: Predictor (x-axis)
-    :param h: Target (y-axis)
-    :param d_c: Observation (predictor, x-axis)
+    :param x: Predictor (x-axis)
+    :param y: Target (y-axis)
+    :param x_obs: Observation (predictor, x-axis)
     :return:
     """
     # Compute KDE
-    dens, support = kde_params(x=d, y=h)
+    dens, support = kde_params(x=x, y=y)
     # Grid parameters
     xg, yg = support
-    support = yg
-    # Extract the density values along the line, using cubic interpolation
-    post = conditional_distribution(x=d_c,
-                                    x_array=xg,
-                                    y_array=yg,
-                                    y_kde=dens)
+
+    if x_obs is not None:
+        support = yg
+        # Extract the density values along the line, using cubic interpolation
+        post = conditional_distribution(x=x_obs,
+                                        x_array=xg,
+                                        y_array=yg,
+                                        kde_array=dens)
+    elif y_obs is not None:
+        support = xg
+        # Extract the density values along the line, using cubic interpolation
+        post = conditional_distribution(y=y_obs,
+                                        x_array=xg,
+                                        y_array=yg,
+                                        kde_array=dens)
+
+    else:
+        msg = "No observations point included."
+        warnings.warn(msg, UserWarning)
+        return 0
 
     post = normalize_distribution(post, support)
 
