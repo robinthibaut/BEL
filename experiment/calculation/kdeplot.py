@@ -307,7 +307,8 @@ def conditional_distribution(x: float,
                              y_array: np.array,
                              ):
     """
-    Compute the conditional posterior distribution p(x|y) given d.
+    Compute the conditional posterior distribution p(x_array|y_array) given x.
+    Perform a cross-section in the KDE along the y axis.
     :param x: Observed data
     :param y_kde: KDE of the prediction
     :param x_array: X grid (1D)
@@ -325,19 +326,30 @@ def conditional_distribution(x: float,
     return zi
 
 
-def posterior_conditional(d, h, d_c):
+def posterior_conditional(d: np.array,
+                          h: np.array,
+                          d_c: float):
+    """
+    Computes the posterior distribution p(h|d_c) by doing a cross section of the KDE of (d, h).
+    Only cross section in the y axis are now supported.
+    Possibility to extend if needed.
+    :param d: Predictor (x-axis)
+    :param h: Target (y-axis)
+    :param d_c: Observation (predictor, x-axis)
+    :return:
+    """
     # Compute KDE
-    dens, sup = kde_params(x=d, y=h)
+    dens, support = kde_params(x=d, y=h)
     # Grid parameters
-    xg, yg = sup
-    sup = yg
+    xg, yg = support
+    support = yg
     # Extract the density values along the line, using cubic interpolation
     post = conditional_distribution(x=d_c,
                                     x_array=xg,
                                     y_array=yg,
                                     y_kde=dens)
 
-    return post, sup
+    return post, support
 
 
 if __name__ == '__main__':
