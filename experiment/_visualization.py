@@ -20,12 +20,11 @@ from scipy.interpolate import make_interp_spline, BSpline
 from sklearn.preprocessing import PowerTransformer
 
 import experiment._statistics
+import experiment._spatial
 from experiment._core import setup
-from experiment.spatial import grid as mops
-from experiment.spatial.distance import grid_parameters
-from experiment.spatial.grid import binary_stack
-from experiment.spatial.grid import contours_vertices, refine_machine
-from experiment.toolbox import filesio, filesio as fops
+from experiment._spatial import grid_parameters, contours_vertices, binary_stack, refine_machine
+from experiment.toolbox import _utils
+from experiment import _utils as fops
 
 ftype = 'png'
 
@@ -102,7 +101,7 @@ def proxy_legend(legend1=None,
             obj.add_artist(el)
 
     if fig_file:
-        filesio.dirmaker(os.path.dirname(fig_file))
+        _utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
 
@@ -175,7 +174,7 @@ def explained_variance(pca,
     plt.gca().add_artist(legend_a)
 
     if fig_file:
-        filesio.dirmaker(os.path.dirname(fig_file))
+        _utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -257,7 +256,7 @@ def pca_scores(training,
                  marker='o')
 
     if fig_file:
-        filesio.dirmaker(os.path.dirname(fig_file))
+        _utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -465,7 +464,7 @@ def cca_plot(cca_operator,
                      pec=['k', 'k'])
 
         if sdir:
-            filesio.dirmaker(sdir)
+            _utils.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
@@ -641,7 +640,7 @@ def whpa_plot(grf: float = None,
         plt.gca().add_artist(legend)
 
     if fig_file:
-        filesio.dirmaker(os.path.dirname(fig_file))
+        _utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
     if show:
@@ -748,7 +747,7 @@ def h_pca_inverse_plot(pca_o,
                      marker='-')
 
         if fig_dir is not None:
-            filesio.dirmaker(fig_dir)
+            _utils.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
             plt.close()
 
@@ -1070,7 +1069,7 @@ def curves(cols: list,
     plt.ylabel(ylabel)
     plt.tick_params(labelsize=labelsize)
     if sdir:
-        filesio.dirmaker(sdir)
+        _utils.dirmaker(sdir)
         plt.savefig(jp(sdir, f'{title}.pdf'), dpi=300, transparent=True)
         plt.close()
     if show:
@@ -1122,7 +1121,7 @@ def curves_i(cols, tc,
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         if sdir:
-            filesio.dirmaker(sdir)
+            _utils.dirmaker(sdir)
             plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -1477,7 +1476,7 @@ def check_root(xlim: list,
     :param root:
     :return:
     """
-    bkt, whpa, _ = filesio.data_loader(roots=root)
+    bkt, whpa, _ = _utils.data_loader(roots=root)
     whpa = whpa.squeeze()
     # self.curves_i(bkt, show=True)  # This function will not work
 
@@ -1545,7 +1544,7 @@ def d_pca_inverse_plot(pca_o,
         plt.ylim([0, yrange])
 
         if fig_dir is not None:
-            filesio.dirmaker(fig_dir)
+            _utils.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -1732,7 +1731,7 @@ class ModelVTK:
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
             # blocks2d = mops.blocks_from_rc(delc, delr)
-            self.blocks = mops.blocks_from_rc_3d(delc, delr)
+            self.blocks = experiment._spatial.blocks_from_rc_3d(delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
             print(e)

@@ -6,7 +6,7 @@ from os.path import join as jp
 
 import numpy as np
 
-import experiment.toolbox.filesio as fops
+import experiment._utils as fops
 from experiment.base.inventory import MySetup
 from experiment._statistics import sgsim
 

@@ -24,7 +24,7 @@ from os.path import join as jp
 
 import numpy as np
 
-import experiment.toolbox.filesio as fops
+import experiment._utils as fops
 from experiment._core import machine, setup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow

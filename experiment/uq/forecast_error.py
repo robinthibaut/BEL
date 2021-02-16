@@ -20,9 +20,9 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment._statistics import PosteriorIO
-from experiment.spatial.distance import grid_parameters, modified_hausdorff
-from experiment.spatial.grid import binary_polygon, contours_vertices, refine_machine
-from experiment.toolbox import filesio as fops
+from experiment._spatial import grid_parameters, modified_hausdorff, contours_vertices, binary_polygon, \
+    refine_machine
+from experiment import _utils as fops
 
 
 class UncertaintyQuantification:

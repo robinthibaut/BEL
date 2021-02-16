@@ -15,8 +15,8 @@ from scipy import stats, ndimage, integrate
 from sklearn.preprocessing import PowerTransformer
 
 from experiment._core import setup
-from experiment.spatial.grid import get_block
-from experiment.toolbox.filesio import data_read
+from experiment._spatial import get_block
+from experiment._utils import data_read
 
 
 class KDE:

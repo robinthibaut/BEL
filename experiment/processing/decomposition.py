@@ -24,9 +24,9 @@ from sklearn.cross_decomposition import CCA
 from typing import List
 
 import experiment.processing.curves_interp as dops
-import experiment.toolbox.filesio as fops
+import experiment._utils as fops
 from experiment._visualization import whpa_plot
-from experiment.spatial.distance import grid_parameters, signed_distance
+from experiment._spatial import grid_parameters, signed_distance
 from experiment.processing.pca import PCAIO
 from experiment._core import setup
 

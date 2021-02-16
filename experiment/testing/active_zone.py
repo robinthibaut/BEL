@@ -7,12 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from diavatly import model_map
 
-import experiment.spatial.grid as mops
+import experiment._spatial
 from experiment.base.inventory import Directories
 from experiment._visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
-from experiment.spatial.distance import grid_parameters
-from experiment.spatial.grid import get_centroids, binary_polygon
+from experiment._spatial import grid_parameters, get_centroids, binary_polygon
 
 
 def active_zone(modflowmodel):
@@ -92,7 +91,7 @@ def active_zone(modflowmodel):
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
-    inds = mops.matrix_paste(xy_dummy, xy_true)
+    inds = experiment._spatial.matrix_paste(xy_dummy, xy_true)
     val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
 
@@ -102,7 +101,7 @@ def active_zone(modflowmodel):
                  show_wells=True,
                  show=True)
 
-    grid1 = mops.blocks_from_rc(np.ones(nrow_dummy)*grf_dummy, np.ones(ncol_dummy)*grf_dummy)
+    grid1 = experiment._spatial.blocks_from_rc(np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)
     plt.show()
 
