@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pysgems.io.sgio import export_eas
 
-from experiment.base.inventory import Directories, Wels
+from experiment._core import setup
 
 
 # Define injection wells
@@ -35,11 +35,11 @@ def gen_rand_well(radius, x0, y0):
     return [x, y]
 
 
-def wel_export():
+def well_export():
     # Directories
-    md = Directories()
+    md = setup.directories
     grid_dir = md.grid_dir
-    wd = Wels().wells_data
+    wd = setup.wells.wells_data
 
     columns = ['x', 'y', 'hd']  # Save wells data for sgems
     wels_xy = [wd[o]['coordinates'] for o in wd]
@@ -50,4 +50,4 @@ def wel_export():
 
 
 if __name__ == '__main__':
-    wel_export()
+    well_export()

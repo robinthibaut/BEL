@@ -31,7 +31,7 @@ def by_mode(root: Root):
         fig_name = root[0]
         an_i = 2
 
-    wid = list(map(str, setup.wells.combination))  # Wel identifiers (n)
+    wid = list(map(str, setup.wells.combination))  # Well identifiers (n)
     wm = np.zeros((len(wid), setup.forecast.n_posts))  # Summed MHD when well #i appears
     colors = setup.wells.colors
 

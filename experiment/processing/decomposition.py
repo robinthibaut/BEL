@@ -17,18 +17,18 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 import os
 import warnings
 from os.path import join as jp
+from typing import List
 
 import joblib
 import numpy as np
 from sklearn.cross_decomposition import CCA
-from typing import List
 
-import experiment.processing.curves_interp as dops
 import experiment._utils as fops
-from experiment._visualization import whpa_plot
-from experiment._spatial import grid_parameters, signed_distance
-from experiment.processing.pca import PCAIO
+import experiment.processing.curves_interp as dops
 from experiment._core import setup
+from experiment._spatial import grid_parameters, signed_distance
+from experiment._visualization import whpa_plot
+from experiment.processing.pca import PCAIO
 
 Root = List[str]
 Combination = List[int]

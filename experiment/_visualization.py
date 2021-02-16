@@ -202,12 +202,10 @@ def pca_scores(training,
     # Scores plot
     # Grid
     plt.grid(alpha=0.2)
-    # Number of components to keep
-    ut = n_comp
     # Ticks
-    plt.xticks(np.arange(0, ut, 5), fontsize=11)
+    plt.xticks(np.arange(0, n_comp, 5), fontsize=11)
     # Plot all training scores
-    plt.plot(training.T[:ut], 'ob', markersize=3, alpha=0.05)
+    plt.plot(training.T[:n_comp], 'ob', markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
     kde = False
     if kde:  # Option to plot KDE
@@ -216,15 +214,15 @@ def pca_scores(training,
         # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
         cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
         # KDE plot
-        sns.kdeplot(np.arange(1, ut + 1), training.T[:ut][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
-        plt.xlim(0.5, ut)  # Define x limits [start, end]
+        sns.kdeplot(np.arange(1, n_comp + 1), training.T[:n_comp][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+        plt.xlim(0.5, n_comp)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
         # Select observation
         pc_obs = prediction[sample_n]
         # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, ut, 200)  # New points for plotting curve
-        spl = make_interp_spline(np.arange(1, ut + 1), pc_obs.T[:ut], k=3)  # type: BSpline
+        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
+        spl = make_interp_spline(np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3)  # type: BSpline
         power_smooth = spl(xnew)
         # I forgot why I had to put '-1'
         plt.plot(xnew - 1,
@@ -233,7 +231,7 @@ def pca_scores(training,
                  linewidth=1.2,
                  alpha=.9)
 
-        plt.plot(pc_obs.T[:ut],  # Plot observations scores
+        plt.plot(pc_obs.T[:n_comp],  # Plot observations scores
                  'ro',
                  markersize=3,
                  markeredgecolor='k',

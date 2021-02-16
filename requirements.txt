@@ -1,7 +1,6 @@
 ortools
 scikit-fmm
 flopy
-pysgems
 scikit-learn
 matplotlib
 scipy
@@ -11,3 +10,4 @@ sklearn
 vtk
 pandas
 seaborn
+dataclasses

@@ -8,7 +8,7 @@ import numpy as np
 from diavatly import model_map
 
 import experiment._spatial
-from experiment.base.inventory import Directories
+from experiment._core import setup
 from experiment._visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
 from experiment._spatial import grid_parameters, get_centroids, binary_polygon

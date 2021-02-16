@@ -5,11 +5,12 @@ Collection of functions to use the PCA class from scikit-learn.
 """
 
 import os
+
 import joblib
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 class PCAIO:
