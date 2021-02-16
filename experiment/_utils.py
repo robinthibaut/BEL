@@ -6,6 +6,7 @@ from typing import List
 from os.path import join as jp
 
 import flopy
+import joblib
 import numpy as np
 
 from experiment._core import setup
@@ -262,3 +263,54 @@ def combinator(combi):
     cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)]  # Get all possible wel combinations
     cb = [item for sublist in cb for item in sublist][::-1]  # Flatten and reverse to get all combination at index 0.
     return cb
+
+
+def reload_trained_model(root: str,
+                         well: str,
+                         sample_n: int = 0):
+    base_dir = jp(setup.directories.forecasts_dir, 'base')
+    res_dir = jp(setup.directories.forecasts_dir, root, well, 'obj')
+
+    f_names = list(map(lambda fn: jp(res_dir, f'{fn}.pkl'), ['cca', 'd_pca', 'post']))
+    cca_operator, d_pco, post = list(map(joblib.load, f_names))
+
+    h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
+    h_pred = np.load(jp(base_dir, 'roots_whpa', f'{root}.npy'))
+
+    # Inspect transformation between physical and PC space
+    dnc0 = d_pco.n_pc_cut
+    hnc0 = h_pco.n_pc_cut
+
+    # Cut desired number of PC components
+    d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
+    h_pco.test_transform(h_pred, test_root=[root])
+    h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
+
+    # CCA scores
+    d_cca_training, h_cca_training = cca_operator.x_scores_, cca_operator.y_scores_
+
+    d, h = d_cca_training.T, h_cca_training.T
+
+    d_obs = d_pc_prediction[sample_n]
+    h_obs = h_pc_prediction[sample_n]
+
+    # # Transform to CCA space and transpose
+    d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
+                                                                h_obs.reshape(1, -1))
+
+    #  Watch out for the transpose operator.
+    h2 = h.copy()
+    d2 = d.copy()
+    tfm1 = post.normalize_h
+    h = tfm1.transform(h2.T)
+    h = h.T
+    h_cca_prediction = tfm1.transform(h_cca_prediction)
+    h_cca_prediction = h_cca_prediction.T
+
+    tfm2 = post.normalize_d
+    d = tfm2.transform(d2.T)
+    d = d.T
+    d_cca_prediction = tfm2.transform(d_cca_prediction)
+    d_cca_prediction = d_cca_prediction.T
+
+    return d, h, d_cca_prediction[sample_n], h_cca_prediction[sample_n], post
