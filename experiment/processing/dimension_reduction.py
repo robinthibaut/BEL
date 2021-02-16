@@ -13,10 +13,10 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 
-class PCAIO:
+class PC:
     def __init__(self,
                  name: str,
-                 training=None,
+                 training: np.array = None,
                  roots: list = None,
                  directory: str = None):
         """
@@ -54,7 +54,7 @@ class PCAIO:
         self.predict_physical = None  # Observation set - physical space
         self.predict_pc = None  # Observation PCA scores
 
-    def pca_training_fit_transform(self):
+    def training_fit_transform(self):
         """
         Instantiate the PCA object and transforms training data to scores.
         :return: numpy.ndarray: PC training
@@ -73,9 +73,9 @@ class PCAIO:
 
         return self.training_pc
 
-    def pca_test_fit_transform(self,
-                               test,
-                               test_root: list):
+    def test_fit_transform(self,
+                           test,
+                           test_root: list):
         """
         Transforms observation to PC scores.
         :param test: numpy.ndarray: Observation array
@@ -96,7 +96,7 @@ class PCAIO:
 
         return pc_prediction
 
-    def n_pca_components(self, perc: float):
+    def perc_2_comp(self, perc: float):
         """
         Given an explained variance percentage, returns the number of components
         necessary to obtain that level.
@@ -107,7 +107,7 @@ class PCAIO:
 
         return self.n_pc_cut
 
-    def perc_pca_components(self, n_c: int):
+    def perc_comp(self, n_c: int):
         """
         Returns the explained variance percentage given a number of components n_c.
         :param n_c: int: Number of components to keep
@@ -116,7 +116,7 @@ class PCAIO:
 
         return evr[n_c - 1]
 
-    def pca_refresh(self, n_comp: int = None):
+    def comp_refresh(self, n_comp: int = None):
         """
         Given a number of components to keep, returns the PC array with the corresponding shape.
         :param n_comp: int: Number of components
@@ -137,7 +137,7 @@ class PCAIO:
         else:
             return pc_training
 
-    def pc_random(self, n_rand: int):
+    def random_pc(self, n_rand: int):
         """
         Randomly selects PC components from the original training matrix.
         :param n_rand: int: Number of random PC to use

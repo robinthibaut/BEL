@@ -24,11 +24,11 @@ import numpy as np
 from sklearn.cross_decomposition import CCA
 
 import experiment._utils as fops
-import experiment.processing.curves_interp as dops
+import experiment.processing.predictor_handle as dops
 from experiment._core import setup
 from experiment._spatial import grid_parameters, signed_distance
 from experiment._visualization import whpa_plot
-from experiment.processing.pca import PCAIO
+from experiment.processing.dimension_reduction import PC
 
 Root = List[str]
 Combination = List[int]
@@ -59,11 +59,11 @@ def base_pca(base,
         # pzs = WHPA
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0)  # tc has shape (n_sim, n_wells, n_time_steps)
+        tc = dops.curve_interpolation(tc0=tc0)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         # PCA on transport curves
-        d_pco = PCAIO(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
-        d_pco.pca_training_fit_transform()
+        d_pco = PC(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
+        d_pco.training_fit_transform()
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
@@ -95,9 +95,9 @@ def base_pca(base,
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
 
         # Initiate h pca object
-        h_pco = PCAIO(name='h', training=h, roots=roots, directory=base_dir)
+        h_pco = PC(name='h', training=h, roots=roots, directory=base_dir)
         # Transform
-        h_pco.pca_training_fit_transform()
+        h_pco.training_fit_transform()
         # Define number of components to keep
         # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         h_pco.n_pc_cut = setup.target.n_pc
@@ -173,7 +173,7 @@ def bel_pipeline(base,
         # pzs = WHPA's
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.d_process(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
+        tc = dops.curve_interpolation(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
         # Save file roots
@@ -189,8 +189,8 @@ def bel_pipeline(base,
     # We choose an appropriate number of components to keep later on.
 
     # PCA on transport curves
-    d_pco = PCAIO(name='d', training=tc, roots=training_roots, directory=obj_dir)
-    d_pco.pca_training_fit_transform()
+    d_pco = PC(name='d', training=tc, roots=training_roots, directory=obj_dir)
+    d_pco.training_fit_transform()
     # PCA on transport curves
     d_pco.n_pc_cut = setup.predictor.n_pc
     ndo = d_pco.n_pc_cut
@@ -198,10 +198,10 @@ def bel_pipeline(base,
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
-    tcp = dops.d_process(tc0=tc0, n_time_steps=n_time_steps)
+    tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
-    d_pco.pca_test_fit_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
-    d_pc_training, d_pc_prediction = d_pco.pca_refresh(ndo)  # Split
+    d_pco.test_fit_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
+    d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
@@ -215,9 +215,9 @@ def bel_pipeline(base,
     if h_pco.predict_pc is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
-        h_pco.pca_test_fit_transform(h, test_root=test_root)
+        h_pco.test_fit_transform(h, test_root=test_root)
         # Cut desired number of components
-        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
         # Save updated PCA object in base
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
@@ -226,7 +226,7 @@ def bel_pipeline(base,
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
     else:
         # Cut components
-        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
 
     # %% CCA
     n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC

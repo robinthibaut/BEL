@@ -35,7 +35,7 @@ def compute_euclidean_distance_matrix(locations: list):
     return distances
 
 
-def tsp(xy: list):
+def travelling_particles(xy: list):
     """Entry point of the program."""
     # Instantiate the data problem.
 

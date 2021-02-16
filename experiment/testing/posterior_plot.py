@@ -30,9 +30,9 @@ dnc0 = d_pco.n_pc_cut
 hnc0 = h_pco.n_pc_cut
 
 # Cut desired number of PC components
-d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-h_pco.pca_test_fit_transform(h_pred, test_root=[root])
-h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
+d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
+h_pco.test_fit_transform(h_pred, test_root=[root])
+h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
 
 # CCA plots
 d_cca_training, h_cca_training = cca_operator.transform(d_pc_training,

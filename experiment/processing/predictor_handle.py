@@ -4,9 +4,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def d_process(tc0,
-              n_time_steps: int = 200,
-              t_max: float = 1.01080e+02):
+def curve_interpolation(tc0,
+                        n_time_steps: int = 200,
+                        t_max: float = 1.01080e+02):
     """
 
     Perform data transformations on the predictor.

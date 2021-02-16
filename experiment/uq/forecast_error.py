@@ -83,8 +83,8 @@ class UncertaintyQuantification:
         hnc0 = self.h_pco.n_pc_cut
 
         # Cut desired number of PC components
-        d_pc_training, self.d_pc_prediction = self.d_pco.pca_refresh(dnc0)
-        self.h_pco.pca_refresh(hnc0)
+        d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
+        self.h_pco.comp_refresh(hnc0)
 
         # Sampling
         self.n_training = len(d_pc_training)

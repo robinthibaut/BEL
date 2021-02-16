@@ -29,7 +29,7 @@ from experiment._core import machine, setup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
-from experiment.processing.travelling_particles import tsp
+from experiment.processing.target_handle import travelling_particles
 from experiment._statistics import sgsim
 
 
@@ -85,7 +85,7 @@ def simulation(folder=None):
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
-            delineation = tsp(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
+            delineation = travelling_particles(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
             pzs = end_points[delineation]  # x-y coordinates protection zone
             np.save(jp(results_dir, 'pz'), pzs)  # Save those
             # Deletes everything except final results

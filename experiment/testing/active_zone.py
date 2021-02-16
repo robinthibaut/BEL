@@ -10,7 +10,7 @@ from diavatly import model_map
 import experiment._spatial
 from experiment._core import setup
 import experiment._visualization as mplot
-from experiment.processing.travelling_particles import tsp
+from experiment.processing.target_handle import travelling_particles
 from experiment._spatial import grid_parameters, get_centroids, binary_polygon
 
 
@@ -73,7 +73,7 @@ def active_zone(modflowmodel):
 
     # Expand the polygon
     xyw_scaled = diffs * meas.reshape(-1, 1) + xy_pumping_well
-    poly_deli = tsp(xyw_scaled)  # Get polygon delineation
+    poly_deli = travelling_particles(xyw_scaled)  # Get polygon delineation
     poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
     # Assign 0|1 value
     icbund = binary_polygon(sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)

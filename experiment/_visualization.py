@@ -1208,8 +1208,8 @@ def plot_pc_ba(root: str = None,
 
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))  # Signed Distance
         # Cut desired number of PC components
-        h_pco.pca_test_fit_transform(h_pred, test_root=[root])
-        h_pco.pca_refresh(hnc0)
+        h_pco.test_fit_transform(h_pred, test_root=[root])
+        h_pco.comp_refresh(hnc0)
         h_pca_inverse_plot(pca_o=h_pco,
                            training=False,
                            fig_dir=jp(base_dir, 'roots_whpa'))
@@ -1225,7 +1225,7 @@ def plot_pc_ba(root: str = None,
             # Load objects
             d_pco = joblib.load(os.path.join(res_dir, 'd_pca.pkl'))
             dnc0 = d_pco.n_pc_cut  # Number of PC components
-            d_pco.pca_refresh(dnc0)  # refresh based on dnc0
+            d_pco.comp_refresh(dnc0)  # refresh based on dnc0
             setattr(d_pco, 'test_root', [root])
             # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
             #                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
@@ -1331,9 +1331,9 @@ def cca_vision(root: str = None,
         hnc0 = h_pco.n_pc_cut
 
         # Cut desired number of PC components
-        d_pc_training, d_pc_prediction = d_pco.pca_refresh(dnc0)
-        h_pco.pca_test_fit_transform(h_pred, test_root=[root])
-        h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
+        d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
+        h_pco.test_fit_transform(h_pred, test_root=[root])
+        h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
 
         # CCA plots
         d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
@@ -1441,9 +1441,9 @@ def pca_vision(root,
         # Load npy whpa prediction
         prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{root}.npy'))
         # Transform and split
-        h_pco.pca_test_fit_transform(prediction, test_root=[root])
+        h_pco.test_fit_transform(prediction, test_root=[root])
         nho = h_pco.n_pc_cut
-        h_pc_training, h_pc_prediction = h_pco.pca_refresh(nho)
+        h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
         # Plot
         fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_scores.pdf')
         if scores:

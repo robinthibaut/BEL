@@ -561,7 +561,7 @@ class PosteriorIO:
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.pc_random(n_posts) for _ in range(n_posts)])  # Get the extra components
+            rnpc = np.array([pca_h.random_pc(n_posts) for _ in range(n_posts)])  # Get the extra components
             h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
 
         if save_target_pc:
@@ -610,8 +610,8 @@ class PosteriorIO:
 
         if self.posterior_mean is None and self.posterior_covariance is None:
             # Cut desired number of PC components
-            d_pc_training, d_pc_prediction = pca_d.pca_refresh(pca_d.n_pc_cut)
-            h_pc_training, _ = pca_h.pca_refresh(pca_h.n_pc_cut)
+            d_pc_training, d_pc_prediction = pca_d.comp_refresh(pca_d.n_pc_cut)
+            h_pc_training, _ = pca_h.comp_refresh(pca_h.n_pc_cut)
 
             d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
