@@ -388,6 +388,8 @@ def posterior_conditional(x: np.array,
     if x_obs is not None:
         support = yg
         # Extract the density values along the line, using cubic interpolation
+        if type(x_obs) is list or tuple:
+            x_obs = x_obs[0]
         post = conditional_distribution(x=x_obs,
                                         x_array=xg,
                                         y_array=yg,
@@ -395,6 +397,8 @@ def posterior_conditional(x: np.array,
     elif y_obs is not None:
         support = xg
         # Extract the density values along the line, using cubic interpolation
+        if type(y_obs) is list or tuple:
+            y_obs = x_obs[0]
         post = conditional_distribution(y=y_obs,
                                         x_array=xg,
                                         y_array=yg,

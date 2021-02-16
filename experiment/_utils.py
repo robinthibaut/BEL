@@ -313,4 +313,4 @@ def reload_trained_model(root: str,
     d_cca_prediction = tfm2.transform(d_cca_prediction)
     d_cca_prediction = d_cca_prediction.T
 
-    return d, h, d_cca_prediction[sample_n], h_cca_prediction[sample_n], post
+    return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
