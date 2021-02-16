@@ -6,10 +6,9 @@ from typing import List
 import joblib
 import numpy as np
 
-import experiment._utils
 from experiment._core import setup
 from experiment.processing import decomposition as dcp
-from experiment import _utils
+from experiment import _utils as ut
 from experiment.uq.forecast_error import UncertaintyQuantification
 
 Root = List[str]
@@ -131,7 +130,7 @@ def main(comb: List[List[int]] = None,
 
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(setup.directories.forecasts_dir, 'base')
-    fb = _utils.dirmaker(obj_path)  # Returns bool according to folder status
+    fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base:
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
@@ -144,7 +143,7 @@ def main(comb: List[List[int]] = None,
 
     if comb is None:
         comb = setup.wells.combination  # Get default combination (all)
-        belcomb = experiment._utils.combinator(comb)  # Get all possible combinations
+        belcomb = ut.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
 
@@ -162,10 +161,10 @@ if __name__ == '__main__':
     # List directories in forwards folder
     base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
 
-    training_roots = _utils.data_read(os.path.join(base_dir, 'roots.dat'))
+    training_roots = ut.data_read(os.path.join(setup.directories.forecasts_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = _utils.data_read(os.path.join(base_dir, 'test_roots.dat'))
+    test_roots = ut.data_read(os.path.join(setup.directories.forecasts_dir, 'test_roots.dat'))
     test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
