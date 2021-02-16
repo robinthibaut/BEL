@@ -7,26 +7,14 @@ https://github.com/google/or-tools/blob/stable/ortools/constraint_solver/routing
 """
 import math
 
-import numpy as np
 from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
 
 
-def datread(file: str = None,
-            header: int = 0):
-    """Reads space separated dat file"""
-    with open(file, 'r') as fr:
-        op = np.array([list(map(float, i.split())) for i in fr.readlines()[header:]], dtype=object)
-    return op
-
-
 def create_data_model(xy: list):
     """Stores the data for the problem."""
-    data = {}
+    data = {'locations': xy, 'num_vehicles': 1, 'depot': 0}
     # Locations in block units
-    data['locations'] = xy
-    data['num_vehicles'] = 1
-    data['depot'] = 0
     return data
 
 

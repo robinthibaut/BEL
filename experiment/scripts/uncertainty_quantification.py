@@ -45,7 +45,7 @@ def scan_roots(base,
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel(base=base, training_roots=training, test_root=r_, well_comb=c)
+            sf = dcp.bel_pipeline(base=base, training_roots=training, test_root=r_, well_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=setup.forecast.n_posts)  # Sample posterior
