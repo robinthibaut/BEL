@@ -168,9 +168,9 @@ def kde_cca():
     z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
     cs = ax_joint.contourf(xx, yy, z, cmap='Greens', levels=69)
     # Vertical line
-    ax_joint.axvline(x=d_cca_prediction[0], color='blue', linewidth=.5, alpha=.5)
+    ax_joint.axvline(x=d_cca_prediction[0], color='red', linewidth=1, alpha=.5)
     # Horizontal line
-    ax_joint.axhline(y=h_cca_prediction[0], color='red', linewidth=.5, alpha=.5)
+    ax_joint.axhline(y=h_cca_prediction[0], color='deepskyblue', linewidth=1, alpha=.5)
     # Horizontal line
     # ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
     # Scatter plot
@@ -181,141 +181,83 @@ def kde_cca():
                   label=f'{sample_n}')
     # Marginal x plot
     ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=1)
-    ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
-    ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5, label='$p(d^{c})$')
+    ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=1, color='lightskyblue')
+    ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='red', linewidth=1, alpha=.5, label='$p(d^{c})$')
     # Marginal y plot
     ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=1)
-    ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
-    ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5, label='$p(h^{c})')
+    ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='mistyrose')
+    ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='deepskyblue', linewidth=1, alpha=.5, label='$p(h^{c})')
     # Test with BEL
     ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=1)
-    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='coral', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
     # Conditional distribution
     ax_marg_y.plot(hp, sup, 'r', alpha=0)
-    ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+    ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='salmon', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
     # Labels
     ax_joint.set_xlabel('$d^{c}$', fontsize=14)
     ax_joint.set_ylabel('$h^{c}$', fontsize=14)
     # plt.subplots_adjust(top=0.9)
     plt.tick_params(labelsize=14)
 
+    # Add custom artists
+    subtitle = my_alphabet(comp_n)
+    # Add title inside the box
+    an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+    legend_a = proxy_annotate(obj=ax_joint,
+                              annotation=an,
+                              loc=2,
+                              fz=14)
+    #
+    proxy_legend(obj=ax_joint,
+                 legend1=legend_a,
+                 colors=['black', 'white'],
+                 labels=['Training', 'Test'],
+                 marker='o',
+                 pec=['k', 'k'])
+
     return fig
 
 
-lol = kde_cca().axes[0]
-subtitle = my_alphabet(comp_n)
-# Add title inside the box
-an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
-legend_a = proxy_annotate(obj=lol,
-                          annotation=an,
-                          loc=2,
-                          fz=14)
-#
-proxy_legend(obj=lol,
-             legend1=None,
-             colors=['black', 'white'],
-             labels=['Training', 'Test'],
-             marker='o',
-             pec=['k', 'k'])
-
-lol.add_artist(legend_a)
 # plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
+kde_cca()
 plt.show()
 
-# prior
-plt.plot(sup_y, kde_y, color='black', linewidth=.5, alpha=1)
-plt.fill_between(sup_y, 0, kde_y, alpha=.2, color='red', label='$p(h^{c})$')
-# posterior kde
-plt.plot(sup, hp, color='darkred', linewidth=.5, alpha=1)
-plt.fill_between(sup, 0, hp, alpha=.5, color='darkred', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
-# posterior bel
-plt.plot(sup_samp, kde_y_samp, color='black', linewidth=.5, alpha=1)
-plt.fill_between(sup_samp, 0, kde_y_samp, alpha=.5, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
 
-plt.axvline(x=h_cca_prediction[0], linewidth=3, alpha=.4, label='True $h^{c}$')
-plt.grid(alpha=.2)
+def posterior_distribution(savefig: bool = False):
+    # prior
+    plt.plot(sup_y, kde_y,
+             color='black', linewidth=.5, alpha=1)
+    plt.fill_between(sup_y, 0, kde_y,
+                     color='mistyrose', alpha=1,
+                     label='$p(h^{c})$')
+    # posterior kde
+    plt.plot(sup, hp,
+             color='darkred', linewidth=.5, alpha=0)
+    plt.fill_between(sup, 0, hp,
+                     color='salmon', alpha=.5,
+                     label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+    # posterior bel
+    plt.plot(sup_samp, kde_y_samp,
+             color='black', linewidth=.5, alpha=1)
+    plt.fill_between(sup_samp, 0, kde_y_samp,
+                     color='coral', alpha=.5,
+                     label='$p(h^{c}|d^{c}_{*})$ (BEL)')
 
-plt.ylabel('Density')
-plt.xlabel('$h^{c}$')
+    # True prediction
+    plt.axvline(x=h_cca_prediction[0],
+                linewidth=3, alpha=.4, color='deepskyblue',
+                label='True $h^{c}$')
 
-plt.legend(loc=2)
+    # Grid
+    plt.grid(alpha=.2)
 
-# plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+    # Tuning
+    plt.ylabel('Density', fontsize=14)
+    plt.xlabel('$h^{c}$', fontsize=14)
+    plt.xlim([np.min(h_cca_training[comp_n]), np.max(h_cca_training[comp_n])])
+    plt.tick_params(labelsize=14)
 
-plt.show()
+    plt.legend(loc=2)
 
-# # %%
-# # Choose beautiful color map
-# # cube_helix very nice for dark mode
-# # light = 0.95 is beautiful for reverse = True
-# # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=False)
-# # Seaborn 'joinplot' between d & h training CCA scores
-# g = sns.jointplot(d, h,
-#                   cmap=cmap, n_levels=80, shade=True,
-#                   kind='kde')
-# g.plot_joint(plt.scatter, c='w', marker='o', s=2, alpha=.7)
-# g.ax_marg_x.arrow(d_cca_prediction[comp_n], 0, 0, .1, color='r', head_width=0, head_length=0, lw=2)
-# g.ax_marg_y.arrow(0, h_cca_prediction[comp_n], .1, 0, color='r', head_width=0, head_length=0, lw=2)
-# # Plot prediction (d, h) in canonical space
-# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
-#          label=f'{sample_n}')
-# # plt.grid('w', linewidth=.3, alpha=.4)
-# # plt.tick_params(labelsize=8)
-# plt.xlabel('$d^{c}$', fontsize=14)
-# plt.ylabel('$h^{c}$', fontsize=14)
-# plt.subplots_adjust(top=0.9)
-# plt.tick_params(labelsize=14)
-#
-# plt.show()
-#
-# # %%
-# # Define grid for subplots
-# # gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 4])
-# gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
-#
-# # Create density plot
-# fig = pp.figure()
-# ax = pp.subplot(gs[1, 0])
-# cax = ax.imshow(density,
-#                 origin='lower',
-#                 cmap=cmap,
-#                 extent=[min(xx), max(xx), min(yy), max(yy)])
-# ax.set_ylim((xmin, xmax))
-# ax.set_ylim((ymin, ymax))
-# ax.spines["top"].set_visible(False)
-# ax.spines["right"].set_visible(False)
-# ax.axvline(x=d_cca_prediction[0], color='r')
-# plt.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
-# plt.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-#          'ro', markersize=4.5, markeredgecolor='k', alpha=1,
-#          label=f'{sample_n}')
-#
-# # Create Y-marginal (right)
-# axr = pp.subplot(gs[1, 1],
-#                  sharey=ax,
-#                  xticks=[], yticks=[],
-#                  frameon=False,
-#                  xlim=(0, 1.4 * kde_y.max()),
-#                  ylim=(ymin, ymax))
-# axr.plot(kde_y, sup_y, color='black')
-# axr.fill_betweenx(sup_y, 0, kde_y, alpha=.5, color='#5673E0')
-#
-# # Create X-marginal (top)
-# axt = pp.subplot(gs[0, 0],
-#                  sharex=ax, frameon=False,
-#                  xticks=[], yticks=[],
-#                  xlim=(xmin, xmax),
-#                  ylim=(0, 1.4 * kde_x.max()),
-#                  aspect='auto')
-# axt.plot(sup_x, kde_x, color='black')
-# axt.fill_between(sup_x, 0, kde_x, alpha=.5, color='#5673E0')
-#
-# # Bring the marginals closer to the contour plot
-# fig.tight_layout(pad=.5)
-#
-# # plt.xlabel('$d^{c}$', fontsize=14)
-# # plt.ylabel('$h^{c}$', fontsize=14)
-# # plt.subplots_adjust(top=0.9)
-# # plt.tick_params(labelsize=14)
-# plt.show()
+    if savefig:
+        plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)

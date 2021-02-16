@@ -90,9 +90,9 @@ def proxy_legend(legend1=None,
 
     for el in extra:
         try:
-            obj.gca().add_artist(legend1)
+            obj.gca().add_artist(el)
         except AttributeError:
-            obj.add_artist(legend1)
+            obj.add_artist(el)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
