@@ -216,7 +216,7 @@ subtitle = my_alphabet(comp_n)
 #              marker='o',
 #              pec=['k', 'k'])
 
-plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
+# plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
 # plt.legend(loc=2)
 plt.show()
 
@@ -236,9 +236,9 @@ plt.grid(alpha=.2)
 plt.ylabel('Density')
 plt.xlabel('$h^{c}$')
 
-plt.legend()
+plt.legend(loc=2)
 
-plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+# plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
 
 plt.show()
 
