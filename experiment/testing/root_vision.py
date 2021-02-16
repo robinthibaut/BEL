@@ -1,6 +1,5 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,7 +7,7 @@ sns.set_theme()
 # plt.style.use('dark_background')
 
 from experiment.base.inventory import MySetup as base
-from experiment.goggles.visualization import Plot
+from experiment._visualization import Plot
 from experiment.toolbox import filesio as fops
 
 x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim

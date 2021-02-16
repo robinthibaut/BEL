@@ -1,9 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import numpy as np
 from experiment._core import setup as base
-from experiment.goggles.vtkio import ModelVTK
-from experiment.toolbox import filesio
+from experiment._visualization import ModelVTK
 
 if __name__ == '__main__':
     x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim

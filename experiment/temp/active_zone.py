@@ -9,7 +9,7 @@ from diavatly import model_map
 
 import experiment.spatial.grid as mops
 from experiment.base.inventory import Directories
-from experiment.goggles.visualization import Plot
+from experiment._visualization import Plot
 from experiment.hydro.whpa.travelling_particles import tsp
 from experiment.spatial.distance import grid_parameters
 from experiment.spatial.grid import get_centroids, binary_polygon

@@ -9,7 +9,7 @@ from sklearn.preprocessing import PowerTransformer
 
 import experiment._statistics as stats
 from experiment._core import setup
-from experiment.goggles.visualization import despine, my_alphabet, proxy_annotate, proxy_legend
+from experiment._visualization import despine, my_alphabet, proxy_annotate, proxy_legend
 
 comp_n = 0
 sample_n = 0

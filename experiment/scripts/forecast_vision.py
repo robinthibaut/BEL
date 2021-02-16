@@ -4,7 +4,7 @@ import os
 import string
 
 from experiment._core import setup
-import experiment.goggles.visualization as myvis
+import experiment._visualization as myvis
 from experiment.toolbox.filesio import data_read
 
 

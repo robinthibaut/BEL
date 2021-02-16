@@ -5,7 +5,7 @@ from os.path import join as jp
 
 import seaborn as sb
 
-from experiment.goggles.visualization import Plot
+from experiment._visualization import Plot
 
 from experiment.base.inventory import MySetup
 

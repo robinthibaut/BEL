@@ -1,8 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import experiment.toolbox.filesio as fops
 import numpy as np
 import matplotlib.pyplot as plt
-from experiment.goggles.visualization import proxy_annotate
+from experiment._visualization import proxy_annotate
 
 from os.path import join as jp
 from experiment.base.inventory import MySetup

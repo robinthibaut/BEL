@@ -2,15 +2,12 @@
 
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
-import string
-import seaborn as sns
 from typing import List
 
 from experiment._core import setup
 
-from experiment.goggles.visualization import proxy_annotate, mode_histo
+from experiment._visualization import mode_histo
 
 Root = List[str]
 
