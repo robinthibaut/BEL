@@ -367,8 +367,8 @@ def binary_stack(xys, nrow, ncol, vertices):
     bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     # Scale from 0 to 1
-    big_sum -= big_sum.min()
-    big_sum /= big_sum.max()
+    big_sum -= np.min(big_sum)
+    big_sum /= np.max(big_sum)
     return big_sum
 
 
