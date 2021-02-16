@@ -23,8 +23,7 @@ import experiment._statistics
 import experiment._spatial
 from experiment._core import setup
 from experiment._spatial import grid_parameters, contours_vertices, binary_stack, refine_machine
-from experiment.toolbox import _utils
-from experiment import _utils as fops
+import experiment._utils as ut
 
 ftype = 'png'
 
@@ -101,7 +100,7 @@ def proxy_legend(legend1=None,
             obj.add_artist(el)
 
     if fig_file:
-        _utils.dirmaker(os.path.dirname(fig_file))
+        ut.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
 
@@ -174,7 +173,7 @@ def explained_variance(pca,
     plt.gca().add_artist(legend_a)
 
     if fig_file:
-        _utils.dirmaker(os.path.dirname(fig_file))
+        ut.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -256,7 +255,7 @@ def pca_scores(training,
                  marker='o')
 
     if fig_file:
-        _utils.dirmaker(os.path.dirname(fig_file))
+        ut.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -299,7 +298,7 @@ def cca_plot(cca_operator,
             h_obs = h_pc_prediction[sample_n]
             # Transform to CCA space and transpose
             d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
-                                                                                  h_obs.reshape(1, -1))
+                                                                        h_obs.reshape(1, -1))
 
             # %%  Watch out for the transpose operator.
             h2 = h.copy()
@@ -464,7 +463,7 @@ def cca_plot(cca_operator,
                      pec=['k', 'k'])
 
         if sdir:
-            _utils.dirmaker(sdir)
+            ut.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
@@ -640,7 +639,7 @@ def whpa_plot(grf: float = None,
         plt.gca().add_artist(legend)
 
     if fig_file:
-        _utils.dirmaker(os.path.dirname(fig_file))
+        ut.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
     if show:
@@ -747,7 +746,7 @@ def h_pca_inverse_plot(pca_o,
                      marker='-')
 
         if fig_dir is not None:
-            _utils.dirmaker(fig_dir)
+            ut.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
             plt.close()
 
@@ -1069,7 +1068,7 @@ def curves(cols: list,
     plt.ylabel(ylabel)
     plt.tick_params(labelsize=labelsize)
     if sdir:
-        _utils.dirmaker(sdir)
+        ut.dirmaker(sdir)
         plt.savefig(jp(sdir, f'{title}.pdf'), dpi=300, transparent=True)
         plt.close()
     if show:
@@ -1121,7 +1120,7 @@ def curves_i(cols, tc,
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         if sdir:
-            _utils.dirmaker(sdir)
+            ut.dirmaker(sdir)
             plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -1339,7 +1338,7 @@ def cca_vision(root: str = None,
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
         # CCA plots
-        d_cca_training, h_cca_training = experiment._statistics.transform(d_pc_training, h_pc_training)
+        d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
         cca_plot(cca_operator,
@@ -1476,7 +1475,7 @@ def check_root(xlim: list,
     :param root:
     :return:
     """
-    bkt, whpa, _ = _utils.data_loader(roots=root)
+    bkt, whpa, _ = ut.data_loader(roots=root)
     whpa = whpa.squeeze()
     # self.curves_i(bkt, show=True)  # This function will not work
 
@@ -1544,7 +1543,7 @@ def d_pca_inverse_plot(pca_o,
         plt.ylim([0, yrange])
 
         if fig_dir is not None:
-            _utils.dirmaker(fig_dir)
+            ut.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -1617,13 +1616,15 @@ def despine(fig=None, ax=None, top=True, right=True, left=False,
     """
     # Get references to the axes we want
     if fig is None and ax is None:
-        axes = plt.gcf().axes
+        axes_dummy = plt.gcf().axes
     elif fig is not None:
-        axes = fig.axes
+        axes_dummy = fig.axes
     elif ax is not None:
-        axes = [ax]
+        axes_dummy = [ax]
+    else:
+        return
 
-    for ax_i in axes:
+    for ax_i in axes_dummy:
         for side in ["top", "right", "left", "bottom"]:
             # Toggle the spine objects
             is_visible = not locals()[side]
@@ -1714,6 +1715,7 @@ class ModelVTK:
     """
     Loads flow/transport models and export the VTK objects.
     """
+
     def __init__(self, base=None, folder=None):
         self.base = base
         md = self.base.directories()
@@ -1721,12 +1723,12 @@ class ModelVTK:
         self.bdir = md.main_dir
         self.results_dir = jp(md.hydro_res_dir, self.rn)
         self.vtk_dir = jp(self.results_dir, 'vtk')
-        fops.dirmaker(self.vtk_dir)
+        ut.dirmaker(self.vtk_dir)
 
         # %% Load flow model
         try:
             m_load = jp(self.results_dir, 'whpa.nam')
-            self.flow_model = fops.load_flow_model(m_load, model_ws=self.results_dir)
+            self.flow_model = ut.load_flow_model(m_load, model_ws=self.results_dir)
             delr = self.flow_model.modelgrid.delr  # thicknesses along rows
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
@@ -1739,7 +1741,7 @@ class ModelVTK:
         try:
             # Transport model
             mt_load = jp(self.results_dir, 'whpa.mtnam')
-            self.transport_model = fops.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
+            self.transport_model = ut.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
             ucn_files = [jp(self.results_dir, f'MT3D00{i}.UCN') for i in
                          setup.wells.combination]  # Files containing concentration
             ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
@@ -1754,7 +1756,7 @@ class ModelVTK:
 
         """
         dir_fv = jp(self.results_dir, 'vtk', 'flow')
-        fops.dirmaker(dir_fv)
+        ut.dirmaker(dir_fv)
         self.flow_model.export(dir_fv, fmt='vtk')
         vtk_flow.export_heads(self.flow_model,
                               jp(self.results_dir, 'whpa.hds'),
@@ -1769,7 +1771,7 @@ class ModelVTK:
 
         """
         dir_tv = jp(self.results_dir, 'vtk', 'transport')
-        fops.dirmaker(dir_tv)
+        ut.dirmaker(dir_tv)
         self.transport_model.export(dir_tv, fmt='vtk')
 
     # %% Export UCN to vtk
@@ -1777,7 +1779,7 @@ class ModelVTK:
     def stacked_conc_vtk(self):
         """Stack component concentrations for each time step and save vtk"""
         conc_dir = jp(self.results_dir, 'vtk', 'transport', 'concentration')
-        fops.dirmaker(conc_dir)
+        ut.dirmaker(conc_dir)
         # First replace 1e+30 value (inactive cells) by 0.
         conc0 = np.abs(np.where(self.concs == 1e30, 0, self.concs))
         # Cells configuration for 3D blocks
@@ -1812,7 +1814,7 @@ class ModelVTK:
 
         for i in range(1, 7):  # For eaxh injecting well
             conc_dir = jp(self.results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
-            fops.dirmaker(conc_dir)
+            ut.dirmaker(conc_dir)
             # Initiate array and give it a name
             concArray = vtk.vtkDoubleArray()
             concArray.SetName(f"conc{i}")
@@ -1841,7 +1843,7 @@ class ModelVTK:
         :return:
         """
         back_dir = jp(self.results_dir, 'vtk', 'backtrack')
-        fops.dirmaker(back_dir)
+        ut.dirmaker(back_dir)
 
         # mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
         # load the endpoint data
