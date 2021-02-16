@@ -49,7 +49,8 @@ def proxy_legend(legend1=None,
                  pec: list = None,
                  fz: float = 11,
                  fig_file: str = None,
-                 extra: list = None):
+                 extra: list = None,
+                 obj=None):
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
@@ -64,8 +65,8 @@ def proxy_legend(legend1=None,
     :param extra: List of extra elements to be added on the final figure
     :return:
     """
-
-    obj = plt
+    if obj is None:
+        obj = plt
 
     # Default parameters
     if colors is None:
@@ -78,14 +79,20 @@ def proxy_legend(legend1=None,
         extra = []
 
     # Proxy figures (empty plots)
-    proxys = [obj.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
+    proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
-        obj.gca().add_artist(legend1)
+        try:
+            obj.gca().add_artist(legend1)
+        except AttributeError:
+            obj.add_artist(legend1)
 
     for el in extra:
-        obj.gca().add_artist(el)
+        try:
+            obj.gca().add_artist(legend1)
+        except AttributeError:
+            obj.add_artist(legend1)
 
     if fig_file:
         filesio.dirmaker(os.path.dirname(fig_file))
@@ -95,7 +102,8 @@ def proxy_legend(legend1=None,
 
 def proxy_annotate(annotation: list = None,
                    loc: int = 1,
-                   fz: float = 11):
+                   fz: float = 11,
+                   obj=None):
     """
     Places annotation (or title) within the figure box
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
@@ -103,9 +111,10 @@ def proxy_annotate(annotation: list = None,
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
     :return:
     """
-    obj = plt
+    if obj is None:
+        obj = plt
 
-    legend_a = plt.legend(obj.plot([], linestyle=None, color='w', alpha=0, markeredgecolor=None),
+    legend_a = obj.legend(plt.plot([], linestyle=None, color='w', alpha=0, markeredgecolor=None),
                           annotation,
                           handlelength=0,
                           handletextpad=0,

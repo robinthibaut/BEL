@@ -39,7 +39,6 @@ root = '818bf1676c424f76b83bd777ae588a1d'
 f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
 cca_operator, d_pco = list(map(joblib.load, f_names))
 
-
 h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
 h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
@@ -107,117 +106,120 @@ kde_y_samp, sup_samp = marginal_eval_y(y_samp)
 xmin, xmax = min(sup_x), max(sup_x)
 ymin, ymax = min(sup_y), max(sup_y)
 
+
 # %%
-height = 6
-ratio = 6
-space = 0
-dropna = False
-xlim = None
-ylim = None
-size = None
-marginal_ticks = False
-hue = None
-palette = None
-hue_order = None
-hue_norm = None
+def kde_cca():
+    height = 6
+    ratio = 6
+    space = 0
 
-# Set up the subplot grid
-f = plt.figure(figsize=(height, height))
-gs = plt.GridSpec(ratio + 1, ratio + 1)
+    xlim = None
+    ylim = None
+    marginal_ticks = False
 
-ax_joint = f.add_subplot(gs[1:, :-1])
-ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
-ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
+    # Set up the subplot grid
+    f = plt.figure(figsize=(height, height))
+    gs = plt.GridSpec(ratio + 1, ratio + 1)
 
-fig = f
-ax_joint = ax_joint
-ax_marg_x = ax_marg_x
-ax_marg_y = ax_marg_y
+    ax_joint = f.add_subplot(gs[1:, :-1])
+    ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
+    ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
 
-# Turn off tick visibility for the measure axis on the marginal plots
-plt.setp(ax_marg_x.get_xticklabels(), visible=False)
-plt.setp(ax_marg_y.get_yticklabels(), visible=False)
-plt.setp(ax_marg_x.get_xticklabels(minor=True), visible=False)
-plt.setp(ax_marg_y.get_yticklabels(minor=True), visible=False)
+    fig = f
+    ax_joint = ax_joint
+    ax_marg_x = ax_marg_x
+    ax_marg_y = ax_marg_y
 
-# Turn off the ticks on the density axis for the marginal plots
-plt.setp(ax_marg_x.yaxis.get_majorticklines(), visible=False)
-plt.setp(ax_marg_x.yaxis.get_minorticklines(), visible=False)
-plt.setp(ax_marg_y.xaxis.get_majorticklines(), visible=False)
-plt.setp(ax_marg_y.xaxis.get_minorticklines(), visible=False)
-plt.setp(ax_marg_x.get_yticklabels(), visible=False)
-plt.setp(ax_marg_y.get_xticklabels(), visible=False)
-plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
-plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
-ax_marg_x.yaxis.grid(False)
-ax_marg_y.xaxis.grid(False)
+    # Turn off tick visibility for the measure axis on the marginal plots
+    plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+    plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+    plt.setp(ax_marg_x.get_xticklabels(minor=True), visible=False)
+    plt.setp(ax_marg_y.get_yticklabels(minor=True), visible=False)
 
-if xlim is not None:
-    ax_joint.set_xlim(xlim)
-if ylim is not None:
-    ax_joint.set_ylim(ylim)
+    # Turn off the ticks on the density axis for the marginal plots
+    plt.setp(ax_marg_x.yaxis.get_majorticklines(), visible=False)
+    plt.setp(ax_marg_x.yaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_marg_y.xaxis.get_majorticklines(), visible=False)
+    plt.setp(ax_marg_y.xaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_marg_x.get_yticklabels(), visible=False)
+    plt.setp(ax_marg_y.get_xticklabels(), visible=False)
+    plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
+    plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
+    ax_marg_x.yaxis.grid(False)
+    ax_marg_y.xaxis.grid(False)
 
-# Make the grid look nice
-despine(f)
-if not marginal_ticks:
-    despine(ax=ax_marg_x, left=True)
-    despine(ax=ax_marg_y, bottom=True)
-for axes in [ax_marg_x, ax_marg_y]:
-    for axis in [axes.xaxis, axes.yaxis]:
-        axis.label.set_visible(False)
-f.tight_layout()
-f.subplots_adjust(hspace=space, wspace=space)
+    if xlim is not None:
+        ax_joint.set_xlim(xlim)
+    if ylim is not None:
+        ax_joint.set_ylim(ylim)
 
-# Filled contour plot
-z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
-cs = ax_joint.contourf(xx, yy, z, cmap='Greens', levels=69)
-# Vertical line
-ax_joint.axvline(x=d_cca_prediction[0], color='blue', linewidth=.5, alpha=.5)
-# Horizontal line
-ax_joint.axhline(y=h_cca_prediction[0], color='red', linewidth=.5, alpha=.5)
-# Horizontal line
-# ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
-# Scatter plot
-ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
-# Point
-ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-              'wo', markersize=5, markeredgecolor='k', alpha=1,
-              label=f'{sample_n}')
-# Marginal x plot
-ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=1)
-ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
-ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5, label='$p(d^{c})$')
-# Marginal y plot
-ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=1)
-ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
-ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5, label='$p(h^{c})')
-# Test with BEL
-ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=1)
-ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
-# Conditional distribution
-ax_marg_y.plot(hp, sup, 'r', alpha=0)
-ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
-# Labels
-ax_joint.set_xlabel('$d^{c}$', fontsize=14)
-ax_joint.set_ylabel('$h^{c}$', fontsize=14)
-# plt.subplots_adjust(top=0.9)
-plt.tick_params(labelsize=14)
+    # Make the grid look nice
+    despine(f)
+    if not marginal_ticks:
+        despine(ax=ax_marg_x, left=True)
+        despine(ax=ax_marg_y, bottom=True)
+    for axes in [ax_marg_x, ax_marg_y]:
+        for axis in [axes.xaxis, axes.yaxis]:
+            axis.label.set_visible(False)
+    f.tight_layout()
+    f.subplots_adjust(hspace=space, wspace=space)
 
+    # Filled contour plot
+    z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
+    cs = ax_joint.contourf(xx, yy, z, cmap='Greens', levels=69)
+    # Vertical line
+    ax_joint.axvline(x=d_cca_prediction[0], color='blue', linewidth=.5, alpha=.5)
+    # Horizontal line
+    ax_joint.axhline(y=h_cca_prediction[0], color='red', linewidth=.5, alpha=.5)
+    # Horizontal line
+    # ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
+    # Scatter plot
+    ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
+    # Point
+    ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+                  'wo', markersize=5, markeredgecolor='k', alpha=1,
+                  label=f'{sample_n}')
+    # Marginal x plot
+    ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=1)
+    ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=.1, color='darkblue')
+    ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='blue', linewidth=.5, alpha=.5, label='$p(d^{c})$')
+    # Marginal y plot
+    ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=1)
+    ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='darkred')
+    ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='red', linewidth=.5, alpha=.5, label='$p(h^{c})')
+    # Test with BEL
+    ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=1)
+    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='gray', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+    # Conditional distribution
+    ax_marg_y.plot(hp, sup, 'r', alpha=0)
+    ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+    # Labels
+    ax_joint.set_xlabel('$d^{c}$', fontsize=14)
+    ax_joint.set_ylabel('$h^{c}$', fontsize=14)
+    # plt.subplots_adjust(top=0.9)
+    plt.tick_params(labelsize=14)
+
+    return fig
+
+
+lol = kde_cca().axes[0]
 subtitle = my_alphabet(comp_n)
 # Add title inside the box
-# an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
-# legend_a = proxy_annotate(annotation=an,
-#                           loc=2,
-#                           fz=14)
+an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+legend_a = proxy_annotate(obj=lol,
+                          annotation=an,
+                          loc=2,
+                          fz=14)
 #
-# proxy_legend(legend1=legend_a,
-#              colors=['black', 'white'],
-#              labels=['Training', 'Test'],
-#              marker='o',
-#              pec=['k', 'k'])
+proxy_legend(obj=lol,
+             legend1=None,
+             colors=['black', 'white'],
+             labels=['Training', 'Test'],
+             marker='o',
+             pec=['k', 'k'])
 
+lol.add_artist(legend_a)
 # plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
-# plt.legend(loc=2)
 plt.show()
 
 # prior
@@ -241,7 +243,6 @@ plt.legend(loc=2)
 # plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
 
 plt.show()
-
 
 # # %%
 # # Choose beautiful color map
