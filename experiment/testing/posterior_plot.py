@@ -1,39 +1,22 @@
 import os
 
 import numpy as np
-import pandas as pd
-import seaborn as sns
+
 import joblib
 import matplotlib.pyplot as plt
 from numpy import ma
 from sklearn.preprocessing import PowerTransformer
 
+import experiment.calculation._statistics
 from experiment._core import setup
 from experiment.calculation import kdeplot
 from experiment.goggles.visualization import despine, my_alphabet, proxy_annotate, proxy_legend
 
-# https://stackoverflow.com/questions/35920885/how-to-overlay-a-seaborn-jointplot-with-a-marginal-distribution-histogram-fr
-# You can plot directly onto the JointGrid.ax_marg_x and JointGrid.ax_marg_y attributes,
-# which are the underlying matplotlib axes.
-# https://peterroelants.github.io/posts/multivariate-normal-primer/
 
-# Generate a random correlated bivariate dataset
-# rs = np.random.RandomState(5)
-# mean = [0, 0]
-# cov = [(1, .96), (.96, 1)]
-# x1, x2 = rs.multivariate_normal(mean, cov, 200).T
-# d = pd.Series(x1, name="$X_1$")
-# h = pd.Series(x2, name="$X_2$")
-
-# d_cca_prediction = [0]
-# h_cca_prediction = [0]
 comp_n = 0
 sample_n = 0
 base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
 res_dir = os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/')
-# ccalol = joblib.load('experiment/storage/forecasts/818bf1676c424f76b83bd777ae588a1d/123456/obj/cca.pkl')
-# d = ccalol.x_scores_[:, 0]
-# h = ccalol.y_scores_[:, 0]
 
 root = '818bf1676c424f76b83bd777ae588a1d'
 f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
@@ -52,15 +35,15 @@ h_pco.pca_test_fit_transform(h_pred, test_root=[root])
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
 # CCA plots
-d_cca_training, h_cca_training = cca_operator.transform(d_pc_training, h_pc_training)
+d_cca_training, h_cca_training = experiment.calculation._statistics.transform(d_pc_training, h_pc_training)
 d, h = d_cca_training.T, h_cca_training.T
 
 d_obs = d_pc_prediction[sample_n]
 h_obs = h_pc_prediction[sample_n]
 
 # # Transform to CCA space and transpose
-d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
-                                                            h_obs.reshape(1, -1))
+d_cca_prediction, h_cca_prediction = experiment.calculation._statistics.transform(d_obs.reshape(1, -1),
+                                                                                  h_obs.reshape(1, -1))
 
 # %%  Watch out for the transpose operator.
 h2 = h.copy()
@@ -82,7 +65,7 @@ h = h[comp_n]
 d_cca_prediction = d_cca_prediction[0]
 h_cca_prediction = h_cca_prediction[0]
 # Conditional:
-hp, sup = kdeplot.posterior_conditional(d, h, d_cca_prediction[0])
+hp, sup = experiment.calculation._statistics.posterior_conditional(d, h, d_cca_prediction[0])
 
 # load prediction object
 lol = joblib.load(os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl'))
@@ -91,11 +74,11 @@ post_test_t = tfm1.transform(post_test.T).T
 y_samp = post_test_t[0]
 
 # Plot h posterior given d
-density, support = kdeplot.kde_params(x=d, y=h)
+density, support = experiment.calculation._statistics.kde_params(x=d, y=h)
 xx, yy = support
 
-marginal_eval_x = kdeplot.KDE()
-marginal_eval_y = kdeplot.KDE()
+marginal_eval_x = experiment.calculation._statistics.KDE()
+marginal_eval_y = experiment.calculation._statistics.KDE()
 
 # support is cached
 kde_x, sup_x = marginal_eval_x(d)

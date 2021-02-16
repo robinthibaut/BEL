@@ -11,7 +11,7 @@ import numpy as np
 
 import experiment.toolbox.filesio as fops
 from experiment.base.inventory import Machine, MySetup
-from experiment.calculation.sgsim import sgsim
+from experiment.calculation._statistics import sgsim
 
 
 def test_sgems(folder=None):
