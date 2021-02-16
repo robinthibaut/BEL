@@ -1894,15 +1894,15 @@ def kde_cca(root: str,
             show: bool = False,
             dist_plot: bool = False):
 
-    # Get figure default parameters
-    ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde_plot()
-
     # Reload model
     d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(root=root,
                                                                                         well=well,
                                                                                         sample_n=sample_n)
 
     for comp_n in range(cca_operator.n_components):
+        # Get figure default parameters
+        ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde_plot()
+
         # Conditional:
         hp, sup = stats.posterior_conditional(x=d[comp_n],
                                               y=h[comp_n],
