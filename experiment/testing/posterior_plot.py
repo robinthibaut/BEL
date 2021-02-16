@@ -13,7 +13,7 @@ from experiment._visualization import despine, my_alphabet, proxy_annotate, prox
 import experiment._utils as ut
 
 
-def get_defaults_kde():
+def get_defaults_kde_plot():
     height = 6
     ratio = 6
     space = 0
@@ -72,9 +72,9 @@ def get_defaults_kde():
     return ax_joint, ax_marg_x, ax_marg_y
 
 
-def model_reload(root: str,
-                 well: str,
-                 sample_n: int):
+def reload_trained_model(root: str,
+                         well: str,
+                         sample_n: int = 0):
     base_dir = jp(setup.directories.forecasts_dir, 'base')
     res_dir = jp(setup.directories.forecasts_dir, root, well, 'obj')
 
@@ -93,7 +93,7 @@ def model_reload(root: str,
     h_pco.test_transform(h_pred, test_root=[root])
     h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
 
-    # CCA plots
+    # CCA scores
     d_cca_training, h_cca_training = cca_operator.x_scores_, cca_operator.y_scores_
 
     d, h = d_cca_training.T, h_cca_training.T
@@ -126,17 +126,19 @@ def model_reload(root: str,
 # %%
 def kde_cca(root: str,
             well: str,
-            sample_n: int,
-            comp_n=0,
+            sample_n: int = 0,
+            comp_n: int = 0,
             sdir: str = None,
-            show: bool = False):
+            show: bool = False,
+            dist_plot: bool = False):
+
     # Get figure default parameters
-    ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde()
+    ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde_plot()
 
     # Reload model
-    d, h, d_cca_prediction, h_cca_prediction, post = model_reload(root=root,
-                                                                  well=well,
-                                                                  sample_n=sample_n)
+    d, h, d_cca_prediction, h_cca_prediction, post = reload_trained_model(root=root,
+                                                                          well=well,
+                                                                          sample_n=sample_n)
 
     # Conditional:
     hp, sup = stats.posterior_conditional(x=d,
@@ -223,7 +225,6 @@ def kde_cca(root: str,
     # Labels
     ax_joint.set_xlabel('$d^{c}$', fontsize=14)
     ax_joint.set_ylabel('$h^{c}$', fontsize=14)
-    # plt.subplots_adjust(top=0.9)
     plt.tick_params(labelsize=14)
 
     # Add custom artists
@@ -286,5 +287,21 @@ def kde_cca(root: str,
 
         plt.legend(loc=2)
 
-        plt.savefig(jp(sdir, f'cca_prior_post_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
-        plt.close()
+        if sdir:
+            ut.dirmaker(sdir)
+            plt.savefig(jp(sdir, f'cca_prior_post_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
+            plt.close()
+        if show:
+            plt.show()
+            plt.close()
+
+        if dist_plot:
+            posterior_distribution()
+
+
+if __name__ == '__main__':
+    kde_cca(root='818bf1676c424f76b83bd777ae588a1d',
+            well='123456',
+            comp_n=0,
+            show=True,
+            dist_plot=True)
