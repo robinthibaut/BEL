@@ -414,6 +414,7 @@ class PosteriorIO:
     """
     Heart of the framework.
     """
+
     def __init__(self, directory: str = None):
         self.posterior_mean = None
         self.posterior_covariance = None
@@ -615,7 +616,7 @@ class PosteriorIO:
             d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
 
             # Transform to canonical space
-            d_cca_training, h_cca_training = transform(d_pc_training, h_pc_training)
+            d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
@@ -629,7 +630,7 @@ class PosteriorIO:
             d_rotations = cca_obj.x_rotations_
 
             # Project observed data into canonical space.
-            d_cca_prediction = transform(d_pc_obs.reshape(1, -1))
+            d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
 
             d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
 
@@ -667,9 +668,9 @@ class PosteriorIO:
         return forecast_posterior
 
 
-def transform(f,
-              k_mean: float,
-              k_std: float):
+def log_transform(f,
+                  k_mean: float,
+                  k_std: float):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data.
     :param: f: np.array: Simulation output = Hk field
@@ -757,7 +758,7 @@ def sgsim(model_ws: str,
     print(f'hk mean={10 ** k_mean} m/d')
     k_std = 0.4  # Log value of the standard deviation
 
-    tf = np.vectorize(transform)  # Transform values from log10
+    tf = np.vectorize(log_transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
     matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
