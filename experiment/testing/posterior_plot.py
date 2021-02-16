@@ -120,7 +120,7 @@ def reload_trained_model(root: str,
     d_cca_prediction = tfm2.transform(d_cca_prediction)
     d_cca_prediction = d_cca_prediction.T
 
-    return d, h, d_cca_prediction, h_cca_prediction, post
+    return d, h, d_cca_prediction[sample_n], h_cca_prediction[sample_n], post
 
 
 # %%
@@ -141,8 +141,8 @@ def kde_cca(root: str,
                                                                           sample_n=sample_n)
 
     # Conditional:
-    hp, sup = stats.posterior_conditional(x=d,
-                                          y=h,
+    hp, sup = stats.posterior_conditional(x=d[comp_n],
+                                          y=h[comp_n],
                                           x_obs=d_cca_prediction[comp_n])
 
     # load prediction object
@@ -151,15 +151,15 @@ def kde_cca(root: str,
     y_samp = post_test_t[comp_n]
 
     # Plot h posterior given d
-    density, support = stats.kde_params(x=d, y=h)
+    density, support = stats.kde_params(x=d[comp_n], y=h[comp_n])
     xx, yy = support
 
     marginal_eval_x = stats.KDE()
     marginal_eval_y = stats.KDE()
 
     # support is cached
-    kde_x, sup_x = marginal_eval_x(d)
-    kde_y, sup_y = marginal_eval_y(h)
+    kde_x, sup_x = marginal_eval_x(d[comp_n])
+    kde_y, sup_y = marginal_eval_y(h[comp_n])
     # use the same support as y
     kde_y_samp, sup_samp = marginal_eval_y(y_samp)
 
@@ -176,7 +176,7 @@ def kde_cca(root: str,
     ax_joint.axhline(y=h_cca_prediction[comp_n],
                      color='deepskyblue', linewidth=1, alpha=.5)
     # Scatter plot
-    ax_joint.scatter(d, h,
+    ax_joint.scatter(d[comp_n], h[comp_n],
                      c='k', marker='o', s=2, alpha=.7)
     # Point
     ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
