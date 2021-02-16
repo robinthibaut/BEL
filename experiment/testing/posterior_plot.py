@@ -108,7 +108,7 @@ ymin, ymax = min(sup_y), max(sup_y)
 
 
 # %%
-def kde_cca():
+def kde_cca(savefig: bool = False):
     height = 6
     ratio = 6
     space = 0
@@ -165,34 +165,64 @@ def kde_cca():
     f.subplots_adjust(hspace=space, wspace=space)
 
     # Filled contour plot
+    # Mask values under threshold
     z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
-    cs = ax_joint.contourf(xx, yy, z, cmap='Greens', levels=69)
+    # Filled contour plot
+    ax_joint.contourf(xx, yy, z,
+                      cmap='Greens', levels=69)
     # Vertical line
-    ax_joint.axvline(x=d_cca_prediction[0], color='red', linewidth=1, alpha=.5)
+    ax_joint.axvline(x=d_cca_prediction[comp_n],
+                     color='red', linewidth=1, alpha=.5)
     # Horizontal line
-    ax_joint.axhline(y=h_cca_prediction[0], color='deepskyblue', linewidth=1, alpha=.5)
-    # Horizontal line
-    # ax_joint.axhline(y=h_cca_prediction[0], color='b', linewidth=.5)
+    ax_joint.axhline(y=h_cca_prediction[comp_n],
+                     color='deepskyblue', linewidth=1, alpha=.5)
     # Scatter plot
-    ax_joint.scatter(d, h, c='k', marker='o', s=2, alpha=.7)
+    ax_joint.scatter(d, h,
+                     c='k', marker='o', s=2, alpha=.7)
     # Point
     ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                   'wo', markersize=5, markeredgecolor='k', alpha=1,
                   label=f'{sample_n}')
     # Marginal x plot
-    ax_marg_x.plot(sup_x, kde_x, color='black', linewidth=.5, alpha=1)
-    ax_marg_x.fill_between(sup_x, 0, kde_x, alpha=1, color='lightskyblue')
-    ax_marg_x.axvline(x=d_cca_prediction[0], ymax=0.25, color='red', linewidth=1, alpha=.5, label='$p(d^{c})$')
+    #  - Line plot
+    ax_marg_x.plot(sup_x, kde_x,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_x.fill_between(sup_x, 0, kde_x,
+                           color='lightskyblue', alpha=1)
+    #  - Notch indicating true value
+    ax_marg_x.axvline(x=d_cca_prediction[comp_n],
+                      ymax=0.25,
+                      color='red', linewidth=1, alpha=.5,
+                      label='$p(d^{c})$')
     # Marginal y plot
-    ax_marg_y.plot(kde_y, sup_y, color='black', linewidth=.5, alpha=1)
-    ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=.1, color='mistyrose')
-    ax_marg_y.axhline(y=h_cca_prediction[0], xmax=0.25, color='deepskyblue', linewidth=1, alpha=.5, label='$p(h^{c})')
-    # Test with BEL
-    ax_marg_y.plot(kde_y_samp, sup_samp, color='black', linewidth=.5, alpha=1)
-    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp, alpha=.3, color='coral', label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+    #  - Line plot
+    ax_marg_y.plot(kde_y, sup_y,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup_y, 0, kde_y,
+                            alpha=.1, color='mistyrose')
+    #  - Notch indicating true value
+    ax_marg_y.axhline(y=h_cca_prediction[comp_n],
+                      xmax=0.25,
+                      color='deepskyblue', linewidth=1, alpha=.5,
+                      label='$p(h^{c})')
+    # Marginal y plot with BEL
+    #  - Line plot
+    ax_marg_y.plot(kde_y_samp, sup_samp,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp,
+                            color='coral', alpha=.3,
+                            label='$p(h^{c}|d^{c}_{*})$ (BEL)')
     # Conditional distribution
-    ax_marg_y.plot(hp, sup, 'r', alpha=0)
-    ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='salmon', label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+    #  - Line plot
+    ax_marg_y.plot(hp, sup,
+                   color='red', alpha=0)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup, 0, hp,
+                            color='salmon', alpha=.4,
+                            label='$p(h^{c}|d^{c}_{*})$ (KDE)')
     # Labels
     ax_joint.set_xlabel('$d^{c}$', fontsize=14)
     ax_joint.set_ylabel('$h^{c}$', fontsize=14)
@@ -215,7 +245,10 @@ def kde_cca():
                  marker='o',
                  pec=['k', 'k'])
 
-    return fig
+    if savefig:
+        plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
+
+#
 
 
 # plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
