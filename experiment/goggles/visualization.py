@@ -292,7 +292,7 @@ def cca_plot(cca_operator,
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
             # Transform to CCA space and transpose
-            d_cca_prediction, h_cca_prediction = experiment._statistics.transform(d_obs.reshape(1, -1),
+            d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
                                                                                   h_obs.reshape(1, -1))
 
             # %%  Watch out for the transpose operator.
