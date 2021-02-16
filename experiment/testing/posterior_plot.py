@@ -7,9 +7,8 @@ import matplotlib.pyplot as plt
 from numpy import ma
 from sklearn.preprocessing import PowerTransformer
 
-import experiment.calculation._statistics
+import experiment._statistics
 from experiment._core import setup
-from experiment.calculation import kdeplot
 from experiment.goggles.visualization import despine, my_alphabet, proxy_annotate, proxy_legend
 
 
@@ -35,15 +34,15 @@ h_pco.pca_test_fit_transform(h_pred, test_root=[root])
 h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
 # CCA plots
-d_cca_training, h_cca_training = experiment.calculation._statistics.transform(d_pc_training, h_pc_training)
+d_cca_training, h_cca_training = experiment._statistics.transform(d_pc_training, h_pc_training)
 d, h = d_cca_training.T, h_cca_training.T
 
 d_obs = d_pc_prediction[sample_n]
 h_obs = h_pc_prediction[sample_n]
 
 # # Transform to CCA space and transpose
-d_cca_prediction, h_cca_prediction = experiment.calculation._statistics.transform(d_obs.reshape(1, -1),
-                                                                                  h_obs.reshape(1, -1))
+d_cca_prediction, h_cca_prediction = experiment._statistics.transform(d_obs.reshape(1, -1),
+                                                                      h_obs.reshape(1, -1))
 
 # %%  Watch out for the transpose operator.
 h2 = h.copy()
@@ -65,7 +64,7 @@ h = h[comp_n]
 d_cca_prediction = d_cca_prediction[0]
 h_cca_prediction = h_cca_prediction[0]
 # Conditional:
-hp, sup = experiment.calculation._statistics.posterior_conditional(d, h, d_cca_prediction[0])
+hp, sup = experiment._statistics.posterior_conditional(d, h, d_cca_prediction[0])
 
 # load prediction object
 lol = joblib.load(os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl'))
@@ -74,11 +73,11 @@ post_test_t = tfm1.transform(post_test.T).T
 y_samp = post_test_t[0]
 
 # Plot h posterior given d
-density, support = experiment.calculation._statistics.kde_params(x=d, y=h)
+density, support = experiment._statistics.kde_params(x=d, y=h)
 xx, yy = support
 
-marginal_eval_x = experiment.calculation._statistics.KDE()
-marginal_eval_y = experiment.calculation._statistics.KDE()
+marginal_eval_x = experiment._statistics.KDE()
+marginal_eval_y = experiment._statistics.KDE()
 
 # support is cached
 kde_x, sup_x = marginal_eval_x(d)

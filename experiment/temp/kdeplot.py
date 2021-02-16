@@ -4,7 +4,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from experiment.calculation._statistics import posterior_conditional
+from experiment._statistics import posterior_conditional
 
 if __name__ == '__main__':
     # Generate some 2D data

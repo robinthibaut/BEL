@@ -13,9 +13,8 @@ from numpy import ma
 from scipy.interpolate import make_interp_spline, BSpline
 from sklearn.preprocessing import PowerTransformer
 
-import experiment.calculation._statistics
+import experiment._statistics
 from experiment._core import setup
-from experiment.calculation import kdeplot
 from experiment.spatial.distance import grid_parameters
 from experiment.spatial.grid import binary_stack
 from experiment.spatial.grid import contours_vertices, refine_machine
@@ -293,8 +292,8 @@ def cca_plot(cca_operator,
             d_obs = d_pc_prediction[sample_n]
             h_obs = h_pc_prediction[sample_n]
             # Transform to CCA space and transpose
-            d_cca_prediction, h_cca_prediction = experiment.calculation._statistics.transform(d_obs.reshape(1, -1),
-                                                                                              h_obs.reshape(1, -1))
+            d_cca_prediction, h_cca_prediction = experiment._statistics.transform(d_obs.reshape(1, -1),
+                                                                                  h_obs.reshape(1, -1))
 
             # %%  Watch out for the transpose operator.
             h2 = h.copy()
@@ -339,10 +338,10 @@ def cca_plot(cca_operator,
             # h = ccalol.y_scores_[:, 0]
 
             # Plot h posterior given d
-            density, support = experiment.calculation._statistics.kde_params(x=d[comp_n], y=h[comp_n])
+            density, support = experiment._statistics.kde_params(x=d[comp_n], y=h[comp_n])
             xx, yy = support
 
-            marginal_eval = experiment.calculation._statistics.KDE()
+            marginal_eval = experiment._statistics.KDE()
 
             kde_x, sup_x = marginal_eval(d[comp_n])
             kde_y, sup_y = marginal_eval(h[comp_n])
@@ -428,7 +427,7 @@ def cca_plot(cca_operator,
             # ax_marg_y.arrow(d_cca_prediction[0], 0, .05, 0, color='red', head_width=.05, head_length=.05, lw=.5, alpha=.5)
 
             # Conditional distribution
-            hp, sup = experiment.calculation._statistics.posterior_conditional(d[comp_n], h[comp_n], d_cca_prediction[comp_n][0])
+            hp, sup = experiment._statistics.posterior_conditional(d[comp_n], h[comp_n], d_cca_prediction[comp_n][0])
             ax_marg_y.plot(hp, sup, 'r', alpha=0)
             ax_marg_y.fill_betweenx(sup, 0, hp, alpha=.4, color='red')
             # Labels
@@ -1334,7 +1333,7 @@ def cca_vision(root: str = None,
         h_pc_training, h_pc_prediction = h_pco.pca_refresh(hnc0)
 
         # CCA plots
-        d_cca_training, h_cca_training = experiment.calculation._statistics.transform(d_pc_training, h_pc_training)
+        d_cca_training, h_cca_training = experiment._statistics.transform(d_pc_training, h_pc_training)
         d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
         cca_plot(cca_operator,

@@ -19,7 +19,7 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment.calculation._statistics import PosteriorIO
+from experiment._statistics import PosteriorIO
 from experiment.spatial.distance import grid_parameters, modified_hausdorff
 from experiment.spatial.grid import binary_polygon, contours_vertices, refine_machine
 from experiment.toolbox import filesio as fops

@@ -1,17 +1,14 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import multiprocessing as mp
-import shutil
 import time
 import uuid
-import os
 from os.path import join as jp
 
 import numpy as np
 
 import experiment.toolbox.filesio as fops
-from experiment.base.inventory import Machine, MySetup
-from experiment.calculation._statistics import sgsim
+from experiment.base.inventory import MySetup
+from experiment._statistics import sgsim
 
 
 def test_sgems(folder=None):
