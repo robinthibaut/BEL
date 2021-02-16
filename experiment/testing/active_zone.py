@@ -9,13 +9,12 @@ from diavatly import model_map
 
 import experiment._spatial
 from experiment._core import setup
-from experiment._visualization import Plot
-from experiment.hydro.whpa.travelling_particles import tsp
+import experiment._visualization as mplot
+from experiment.processing.travelling_particles import tsp
 from experiment._spatial import grid_parameters, get_centroids, binary_polygon
 
 
 def active_zone(modflowmodel):
-
     version = 'mt3d-usgs'
     namefile_ext = 'mtnam'
     ftlfilename = 'mt3d_link.ftl'
@@ -79,15 +78,15 @@ def active_zone(modflowmodel):
     # Assign 0|1 value
     icbund = binary_polygon(sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
 
-    mt_icbund_file = jp(Directories().grid_dir, 'mt3d_icbund.npy')
+    mt_icbund_file = jp(setup.directories.grid_dir, 'mt3d_icbund.npy')
     np.save(mt_icbund_file, icbund)  # Save active zone
 
     # Check what we've done: plot the active zone.
     val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
     # Define a dummy grid with large cell dimensions to plot on it.
     grf_dummy = 10
-    nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1])/grf_dummy)
-    ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1])/grf_dummy)
+    nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1]) / grf_dummy)
+    ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1]) / grf_dummy)
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
@@ -96,12 +95,11 @@ def active_zone(modflowmodel):
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
 
     # We have to use flipud for the matrix to correspond.
-    po = Plot(grf=grf_dummy)
-    po.whpa_plot(bkg_field_array=np.flipud(val_dummy_r),
-                 show_wells=True,
-                 show=True)
+    mplot.whpa_plot(grf=grf_dummy,
+                    bkg_field_array=np.flipud(val_dummy_r),
+                    show_wells=True,
+                    show=True)
 
     grid1 = experiment._spatial.blocks_from_rc(np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)
     plt.show()
-

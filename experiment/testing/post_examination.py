@@ -5,11 +5,11 @@ from os.path import join as jp
 
 import seaborn as sb
 
-from experiment._visualization import Plot
+import experiment._visualization as mplot
 
-from experiment.base.inventory import MySetup
+from experiment._core import setup
 
-md = MySetup.directories()
+md = setup.directories
 
 root = '818bf1676c424f76b83bd777ae588a1d'
 sources = '123456'
@@ -38,10 +38,10 @@ nn = np.load(ndor)
 
 #%%
 
-fc = MySetup.focus()
+fc = setup.focus
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
-mplot = Plot(x_lim=x_lim, y_lim=y_lim, grf=grf, well_comb=None)
-mplot.whpa_plot(h=nn,
+
+mplot.whpa_plot(whpa=nn,
                 x_lim=x_lim,
                 y_lim=[335, 700],
                 labelsize=11,
@@ -51,8 +51,7 @@ mplot.whpa_plot(h=nn,
                 cb_title='SD(m)',
                 annotation=['B'],
                 bkg_field_array=np.flipud(nn[0]),
-                color='black',
-                cmap=None)
+                color='black')
 
 # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
 # plt.gca().add_artist(legend)

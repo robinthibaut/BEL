@@ -11,3 +11,4 @@ vtk
 pandas
 seaborn
 dataclasses
+diavatly
