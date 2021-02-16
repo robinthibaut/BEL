@@ -214,7 +214,8 @@ def pca_scores(training,
         # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
         cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
         # KDE plot
-        sns.kdeplot(np.arange(1, n_comp + 1), training.T[:n_comp][:, 1], cmap=cmap, n_levels=60, shade=True, vertical=True)
+        sns.kdeplot(np.arange(1, n_comp + 1), training.T[:n_comp][:, 1], cmap=cmap, n_levels=60, shade=True,
+                    vertical=True)
         plt.xlim(0.5, n_comp)  # Define x limits [start, end]
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
@@ -258,6 +259,159 @@ def pca_scores(training,
         plt.close()
     if show:
         plt.show()
+
+
+def get_defaults_kde():
+    height = 6
+    ratio = 6
+    space = 0
+
+    xlim = None
+    ylim = None
+    marginal_ticks = False
+
+    # Set up the subplot grid
+    f = plt.figure(figsize=(height, height))
+    gs = plt.GridSpec(ratio + 1, ratio + 1)
+
+    ax_joint = f.add_subplot(gs[1:, :-1])
+    ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
+    ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
+
+    fig = f
+    ax_joint = ax_joint
+    ax_marg_x = ax_marg_x
+    ax_marg_y = ax_marg_y
+
+    # Turn off tick visibility for the measure axis on the marginal plots
+    plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+    plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+    plt.setp(ax_marg_x.get_xticklabels(minor=True), visible=False)
+    plt.setp(ax_marg_y.get_yticklabels(minor=True), visible=False)
+
+    # Turn off the ticks on the density axis for the marginal plots
+    plt.setp(ax_marg_x.yaxis.get_majorticklines(), visible=False)
+    plt.setp(ax_marg_x.yaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_marg_y.xaxis.get_majorticklines(), visible=False)
+    plt.setp(ax_marg_y.xaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_marg_x.get_yticklabels(), visible=False)
+    plt.setp(ax_marg_y.get_xticklabels(), visible=False)
+    plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
+    plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
+    ax_marg_x.yaxis.grid(False)
+    ax_marg_y.xaxis.grid(False)
+
+    if xlim is not None:
+        ax_joint.set_xlim(xlim)
+    if ylim is not None:
+        ax_joint.set_ylim(ylim)
+
+    # Make the grid look nice
+    despine(f)
+    if not marginal_ticks:
+        despine(ax=ax_marg_x, left=True)
+        despine(ax=ax_marg_y, bottom=True)
+    for axes in [ax_marg_x, ax_marg_y]:
+        for axis in [axes.xaxis, axes.yaxis]:
+            axis.label.set_visible(False)
+    f.tight_layout()
+    f.subplots_adjust(hspace=space, wspace=space)
+
+    return ax_joint, ax_marg_x, ax_marg_y
+
+
+def kde_cca(sdir: str = None,
+            show: bool = False):
+
+    ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde()
+    # Filled contour plot
+    # Mask values under threshold
+    z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
+    # Filled contour plot
+    ax_joint.contourf(xx, yy, z,
+                      cmap='Greens', levels=69)
+    # Vertical line
+    ax_joint.axvline(x=d_cca_prediction[comp_n],
+                     color='red', linewidth=1, alpha=.5)
+    # Horizontal line
+    ax_joint.axhline(y=h_cca_prediction[comp_n],
+                     color='deepskyblue', linewidth=1, alpha=.5)
+    # Scatter plot
+    ax_joint.scatter(d, h,
+                     c='k', marker='o', s=2, alpha=.7)
+    # Point
+    ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
+                  'wo', markersize=5, markeredgecolor='k', alpha=1,
+                  label=f'{sample_n}')
+    # Marginal x plot
+    #  - Line plot
+    ax_marg_x.plot(sup_x, kde_x,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_x.fill_between(sup_x, 0, kde_x,
+                           color='lightskyblue', alpha=1)
+    #  - Notch indicating true value
+    ax_marg_x.axvline(x=d_cca_prediction[comp_n],
+                      ymax=0.25,
+                      color='red', linewidth=1, alpha=.5,
+                      label='$p(d^{c})$')
+    # Marginal y plot
+    #  - Line plot
+    ax_marg_y.plot(kde_y, sup_y,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup_y, 0, kde_y,
+                            alpha=.1, color='mistyrose')
+    #  - Notch indicating true value
+    ax_marg_y.axhline(y=h_cca_prediction[comp_n],
+                      xmax=0.25,
+                      color='deepskyblue', linewidth=1, alpha=.5,
+                      label='$p(h^{c})')
+    # Marginal y plot with BEL
+    #  - Line plot
+    ax_marg_y.plot(kde_y_samp, sup_samp,
+                   color='black', linewidth=.5, alpha=1)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp,
+                            color='coral', alpha=.3,
+                            label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+    # Conditional distribution
+    #  - Line plot
+    ax_marg_y.plot(hp, sup,
+                   color='red', alpha=0)
+    #  - Fill to axis
+    ax_marg_y.fill_betweenx(sup, 0, hp,
+                            color='salmon', alpha=.4,
+                            label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+    # Labels
+    ax_joint.set_xlabel('$d^{c}$', fontsize=14)
+    ax_joint.set_ylabel('$h^{c}$', fontsize=14)
+    # plt.subplots_adjust(top=0.9)
+    plt.tick_params(labelsize=14)
+
+    # Add custom artists
+    subtitle = my_alphabet(comp_n)
+    # Add title inside the box
+    an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+    legend_a = proxy_annotate(obj=ax_joint,
+                              annotation=an,
+                              loc=2,
+                              fz=14)
+    #
+    proxy_legend(obj=ax_joint,
+                 legend1=legend_a,
+                 colors=['black', 'white'],
+                 labels=['Training', 'Test'],
+                 marker='o',
+                 pec=['k', 'k'])
+
+    if sdir:
+        ut.dirmaker(sdir)
+        plt.savefig(jp(sdir, 'cca_kde_{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
+        plt.close()
+    if show:
+        plt.show()
+        plt.close()
 
 
 def cca_plot(cca_operator,
@@ -1208,7 +1362,7 @@ def plot_pc_ba(root: str = None,
 
         h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))  # Signed Distance
         # Cut desired number of PC components
-        h_pco.test_fit_transform(h_pred, test_root=[root])
+        h_pco.test_transform(h_pred, test_root=[root])
         h_pco.comp_refresh(hnc0)
         h_pca_inverse_plot(pca_o=h_pco,
                            training=False,
@@ -1332,7 +1486,7 @@ def cca_vision(root: str = None,
 
         # Cut desired number of PC components
         d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
-        h_pco.test_fit_transform(h_pred, test_root=[root])
+        h_pco.test_transform(h_pred, test_root=[root])
         h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
 
         # CCA plots
@@ -1441,7 +1595,7 @@ def pca_vision(root,
         # Load npy whpa prediction
         prediction = np.load(os.path.join(hbase, 'roots_whpa', f'{root}.npy'))
         # Transform and split
-        h_pco.test_fit_transform(prediction, test_root=[root])
+        h_pco.test_transform(prediction, test_root=[root])
         nho = h_pco.n_pc_cut
         h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
         # Plot

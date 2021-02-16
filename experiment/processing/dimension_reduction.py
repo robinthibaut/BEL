@@ -60,22 +60,14 @@ class PC:
         :return: numpy.ndarray: PC training
         """
 
-        # self.scaler = StandardScaler(with_mean=False)
-        # self.operator = PCA()
-        # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
-        # self.pipe = make_pipeline(self.scaler, self.operator, self.transformer, verbose=True)
-
         self.pipe.fit(self.training_physical)
         self.training_pc = self.pipe.transform(self.training_physical)
-        # self.operator.fit(self.training_physical)  # Principal components
-        # # Transform training data into principal components
-        # self.training_pc = self.operator.transform(self.training_physical)
 
         return self.training_pc
 
-    def test_fit_transform(self,
-                           test,
-                           test_root: list):
+    def test_transform(self,
+                       test: np.array,
+                       test_root: list):
         """
         Transforms observation to PC scores.
         :param test: numpy.ndarray: Observation array
@@ -90,7 +82,6 @@ class PC:
         self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
 
         # Transform prediction data into principal components
-        # pc_prediction = self.operator.transform(self.predict_physical)
         pc_prediction = self.pipe.transform(self.predict_physical)
         self.predict_pc = pc_prediction
 

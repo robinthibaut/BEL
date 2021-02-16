@@ -685,7 +685,8 @@ def log_transform(f,
 
 def sgsim(model_ws: str,
           grid_dir: str,
-          wells_hk: list = None):
+          wells_hk: list = None,
+          save: bool = True):
     """
     Perform sequential gaussian simulation to generate K fields.
     :param model_ws: str: Working directory
@@ -693,10 +694,10 @@ def sgsim(model_ws: str,
     :param wells_hk: List[float]: K values at wells
     :return:
     """
-    # %% Initiate sgems pjt
+    # Initiate sgems pjt
     pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
 
-    # %% Load hard data point set
+    # Load hard data point set
 
     data_dir = grid_dir
     dataset = 'wells.eas'
@@ -713,7 +714,7 @@ def sgsim(model_ws: str,
         hd.dataframe['hd'] = hku
         hd.export_01('hd')  # Exports modified dataset in binary
 
-    # %% Generate grid. Grid dimensions can automatically be generated based on the data points
+    # Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     gd = setup.grid_dimensions()
     Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
@@ -728,23 +729,23 @@ def sgsim(model_ws: str,
         hk0 = np.load(jp(model_ws, 'hk0.npy'))
         return hk0, centers
 
-    # %% Display point coordinates and grid
+    # Display point coordinates and grid
     # pl = Plots(project=pjt)
     # pl.plot_coordinates()
 
-    # %% Load your algorithm xml file in the 'algorithms' folder.
+    # Load your algorithm xml file in the 'algorithms' folder.
     dir_path = os.path.abspath(__file__ + "/..")
     algo_dir = jp(dir_path, 'algorithms')
     al = XML(project=pjt, algo_dir=algo_dir)
     al.xml_reader('bel_sgsim')
 
-    # %% Modify xml below:
+    # Modify xml below:
     al.xml_update('Seed', 'value', str(np.random.randint(1e9)), show=0)
 
-    # %% Write python script
+    # Write python script
     pjt.write_command()
 
-    # %% Run sgems
+    # Run sgems
     pjt.run()
     # Plot 2D results
     # pl.plot_2d(save=True)
@@ -771,6 +772,7 @@ def sgsim(model_ws: str,
     # plt.colorbar()
     # plt.show()
 
-    np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
+    if save:
+        np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
 
     return matrix, centers

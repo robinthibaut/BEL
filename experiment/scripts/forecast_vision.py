@@ -35,38 +35,38 @@ if __name__ == '__main__':
 
         wells = ['123456']
 
-        # for j, w in enumerate(wells):
-        #
-        #     print(f'Plotting well {w}')
-        #
-        #     if w == '123456':
-        #         annotation = alphabet[i]
-        #     else:
-        #         annotation = alphabet[j-1]
-        #
-        #     myvis.plot_results(root=sample,
-        #                        folder=w,
-        #                        annotation=annotation,
-        #                        d=True)
-        #
-        # myvis.plot_K_field(root=sample)
-        #
-        # myvis.plot_head_field(root=sample)
-        #
-        # myvis.plot_whpa(root=sample)
-        # #
-        # myvis.pca_vision(root=sample,
-        #                  d=True,
-        #                  h=True,
-        #                  exvar=True,
-        #                  labels=True,
-        #                  scores=True,
-        #                  folders=wells)
+        for j, w in enumerate(wells):
 
-        # myvis.plot_pc_ba(root=sample,
-        #                  data=True,
-        #                  target=True)
+            print(f'Plotting well {w}')
 
-        myvis.cca_vision(root=sample,
+            if w == '123456':
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j-1]
+
+            myvis.plot_results(root=sample,
+                               folder=w,
+                               annotation=annotation,
+                               d=True)
+
+        myvis.plot_K_field(root=sample)
+
+        myvis.plot_head_field(root=sample)
+
+        myvis.plot_whpa(root=sample)
+        #
+        myvis.pca_vision(root=sample,
+                         d=True,
+                         h=True,
+                         exvar=True,
+                         labels=True,
+                         scores=True,
                          folders=wells)
+
+        myvis.plot_pc_ba(root=sample,
+                         data=True,
+                         target=True)
+
+        # myvis.cca_vision(root=sample,
+        #                  folders=wells)
         #

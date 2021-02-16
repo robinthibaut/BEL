@@ -200,7 +200,7 @@ def fit_transform(base,
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
-    d_pco.test_fit_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
+    d_pco.test_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
     d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -215,7 +215,7 @@ def fit_transform(base,
     if h_pco.predict_pc is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
-        h_pco.test_fit_transform(h, test_root=test_root)
+        h_pco.test_transform(h, test_root=test_root)
         # Cut desired number of components
         h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
         # Save updated PCA object in base

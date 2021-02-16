@@ -7,92 +7,67 @@ import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 from numpy import ma
-from sklearn.preprocessing import PowerTransformer
 
 import experiment._statistics as stats
 from experiment._core import setup
 from experiment._visualization import despine, my_alphabet, proxy_annotate, proxy_legend
 
-comp_n = 0
-sample_n = 0
-base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
-res_dir = os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/')
 
-root = '818bf1676c424f76b83bd777ae588a1d'
-f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca']))
-cca_operator, d_pco = list(map(joblib.load, f_names))
+def model_reload(root: str,
+                 well: str,
+                 sample_n: int):
 
-h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
-h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
+    base_dir = os.path.join(setup.directories.forecasts_dir, 'base')
+    res_dir = os.path.join(setup.directories.forecasts_dir, root, well, 'obj')
 
-# Inspect transformation between physical and PC space
-dnc0 = d_pco.n_pc_cut
-hnc0 = h_pco.n_pc_cut
+    f_names = list(map(lambda fn: os.path.join(res_dir, f'{fn}.pkl'), ['cca', 'd_pca', 'post']))
+    cca_operator, d_pco, post = list(map(joblib.load, f_names))
 
-# Cut desired number of PC components
-d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
-h_pco.test_fit_transform(h_pred, test_root=[root])
-h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
+    h_pco = joblib.load(os.path.join(base_dir, 'h_pca.pkl'))
+    h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))
 
-# CCA plots
-d_cca_training, h_cca_training = cca_operator.transform(d_pc_training,
-                                                        h_pc_training)
-d, h = d_cca_training.T, h_cca_training.T
+    # Inspect transformation between physical and PC space
+    dnc0 = d_pco.n_pc_cut
+    hnc0 = h_pco.n_pc_cut
 
-d_obs = d_pc_prediction[sample_n]
-h_obs = h_pc_prediction[sample_n]
+    # Cut desired number of PC components
+    d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
+    h_pco.test_transform(h_pred, test_root=[root])
+    h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
 
-# # Transform to CCA space and transpose
-d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
-                                                            h_obs.reshape(1, -1))
+    # CCA plots
+    d_cca_training, h_cca_training = cca_operator.x_scores_, cca_operator.y_scores_
 
-# %%  Watch out for the transpose operator.
-h2 = h.copy()
-d2 = d.copy()
-tfm1 = PowerTransformer(method='yeo-johnson', standardize=True)
-h = tfm1.fit_transform(h2.T)
-h = h.T
-h_cca_prediction = tfm1.transform(h_cca_prediction)
-h_cca_prediction = h_cca_prediction.T
+    d, h = d_cca_training.T, h_cca_training.T
 
-tfm2 = PowerTransformer(method='yeo-johnson', standardize=True)
-d = tfm2.fit_transform(d2.T)
-d = d.T
-d_cca_prediction = tfm2.transform(d_cca_prediction)
-d_cca_prediction = d_cca_prediction.T
+    d_obs = d_pc_prediction[sample_n]
+    h_obs = h_pc_prediction[sample_n]
 
-d = d[comp_n]
-h = h[comp_n]
-d_cca_prediction = d_cca_prediction[0]
-h_cca_prediction = h_cca_prediction[0]
-# Conditional:
-hp, sup = stats.posterior_conditional(d, h, d_cca_prediction[0])
+    # # Transform to CCA space and transpose
+    d_cca_prediction, h_cca_prediction = cca_operator.transform(d_obs.reshape(1, -1),
+                                                                h_obs.reshape(1, -1))
 
-# load prediction object
-lol = joblib.load(os.path.join(setup.directories.forecasts_dir, '818bf1676c424f76b83bd777ae588a1d/123456/obj/post.pkl'))
-post_test = lol.random_sample(200).T
-post_test_t = tfm1.transform(post_test.T).T
-y_samp = post_test_t[0]
+    #  Watch out for the transpose operator.
+    h2 = h.copy()
+    d2 = d.copy()
+    tfm1 = post.normalize_h
+    h = tfm1.transform(h2.T)
+    h = h.T
+    h_cca_prediction = tfm1.transform(h_cca_prediction)
+    h_cca_prediction = h_cca_prediction.T
 
-# Plot h posterior given d
-density, support = stats.kde_params(x=d, y=h)
-xx, yy = support
+    tfm2 = post.normalize_d
+    d = tfm2.transform(d2.T)
+    d = d.T
+    d_cca_prediction = tfm2.transform(d_cca_prediction)
+    d_cca_prediction = d_cca_prediction.T
 
-marginal_eval_x = stats.KDE()
-marginal_eval_y = stats.KDE()
-
-# support is cached
-kde_x, sup_x = marginal_eval_x(d)
-kde_y, sup_y = marginal_eval_y(h)
-# use the same support as y
-kde_y_samp, sup_samp = marginal_eval_y(y_samp)
-
-xmin, xmax = min(sup_x), max(sup_x)
-ymin, ymax = min(sup_y), max(sup_y)
+    return d, h, d_cca_prediction, h_cca_prediction, post
 
 
 # %%
-def kde_cca(savefig: bool = False):
+def kde_cca(comp_n=0,
+            savefig: bool = False):
     height = 6
     ratio = 6
     space = 0
@@ -148,6 +123,30 @@ def kde_cca(savefig: bool = False):
     f.tight_layout()
     f.subplots_adjust(hspace=space, wspace=space)
 
+    # Reload model
+    d, h, d_cca_prediction, h_cca_prediction, post = model_reload(0, 0)
+
+    # Conditional:
+    hp, sup = stats.posterior_conditional(d, h, d_cca_prediction[comp_n])
+
+    # load prediction object
+    post_test = post.random_sample(setup.forecast.n_posts).T
+    post_test_t = post.normalize_h.transform(post_test.T).T
+    y_samp = post_test_t[comp_n]
+
+    # Plot h posterior given d
+    density, support = stats.kde_params(x=d, y=h)
+    xx, yy = support
+
+    marginal_eval_x = stats.KDE()
+    marginal_eval_y = stats.KDE()
+
+    # support is cached
+    kde_x, sup_x = marginal_eval_x(d)
+    kde_y, sup_y = marginal_eval_y(h)
+    # use the same support as y
+    kde_y_samp, sup_samp = marginal_eval_y(y_samp)
+
     # Filled contour plot
     # Mask values under threshold
     z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
@@ -166,7 +165,7 @@ def kde_cca(savefig: bool = False):
     # Point
     ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                   'wo', markersize=5, markeredgecolor='k', alpha=1,
-                  label=f'{sample_n}')
+                  label=f'{comp_n}')
     # Marginal x plot
     #  - Line plot
     ax_marg_x.plot(sup_x, kde_x,
@@ -233,14 +232,6 @@ def kde_cca(savefig: bool = False):
         plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
 
 
-#
-
-
-# plt.savefig('plot3.png', bbox_inches='tight', dpi=300)
-kde_cca()
-plt.show()
-
-
 def posterior_distribution(savefig: bool = False):
     # prior
     plt.plot(sup_y, kde_y,
@@ -279,3 +270,7 @@ def posterior_distribution(savefig: bool = False):
 
     if savefig:
         plt.savefig('prior_post_h.png', bbox_inches='tight', dpi=300)
+
+
+if __name__ == '__main__':
+    model_reload(1,1)
