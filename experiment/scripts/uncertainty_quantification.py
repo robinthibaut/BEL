@@ -7,9 +7,9 @@ import joblib
 import numpy as np
 
 from experiment._core import setup
-from experiment.processing import decomposition as dcp
+from experiment.learning import bel_pipeline as dcp
 from experiment import _utils as ut
-from experiment.uq.forecast_error import UncertaintyQuantification
+from experiment.design.forecast_error import UncertaintyQuantification
 
 Root = List[str]
 
@@ -44,7 +44,7 @@ def scan_roots(base,
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel_pipeline(base=base, training_roots=training, test_root=r_, well_comb=c)
+            sf = dcp.fit_transform(base=base, training_roots=training, test_root=r_, well_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=setup.forecast.n_posts)  # Sample posterior
