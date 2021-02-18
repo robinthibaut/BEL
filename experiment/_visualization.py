@@ -1920,6 +1920,22 @@ def kde_cca(root: str,
     d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(root=root,
                                                                                         well=well,
                                                                                         sample_n=sample_n)
+    # Find max kde value
+    vmax = 0
+    for comp_n in range(cca_operator.n_components):
+
+        hp, sup = stats.posterior_conditional(x=d[comp_n],
+                                              y=h[comp_n],
+                                              x_obs=d_cca_prediction[comp_n])
+        # load prediction object
+        post_test = post.random_sample(setup.forecast.n_posts).T
+        post_test_t = post.normalize_h.transform(post_test.T).T
+
+        # Plot h posterior given d
+        density, _ = stats.kde_params(x=d[comp_n], y=h[comp_n])
+        maxloc = np.max(density)
+        if vmax > maxloc :
+            vmax = maxloc
 
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
@@ -1953,7 +1969,7 @@ def kde_cca(root: str,
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='Greens', levels=69, vmin=0, vmax=1)
+                               cmap='BuPu_r', levels=69, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
         cb.ax.set_title('Density')
         # Vertical line
