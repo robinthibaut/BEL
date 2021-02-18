@@ -51,7 +51,7 @@ def proxy_legend(legend1=None,
                  colors: list = None,
                  labels: list = None,
                  loc: int = 4,
-                 marker: str = '-',
+                 marker: list = None,
                  pec: list = None,
                  fz: float = 11,
                  fig_file: str = None,
@@ -71,9 +71,9 @@ def proxy_legend(legend1=None,
     :param extra: List of extra elements to be added on the final figure
     :return:
     """
+
     if obj is None:
         obj = plt
-
     # Default parameters
     if colors is None:
         colors = ['w']
@@ -83,9 +83,11 @@ def proxy_legend(legend1=None,
         pec = [None for _ in range(len(colors))]
     if extra is None:
         extra = []
+    if marker is None:
+        marker = ['-']
 
     # Proxy figures (empty plots)
-    proxys = [plt.plot([], marker, color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
+    proxys = [plt.plot([], marker[i], color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
     obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
@@ -1934,10 +1936,12 @@ def kde_cca(root: str,
                           cmap='Greens', levels=69)
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
-                         color='red', linewidth=1, alpha=.5)
+                         color='red', linewidth=1, alpha=.5,
+                         label='$d^{c}_{True}$')
         # Horizontal line
         ax_joint.axhline(y=h_cca_prediction[comp_n],
-                         color='deepskyblue', linewidth=1, alpha=.5)
+                         color='deepskyblue', linewidth=1, alpha=.5,
+                         label='$h^{c}_{True}$')
         # Scatter plot
         ax_joint.scatter(d[comp_n], h[comp_n],
                          c='k', marker='o', s=2, alpha=.7)
@@ -1951,40 +1955,45 @@ def kde_cca(root: str,
                        color='black', linewidth=.5, alpha=1)
         #  - Fill to axis
         ax_marg_x.fill_between(sup_x, 0, kde_x,
-                               color='lightskyblue', alpha=1)
+                               color='deepskyblue', alpha=.5,
+                               label='$p(d^{c})$'
+                               )
         #  - Notch indicating true value
         ax_marg_x.axvline(x=d_cca_prediction[comp_n],
                           ymax=0.25,
-                          color='red', linewidth=1, alpha=.5,
-                          label='$p(d^{c})$')
+                          color='red', linewidth=1, alpha=.5
+                          )
+        ax_marg_x.legend(fontsize=10)
+
         # Marginal y plot
         #  - Line plot
         ax_marg_y.plot(kde_y, sup_y,
                        color='black', linewidth=.5, alpha=1)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(sup_y, 0, kde_y,
-                                alpha=.1, color='mistyrose')
+                                alpha=.5, color='darkred',
+                                label='$p(h^{c})$')
         #  - Notch indicating true value
         ax_marg_y.axhline(y=h_cca_prediction[comp_n],
                           xmax=0.25,
-                          color='deepskyblue', linewidth=1, alpha=.5,
-                          label='$p(h^{c})')
+                          color='deepskyblue', linewidth=1, alpha=.5)
         # Marginal y plot with BEL
         #  - Line plot
         ax_marg_y.plot(kde_y_samp, sup_samp,
                        color='black', linewidth=.5, alpha=1)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp,
-                                color='coral', alpha=.3,
-                                label='$p(h^{c}|d^{c}_{*})$ (BEL)')
+                                color='coral', alpha=.4,
+                                label='$p(h^{c}|d^{c}_{*})_{BEL}$')
         # Conditional distribution
         #  - Line plot
         ax_marg_y.plot(hp, sup,
                        color='red', alpha=0)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(sup, 0, hp,
-                                color='salmon', alpha=.4,
-                                label='$p(h^{c}|d^{c}_{*})$ (KDE)')
+                                color='gray', alpha=.4,
+                                label='$p(h^{c}|d^{c}_{*})_{KDE}$')
+        ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel('$d^{c}$', fontsize=14)
         ax_joint.set_ylabel('$h^{c}$', fontsize=14)
@@ -2001,10 +2010,10 @@ def kde_cca(root: str,
         #
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
-                     colors=['black', 'white'],
-                     labels=['Training', 'Test'],
-                     marker='o',
-                     pec=['k', 'k'])
+                     colors=['black', 'white', 'red', 'deepskyblue'],
+                     labels=['Training', 'Test', '$d^{c}_{True}$', '$h^{c}_{True}$'],
+                     marker=['o', 'o', '-', '-'],
+                     pec=['k', 'k', None, None])
 
         if sdir:
             ut.dirmaker(sdir)
@@ -2031,13 +2040,13 @@ def kde_cca(root: str,
             plt.plot(sup_samp, kde_y_samp,
                      color='black', linewidth=.5, alpha=1)
             plt.fill_between(sup_samp, 0, kde_y_samp,
-                             color='coral', alpha=.5,
+                             color='gray', alpha=.5,
                              label='$p(h^{c}|d^{c}_{*})$ (BEL)')
 
             # True prediction
             plt.axvline(x=h_cca_prediction[0],
                         linewidth=3, alpha=.4, color='deepskyblue',
-                        label='True $h^{c}$')
+                        label='$h^{c}_{True}$')
 
             # Grid
             plt.grid(alpha=.2)
