@@ -1961,8 +1961,9 @@ def kde_cca(root: str,
         # Mask values under threshold
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
+        # 'BuPu_r' is nice
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='BuPu_r', levels=100, vmin=0, vmax=vmax)
+                               cmap='PRGn_r', levels=100, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
         cb.ax.set_title('$KDE_{Gaussian}$', fontsize=10)
         # Vertical line
