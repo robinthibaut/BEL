@@ -1877,12 +1877,9 @@ def get_defaults_kde_plot():
 
     plt.setp(ax_marg_x.get_yticklabels(), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(), visible=False)
-    # plt.setp(ax_cb.get_xticklabels(), visible=False)
 
     plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
-    # plt.setp(ax_cb.get_xticklabels(minor=False), visible=False)
-    # plt.setp(ax_cb.get_yticklabels(minor=False), visible=False)
 
     ax_marg_x.yaxis.grid(False)
     ax_marg_y.xaxis.grid(False)
@@ -1899,7 +1896,6 @@ def get_defaults_kde_plot():
     if not marginal_ticks:
         despine(ax=ax_marg_x, left=True)
         despine(ax=ax_marg_y, bottom=True)
-        # despine(ax=ax_cb, bottom=True)
 
     for axes in [ax_marg_x, ax_marg_y, ax_cb]:
         for axis in [axes.xaxis, axes.yaxis]:
@@ -1968,7 +1964,7 @@ def kde_cca(root: str,
         cf = ax_joint.contourf(xx, yy, z,
                                cmap='BuPu_r', levels=100, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
-        cb.ax.set_title('Density')
+        cb.ax.set_title('$KDE_{Gaussian}$', fontsize=10)
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
                          color='red', linewidth=1, alpha=.5,
@@ -1989,7 +1985,7 @@ def kde_cca(root: str,
                        color='black', linewidth=.5, alpha=1)
         #  - Fill to axis
         ax_marg_x.fill_between(sup_x, 0, kde_x,
-                               color='deepskyblue', alpha=.5,
+                               color='royalblue', alpha=.5,
                                label='$p(d^{c})$'
                                )
         #  - Notch indicating true value
@@ -2044,10 +2040,10 @@ def kde_cca(root: str,
         #
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
-                     colors=['lightgreen', 'black', 'white', 'red', 'deepskyblue'],
-                     labels=['$KDE_{Gaussian}$', '$Training$', '$Test$', '$d^{c}_{*}$', '$h^{c}_{True}$'],
-                     marker=['s', 'o', 'o', '-', '-'],
-                     pec=[None, 'k', 'k', None, None],
+                     colors=['black', 'white', 'red', 'deepskyblue'],
+                     labels=['$Training$', '$Test$', '$d^{c}_{*}$', '$h^{c}_{True}$'],
+                     marker=['o', 'o', '-', '-'],
+                     pec=['k', 'k', None, None],
                      fz=10)
 
         if sdir:
