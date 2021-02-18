@@ -1927,14 +1927,11 @@ def kde_cca(root: str,
         hp, sup = stats.posterior_conditional(x=d[comp_n],
                                               y=h[comp_n],
                                               x_obs=d_cca_prediction[comp_n])
-        # load prediction object
-        post_test = post.random_sample(setup.forecast.n_posts).T
-        post_test_t = post.normalize_h.transform(post_test.T).T
 
         # Plot h posterior given d
         density, _ = stats.kde_params(x=d[comp_n], y=h[comp_n])
         maxloc = np.max(density)
-        if vmax > maxloc :
+        if vmax < maxloc:
             vmax = maxloc
 
     for comp_n in range(cca_operator.n_components):
@@ -1952,7 +1949,7 @@ def kde_cca(root: str,
         y_samp = post_test_t[comp_n]
 
         # Plot h posterior given d
-        density, support = stats.kde_params(x=d[comp_n], y=h[comp_n])
+        density, support = stats.kde_params(x=d[comp_n], y=h[comp_n], gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = stats.KDE()
@@ -1969,7 +1966,7 @@ def kde_cca(root: str,
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='BuPu_r', levels=69, vmin=0, vmax=vmax)
+                               cmap='BuPu_r', levels=100, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
         cb.ax.set_title('Density')
         # Vertical line
@@ -1981,12 +1978,11 @@ def kde_cca(root: str,
                          color='deepskyblue', linewidth=1, alpha=.5,
                          label='$h^{c}_{True}$')
         # Scatter plot
-        ax_joint.scatter(d[comp_n], h[comp_n],
-                         c='k', marker='o', s=2, alpha=.7)
+        ax_joint.plot(d[comp_n], h[comp_n],
+                      'ko', markersize=2, alpha=.7)
         # Point
         ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
-                      'wo', markersize=5, markeredgecolor='k', alpha=1,
-                      label=f'{comp_n}')
+                      'wo', markersize=5, markeredgecolor='k', alpha=1)
         # Marginal x plot
         #  - Line plot
         ax_marg_x.plot(sup_x, kde_x,
