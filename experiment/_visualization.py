@@ -1953,9 +1953,9 @@ def kde_cca(root: str,
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='Greens', levels=69)
+                               cmap='Greens', levels=69, vmin=0, vmax=1)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
-        cb.set_label('Density')
+        cb.ax.set_title('Density')
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
                          color='red', linewidth=1, alpha=.5,
