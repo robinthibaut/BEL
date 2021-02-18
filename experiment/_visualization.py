@@ -1963,7 +1963,7 @@ def kde_cca(root: str,
                           ymax=0.25,
                           color='red', linewidth=1, alpha=.5
                           )
-        ax_marg_x.legend(fontsize=10)
+        ax_marg_x.legend(loc=2, fontsize=10)
 
         # Marginal y plot
         #  - Line plot
@@ -2011,7 +2011,7 @@ def kde_cca(root: str,
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
                      colors=['black', 'white', 'red', 'deepskyblue'],
-                     labels=['Training', 'Test', '$d^{c}_{True}$', '$h^{c}_{True}$'],
+                     labels=['Training', 'Test', '$d^{c}_{*}$', '$h^{c}_{True}$'],
                      marker=['o', 'o', '-', '-'],
                      pec=['k', 'k', None, None])
 
