@@ -1936,8 +1936,7 @@ def kde_cca(root: str,
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         ax_joint.contourf(xx, yy, z,
-                          cmap='Greens', levels=69,
-                          label='$KDE_{Gaussian}')
+                          cmap='Greens', levels=69)
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
                          color='red', linewidth=1, alpha=.5,
@@ -2014,10 +2013,10 @@ def kde_cca(root: str,
         #
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
-                     colors=['black', 'white', 'red', 'deepskyblue'],
-                     labels=['Training', 'Test', '$d^{c}_{*}$', '$h^{c}_{True}$'],
-                     marker=['o', 'o', '-', '-'],
-                     pec=['k', 'k', None, None],
+                     colors=['green', 'black', 'white', 'red', 'deepskyblue'],
+                     labels=['$KDE_{Gaussian}$', '$Training$', '$Test$', '$d^{c}_{*}$', '$h^{c}_{True}$'],
+                     marker=['s', 'o', 'o', '-', '-'],
+                     pec=[None, 'k', 'k', None, None],
                      fz=10)
 
         if sdir:
