@@ -1979,7 +1979,7 @@ def kde_cca(root: str,
                          label='$h^{c}_{True}$')
         # Scatter plot
         ax_joint.plot(d[comp_n], h[comp_n],
-                      'ko', markersize=2, alpha=.7)
+                      'ko', markersize=2, markeredgecolor='w', markeredgewidth=.2, alpha=.7)
         # Point
         ax_joint.plot(d_cca_prediction[comp_n], h_cca_prediction[comp_n],
                       'wo', markersize=5, markeredgecolor='k', alpha=1)
