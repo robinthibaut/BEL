@@ -1850,10 +1850,10 @@ def get_defaults_kde_plot():
     # ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
     # ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
 
-    ax_cb = f.add_subplot(gs[1:, 0])
     ax_joint = f.add_subplot(gs[1:, 1:-1])
     ax_marg_x = f.add_subplot(gs[0, 1:-1], sharex=ax_joint)
     ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
+    ax_cb = f.add_subplot(gs[1:, 0])
 
     fig = f
     ax_joint = ax_joint
@@ -1864,33 +1864,30 @@ def get_defaults_kde_plot():
     # Turn off tick visibility for the measure axis on the marginal plots
     plt.setp(ax_marg_x.get_xticklabels(), visible=False)
     plt.setp(ax_marg_y.get_yticklabels(), visible=False)
-    plt.setp(ax_cb.get_yticklabels(), visible=False)
 
     plt.setp(ax_marg_x.get_xticklabels(minor=True), visible=False)
     plt.setp(ax_marg_y.get_yticklabels(minor=True), visible=False)
-    plt.setp(ax_cb.get_yticklabels(minor=False), visible=False)
 
     # Turn off the ticks on the density axis for the marginal plots
     plt.setp(ax_marg_x.yaxis.get_majorticklines(), visible=False)
     plt.setp(ax_marg_x.yaxis.get_minorticklines(), visible=False)
-    plt.setp(ax_cb.yaxis.get_minorticklines(), visible=False)
 
     plt.setp(ax_marg_y.xaxis.get_majorticklines(), visible=False)
     plt.setp(ax_marg_y.xaxis.get_minorticklines(), visible=False)
-    plt.setp(ax_cb.xaxis.get_minorticklines(), visible=False)
 
     plt.setp(ax_marg_x.get_yticklabels(), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(), visible=False)
-    plt.setp(ax_cb.get_xticklabels(), visible=False)
+    # plt.setp(ax_cb.get_xticklabels(), visible=False)
 
     plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
-    plt.setp(ax_cb.get_xticklabels(minor=False), visible=False)
+    # plt.setp(ax_cb.get_xticklabels(minor=False), visible=False)
+    # plt.setp(ax_cb.get_yticklabels(minor=False), visible=False)
 
     ax_marg_x.yaxis.grid(False)
     ax_marg_y.xaxis.grid(False)
-    ax_cb.xaxis.grid(False)
-    ax_cb.yaxis.grid(False)
+
+    ax_cb.axis('off')
 
     if xlim is not None:
         ax_joint.set_xlim(xlim)
@@ -1902,7 +1899,8 @@ def get_defaults_kde_plot():
     if not marginal_ticks:
         despine(ax=ax_marg_x, left=True)
         despine(ax=ax_marg_y, bottom=True)
-        despine(ax=ax_cb, bottom=True)
+        # despine(ax=ax_cb, bottom=True)
+
     for axes in [ax_marg_x, ax_marg_y, ax_cb]:
         for axis in [axes.xaxis, axes.yaxis]:
             axis.label.set_visible(False)
@@ -1957,8 +1955,6 @@ def kde_cca(root: str,
         cf = ax_joint.contourf(xx, yy, z,
                                cmap='Greens', levels=69)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
-        cb.set_ticks([0, 1, 10])
-        cb.set_ticklabels([0, 1, 10])
         cb.set_label('Density')
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
