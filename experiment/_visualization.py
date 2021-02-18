@@ -1963,7 +1963,7 @@ def kde_cca(root: str,
         # Filled contour plot
         # 'BuPu_r' is nice
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='PRGn_r', levels=100, vmin=0, vmax=vmax)
+                               cmap='magma', levels=100, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
         cb.ax.set_title('$KDE_{Gaussian}$', fontsize=10)
         # Vertical line
@@ -2033,7 +2033,7 @@ def kde_cca(root: str,
         # Add custom artists
         subtitle = my_alphabet(comp_n)
         # Add title inside the box
-        an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']
+        an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(0.999, 3)}']  # FIXME
         legend_a = proxy_annotate(obj=ax_joint,
                                   annotation=an,
                                   loc=2,
