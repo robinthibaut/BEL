@@ -17,7 +17,6 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ma
 from scipy.interpolate import make_interp_spline, BSpline
-from sklearn.preprocessing import PowerTransformer
 
 import experiment._statistics
 import experiment._spatial
@@ -1847,32 +1846,51 @@ def get_defaults_kde_plot():
     f = plt.figure(figsize=(height, height))
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
-    ax_joint = f.add_subplot(gs[1:, :-1])
-    ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
+    # ax_joint = f.add_subplot(gs[1:, :-1])
+    # ax_marg_x = f.add_subplot(gs[0, :-1], sharex=ax_joint)
+    # ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
+
+    ax_cb = f.add_subplot(gs[1:, 0])
+    ax_joint = f.add_subplot(gs[1:, 1:-1])
+    ax_marg_x = f.add_subplot(gs[0, 1:-1], sharex=ax_joint)
     ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
 
     fig = f
     ax_joint = ax_joint
     ax_marg_x = ax_marg_x
     ax_marg_y = ax_marg_y
+    ax_cb = ax_cb
 
     # Turn off tick visibility for the measure axis on the marginal plots
     plt.setp(ax_marg_x.get_xticklabels(), visible=False)
     plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+    plt.setp(ax_cb.get_yticklabels(), visible=False)
+
     plt.setp(ax_marg_x.get_xticklabels(minor=True), visible=False)
     plt.setp(ax_marg_y.get_yticklabels(minor=True), visible=False)
+    plt.setp(ax_cb.get_yticklabels(minor=False), visible=False)
 
     # Turn off the ticks on the density axis for the marginal plots
     plt.setp(ax_marg_x.yaxis.get_majorticklines(), visible=False)
     plt.setp(ax_marg_x.yaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_cb.yaxis.get_minorticklines(), visible=False)
+
     plt.setp(ax_marg_y.xaxis.get_majorticklines(), visible=False)
     plt.setp(ax_marg_y.xaxis.get_minorticklines(), visible=False)
+    plt.setp(ax_cb.xaxis.get_minorticklines(), visible=False)
+
     plt.setp(ax_marg_x.get_yticklabels(), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(), visible=False)
+    plt.setp(ax_cb.get_xticklabels(), visible=False)
+
     plt.setp(ax_marg_x.get_yticklabels(minor=True), visible=False)
     plt.setp(ax_marg_y.get_xticklabels(minor=True), visible=False)
+    plt.setp(ax_cb.get_xticklabels(minor=False), visible=False)
+
     ax_marg_x.yaxis.grid(False)
     ax_marg_y.xaxis.grid(False)
+    ax_cb.xaxis.grid(False)
+    ax_cb.yaxis.grid(False)
 
     if xlim is not None:
         ax_joint.set_xlim(xlim)
@@ -1884,13 +1902,14 @@ def get_defaults_kde_plot():
     if not marginal_ticks:
         despine(ax=ax_marg_x, left=True)
         despine(ax=ax_marg_y, bottom=True)
-    for axes in [ax_marg_x, ax_marg_y]:
+        despine(ax=ax_cb, bottom=True)
+    for axes in [ax_marg_x, ax_marg_y, ax_cb]:
         for axis in [axes.xaxis, axes.yaxis]:
             axis.label.set_visible(False)
     f.tight_layout()
     f.subplots_adjust(hspace=space, wspace=space)
 
-    return ax_joint, ax_marg_x, ax_marg_y
+    return ax_joint, ax_marg_x, ax_marg_y, ax_cb
 
 
 def kde_cca(root: str,
@@ -1906,7 +1925,7 @@ def kde_cca(root: str,
 
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
-        ax_joint, ax_marg_x, ax_marg_y = get_defaults_kde_plot()
+        ax_joint, ax_marg_x, ax_marg_y, ax_cb = get_defaults_kde_plot()
 
         # Conditional:
         hp, sup = stats.posterior_conditional(x=d[comp_n],
@@ -1935,8 +1954,12 @@ def kde_cca(root: str,
         # Mask values under threshold
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
-        ax_joint.contourf(xx, yy, z,
-                          cmap='Greens', levels=69)
+        cf = ax_joint.contourf(xx, yy, z,
+                               cmap='Greens', levels=69)
+        cb = plt.colorbar(cf, ax=[ax_cb], location='left')
+        cb.set_ticks([0, 1, 10])
+        cb.set_ticklabels([0, 1, 10])
+        cb.set_label('Density')
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
                          color='red', linewidth=1, alpha=.5,
@@ -1983,10 +2006,10 @@ def kde_cca(root: str,
         # Marginal y plot with BEL
         #  - Line plot
         ax_marg_y.plot(kde_y_samp, sup_samp,
-                       color='black', linewidth=.5, alpha=1)
+                       color='black', linewidth=.5, alpha=0)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(sup_samp, 0, kde_y_samp,
-                                color='coral', alpha=.4,
+                                color='teal', alpha=.5,
                                 label='$p(h^{c}|d^{c}_{*})_{BEL}$')
         # Conditional distribution
         #  - Line plot
@@ -1994,7 +2017,7 @@ def kde_cca(root: str,
                        color='red', alpha=0)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(sup, 0, hp,
-                                color='gray', alpha=.4,
+                                color='mediumorchid', alpha=.5,
                                 label='$p(h^{c}|d^{c}_{*})_{KDE}$')
         ax_marg_y.legend(fontsize=10)
         # Labels
@@ -2009,7 +2032,7 @@ def kde_cca(root: str,
         legend_a = proxy_annotate(obj=ax_joint,
                                   annotation=an,
                                   loc=2,
-                                  fz=14)
+                                  fz=12)
         #
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
