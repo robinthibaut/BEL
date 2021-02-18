@@ -258,7 +258,7 @@ def pca_scores(training,
     proxy_legend(legend1=legend_a,
                  colors=['blue', 'red'],
                  labels=['Training', 'Test'],
-                 marker='o')
+                 marker=['o'])
 
     if fig_file:
         ut.dirmaker(os.path.dirname(fig_file))
@@ -305,7 +305,7 @@ def cca_plot(cca_operator,
         proxy_legend(legend1=legend_a,
                      colors=['black', 'white'],
                      labels=['Training', 'Test'],
-                     marker='o',
+                     marker=['o'],
                      pec=['k', 'k'])
 
         if sdir:
@@ -589,7 +589,7 @@ def h_pca_inverse_plot(pca_o,
         proxy_legend(legend1=legend_a,
                      colors=['red', 'blue'],
                      labels=['Physical', 'Back transformed'],
-                     marker='-')
+                     marker=['-'])
 
         if fig_dir is not None:
             ut.dirmaker(fig_dir)
@@ -1357,7 +1357,7 @@ def d_pca_inverse_plot(pca_o,
         proxy_legend(legend1=legend_a,
                      colors=['red', 'blue'],
                      labels=['Physical', 'Back transformed'],
-                     marker='-',
+                     marker=['-'],
                      loc=1)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -2013,7 +2013,7 @@ def kde_cca(root: str,
         #
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
-                     colors=['green', 'black', 'white', 'red', 'deepskyblue'],
+                     colors=['lightgreen', 'black', 'white', 'red', 'deepskyblue'],
                      labels=['$KDE_{Gaussian}$', '$Training$', '$Test$', '$d^{c}_{*}$', '$h^{c}_{True}$'],
                      marker=['s', 'o', 'o', '-', '-'],
                      pec=[None, 'k', 'k', None, None],
