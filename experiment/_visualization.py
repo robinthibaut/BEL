@@ -87,7 +87,11 @@ def proxy_legend(legend1=None,
         marker = ['-']
 
     # Proxy figures (empty plots)
-    proxys = [plt.plot([], marker[i], color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)]
+    proxys = [plt.plot([],
+                       marker[i],
+                       color=c,
+                       markeredgecolor=pec[i]) for i, c in enumerate(colors)]
+
     obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
 
     if legend1:
@@ -1895,7 +1899,6 @@ def kde_cca(root: str,
             sdir: str = None,
             show: bool = False,
             dist_plot: bool = False):
-
     # Reload model
     d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(root=root,
                                                                                         well=well,
@@ -1933,7 +1936,8 @@ def kde_cca(root: str,
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         ax_joint.contourf(xx, yy, z,
-                          cmap='Greens', levels=69)
+                          cmap='Greens', levels=69,
+                          label='$KDE_{Gaussian}')
         # Vertical line
         ax_joint.axvline(x=d_cca_prediction[comp_n],
                          color='red', linewidth=1, alpha=.5,
@@ -2013,7 +2017,8 @@ def kde_cca(root: str,
                      colors=['black', 'white', 'red', 'deepskyblue'],
                      labels=['Training', 'Test', '$d^{c}_{*}$', '$h^{c}_{True}$'],
                      marker=['o', 'o', '-', '-'],
-                     pec=['k', 'k', None, None])
+                     pec=['k', 'k', None, None],
+                     fz=10)
 
         if sdir:
             ut.dirmaker(sdir)
