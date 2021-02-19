@@ -41,6 +41,7 @@ def scan_roots(base,
     except FileNotFoundError:
         pass
 
+    global_mean = 0
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
@@ -49,12 +50,13 @@ def scan_roots(base,
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=Setup.HyperParameters.n_posts)  # Sample posterior
             uq.c0(write_vtk=False)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
-            # uq.binary_stack()
-            # uq.kernel_density()
+            mean = uq.mhd()  # Modified Hausdorff
+            global_mean += mean
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, 'h_pca.pkl')).reset_()
+
+    return global_mean
 
 
 def main(comb: List[List[int]] = None,

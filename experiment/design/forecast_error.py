@@ -262,3 +262,6 @@ class UncertaintyQuantification:
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)
+
+        # Return the mean
+        return np.mean(mhds)
