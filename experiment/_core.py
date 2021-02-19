@@ -20,7 +20,6 @@ class Setup:
     @dataclass
     class Directories:
         """Define main directories and file names"""
-
         # Content directory
         main_dir: str = dirname(os.path.abspath(__file__))
         hydro_res_dir: str = join(main_dir, 'storage', 'forwards')
@@ -124,9 +123,21 @@ class Setup:
 
     @dataclass
     class HyperParameters:
-        n_posts: int = 200
-
+        """Learning hyper parameters"""
+        # Predictor
         n_pc_predictor: int = 50
         n_tstp: int = 200
 
+        # Target
         n_pc_target: int = 30
+
+        # Posterior
+        n_posts: int = 200
+
+    @dataclass
+    class ModelParameters:
+        """Model hyper parameters"""
+        # Prior K
+        k_min: float = 1.4
+        k_max: float = 2
+        k_std: float = 0.4
