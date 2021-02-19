@@ -220,6 +220,6 @@ def main_2(N):
 
 
 if __name__ == '__main__':
-    # main_1()
-    n_try = np.linspace(250, 1000, 50)
-    main_2(N=n_try)
+    main_1()
+    # n_try = np.linspace(250, 1000, 50)
+    # main_2(N=n_try)
