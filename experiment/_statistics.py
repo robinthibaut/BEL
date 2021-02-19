@@ -561,6 +561,7 @@ class PosteriorIO:
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
+        # FIXME: Deprecation warning here about y_std_ and y_mean_
         h_pca_reverse = np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components

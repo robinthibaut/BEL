@@ -138,6 +138,11 @@ class Setup:
         n_test: int = int(n_total*.2)
         # Sample size
         n_posts: int = n_training
+        #
+        # def __call__(self, N):
+        #     n_training: int = int(N * .8)
+        #     n_test: int = int(N * .2)
+        #     return n_training, n_test
 
     @dataclass
     class ModelParameters:

@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
+import shutil
 from typing import List
 
 import joblib
@@ -48,7 +49,7 @@ def scan_roots(base,
             sf = dcp.fit_transform(base=base, training_roots=training, test_root=r_, well_comb=c)
             # Uncertainty analysis
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=Setup.HyperParameters.n_posts)  # Sample posterior
+            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)  # Sample posterior
             uq.c0(write_vtk=False)  # Extract 0 contours
             mean = uq.mhd()  # Modified Hausdorff
             global_mean += mean
@@ -59,13 +60,15 @@ def scan_roots(base,
     return global_mean
 
 
-def main(comb: List[List[int]] = None,
-         n_training: int = 200,
-         n_observations: int = 50,
-         flag_base: bool = False,
-         roots_training: Root = None,
-         to_swap: Root = None,
-         roots_obs: Root = None):
+def analysis(base,
+             comb: List[List[int]] = None,
+             n_training: int = 200,
+             n_obs: int = 50,
+             flag_base: bool = False,
+             wipe: bool = False,
+             roots_training: Root = None,
+             to_swap: Root = None,
+             roots_obs: Root = None):
     """
 
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -74,9 +77,11 @@ def main(comb: List[List[int]] = None,
     to avoid recomputing it every time.
     IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
+    :param base: class: Base class (inventory)
+    :param wipe: bool: Whether to wipe the 'forecast' folder or not
     :param comb: list: List of well IDs
     :param n_training: int: Index from which training and data are separated
-    :param n_observations: int: Number of predictors to take
+    :param n_obs: int: Number of predictors to take
     :param flag_base: bool: Recompute base PCA on target if True
     :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
@@ -85,7 +90,7 @@ def main(comb: List[List[int]] = None,
 
     """
     # Results location
-    md = Setup.Directories.hydro_res_dir
+    md = base.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
     folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
@@ -106,11 +111,11 @@ def main(comb: List[List[int]] = None,
     else:
         n_training = len(roots_training)
 
-    Setup.HyperParameters.n_posts = n_training
+    # base.HyperParameters.n_posts = n_training
 
     if roots_obs is None:  # If no observation provided
-        if n_training + n_observations <= len(folders):
-            roots_obs = folders[n_training:(n_training + n_observations)]  # List of m observation roots
+        if n_training + n_obs <= len(folders):
+            roots_obs = folders[n_training:(n_training + n_obs)]  # List of m observation roots
         else:
             print("Incompatible training/observation numbers")
             return
@@ -131,12 +136,15 @@ def main(comb: List[List[int]] = None,
         [swap_root(ts) for ts in to_swap]
 
     # Perform PCA on target (whpa) and store the object in a base folder
-    obj_path = os.path.join(Setup.Directories.forecasts_dir, 'base')
+    if wipe:
+        shutil.rmtree(base.Directories.forecasts_dir)
+    obj_path = os.path.join(base.Directories.forecasts_dir, 'base')
     fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base:
+    if flag_base and not fb:
+        ut.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
-        dcp.base_pca(base=Setup,
+        dcp.base_pca(base=base,
                      base_dir=obj_path,
                      roots=roots_training,
                      test_roots=roots_obs,
@@ -144,24 +152,26 @@ def main(comb: List[List[int]] = None,
                      check=False)
 
     if comb is None:
-        comb = Setup.Wells.combination  # Get default combination (all)
+        comb = base.Wells.combination  # Get default combination (all)
         belcomb = ut.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
 
     # Perform base decomposition on the m roots
-    global_mean = scan_roots(base=Setup,
+    global_mean = scan_roots(base=base,
                              training=roots_training,
                              obs=roots_obs,
                              combinations=belcomb,
                              base_dir_path=obj_path)
 
+    if wipe:
+        shutil.rmtree(Setup.Directories.forecasts_dir)
+
     return roots_training, roots_obs, global_mean
 
 
-if __name__ == '__main__':
+def get_roots():
     # List directories in forwards folder
-    base_dir = os.path.join(Setup.Directories.forecasts_dir, 'base')
 
     training_roots = ut.data_read(os.path.join(Setup.Directories.forecasts_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
@@ -169,9 +179,45 @@ if __name__ == '__main__':
     test_roots = ut.data_read(os.path.join(Setup.Directories.forecasts_dir, 'test_roots.dat'))
     test_roots = [item for sublist in test_roots for item in sublist]
 
+    return training_roots, test_roots
+
+
+def main_1():
+    training_r, test_r = get_roots()
+
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro, mhd_mean = main(comb=wells,
-                            roots_training=training_roots,
-                            roots_obs=test_roots,
-                            flag_base=True)
+    wells = [[1, 2, 3, 4, 5, 6]]
+    analysis(comb=wells,
+             roots_training=training_r,
+             roots_obs=test_r,
+             wipe=False,
+             flag_base=True)
+
+
+def main_2(N):
+
+    means = []
+
+    for n in N:
+        Setup.HyperParameters.n_total = n
+        Setup.HyperParameters.n_training = int(n*.8)
+        print(f'n_training={int(n*.8)}')
+        Setup.HyperParameters.n_test = int(n*.2)
+        print(f'n_test={int(n*.2)}')
+
+        # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+        wells = [[1, 2, 3, 4, 5, 6]]
+        *_, mhd_mean = analysis(base=Setup,
+                                comb=wells,
+                                n_training=Setup.HyperParameters.n_training,
+                                n_obs=Setup.HyperParameters.n_test,
+                                wipe=True,
+                                flag_base=True)
+        means.append(mhd_mean)
+
+    return means
+
+
+if __name__ == '__main__':
+    n_try = np.linspace(250, 1000, 50)
+    main_2(N=n_try)
