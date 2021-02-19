@@ -1930,6 +1930,8 @@ def kde_cca(root: str,
         if vmax < maxloc:
             vmax = maxloc
 
+    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
+
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = get_defaults_kde_plot()
@@ -1963,7 +1965,7 @@ def kde_cca(root: str,
         # Filled contour plot
         # 'BuPu_r' is nice
         cf = ax_joint.contourf(xx, yy, z,
-                               cmap='plasma', levels=100, vmin=0, vmax=vmax)
+                               cmap='coolwarm', levels=100, vmin=0, vmax=vmax)
         cb = plt.colorbar(cf, ax=[ax_cb], location='left')
         cb.ax.set_title('$KDE_{Gaussian}$', fontsize=10)
         # Vertical line
@@ -2033,8 +2035,7 @@ def kde_cca(root: str,
         # Add custom artists
         subtitle = my_alphabet(comp_n)
         # Add title inside the box
-        cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
-        an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient, 3)}']  # FIXME
+        an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient[comp_n], 3)}']
         legend_a = proxy_annotate(obj=ax_joint,
                                   annotation=an,
                                   loc=2,
