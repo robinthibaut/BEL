@@ -18,7 +18,7 @@ def scan_roots(base,
                training: Root,
                obs: Root,
                combinations: List[int],
-               base_dir_path: str = None):
+               base_dir_path: str = None) -> float:
     """
     Scan forward roots and perform base decomposition
     :param base: class: Base class (inventory)
@@ -150,13 +150,13 @@ def main(comb: List[List[int]] = None,
         belcomb = comb
 
     # Perform base decomposition on the m roots
-    scan_roots(base=Setup,
-               training=roots_training,
-               obs=roots_obs,
-               combinations=belcomb,
-               base_dir_path=obj_path)
+    global_mean = scan_roots(base=Setup,
+                             training=roots_training,
+                             obs=roots_obs,
+                             combinations=belcomb,
+                             base_dir_path=obj_path)
 
-    return roots_training, roots_obs
+    return roots_training, roots_obs, global_mean
 
 
 if __name__ == '__main__':
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro = main(comb=wells,
-                  roots_training=training_roots,
-                  roots_obs=test_roots,
-                  flag_base=True)
+    rt, ro, mhd_mean = main(comb=wells,
+                            roots_training=training_roots,
+                            roots_obs=test_roots,
+                            flag_base=True)
