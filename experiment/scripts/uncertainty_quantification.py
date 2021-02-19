@@ -140,8 +140,7 @@ def analysis(base,
         shutil.rmtree(base.Directories.forecasts_dir)
     obj_path = os.path.join(base.Directories.forecasts_dir, 'base')
     fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base and fb:
-        shutil.rmtree(obj_path)
+    if flag_base and not fb:
         ut.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
@@ -195,17 +194,30 @@ def main_1():
              flag_base=True)
 
 
-def main_2(N=250):
-    Setup.HyperParameters.n_total = N
-    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6]]
-    *_, mhd_mean = analysis(base=Setup,
-                            comb=wells,
-                            n_training=Setup.HyperParameters.n_training,
-                            n_obs=Setup.HyperParameters.n_test,
-                            wipe=True,
-                            flag_base=True)
+def main_2(N):
+
+    means = []
+
+    for n in N:
+        Setup.HyperParameters.n_total = n
+        Setup.HyperParameters.n_training = int(n*.8)
+        print(f'n_training={int(n*.8)}')
+        Setup.HyperParameters.n_test = int(n*.2)
+        print(f'n_test={int(n*.2)}')
+
+        # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+        wells = [[1, 2, 3, 4, 5, 6]]
+        *_, mhd_mean = analysis(base=Setup,
+                                comb=wells,
+                                n_training=Setup.HyperParameters.n_training,
+                                n_obs=Setup.HyperParameters.n_test,
+                                wipe=True,
+                                flag_base=True)
+        means.append(mhd_mean)
+
+    return means
 
 
 if __name__ == '__main__':
-    main_2()
+    n_try = np.linspace(250, 1000, 50)
+    main_2(N=n_try)
