@@ -187,7 +187,8 @@ def main_1():
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6]]
-    analysis(comb=wells,
+    analysis(base=Setup,
+             comb=wells,
              roots_training=training_r,
              roots_obs=test_r,
              wipe=False,
@@ -219,5 +220,6 @@ def main_2(N):
 
 
 if __name__ == '__main__':
+    # main_1()
     n_try = np.linspace(250, 1000, 50)
     main_2(N=n_try)
