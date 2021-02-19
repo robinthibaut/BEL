@@ -129,7 +129,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-    simulation('818bf1676c424f76b83bd777ae588a1d')
-    # main(None)
+    simulation('test190221')
+    # main(10)
     end = time.time()
     print(f'TET (hours) {(end - start) / 60 / 60}')
