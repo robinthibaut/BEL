@@ -132,7 +132,12 @@ class Setup:
         n_pc_target: int = 30
 
         # Posterior
-        n_posts: int = 200
+        # Size of data set
+        n_total: int = 250  # Parameter to optimize
+        n_training: int = int(n_total*.8)
+        n_test: int = int(n_total*.2)
+        # Sample size
+        n_posts: int = n_training
 
     @dataclass
     class ModelParameters:

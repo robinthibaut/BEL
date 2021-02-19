@@ -18,7 +18,7 @@ def scan_roots(base,
                training: Root,
                obs: Root,
                combinations: List[int],
-               base_dir_path: str = None):
+               base_dir_path: str = None) -> float:
     """
     Scan forward roots and perform base decomposition
     :param base: class: Base class (inventory)
@@ -41,6 +41,7 @@ def scan_roots(base,
     except FileNotFoundError:
         pass
 
+    global_mean = 0
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
@@ -49,12 +50,13 @@ def scan_roots(base,
             uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
             uq.sample_posterior(n_posts=Setup.HyperParameters.n_posts)  # Sample posterior
             uq.c0(write_vtk=False)  # Extract 0 contours
-            uq.mhd()  # Modified Hausdorff
-            # uq.binary_stack()
-            # uq.kernel_density()
+            mean = uq.mhd()  # Modified Hausdorff
+            global_mean += mean
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, 'h_pca.pkl')).reset_()
+
+    return global_mean
 
 
 def main(comb: List[List[int]] = None,
@@ -148,13 +150,13 @@ def main(comb: List[List[int]] = None,
         belcomb = comb
 
     # Perform base decomposition on the m roots
-    scan_roots(base=Setup,
-               training=roots_training,
-               obs=roots_obs,
-               combinations=belcomb,
-               base_dir_path=obj_path)
+    global_mean = scan_roots(base=Setup,
+                             training=roots_training,
+                             obs=roots_obs,
+                             combinations=belcomb,
+                             base_dir_path=obj_path)
 
-    return roots_training, roots_obs
+    return roots_training, roots_obs, global_mean
 
 
 if __name__ == '__main__':
@@ -169,9 +171,7 @@ if __name__ == '__main__':
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    rt, ro = main(comb=wells,
-                  roots_training=training_roots,
-                  roots_obs=test_roots,
-                  # n_training=200,
-                  # n_observations=50,
-                  flag_base=True)
+    rt, ro, mhd_mean = main(comb=wells,
+                            roots_training=training_roots,
+                            roots_obs=test_roots,
+                            flag_base=True)
