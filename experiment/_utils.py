@@ -9,7 +9,7 @@ import flopy
 import joblib
 import numpy as np
 
-from experiment._core import setup
+from experiment._core import Setup
 
 
 def data_read(file: str = None,
@@ -54,7 +54,7 @@ def empty_figs(root: str):
         else:
             root = root[0]
 
-    subdir = os.path.join(setup.directories.forecasts_dir, root)
+    subdir = os.path.join(Setup.Directories.forecasts_dir, root)
     listme = os.listdir(subdir)
     folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
@@ -146,7 +146,7 @@ def remove_incomplete(res_tree: str, crit: str = None):
     """
 
     if crit is None:
-        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in setup.files.output_files])
+        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in Setup.Files.output_files])
     else:
         ck = np.array([os.path.isfile(jp(res_tree, crit))])
 
@@ -224,7 +224,7 @@ def data_loader(res_dir: str = None,
 
     # If no res_dir specified, then uses default
     if res_dir is None:
-        res_dir = setup.directories.hydro_res_dir
+        res_dir = Setup.Directories.hydro_res_dir
 
     bkt_files = []  # Breakthrough curves files
     sd_files = []  # Signed-distance files
@@ -268,8 +268,8 @@ def combinator(combi):
 def reload_trained_model(root: str,
                          well: str,
                          sample_n: int = 0):
-    base_dir = jp(setup.directories.forecasts_dir, 'base')
-    res_dir = jp(setup.directories.forecasts_dir, root, well, 'obj')
+    base_dir = jp(Setup.Directories.forecasts_dir, 'base')
+    res_dir = jp(Setup.Directories.forecasts_dir, root, well, 'obj')
 
     f_names = list(map(lambda fn: jp(res_dir, f'{fn}.pkl'), ['cca', 'd_pca', 'post']))
     cca_operator, d_pco, post = list(map(joblib.load, f_names))

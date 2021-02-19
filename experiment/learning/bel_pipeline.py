@@ -25,7 +25,7 @@ from sklearn.cross_decomposition import CCA
 
 import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
-from experiment._core import setup
+from experiment._core import Setup
 from experiment._spatial import grid_parameters, signed_distance
 from experiment._visualization import whpa_plot
 from experiment.processing.dimension_reduction import PC
@@ -67,7 +67,7 @@ def base_pca(base,
         # Dump
         joblib.dump(d_pco, d_pca_obj)
 
-    x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
 
     if h_pca_obj is not None:
         # Loads the results:
@@ -89,7 +89,7 @@ def base_pca(base,
                 whpa_plot(whpa=[e],
                           x_lim=x_lim,
                           y_lim=y_lim,
-                          well_comb=base.wells.combination,
+                          well_comb=base.Wells.combination,
                           lw=1,
                           fig_file=jp(fig_dir, ''.join((r[i], '.png'))))
                 np.save(jp(fig_dir, ''.join((r[i], '.npy'))), e)
@@ -100,7 +100,7 @@ def base_pca(base,
         h_pco.training_fit_transform()
         # Define number of components to keep
         # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
-        h_pco.n_pc_cut = setup.target.n_pc
+        h_pco.n_pc_cut = Setup.HyperParameters.n_pc_target
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
@@ -130,14 +130,14 @@ def fit_transform(base,
     """
 
     # Load parameters:
-    x_lim, y_lim, grf = base.focus.x_range, base.focus.y_range, base.focus.cell_dim
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
-        base.wells.combination = well_comb
+        base.Wells.combination = well_comb
 
     # Directories
-    md = base.directories()
+    md = base.Directories()
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
     # Parse test_root
@@ -151,7 +151,7 @@ def fit_transform(base,
 
     base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
 
-    new_dir = ''.join(list(map(str, base.wells.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -181,7 +181,7 @@ def fit_transform(base,
         tc = np.load(tsub)
 
     # %% Select wells:
-    selection = [wc - 1 for wc in base.wells.combination]
+    selection = [wc - 1 for wc in base.Wells.combination]
     tc = tc[:, selection, :]
 
     # %%  PCA
@@ -192,9 +192,9 @@ def fit_transform(base,
     d_pco = PC(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.training_fit_transform()
     # PCA on transport curves
-    d_pco.n_pc_cut = setup.predictor.n_pc
+    d_pco.n_pc_cut = Setup.HyperParameters.n_pc_predictor
     ndo = d_pco.n_pc_cut
-    n_time_steps = setup.predictor.n_tstp
+    n_time_steps = Setup.HyperParameters.n_tstp
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:

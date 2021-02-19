@@ -25,7 +25,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment._utils as fops
-from experiment._core import machine, setup
+from experiment._core import Machine, Setup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -37,11 +37,11 @@ def simulation(folder=None):
     if folder == 0:
         folder = None
     # Directories
-    main_dir = setup.directories.main_dir
+    main_dir = Setup.Directories.main_dir
     exe_loc = jp(main_dir, 'hydro', 'exe')  #
     # directory
     # EXE files directory.
-    if machine.computer == 'MacBook-Pro.local':
+    if Machine.computer == 'MacBook-Pro.local':
         exe_name_mf = jp(exe_loc, 'mf2005')
         exe_name_mt = jp(exe_loc, 'mt3dms')
         exe_name_mp = jp(exe_loc, 'mp7')
@@ -56,15 +56,15 @@ def simulation(folder=None):
     else:
         res_dir = folder
 
-    results_dir = jp(setup.directories.hydro_res_dir, res_dir)
+    results_dir = jp(Setup.Directories.hydro_res_dir, res_dir)
 
-    grid_dir = setup.directories.grid_dir
+    grid_dir = Setup.Directories.grid_dir
     # Generates the result directory
     fops.dirmaker(results_dir)
 
     print(f'fwd {res_dir}')
     # Check if forwards have already been computed
-    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in setup.files.output_files])
+    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files])
 
     if not opt.all():
         # Resets folder
@@ -85,7 +85,8 @@ def simulation(folder=None):
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
-            delineation = travelling_particles(end_points)  # indices of the vertices of the final protection zone using TSP algorithm
+            delineation = travelling_particles(end_points)  # indices of the vertices of the final protection zone
+            # using TSP algorithm
             pzs = end_points[delineation]  # x-y coordinates protection zone
             np.save(jp(results_dir, 'pz'), pzs)  # Save those
             # Deletes everything except final results
@@ -113,11 +114,11 @@ def main(n_sim: int = None):
 
     if n_sim is None:
         # List directories in forwards folder
-        listme = os.listdir(setup.directories.hydro_res_dir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(setup.directories.hydro_res_dir, d)), listme))
+        listme = os.listdir(Setup.Directories.hydro_res_dir)
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(Setup.Directories.hydro_res_dir, d)), listme))
 
     elif n_sim == -1:
-        training_roots = fops.data_read(os.path.join(setup.directories.forecasts_dir, 'base', 'roots.dat'))
+        training_roots = fops.data_read(os.path.join(Setup.Directories.forecasts_dir, 'base', 'roots.dat'))
         folders = [item for sublist in training_roots for item in sublist]
 
     else:

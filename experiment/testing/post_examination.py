@@ -7,9 +7,9 @@ import seaborn as sb
 
 import experiment._visualization as mplot
 
-from experiment._core import setup
+from experiment._core import Setup
 
-md = setup.directories
+md = Setup.Directories
 
 root = '818bf1676c424f76b83bd777ae588a1d'
 sources = '123456'
@@ -38,7 +38,7 @@ nn = np.load(ndor)
 
 #%%
 
-fc = setup.focus
+fc = Setup.Focus
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
 mplot.whpa_plot(whpa=nn,

@@ -14,7 +14,7 @@ from pysgems.sgems import sg
 from scipy import stats, ndimage, integrate
 from sklearn.preprocessing import PowerTransformer
 
-from experiment._core import setup
+from experiment._core import Setup
 from experiment._spatial import get_block
 from experiment._utils import data_read
 
@@ -651,7 +651,7 @@ class PosteriorIO:
                 self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
 
             if n_posts is None:
-                self.n_posts = setup.forecast.n_posts
+                self.n_posts = Setup.HyperParameters.n_posts
             else:
                 self.n_posts = n_posts
 
@@ -714,13 +714,13 @@ def sgsim(model_ws: str,
     else:
         hku = wells_hk
 
-    if not os.path.exists(jp(model_ws, setup.files.sgems_file)):
+    if not os.path.exists(jp(model_ws, Setup.Files.sgems_file)):
         hd.dataframe['hd'] = hku
         hd.export_01('hd')  # Exports modified dataset in binary
 
     # Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
-    gd = setup.grid_dimensions()
+    gd = Setup.GridDimensions()
     Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
 
     # Get sgems grid centers coordinates:

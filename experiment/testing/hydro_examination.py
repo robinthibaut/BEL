@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from experiment._visualization import proxy_annotate
 
 from os.path import join as jp
-from experiment._core import setup
-md = setup.directories
+from experiment._core import Setup
+md = Setup.Directories
 
 # model_nam = '/Users/robin/PycharmProjects/BEL/experiment/storage/forwards/6a4d614c838442629d7a826cc1f498a8/whpa.nam'
 #

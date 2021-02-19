@@ -7,13 +7,13 @@ import seaborn as sns
 sns.set_theme()
 # plt.style.use('dark_background')
 
-from experiment._core import setup
+from experiment._core import Setup
 from experiment import _utils as fops
 
-x_lim, y_lim, grf = setup.focus.x_range, setup.focus.y_range, setup.focus.cell_dim
+x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 # Initiate Plot instance
 
-tc0, sd, r = fops.data_loader(res_dir=setup.directories.hydro_res_dir,
+tc0, sd, r = fops.data_loader(res_dir=Setup.Directories.hydro_res_dir,
                               roots=['6a4d614c838442629d7a826cc1f498a8'],
                               d=True, h=True)
 

@@ -8,7 +8,7 @@ import numpy as np
 from diavatly import model_map
 
 import experiment._spatial
-from experiment._core import setup
+from experiment._core import Setup
 import experiment._visualization as mplot
 from experiment.processing.target_handle import travelling_particles
 from experiment._spatial import grid_parameters, get_centroids, binary_polygon
@@ -78,7 +78,7 @@ def active_zone(modflowmodel):
     # Assign 0|1 value
     icbund = binary_polygon(sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
 
-    mt_icbund_file = jp(setup.directories.grid_dir, 'mt3d_icbund.npy')
+    mt_icbund_file = jp(Setup.Directories.grid_dir, 'mt3d_icbund.npy')
     np.save(mt_icbund_file, icbund)  # Save active zone
 
     # Check what we've done: plot the active zone.

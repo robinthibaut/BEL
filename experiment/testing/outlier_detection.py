@@ -26,7 +26,7 @@ from sklearn.preprocessing import StandardScaler
 
 def svm1(res_dir, d=True, h=False, folders=None):
     """ Loads PCA pickles and plot scores for all folders """
-    subdir = os.path.join(MySetup.directories.forecasts_dir, res_dir)
+    subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
@@ -91,6 +91,6 @@ f = plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro', markersize=5, markeredgecolor
 plt.xlabel('First PC score')
 plt.ylabel('Second PC score')
 plt.legend(loc='lower right', fontsize=8)
-plt.savefig(os.path.join(MySetup.directories.forecasts_dir, sample, default[0], 'pca', f'{sample}_pc1_outlier.png'),
+plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, sample, default[0], 'pca', f'{sample}_pc1_outlier.png'),
             dpi=300, transparent=True)
 plt.show()

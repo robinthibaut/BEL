@@ -6,13 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
-from experiment._core import setup
+from experiment._core import Setup
 
 plt.style.use('dark_background')
 
 
 def dists(res_dir, folders=None):
-    subdir = os.path.join(setup.directories.forecasts_dir, res_dir)
+    subdir = os.path.join(Setup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
@@ -41,7 +41,7 @@ hp1 = dpc_post[:200, 0]
 
 # %% Load target PC
 
-hbase = os.path.join(setup.directories.forecasts_dir, 'base')
+hbase = os.path.join(Setup.Directories.forecasts_dir, 'base')
 # Load h pickle
 pcaf = os.path.join(hbase, 'h_pca.pkl')
 h_pco = joblib.load(pcaf)
@@ -73,7 +73,7 @@ plt.xlabel('First PC score')
 plt.ylabel('KDE')
 plt.legend(['Prior', 'Posterior', 'True target'])
 plt.grid(alpha=0.2)
-plt.savefig(os.path.join(setup.directories.forecasts_dir, sample, default[0], 'uq', f'{sample}_pc1_dist.png'),
+plt.savefig(os.path.join(Setup.Directories.forecasts_dir, sample, default[0], 'uq', f'{sample}_pc1_dist.png'),
             dpi=300, transparent=True)
 plt.show()
 

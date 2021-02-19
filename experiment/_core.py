@@ -12,13 +12,13 @@ from os.path import dirname, join
 import numpy as np
 
 
-class machine(object):
+class Machine(object):
     computer: str = platform.node()
 
 
-class setup:
+class Setup:
     @dataclass
-    class directories:
+    class Directories:
         """Define main directories and file names"""
 
         # Content directory
@@ -28,7 +28,7 @@ class setup:
         grid_dir: str = join(main_dir, 'spatial', 'parameters')
 
     @dataclass
-    class files:
+    class Files:
         """Class to keep track of important file names"""
         # Output file names
         project_name: str = 'whpa'
@@ -45,7 +45,7 @@ class setup:
         sgems_family = [sgems_file, command_file, hk_file]
 
     @dataclass
-    class grid_dimensions:
+    class GridDimensions:
         """Class for keeping track of grid dimensions"""
         x_lim: float = 1500.
         y_lim: float = 1000.
@@ -78,7 +78,7 @@ class setup:
              [1, 10]])  # 10 meters from the pumping well coordinates, grid cells will have dimensions 1*1
 
     @dataclass
-    class focus:
+    class Focus:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
@@ -86,7 +86,7 @@ class setup:
 
     @dataclass
     # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
-    class wells:
+    class Wells:
         """Wells coordinates"""
         wells_data = {
             'pumping0':
@@ -123,14 +123,10 @@ class setup:
         colors = ['w', 'g', 'r', 'c', 'm', 'y']
 
     @dataclass
-    class forecast:
+    class HyperParameters:
         n_posts: int = 200
 
-    @dataclass
-    class predictor:
-        n_pc: int = 50
+        n_pc_predictor: int = 50
         n_tstp: int = 200
 
-    @dataclass
-    class target:
-        n_pc: int = 30
+        n_pc_target: int = 30

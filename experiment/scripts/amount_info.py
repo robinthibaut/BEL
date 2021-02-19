@@ -5,7 +5,7 @@ import os
 import numpy as np
 from typing import List
 
-from experiment._core import setup
+from experiment._core import Setup
 
 from experiment._visualization import mode_histo
 
@@ -31,12 +31,12 @@ def by_mode(root: Root):
         fig_name = root[0]
         an_i = 2
 
-    wid = list(map(str, setup.wells.combination))  # Well identifiers (n)
-    wm = np.zeros((len(wid), setup.forecast.n_posts))  # Summed MHD when well #i appears
-    colors = setup.wells.colors
+    wid = list(map(str, Setup.Wells.combination))  # Well identifiers (n)
+    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))  # Summed MHD when well #i appears
+    colors = Setup.Wells.colors
 
     for r in root:  # For each root
-        droot = os.path.join(setup.directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
+        droot = os.path.join(Setup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
         for e in wid:  # For each subfolder (well) in the main folder
             fmhd = os.path.join(droot, e, 'obj', 'haus.npy')  # Get the MHD file
             mhd = np.load(fmhd)  # Load MHD
@@ -48,7 +48,7 @@ def by_mode(root: Root):
 
 if __name__ == '__main__':
     # Amount of information
-    forecast_dir = setup.directories.forecasts_dir
+    forecast_dir = Setup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
     listit.remove('base')
     duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
