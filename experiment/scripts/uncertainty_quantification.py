@@ -172,6 +172,4 @@ if __name__ == '__main__':
     rt, ro = main(comb=wells,
                   roots_training=training_roots,
                   roots_obs=test_roots,
-                  # n_training=200,
-                  # n_observations=50,
                   flag_base=True)
