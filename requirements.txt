@@ -6,9 +6,6 @@ matplotlib
 scipy
 numpy
 joblib
-sklearn
 vtk
 pandas
 seaborn
-dataclasses
-diavatly
