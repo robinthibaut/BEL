@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
+import shutil
 from typing import List
 
 import joblib
@@ -133,7 +134,9 @@ def main(comb: List[List[int]] = None,
     # Perform PCA on target (whpa) and store the object in a base folder
     obj_path = os.path.join(Setup.Directories.forecasts_dir, 'base')
     fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base:
+    if flag_base and fb:
+        shutil.rmtree(obj_path)
+        ut.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
         dcp.base_pca(base=Setup,
@@ -170,7 +173,7 @@ if __name__ == '__main__':
     test_roots = [item for sublist in test_roots for item in sublist]
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
+    wells = [[1, 2, 3, 4, 5, 6]]
     rt, ro, mhd_mean = main(comb=wells,
                             roots_training=training_roots,
                             roots_obs=test_roots,

@@ -25,7 +25,6 @@ from sklearn.cross_decomposition import CCA
 
 import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
-from experiment._core import Setup
 from experiment._spatial import grid_parameters, signed_distance
 from experiment._visualization import whpa_plot
 from experiment.processing.dimension_reduction import PC
@@ -100,7 +99,7 @@ def base_pca(base,
         h_pco.training_fit_transform()
         # Define number of components to keep
         # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
-        h_pco.n_pc_cut = Setup.HyperParameters.n_pc_target
+        h_pco.n_pc_cut = base.HyperParameters.n_pc_target
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
@@ -192,9 +191,9 @@ def fit_transform(base,
     d_pco = PC(name='d', training=tc, roots=training_roots, directory=obj_dir)
     d_pco.training_fit_transform()
     # PCA on transport curves
-    d_pco.n_pc_cut = Setup.HyperParameters.n_pc_predictor
+    d_pco.n_pc_cut = base.HyperParameters.n_pc_predictor
     ndo = d_pco.n_pc_cut
-    n_time_steps = Setup.HyperParameters.n_tstp
+    n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
     tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
