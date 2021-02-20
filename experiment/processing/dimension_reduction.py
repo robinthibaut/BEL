@@ -38,10 +38,11 @@ class PC:
 
         self.obs_shape = None  # Original shape of observation
 
-        self.scaler = StandardScaler(with_mean=False)
-        self.operator = PCA()  # PCA operator (scikit-learn instance)
+        self.scaler = StandardScaler(with_mean=False)  # Divide the sample by their standard deviation.
+        # The samples are automatically scaled by scikit-learn PCA()
+        self.operator = PCA  # PCA operator (scikit-learn instance)
         # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
-        self.pipe = make_pipeline(self.scaler, self.operator, verbose=True)
+        self.pipe = make_pipeline(self.scaler, self.operator(), verbose=True)
 
         self.n_pc_cut = None  # Number of components to keep
 
@@ -93,7 +94,7 @@ class PC:
         necessary to obtain that level.
         :param perc: float: Percentage between 0 and 1
         """
-        evr = np.cumsum(self.operator.explained_variance_ratio_)
+        evr = np.cumsum(self.operator().explained_variance_ratio_)
         self.n_pc_cut = len(np.where(evr <= perc)[0])
 
         return self.n_pc_cut
@@ -103,7 +104,7 @@ class PC:
         Returns the explained variance percentage given a number of components n_c.
         :param n_c: int: Number of components to keep
         """
-        evr = np.cumsum(self.operator.explained_variance_ratio_)
+        evr = np.cumsum(self.operator().explained_variance_ratio_)
 
         return evr[n_c - 1]
 
@@ -157,7 +158,7 @@ class PC:
             n_comp = self.n_pc_cut
 
         # TODO: (optimization) only fit after dimension check
-        op_cut = make_pipeline(self.scaler, PCA(n_components=n_comp))
+        op_cut = make_pipeline(self.scaler, self.operator(n_components=n_comp))
         op_cut.fit(self.training_physical)
 
         inv = op_cut.inverse_transform(pc_to_invert[:, :n_comp])

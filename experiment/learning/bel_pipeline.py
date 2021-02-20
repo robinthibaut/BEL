@@ -230,10 +230,9 @@ def fit_transform(base,
     # %% CCA
     n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
     # components between d and h.
-    float_epsilon = np.finfo(float).eps
     # By default, it scales the data
     # TODO: Check max_iter & tol
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=float_epsilon * 10)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*2, tol=1e-06)
     cca.fit(d_pc_training, h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
