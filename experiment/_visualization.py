@@ -83,7 +83,7 @@ def proxy_legend(legend1=None,
     if extra is None:
         extra = []
     if marker is None:
-        marker = ['-']
+        marker = ['-']*len(colors)
 
     # Proxy figures (empty plots)
     proxys = [plt.plot([],

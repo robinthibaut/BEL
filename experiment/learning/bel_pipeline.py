@@ -114,10 +114,10 @@ def base_pca(base,
                     f.write(os.path.basename(r) + '\n')
 
 
-def fit_transform(base,
-                  well_comb: Combination = None,
-                  training_roots: Root = None,
-                  test_root: Root = None):
+def bel_fit_transform(base,
+                      well_comb: Combination = None,
+                      training_roots: Root = None,
+                      test_root: Root = None):
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
@@ -200,7 +200,7 @@ def fit_transform(base,
     tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
     d_pco.test_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
-    d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
+    d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, 'd_pca.pkl'))
@@ -216,7 +216,7 @@ def fit_transform(base,
         # Perform PCA
         h_pco.test_transform(h, test_root=test_root)
         # Cut desired number of components
-        h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
+        h_pc_training, _ = h_pco.comp_refresh(nho)
         # Save updated PCA object in base
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
@@ -225,7 +225,7 @@ def fit_transform(base,
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
     else:
         # Cut components
-        h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
+        h_pc_training, _ = h_pco.comp_refresh(nho)
 
     # %% CCA
     n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
@@ -233,7 +233,7 @@ def fit_transform(base,
     # By default, it scales the data
     # TODO: Check max_iter & tol
     cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=1e-06)
-    cca.fit(d_pc_training, h_pc_training)  # Fit
+    cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 
     return sub_dir

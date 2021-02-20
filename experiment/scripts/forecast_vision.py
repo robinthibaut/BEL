@@ -21,7 +21,7 @@ if __name__ == '__main__':
     #          '27ec76adab2e406794584fc993188c24',
     #          '9a389395bfbe4cd883dfa3e452752978']
 
-    roots = ['818bf1676c424f76b83bd777ae588a1d']
+    roots = ['27ec76adab2e406794584fc993188c24']
 
     alphabet = string.ascii_uppercase
 
@@ -35,37 +35,37 @@ if __name__ == '__main__':
 
         wells = ['123456']
 
-        # for j, w in enumerate(wells):
+        for j, w in enumerate(wells):
+
+            print(f'Plotting well {w}')
+
+            if w == '123456':
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j-1]
+
+            myvis.plot_results(root=sample,
+                               folder=w,
+                               annotation=annotation,
+                               d=True)
+
+        myvis.plot_K_field(root=sample)
+
+        myvis.plot_head_field(root=sample)
+
+        myvis.plot_whpa(root=sample)
         #
-        #     print(f'Plotting well {w}')
-        #
-        #     if w == '123456':
-        #         annotation = alphabet[i]
-        #     else:
-        #         annotation = alphabet[j-1]
-        #
-        #     myvis.plot_results(root=sample,
-        #                        folder=w,
-        #                        annotation=annotation,
-        #                        d=True)
-        #
-        # myvis.plot_K_field(root=sample)
-        #
-        # myvis.plot_head_field(root=sample)
-        #
-        # myvis.plot_whpa(root=sample)
-        # #
-        # myvis.pca_vision(root=sample,
-        #                  d=True,
-        #                  h=True,
-        #                  exvar=True,
-        #                  labels=True,
-        #                  scores=True,
-        #                  folders=wells)
-        #
-        # myvis.plot_pc_ba(root=sample,
-        #                  data=True,
-        #                  target=True)
+        myvis.pca_vision(root=sample,
+                         d=True,
+                         h=True,
+                         exvar=True,
+                         labels=True,
+                         scores=True,
+                         folders=wells)
+
+        myvis.plot_pc_ba(root=sample,
+                         data=True,
+                         target=True)
 
         myvis.cca_vision(root=sample,
                          folders=wells)
