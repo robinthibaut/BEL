@@ -83,7 +83,7 @@ def proxy_legend(legend1=None,
     if extra is None:
         extra = []
     if marker is None:
-        marker = ['-']*len(colors)
+        marker = ['-' for _ in range(len(colors))]
 
     # Proxy figures (empty plots)
     proxys = [plt.plot([],
@@ -257,7 +257,7 @@ def pca_scores(training,
     proxy_legend(legend1=legend_a,
                  colors=['blue', 'red'],
                  labels=['Training', 'Test'],
-                 marker=['o'])
+                 marker=['o', 'o'])
 
     if fig_file:
         ut.dirmaker(os.path.dirname(fig_file))
@@ -304,7 +304,7 @@ def cca_plot(cca_operator,
         proxy_legend(legend1=legend_a,
                      colors=['black', 'white'],
                      labels=['Training', 'Test'],
-                     marker=['o'],
+                     marker=['o', 'o'],
                      pec=['k', 'k'])
 
         if sdir:
@@ -588,7 +588,7 @@ def h_pca_inverse_plot(pca_o,
         proxy_legend(legend1=legend_a,
                      colors=['red', 'blue'],
                      labels=['Physical', 'Back transformed'],
-                     marker=['-'])
+                     marker=['-', '-'])
 
         if fig_dir is not None:
             ut.dirmaker(fig_dir)
@@ -1356,7 +1356,7 @@ def d_pca_inverse_plot(pca_o,
         proxy_legend(legend1=legend_a,
                      colors=['red', 'blue'],
                      labels=['Physical', 'Back transformed'],
-                     marker=['-'],
+                     marker=['-', '-'],
                      loc=1)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
