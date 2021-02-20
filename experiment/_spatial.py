@@ -95,8 +95,8 @@ def modified_hausdorff(a, b):
 
 
 def block_shaped(arr: np.array,
-                 nrows: float,
-                 ncols: float):
+                 nrows: int,
+                 ncols: int):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -261,10 +261,10 @@ def matrix_paste(c_big, c_small):
     return inds
 
 
-def h_sub(h,
+def h_sub(h: np.array,
           un: int,
           uc: int,
-          sc: float):
+          sc: int):
     """
     Process signed distance array.
     :param h: Signed distance array
@@ -276,13 +276,13 @@ def h_sub(h,
     h_u = np.zeros((h.shape[0], un, uc))
     for i in range(h.shape[0]):
         sim = h[i]
-        sub = block_shaped(sim, sc, sc)
+        sub = block_shaped(arr=sim, nrows=sc, ncols=sc)
         h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
 
     return h_u
 
 
-def get_centroids(array,
+def get_centroids(array: np.array,
                   grf: float):
     """
     Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
