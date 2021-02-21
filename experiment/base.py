@@ -532,7 +532,7 @@ class BiclusterMixin:
         Works with sparse matrices. Only works if ``rows_`` and
         ``columns_`` attributes exist.
         """
-        from .utils.validation import check_array
+        from .utils import check_array
         data = check_array(data, accept_sparse='csr')
         row_ind, col_ind = self.get_indices(i)
         return data[row_ind[:, np.newaxis], col_ind]

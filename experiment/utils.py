@@ -1,9 +1,11 @@
 import numbers
 import warnings
 from inspect import isclass
+import struct
 
 import numpy as np
 import scipy.sparse as sp
+
 from numpy.core.numeric import ComplexWarning
 
 from experiment._config import get_config as _get_config
@@ -11,7 +13,36 @@ from .exceptions import NotFittedError
 from .fixes import _object_dtype_isnan
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
+_IS_32BIT = 8 * struct.calcsize("P") == 32
 
+
+def column_or_1d(y, warn=False):
+    """ Ravel column or 1d numpy array, else raises an error
+
+    Parameters
+    ----------
+    y : array-like
+
+    warn : boolean, default False
+       To control display of warnings.
+
+    Returns
+    -------
+    y : array
+
+    """
+    y = np.asarray(y)
+    shape = np.shape(y)
+    if len(shape) == 1:
+        return np.ravel(y)
+    if len(shape) == 2 and shape[1] == 1:
+        if warn:
+            warnings.warn("A column-vector y was passed when a 1d array was"
+                          " expected. Please change the shape of y to "
+                          "(n_samples, ), for example using ravel().", stacklevel=2)
+        return np.ravel(y)
+
+    raise ValueError("bad input shape {0}".format(shape))
 
 def _check_large_sparse(X, accept_large_sparse=False):
     """Raise a ValueError if X has 64bit indices and accept_large_sparse=False
@@ -188,6 +219,7 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
     if not attrs:
         raise NotFittedError(msg % {'name': type(estimator).__name__})
 
+
 def _ensure_no_complex_data(array):
     if hasattr(array, 'dtype') and array.dtype is not None \
             and hasattr(array.dtype, 'kind') and array.dtype.kind == "c":
@@ -216,9 +248,9 @@ def _assert_all_finite(X, allow_nan=False, msg_dtype=None):
                 not allow_nan and not np.isfinite(X).all()):
             type_err = 'infinity' if allow_nan else 'NaN, infinity'
             raise ValueError(
-                    msg_err.format
-                    (type_err,
-                     msg_dtype if msg_dtype is not None else X.dtype)
+                msg_err.format
+                (type_err,
+                 msg_dtype if msg_dtype is not None else X.dtype)
             )
     # for object dtype data, we only check for NaNs (GH-13254)
     elif X.dtype == np.dtype('object') and not allow_nan:
@@ -326,7 +358,6 @@ def check_array(array, accept_sparse=False, accept_large_sparse=True,
                 dtype="numeric", order=None, copy=False, force_all_finite=True,
                 ensure_2d=True, allow_nd=False, ensure_min_samples=1,
                 ensure_min_features=1, warn_on_dtype=None, estimator=None):
-
     """Input validation on an array, list, sparse matrix or similar.
 
     By default, the input is checked to be a non-empty 2D array containing
