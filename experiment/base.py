@@ -10,7 +10,6 @@ Used for VotingClassifier
 import copy
 import inspect
 import platform
-import re
 import warnings
 from collections import defaultdict
 

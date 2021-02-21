@@ -26,7 +26,7 @@ import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
 from experiment._spatial import grid_parameters, signed_distance
 from experiment._visualization import whpa_plot
-from sklearn.cross_decomposition import CCA
+from experiment.cross_decomposition import CCA
 from experiment.processing.dimension_reduction import PC
 
 Root = List[str]
