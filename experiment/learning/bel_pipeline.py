@@ -21,7 +21,7 @@ from typing import List
 
 import joblib
 import numpy as np
-from sklearn.cross_decomposition import CCA
+from experiment.cross_decomposition import CCA
 
 import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
