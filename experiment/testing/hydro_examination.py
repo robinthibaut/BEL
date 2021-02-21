@@ -23,7 +23,7 @@ plt.plot(epxy[:, 0], epxy[:, 1], 'ko')
 # seed = np.random.randint(2**32 - 1)
 # np.random.seed(seed)
 # sample = np.random.randint(144, size=10)
-sample = np.array([94, 10, 101,  29,  43, 116, 100,  40,  72])
+sample = np.array([94, 10, 101, 29, 43, 116, 100, 40, 72])
 for i in sample:
     plt.text(epxy[i, 0] + 4, epxy[i, 1] + 4, i, color='black', fontsize=11, weight='bold',
              bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=.5', alpha=.7))
@@ -47,7 +47,7 @@ plt.show()
 # 4088225279
 # 1440052516 but remove 60
 
-#%%
+# %%
 
 # test_array = epxy
 #

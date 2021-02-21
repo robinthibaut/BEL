@@ -113,7 +113,7 @@ def flow(exe_name: str,
     ncol = len(delc)  # new number of columns
     nrow = len(delr)  # new number of rows
 
-    top = np.zeros((nrow, ncol), dtype=np.float)   # Model top (m)
+    top = np.zeros((nrow, ncol), dtype=np.float)  # Model top (m)
     botm = [-dz]  # List containing bottom location (m) of each layer
 
     # %% Model initial conditions

@@ -21,12 +21,12 @@ from typing import List
 
 import joblib
 import numpy as np
-from experiment.cross_decomposition import CCA
 
 import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
 from experiment._spatial import grid_parameters, signed_distance
 from experiment._visualization import whpa_plot
+from sklearn.cross_decomposition import CCA
 from experiment.processing.dimension_reduction import PC
 
 Root = List[str]
@@ -232,7 +232,7 @@ def bel_fit_transform(base,
     # components between d and h.
     # By default, it scales the data
     # TODO: Check max_iter & tol
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500*20, tol=1e-06)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
     cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 

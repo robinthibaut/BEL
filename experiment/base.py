@@ -245,55 +245,55 @@ class BaseEstimator:
             valid_params[key].set_params(**sub_params)
 
         return self
-
-    def __repr__(self, N_CHAR_MAX=700):
-        # N_CHAR_MAX is the (approximate) maximum number of non-blank
-        # characters to render. We pass it as an optional parameter to ease
-        # the tests.
-
-        from .utils._pprint import _EstimatorPrettyPrinter
-
-        N_MAX_ELEMENTS_TO_SHOW = 30  # number of elements to show in sequences
-
-        # use ellipsis for sequences with a lot of elements
-        pp = _EstimatorPrettyPrinter(
-            compact=True, indent=1, indent_at_name=True,
-            n_max_elements_to_show=N_MAX_ELEMENTS_TO_SHOW)
-
-        repr_ = pp.pformat(self)
-
-        # Use bruteforce ellipsis when there are a lot of non-blank characters
-        n_nonblank = len(''.join(repr_.split()))
-        if n_nonblank > N_CHAR_MAX:
-            lim = N_CHAR_MAX // 2  # apprx number of chars to keep on both ends
-            regex = r'^(\s*\S){%d}' % lim
-            # The regex '^(\s*\S){%d}' % n
-            # matches from the start of the string until the nth non-blank
-            # character:
-            # - ^ matches the start of string
-            # - (pattern){n} matches n repetitions of pattern
-            # - \s*\S matches a non-blank char following zero or more blanks
-            left_lim = re.match(regex, repr_).end()
-            right_lim = re.match(regex, repr_[::-1]).end()
-
-            if '\n' in repr_[left_lim:-right_lim]:
-                # The left side and right side aren't on the same line.
-                # To avoid weird cuts, e.g.:
-                # categoric...ore',
-                # we need to start the right side with an appropriate newline
-                # character so that it renders properly as:
-                # categoric...
-                # handle_unknown='ignore',
-                # so we add [^\n]*\n which matches until the next \n
-                regex += r'[^\n]*\n'
-                right_lim = re.match(regex, repr_[::-1]).end()
-
-            ellipsis = '...'
-            if left_lim + len(ellipsis) < len(repr_) - right_lim:
-                # Only add ellipsis if it results in a shorter repr
-                repr_ = repr_[:left_lim] + '...' + repr_[-right_lim:]
-
-        return repr_
+    #
+    # def __repr__(self, N_CHAR_MAX=700):
+    #     # N_CHAR_MAX is the (approximate) maximum number of non-blank
+    #     # characters to render. We pass it as an optional parameter to ease
+    #     # the tests.
+    #
+    #     from .utils._pprint import _EstimatorPrettyPrinter
+    #
+    #     N_MAX_ELEMENTS_TO_SHOW = 30  # number of elements to show in sequences
+    #
+    #     # use ellipsis for sequences with a lot of elements
+    #     pp = _EstimatorPrettyPrinter(
+    #         compact=True, indent=1, indent_at_name=True,
+    #         n_max_elements_to_show=N_MAX_ELEMENTS_TO_SHOW)
+    #
+    #     repr_ = pp.pformat(self)
+    #
+    #     # Use bruteforce ellipsis when there are a lot of non-blank characters
+    #     n_nonblank = len(''.join(repr_.split()))
+    #     if n_nonblank > N_CHAR_MAX:
+    #         lim = N_CHAR_MAX // 2  # apprx number of chars to keep on both ends
+    #         regex = r'^(\s*\S){%d}' % lim
+    #         # The regex '^(\s*\S){%d}' % n
+    #         # matches from the start of the string until the nth non-blank
+    #         # character:
+    #         # - ^ matches the start of string
+    #         # - (pattern){n} matches n repetitions of pattern
+    #         # - \s*\S matches a non-blank char following zero or more blanks
+    #         left_lim = re.match(regex, repr_).end()
+    #         right_lim = re.match(regex, repr_[::-1]).end()
+    #
+    #         if '\n' in repr_[left_lim:-right_lim]:
+    #             # The left side and right side aren't on the same line.
+    #             # To avoid weird cuts, e.g.:
+    #             # categoric...ore',
+    #             # we need to start the right side with an appropriate newline
+    #             # character so that it renders properly as:
+    #             # categoric...
+    #             # handle_unknown='ignore',
+    #             # so we add [^\n]*\n which matches until the next \n
+    #             regex += r'[^\n]*\n'
+    #             right_lim = re.match(regex, repr_[::-1]).end()
+    #
+    #         ellipsis = '...'
+    #         if left_lim + len(ellipsis) < len(repr_) - right_lim:
+    #             # Only add ellipsis if it results in a shorter repr
+    #             repr_ = repr_[:left_lim] + '...' + repr_[-right_lim:]
+    #
+    #     return repr_
 
     def __getstate__(self):
         try:
@@ -418,7 +418,7 @@ class RegressorMixin:
         """
 
         from .metrics import r2_score
-        from .metrics._regression import _check_reg_targets
+        from .metrics import _check_reg_targets
         y_pred = self.predict(X)
         # XXX: Remove the check in 0.23
         y_type, _, _, _ = _check_reg_targets(y, y_pred, None)
@@ -625,15 +625,17 @@ class MetaEstimatorMixin:
 
 class MultiOutputMixin:
     """Mixin to mark estimators that support multioutput."""
+
     def _more_tags(self):
         return {'multioutput': True}
 
 
 class _UnstableArchMixin:
     """Mark estimators that are non-determinstic on 32bit or PowerPC"""
+
     def _more_tags(self):
         return {'non_deterministic': (
-            _IS_32BIT or platform.machine().startswith(('ppc', 'powerpc')))}
+                _IS_32BIT or platform.machine().startswith(('ppc', 'powerpc')))}
 
 
 def is_classifier(estimator):

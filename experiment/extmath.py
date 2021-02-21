@@ -44,6 +44,8 @@ def squared_norm(x):
                       'Data should be float type to avoid this issue',
                       UserWarning)
     return np.dot(x, x)
+
+
 #
 #
 # def row_norms(X, squared=False):
@@ -154,6 +156,7 @@ def safe_sparse_dot(a, b, dense_output=False):
             and dense_output and hasattr(ret, "toarray")):
         return ret.toarray()
     return ret
+
 
 #
 # def randomized_range_finder(A, size, n_iter,
@@ -428,7 +431,7 @@ def weighted_mode(a, w, axis=0):
     if a.shape != w.shape:
         w = np.full(a.shape, w, dtype=w.dtype)
 
-    scores = np.unique(np.ravel(a))       # get ALL unique values
+    scores = np.unique(np.ravel(a))  # get ALL unique values
     testshape = list(a.shape)
     testshape[axis] = 1
     oldmostfreq = np.zeros(testshape)
@@ -535,6 +538,7 @@ def svd_flip(u, v, u_based_decision=True):
         u *= signs
         v *= signs[:, np.newaxis]
     return u, v
+
 
 #
 # def log_logistic(X, out=None):
@@ -766,15 +770,15 @@ def _incremental_mean_and_var(X, last_mean, last_variance, last_sample_count):
         updated_variance = None
     else:
         new_unnormalized_variance = (
-            _safe_accumulator_op(np.nanvar, X, axis=0) * new_sample_count)
+                _safe_accumulator_op(np.nanvar, X, axis=0) * new_sample_count)
         last_unnormalized_variance = last_variance * last_sample_count
 
         with np.errstate(divide='ignore', invalid='ignore'):
             last_over_new_count = last_sample_count / new_sample_count
             updated_unnormalized_variance = (
-                last_unnormalized_variance + new_unnormalized_variance +
-                last_over_new_count / updated_sample_count *
-                (last_sum / last_over_new_count - new_sum) ** 2)
+                    last_unnormalized_variance + new_unnormalized_variance +
+                    last_over_new_count / updated_sample_count *
+                    (last_sum / last_over_new_count - new_sum) ** 2)
 
         zeros = last_sample_count == 0
         updated_unnormalized_variance[zeros] = new_unnormalized_variance[zeros]

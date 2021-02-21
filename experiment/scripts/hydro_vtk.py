@@ -13,7 +13,3 @@ if __name__ == '__main__':
     # mi.conc_vtk()
     # mi.particles_vtk(path=1)
     # mi.wells_vtk()
-
-
-
-

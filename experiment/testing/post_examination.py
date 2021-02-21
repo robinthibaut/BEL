@@ -35,7 +35,7 @@ nn = np.load(ndor)
 # plt.show()
 
 
-#%%
+# %%
 
 fc = Setup.Focus
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim

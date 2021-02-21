@@ -1,16 +1,16 @@
 import numbers
+import struct
 import warnings
 from inspect import isclass
-import struct
 
 import numpy as np
 import scipy.sparse as sp
 
-# from numpy.core.numeric import ComplexWarning
-
 from experiment._config import get_config as _get_config
 from .exceptions import NotFittedError
 from .fixes import _object_dtype_isnan
+
+# from numpy.core.numeric import ComplexWarning
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 _IS_32BIT = 8 * struct.calcsize("P") == 32
@@ -43,6 +43,7 @@ def column_or_1d(y, warn=False):
         return np.ravel(y)
 
     raise ValueError("bad input shape {0}".format(shape))
+
 
 def _check_large_sparse(X, accept_large_sparse=False):
     """Raise a ValueError if X has 64bit indices and accept_large_sparse=False
@@ -638,3 +639,4 @@ def check_consistent_length(*arrays):
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"
                          " samples: %r" % [int(l) for l in lengths])
+

@@ -107,7 +107,7 @@ def transport(modflowmodel,
     ttsmult = 1.0  # The multiplier for successive transport steps within a flow time-step if the GCG solver is used
     # and the solution option for the advection term is the standard finite-difference method. (default is 1.0)
     ttsmax = 0
-    species_names = [f'c{c+1}' for c in range(ncomp)]
+    species_names = [f'c{c + 1}' for c in range(ncomp)]
     extension = 'btn'
     unitnumber = None
     filenames = None

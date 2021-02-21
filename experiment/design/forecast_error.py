@@ -98,7 +98,7 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-# %% Random sample from the posterior
+    # %% Random sample from the posterior
     def sample_posterior(self,
                          n_posts: int = None):
         """
@@ -122,7 +122,7 @@ class UncertaintyQuantification:
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
 
-# %% extract 0 contours
+    # %% extract 0 contours
     def c0(self,
            write_vtk: bool = 1):
         """
@@ -155,7 +155,7 @@ class UncertaintyQuantification:
                 writer.SetFileName(jp(vdir, f'forecast_posterior_{i}.vtp'))
                 writer.Write()
 
-# %% Kernel density
+    # %% Kernel density
     def kernel_density(self):
         # Scatter plot vertices
         # nn = sample_n
@@ -220,7 +220,7 @@ class UncertaintyQuantification:
 
         return z
 
-# %% New approach : stack binary WHPA
+    # %% New approach : stack binary WHPA
     def uq_binary_stack(self):
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
@@ -235,7 +235,7 @@ class UncertaintyQuantification:
         # Save result
         np.save(jp(self.res_dir, 'bin'), b_low)
 
-# %% Hausdorff
+    # %% Hausdorff
     def mhd(self):
         """
         Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA

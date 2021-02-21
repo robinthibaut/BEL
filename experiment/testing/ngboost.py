@@ -21,14 +21,14 @@ res_dir, folder = '6623dd4fb5014a978d59b9acb03946d2', '123456'
 
 subdir = os.path.join(base.Directories.forecasts_dir, res_dir)
 
-#%% Load d
+# %% Load d
 pcaf = os.path.join(subdir, folder, 'obj', 'd_pca.pkl')
 d_pco = joblib.load(pcaf)
 ndco = 50
 d_pc_training = d_pco.training_pc[:, :ndco]
 d_pc_test = d_pco.predict_pc.flatten()[:ndco].reshape(1, -1)
 
-#%% Load h
+# %% Load h
 hbase = os.path.join(base.Directories.forecasts_dir, 'base')
 # Load h pickle
 pcaf = os.path.join(hbase, 'h_pca.pkl')
@@ -49,13 +49,12 @@ for i in range(nhco):
     Y_dists = ngb.pred_dist(d_pc_test)
     my_pcs.append(Y_dists)
 
-#%% Sample
+# %% Sample
 n_samples = 500
 random_samples = np.zeros((nhco, n_samples))
 
 for i, d in enumerate(my_pcs):
     random_samples[i] = d.sample(n_samples)
-
 
 random_samples = random_samples.reshape(n_samples, nhco)
 

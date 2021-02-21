@@ -196,15 +196,14 @@ def main_1():
 
 
 def main_2(N):
-
     means = []
 
     for n in N:
         Setup.HyperParameters.n_total = n
-        Setup.HyperParameters.n_training = int(n*.8)
-        print(f'n_training={int(n*.8)}')
-        Setup.HyperParameters.n_test = int(n*.2)
-        print(f'n_test={int(n*.2)}')
+        Setup.HyperParameters.n_training = int(n * .8)
+        print(f'n_training={int(n * .8)}')
+        Setup.HyperParameters.n_test = int(n * .2)
+        print(f'n_test={int(n * .2)}')
 
         # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
         wells = [[1, 2, 3, 4, 5, 6]]

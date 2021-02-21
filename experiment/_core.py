@@ -134,8 +134,8 @@ class Setup:
         # Posterior
         # Size of data set
         n_total: int = 250  # Parameter to optimize
-        n_training: int = int(n_total*.8)
-        n_test: int = int(n_total*.2)
+        n_training: int = int(n_total * .8)
+        n_test: int = int(n_total * .2)
         # Sample size
         n_posts: int = n_training
         #

@@ -32,7 +32,6 @@ def _parse_version(version_string):
 np_version = _parse_version(np.__version__)
 sp_version = _parse_version(scipy.__version__)
 
-
 try:  # SciPy >= 0.19
     from scipy.special import comb, logsumexp
 except ImportError:
@@ -49,9 +48,9 @@ if sp_version >= (1, 3):
     # Preserves earlier default choice of pinvh cutoff `cond` value.
     # Can be removed once issue #14055 is fully addressed.
     # from ..externals._scipy_linalg import pinvh
-    from scipy.linalg import pinvh # noqa
+    from scipy.linalg import pinvh  # noqa
 else:
-    from scipy.linalg import pinvh # noqa
+    from scipy.linalg import pinvh  # noqa
 
 if sp_version >= (0, 19):
     def _argmax(arr_or_spmatrix, axis=None):
@@ -70,6 +69,7 @@ else:
             return k
         else:
             return -1
+
 
     def _arg_min_or_max_axis(self, axis, op, compare):
         if self.shape[axis] == 0:
@@ -108,6 +108,7 @@ else:
 
         return np.asmatrix(ret)
 
+
     def _arg_min_or_max(self, axis, out, op, compare):
         if out is not None:
             raise ValueError("Sparse matrices do not support "
@@ -145,15 +146,16 @@ else:
 
         return _arg_min_or_max_axis(self, axis, op, compare)
 
+
     def _sparse_argmax(self, axis=None, out=None):
         return _arg_min_or_max(self, axis, out, np.argmax, np.greater)
+
 
     def _argmax(arr_or_matrix, axis=None):
         if sp.issparse(arr_or_matrix):
             return _sparse_argmax(arr_or_matrix, axis=axis)
         else:
             return arr_or_matrix.argmax(axis=axis)
-
 
 if np_version < (1, 12):
     class MaskedArray(np.ma.MaskedArray):
@@ -170,8 +172,7 @@ if np_version < (1, 12):
             return data_state + (np.ma.getmaskarray(self).tostring(cf),
                                  self._fill_value)
 else:
-    from numpy.ma import MaskedArray    # noqa
-
+    from numpy.ma import MaskedArray  # noqa
 
 # Fix for behavior inconsistency on numpy.equal for object dtypes.
 # For numpy versions < 1.13, numpy.equal tests element-wise identity of objects

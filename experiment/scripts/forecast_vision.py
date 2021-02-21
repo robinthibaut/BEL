@@ -41,7 +41,7 @@ if __name__ == '__main__':
             if w == '123456':
                 annotation = alphabet[i]
             else:
-                annotation = alphabet[j-1]
+                annotation = alphabet[j - 1]
 
             myvis.plot_results(root=sample,
                                folder=w,

@@ -64,8 +64,8 @@ miny = min(dataset.min(axis=1))
 maxx = max(dataset.max(axis=0))
 maxy = max(dataset.max(axis=1))
 
-xx, yy = np.meshgrid(np.linspace(minx-2, maxx+2, 200),
-                     np.linspace(miny-2, maxy+2, 200))
+xx, yy = np.meshgrid(np.linspace(minx - 2, maxx + 2, 200),
+                     np.linspace(miny - 2, maxy + 2, 200))
 
 # 𝜈 is upper bounded by the fraction of outliers and lower bounded by the fraction of support vectors. Just consider
 # that for default value 0.1 0.1 , atmost 10% of the training samples are allowed to be wrongly classified or
