@@ -1,14 +1,14 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
+
 import joblib
 import numpy as np
+from experiment.base.inventory import MySetup as base
+from ngboost.distns import Normal
 
 from experiment._visualization import Plot
-from experiment.base.inventory import MySetup as base
-
 from ngboost import NGBRegressor
-from ngboost.distns import Normal
 
 fc = base.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim

@@ -7,10 +7,10 @@ from typing import List
 import joblib
 import numpy as np
 
-from experiment._core import Setup
-from experiment.learning import bel_pipeline as dcp
 from experiment import _utils as ut
+from experiment._core import Setup
 from experiment.design.forecast_error import UncertaintyQuantification
+from experiment.learning import bel_pipeline as dcp
 
 Root = List[str]
 

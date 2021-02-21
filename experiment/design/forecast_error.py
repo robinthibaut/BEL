@@ -19,10 +19,10 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
-from experiment._statistics import PosteriorIO
+from experiment import _utils as fops
 from experiment._spatial import grid_parameters, modified_hausdorff, contours_vertices, binary_polygon, \
     refine_machine
-from experiment import _utils as fops
+from experiment._statistics import PosteriorIO
 
 
 class UncertaintyQuantification:

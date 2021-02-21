@@ -13,13 +13,14 @@ then the prior is classified as being consistent with dobs.
 """
 
 import os
-import joblib
-import numpy as np
-import matplotlib.pyplot as plt
-from experiment.base.inventory import MySetup
 
+import joblib
+import matplotlib.pyplot as plt
+import numpy as np
+from experiment.base.inventory import MySetup
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
+
 
 # plt.style.use('dark_background')
 

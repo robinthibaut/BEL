@@ -1,12 +1,11 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
-
-import numpy as np
 from typing import List
 
-from experiment._core import Setup
+import numpy as np
 
+from experiment._core import Setup
 from experiment._visualization import mode_histo
 
 Root = List[str]

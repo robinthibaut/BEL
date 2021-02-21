@@ -18,8 +18,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ma
 from scipy.interpolate import make_interp_spline, BSpline
 
-import experiment._statistics
 import experiment._spatial
+import experiment._statistics
 from experiment import _statistics as stats, _utils as ut
 from experiment._core import Setup
 from experiment._spatial import grid_parameters, contours_vertices, binary_stack, refine_machine

@@ -1,12 +1,11 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import numpy as np
-import matplotlib.pyplot as plt
 from os.path import join as jp
 
+import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sb
 
 import experiment._visualization as mplot
-
 from experiment._core import Setup
 
 md = Setup.Directories

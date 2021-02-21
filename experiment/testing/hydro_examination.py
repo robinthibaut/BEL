@@ -1,10 +1,12 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import numpy as np
+from os.path import join as jp
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+from experiment._core import Setup
 from experiment._visualization import proxy_annotate
 
-from os.path import join as jp
-from experiment._core import Setup
 md = Setup.Directories
 
 # model_nam = '/Users/robin/PycharmProjects/BEL/experiment/storage/forwards/6a4d614c838442629d7a826cc1f498a8/whpa.nam'

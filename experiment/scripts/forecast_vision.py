@@ -3,10 +3,9 @@
 import os
 import string
 
-from experiment._core import Setup
 import experiment._visualization as myvis
+from experiment._core import Setup
 from experiment._utils import data_read
-
 
 if __name__ == '__main__':
 

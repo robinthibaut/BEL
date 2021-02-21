@@ -8,10 +8,10 @@ import numpy as np
 from diavatly import model_map
 
 import experiment._spatial
-from experiment._core import Setup
 import experiment._visualization as mplot
-from experiment.processing.target_handle import travelling_particles
+from experiment._core import Setup
 from experiment._spatial import grid_parameters, get_centroids, binary_polygon
+from experiment.processing.target_handle import travelling_particles
 
 
 def active_zone(modflowmodel):

@@ -1,11 +1,13 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
+
 import joblib
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 from scipy import stats
+
 from experiment._core import Setup
 
 plt.style.use('dark_background')

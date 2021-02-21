@@ -16,21 +16,21 @@ compared to all other uncertainties in the model.
 """
 
 import multiprocessing as mp
+import os
 import shutil
 import time
 import uuid
-import os
 from os.path import join as jp
 
 import numpy as np
 
 import experiment._utils as fops
 from experiment._core import Machine, Setup
+from experiment._statistics import sgsim
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
 from experiment.processing.target_handle import travelling_particles
-from experiment._statistics import sgsim
 
 
 def simulation(folder=None):

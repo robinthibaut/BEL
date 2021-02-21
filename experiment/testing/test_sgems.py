@@ -5,9 +5,9 @@ import uuid
 from os.path import join as jp
 
 import numpy as np
+from experiment.base.inventory import MySetup
 
 import experiment._utils as fops
-from experiment.base.inventory import MySetup
 from experiment._statistics import sgsim
 
 

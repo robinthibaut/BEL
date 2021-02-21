@@ -1,8 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 from experiment._statistics import posterior_conditional
 

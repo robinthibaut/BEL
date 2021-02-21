@@ -2,8 +2,8 @@
 import itertools
 import os
 import shutil
-from typing import List
 from os.path import join as jp
+from typing import List
 
 import flopy
 import joblib
