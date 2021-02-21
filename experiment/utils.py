@@ -6,7 +6,7 @@ import struct
 import numpy as np
 import scipy.sparse as sp
 
-from numpy.core.numeric import ComplexWarning
+# from numpy.core.numeric import ComplexWarning
 
 from experiment._config import get_config as _get_config
 from .exceptions import NotFittedError
@@ -523,7 +523,7 @@ def check_array(array, accept_sparse=False, accept_large_sparse=True,
         # of warnings context manager.
         with warnings.catch_warnings():
             try:
-                warnings.simplefilter('error', ComplexWarning)
+                # warnings.simplefilter('error', ComplexWarning)
                 if dtype is not None and np.dtype(dtype).kind in 'iu':
                     # Conversion float -> int should not contain NaN or
                     # inf (numpy#14412). We cannot use casting='safe' because
@@ -535,9 +535,11 @@ def check_array(array, accept_sparse=False, accept_large_sparse=True,
                     array = array.astype(dtype, casting="unsafe", copy=False)
                 else:
                     array = np.asarray(array, order=order, dtype=dtype)
-            except ComplexWarning:
-                raise ValueError("Complex data not supported\n"
-                                 "{}\n".format(array))
+            # except ComplexWarning:
+            #     raise ValueError("Complex data not supported\n"
+            #                      "{}\n".format(array))
+            except Exception as e:
+                print(e)
 
         # It is possible that the np.array(..) gave no warning. This happens
         # when no dtype conversion happened, for example dtype = None. The

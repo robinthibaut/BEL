@@ -7,43 +7,23 @@ Function named as ``*_error`` or ``*_loss`` return a scalar value to minimize:
 the lower the better
 """
 
-# Authors: Alexandre Gramfort <alexandre.gramfort@inria.fr>
-#          Mathieu Blondel <mathieu@mblondel.org>
-#          Olivier Grisel <olivier.grisel@ensta.org>
-#          Arnaud Joly <a.joly@ulg.ac.be>
-#          Jochen Wersdorfer <jochen@wersdoerfer.de>
-#          Lars Buitinck
-#          Joel Nothman <joel.nothman@gmail.com>
-#          Karan Desai <karandesai281196@gmail.com>
-#          Noel Dawe <noel@dawe.me>
-#          Manoj Kumar <manojkumarsivaraj334@gmail.com>
-#          Michael Eickenberg <michael.eickenberg@gmail.com>
-#          Konstantin Shmelkov <konstantin.shmelkov@polytechnique.edu>
-#          Christian Lorentzen <lorentzen.ch@googlemail.com>
-# License: BSD 3 clause
-from collections.abc import Sequence
-from itertools import chain
-
-from scipy.sparse import issparse
-from scipy.sparse.base import spmatrix
-from scipy.sparse import dok_matrix
-from scipy.sparse import lil_matrix
-
-import numpy as np
-
-from .utils import check_array, _assert_all_finite
-
-import numpy as np
-from scipy.special import xlogy
-from scipy.sparse import csr_matrix
-
 import warnings
 
-from .utils import (check_array, check_consistent_length,
-                                _num_samples)
-from .utils import column_or_1d
-from .exceptions import UndefinedMetricWarning
+from collections.abc import Sequence
 
+import numpy as np
+from scipy.sparse import csr_matrix
+from scipy.sparse import dok_matrix
+from scipy.sparse import issparse
+from scipy.sparse import lil_matrix
+from scipy.sparse.base import spmatrix
+from scipy.special import xlogy
+
+from .exceptions import UndefinedMetricWarning
+from .utils import _assert_all_finite
+from .utils import (check_array, check_consistent_length,
+                    _num_samples)
+from .utils import column_or_1d
 
 __ALL__ = [
     "max_error",
@@ -114,8 +94,8 @@ def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
         if multioutput not in allowed_multioutput_str:
             raise ValueError("Allowed 'multioutput' string values are {}. "
                              "You provided multioutput={!r}".format(
-                                 allowed_multioutput_str,
-                                 multioutput))
+                allowed_multioutput_str,
+                multioutput))
     elif multioutput is not None:
         multioutput = check_array(multioutput, ensure_2d=False)
         if n_outputs == 1:
@@ -734,11 +714,11 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
             raise ValueError(message + "strictly positive y_pred.")
         dev = 2 * (np.power(np.maximum(y_true, 0), 2 - power)
                    / ((1 - power) * (2 - power))
-                   - y_true * np.power(y_pred, 1 - power)/(1 - power)
-                   + np.power(y_pred, 2 - power)/(2 - power))
+                   - y_true * np.power(y_pred, 1 - power) / (1 - power)
+                   + np.power(y_pred, 2 - power) / (2 - power))
     elif power == 0:
         # Normal distribution, y_true and y_pred any real number
-        dev = (y_true - y_pred)**2
+        dev = (y_true - y_pred) ** 2
     elif power < 1:
         raise ValueError("Tweedie deviance is only defined for power<=0 and "
                          "power>=1.")
@@ -746,13 +726,13 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
         # Poisson distribution, y_true >= 0, y_pred > 0
         if (y_true < 0).any() or (y_pred <= 0).any():
             raise ValueError(message + "non-negative y_true and strictly "
-                             "positive y_pred.")
-        dev = 2 * (xlogy(y_true, y_true/y_pred) - y_true + y_pred)
+                                       "positive y_pred.")
+        dev = 2 * (xlogy(y_true, y_true / y_pred) - y_true + y_pred)
     elif power == 2:
         # Gamma distribution, y_true and y_pred > 0
         if (y_true <= 0).any() or (y_pred <= 0).any():
             raise ValueError(message + "strictly positive y_true and y_pred.")
-        dev = 2 * (np.log(y_pred/y_true) + y_true/y_pred - 1)
+        dev = 2 * (np.log(y_pred / y_true) + y_true / y_pred - 1)
     else:
         if power < 2:
             # 1 < p < 2 is Compound Poisson, y_true >= 0, y_pred > 0
@@ -764,9 +744,9 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
                 raise ValueError(message + "strictly positive y_true and "
                                            "y_pred.")
 
-        dev = 2 * (np.power(y_true, 2 - power)/((1 - power) * (2 - power))
-                   - y_true * np.power(y_pred, 1 - power)/(1 - power)
-                   + np.power(y_pred, 2 - power)/(2 - power))
+        dev = 2 * (np.power(y_true, 2 - power) / ((1 - power) * (2 - power))
+                   - y_true * np.power(y_pred, 1 - power) / (1 - power)
+                   + np.power(y_pred, 2 - power) / (2 - power))
 
     return np.average(dev, weights=sample_weight)
 
@@ -845,8 +825,10 @@ def mean_gamma_deviance(y_true, y_pred, sample_weight=None):
         y_true, y_pred, sample_weight=sample_weight, power=2
     )
 
+
 def _is_integral_float(y):
     return y.dtype.kind == 'f' and np.all(y.astype(int) == y)
+
 
 def is_multilabel(y):
     """ Check if ``y`` is in a multilabel format.
@@ -1130,7 +1112,7 @@ def count_nonzero(X, axis=None, sample_weight=None):
         else:
             weights = np.repeat(sample_weight, np.diff(X.indptr))
             return np.bincount(X.indices, minlength=X.shape[1],
-                            weights=weights)
+                               weights=weights)
     else:
         raise ValueError('Unsupported axis: {0}'.format(axis))
 
