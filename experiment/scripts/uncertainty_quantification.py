@@ -211,7 +211,7 @@ def main_2(N):
                                 comb=wells,
                                 n_training=Setup.HyperParameters.n_training,
                                 n_obs=Setup.HyperParameters.n_test,
-                                wipe=True,
+                                wipe=False,
                                 flag_base=True)
         means.append(mhd_mean)
 
@@ -219,6 +219,7 @@ def main_2(N):
 
 
 if __name__ == '__main__':
-    main_1()
-    # n_try = np.linspace(250, 1000, 50)
-    # main_2(N=[250])
+    # main_1()
+    n_try = np.linspace(100, 2000, 50)
+    mv = main_2(N=n_try)
+    np.save(os.path.join(Setup.Directories.forecasts_dir, 'means.npy'), mv)
