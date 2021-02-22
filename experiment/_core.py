@@ -22,8 +22,9 @@ class Setup:
         """Define main directories and file names"""
         # Content directory
         main_dir: str = dirname(os.path.abspath(__file__))
-        hydro_res_dir: str = join(main_dir, 'storage', 'forwards')
-        forecasts_dir: str = join(main_dir, 'storage', 'forecasts')
+        storage_dir: str = join(main_dir, 'storage')
+        hydro_res_dir: str = join(storage_dir, 'forwards')
+        forecasts_dir: str = join(storage_dir, 'forecasts')
         grid_dir: str = join(main_dir, 'spatial', 'parameters')
 
     @dataclass

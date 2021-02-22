@@ -173,10 +173,10 @@ def analysis(base,
 def get_roots():
     # List directories in forwards folder
 
-    training_roots = ut.data_read(os.path.join(Setup.Directories.forecasts_dir, 'roots.dat'))
+    training_roots = ut.data_read(os.path.join(Setup.Directories.storage_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = ut.data_read(os.path.join(Setup.Directories.forecasts_dir, 'test_roots.dat'))
+    test_roots = ut.data_read(os.path.join(Setup.Directories.storage_dir, 'test_roots.dat'))
     test_roots = [item for sublist in test_roots for item in sublist]
 
     return training_roots, test_roots
@@ -211,7 +211,7 @@ def main_2(N):
                                 comb=wells,
                                 n_training=Setup.HyperParameters.n_training,
                                 n_obs=Setup.HyperParameters.n_test,
-                                wipe=False,
+                                wipe=True,
                                 flag_base=True)
         means.append(mhd_mean)
 
@@ -221,5 +221,5 @@ def main_2(N):
 if __name__ == '__main__':
     # main_1()
     n_try = np.linspace(100, 2000, 50)
-    mv = main_2(N=n_try)
-    np.save(os.path.join(Setup.Directories.forecasts_dir, 'means.npy'), mv)
+    mv = main_2(N=[100])
+    np.save(os.path.join(Setup.Directories.storage_dir, 'means.npy'), mv)
