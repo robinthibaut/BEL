@@ -137,7 +137,10 @@ def analysis(base,
 
     # Perform PCA on target (whpa) and store the object in a base folder
     if wipe:
-        shutil.rmtree(base.Directories.forecasts_dir)
+        try:
+            shutil.rmtree(base.Directories.forecasts_dir)
+        except FileNotFoundError:
+            pass
     obj_path = os.path.join(base.Directories.forecasts_dir, 'base')
     fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base and not fb:
