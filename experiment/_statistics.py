@@ -11,7 +11,7 @@ from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
-from scipy import stats, ndimage, integrate
+from scipy import integrate, ndimage, stats
 from sklearn.preprocessing import PowerTransformer
 
 from experiment._core import Setup
@@ -424,8 +424,10 @@ class PosteriorIO:
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.normalize_h = PowerTransformer(method='yeo-johnson', standardize=True)
-        self.normalize_d = PowerTransformer(method='yeo-johnson', standardize=True)
+        self.normalize_h = PowerTransformer(
+            method='yeo-johnson', standardize=True)
+        self.normalize_d = PowerTransformer(
+            method='yeo-johnson', standardize=True)
         self.directory = directory
 
     def mvn_inference(self,
@@ -449,13 +451,17 @@ class PosteriorIO:
 
         # TODO: add dimension check
         if isinstance(h_cca_training_gaussian, (list, tuple, np.ndarray)):
-            shctg = np.shape(h_cca_training_gaussian)  # Shape = (n_components_CCA, n_training)
+            # Shape = (n_components_CCA, n_training)
+            shctg = np.shape(h_cca_training_gaussian)
         if isinstance(d_cca_training, (list, tuple, np.ndarray)):
-            sdct = np.shape(d_cca_training)  # Shape = (n_components_CCA, n_training)
+            # Shape = (n_components_CCA, n_training)
+            sdct = np.shape(d_cca_training)
         if isinstance(d_pc_training, (list, tuple, np.ndarray)):
-            sdpt = np.shape(d_pc_training)  # Shape = (n_training, n_components_PCA)
+            # Shape = (n_training, n_components_PCA)
+            sdpt = np.shape(d_pc_training)
         if isinstance(d_rotations, (list, tuple, np.ndarray)):
-            sdr = np.shape(d_rotations)  # Shape = (n_components_PCA_d, n_components_CCA_h)
+            # Shape = (n_components_PCA_d, n_components_CCA_h)
+            sdr = np.shape(d_rotations)
         if isinstance(d_cca_prediction, (list, tuple, np.ndarray)):
             sdcp = np.shape(d_cca_prediction)  # Shape = (n_components_CCA, 1)
 
@@ -464,28 +470,36 @@ class PosteriorIO:
 
         # Computation of the posterior mean in Canonical space
         h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
-        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)  # Mean is 0, as expected.
+        # Mean is 0, as expected.
+        h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)
 
         # Evaluate the covariance in h (in Canonical space)
         # Very close to the Identity matrix
-        h_cov_operator = np.cov(h_cca_training_gaussian.T)  # (n_comp_CCA, n_comp_CCA)
+        # (n_comp_CCA, n_comp_CCA)
+        h_cov_operator = np.cov(h_cca_training_gaussian.T)
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-        x_dim = np.size(d_pc_training, axis=1)  # Number of PCA components for the curves
+        # Number of PCA components for the curves
+        x_dim = np.size(d_pc_training, axis=1)
         noise = .01
-        d_cov_operator = np.eye(x_dim) * noise  # I matrix. (n_comp_PCA, n_comp_PCA)
-        d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations  # (n_comp_CCA, n_comp_CCA)
+        # I matrix. (n_comp_PCA, n_comp_PCA)
+        d_cov_operator = np.eye(x_dim) * noise
+        # (n_comp_CCA, n_comp_CCA)
+        d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations
 
         # Linear modeling h to d (in canonical space) with least-square criterion.
         # Pay attention to the transpose operator.
         # Computes the vector g that approximately solves the equation h @ g = d.
-        g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
+        g = np.linalg.lstsq(h_cca_training_gaussian,
+                            d_cca_training, rcond=None)[0].T
         # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
         # Modeling error due to deviations from theory
-        d_ls_predicted = h_cca_training_gaussian @ g.T  # (n_components_CCA, n_training)
-        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted, axis=0)  # (n_comp_CCA, 1)
+        # (n_components_CCA, n_training)
+        d_ls_predicted = h_cca_training_gaussian @ g.T
+        d_modeling_mean_error = np.mean(
+            d_cca_training - d_ls_predicted, axis=0)  # (n_comp_CCA, 1)
         d_modeling_error = \
             d_cca_training \
             - d_ls_predicted \
@@ -493,7 +507,8 @@ class PosteriorIO:
         # (n_comp_CCA, n_training)
 
         # Information about the covariance of the posterior distribution in Canonical space.
-        d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
+        d_modeling_covariance = np.cov(
+            d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Build block matrix
         s11 = h_cov_operator
@@ -512,7 +527,8 @@ class PosteriorIO:
         h_posterior_covariance = np.linalg.pinv(d11)
         # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
         h_posterior_mean = h_posterior_covariance @ \
-                           (d11 @ h_mean - d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+            (d11 @ h_mean - d12 @
+             (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
 
         # test = np.block([[d11, d12], [d21, d22]])
         # plt.matshow(test, cmap='coolwarm')
@@ -531,7 +547,8 @@ class PosteriorIO:
         # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
         self.posterior_mean = h_posterior_mean  # (n_comp_CCA,)
-        self.posterior_covariance = h_posterior_covariance  # (n_comp_CCA, n_comp_CCA)
+        # (n_comp_CCA, n_comp_CCA)
+        self.posterior_covariance = h_posterior_covariance
 
     def back_transform(self,
                        h_posts_gaussian,
@@ -554,7 +571,8 @@ class PosteriorIO:
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.normalize_h.inverse_transform(h_posts_gaussian)  # (n_components, n_samples)
+        h_posts = self.normalize_h.inverse_transform(
+            h_posts_gaussian)  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -562,12 +580,15 @@ class PosteriorIO:
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
         # FIXME: Deprecation warning here about y_std_ and y_mean_
-        h_pca_reverse = np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+        h_pca_reverse = np.matmul(
+            h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.random_pc(n_posts) for _ in range(n_posts)])  # Get the extra components
-            h_pca_reverse = np.array([np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
+            rnpc = np.array([pca_h.random_pc(n_posts)
+                             for _ in range(n_posts)])  # Get the extra components
+            h_pca_reverse = np.array([np.concatenate(
+                (h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
 
         if save_target_pc:
             fname = jp(self.directory, 'target_pc.npy')
@@ -618,10 +639,12 @@ class PosteriorIO:
             d_pc_training, d_pc_prediction = pca_d.comp_refresh(pca_d.n_pc_cut)
             h_pc_training, _ = pca_h.comp_refresh(pca_h.n_pc_cut)
 
-            d_pc_obs = d_pc_prediction[0]  # observation data for prediction sample
+            # observation data for prediction sample
+            d_pc_obs = d_pc_prediction[0]
 
             # Transform to canonical space
-            d_cca_training, h_cca_training = cca_obj.transform(d_pc_training, h_pc_training)
+            d_cca_training, h_cca_training = cca_obj.transform(
+                d_pc_training, h_pc_training)
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training
@@ -713,12 +736,14 @@ def sgsim(model_ws: str,
     k_params = Setup.ModelParameters
     k_min, k_max, k_std = k_params.k_min, k_params.k_max, k_params.k_std,
 
-    k_mean = np.random.uniform(k_min, k_max)  # Hydraulic conductivity exponent mean between x and y.
+    # Hydraulic conductivity exponent mean between x and y.
+    k_mean = np.random.uniform(k_min, k_max)
     # print(f'hk mean={10 ** k_mean} m/d')
     k_std = k_std  # Log value of the standard deviation
 
     if wells_hk is None:
-        hku = k_max + np.random.rand(len(hd.dataframe))  # Fix hard data values at wells location
+        # Fix hard data values at wells location
+        hku = k_max + np.random.rand(len(hd.dataframe))
     else:
         hku = wells_hk
 
@@ -729,7 +754,8 @@ def sgsim(model_ws: str,
     # Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     gd = Setup.GridDimensions()
-    Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo, yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
+    Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo,
+               yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
 
     # Get sgems grid centers coordinates:
     x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
@@ -764,13 +790,15 @@ def sgsim(model_ws: str,
 
     opl = jp(model_ws, 'results.grid')  # Output file location.
 
-    matrix = data_read(opl, start=3)  # Grid information directly derived from the output file.
+    # Grid information directly derived from the output file.
+    matrix = data_read(opl, start=3)
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     tf = np.vectorize(log_transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
-    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
+    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol)
+                            )  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
     # import matplotlib.pyplot as plt

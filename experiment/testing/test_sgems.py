@@ -5,10 +5,10 @@ import uuid
 from os.path import join as jp
 
 import numpy as np
-from experiment.base.inventory import MySetup
 
 import experiment._utils as fops
 from experiment._statistics import sgsim
+from experiment.base.inventory import MySetup
 
 
 def test_sgems(folder=None):
@@ -29,7 +29,8 @@ def test_sgems(folder=None):
 
     # Statistical simulation
     wells_values = np.ones(len(MySetup.Wells.combination) + 1) * -9966699
-    hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir, wells_hk=wells_values)
+    hk_array, xy_dummy = sgsim(
+        model_ws=results_dir, grid_dir=grid_dir, wells_hk=wells_values)
 
 
 if __name__ == "__main__":

@@ -58,10 +58,12 @@ def base_pca(base,
         # pzs = WHPA
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.curve_interpolation(tc0=tc0)  # tc has shape (n_sim, n_wells, n_time_steps)
+        # tc has shape (n_sim, n_wells, n_time_steps)
+        tc = dops.curve_interpolation(tc0=tc0)
         # with n_sim = n_training + n_test
         # PCA on transport curves
-        d_pco = PC(name='d', training=tc, roots=roots, directory=os.path.dirname(d_pca_obj))
+        d_pco = PC(name='d', training=tc, roots=roots,
+                   directory=os.path.dirname(d_pca_obj))
         d_pco.training_fit_transform()
         # Dump
         joblib.dump(d_pco, d_pca_obj)
@@ -72,7 +74,8 @@ def base_pca(base,
         # Loads the results:
         _, pzs, r = fops.data_loader(roots=roots, h=True)
         # Load parameters:
-        xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+        xys, nrow, ncol = grid_parameters(
+            x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
         # PCA on signed distance
         # Compute signed distance on pzs.
@@ -103,12 +106,14 @@ def base_pca(base,
         # Dump
         joblib.dump(h_pco, h_pca_obj)
 
-        if not os.path.exists(jp(base_dir, 'roots.dat')):  # Save roots id's in a dat file
+        # Save roots id's in a dat file
+        if not os.path.exists(jp(base_dir, 'roots.dat')):
             with open(jp(base_dir, 'roots.dat'), 'w') as f:
                 for r in roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + '\n')
 
-        if not os.path.exists(jp(base_dir, 'test_roots.dat')):  # Save roots id's in a dat file
+        # Save roots id's in a dat file
+        if not os.path.exists(jp(base_dir, 'test_roots.dat')):
             with open(jp(base_dir, 'test_roots.dat'), 'w') as f:
                 for r in test_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + '\n')
@@ -130,7 +135,8 @@ def bel_fit_transform(base,
 
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
+    xys, nrow, ncol = grid_parameters(
+        x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
 
     if well_comb is not None:
         base.Wells.combination = well_comb
@@ -144,13 +150,17 @@ def bel_fit_transform(base,
         if os.path.exists(jp(res_dir, test_root)):
             test_root = [test_root]
         else:
-            warnings.warn('Specified folder {} does not exist'.format(test_root[0]))
+            warnings.warn(
+                'Specified folder {} does not exist'.format(test_root[0]))
 
-    bel_dir = jp(md.forecasts_dir, test_root[0])  # Directory in which to load forecasts
+    # Directory in which to load forecasts
+    bel_dir = jp(md.forecasts_dir, test_root[0])
 
-    base_dir = jp(md.forecasts_dir, 'base')  # Base directory that will contain target objects and processed data
+    # Base directory that will contain target objects and processed data
+    base_dir = jp(md.forecasts_dir, 'base')
 
-    new_dir = ''.join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
+    new_dir = ''.join(list(map(str, base.Wells.combination))
+                      )  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -161,18 +171,22 @@ def bel_fit_transform(base,
     fig_pred_dir = jp(sub_dir, 'uq')
 
     # %% Creates directories
-    [fops.dirmaker(f) for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]]
+    [fops.dirmaker(f) for f in [obj_dir, fig_data_dir,
+                                fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load training data
-    tsub = jp(base_dir, 'training_curves.npy')  # Refined breakthrough curves data file
+    # Refined breakthrough curves data file
+    tsub = jp(base_dir, 'training_curves.npy')
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.data_loader(res_dir=res_dir, roots=training_roots, d=True)
+        tc0, _, _ = fops.data_loader(
+            res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
-        tc = dops.curve_interpolation(tc0=tc0, n_time_steps=200)  # tc has shape (n_sim, n_wells, n_time_steps)
+        # tc has shape (n_sim, n_wells, n_time_steps)
+        tc = dops.curve_interpolation(tc0=tc0, n_time_steps=200)
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
         # Save file roots
@@ -199,7 +213,8 @@ def bel_fit_transform(base,
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
-    d_pco.test_transform(tcp, test_root=test_root)  # Perform transformation on testing curves
+    # Perform transformation on testing curves
+    d_pco.test_transform(tcp, test_root=test_root)
     d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -228,11 +243,13 @@ def bel_fit_transform(base,
         h_pc_training, _ = h_pco.comp_refresh(nho)
 
     # %% CCA
-    n_comp_cca = min(ndo, nho)  # Number of CCA components is chosen as the min number of PC
+    # Number of CCA components is chosen as the min number of PC
+    n_comp_cca = min(ndo, nho)
     # components between d and h.
     # By default, it scales the data
     # TODO: Check max_iter & tol
-    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
+    cca = CCA(n_components=n_comp_cca, scale=True,
+              max_iter=500 * 20, tol=1e-06)
     cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, 'cca.pkl'))  # Save the fitted CCA operator
 

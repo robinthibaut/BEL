@@ -82,7 +82,8 @@ class Setup:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
         x_range = [800, 1150]
         y_range = [300, 700]
-        cell_dim: float = 4  # Defines cell dimensions for the signed distance computation.
+        # Defines cell dimensions for the signed distance computation.
+        cell_dim: float = 4
 
     @dataclass
     # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
@@ -119,7 +120,8 @@ class Setup:
                  'color': 'y'}
         }
 
-        combination = np.arange(1, len(wells_data))  # Injection wells in use for prediction (default: all)
+        # Injection wells in use for prediction (default: all)
+        combination = np.arange(1, len(wells_data))
         colors = ['w', 'g', 'r', 'c', 'm', 'y']
 
     @dataclass

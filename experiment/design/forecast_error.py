@@ -20,8 +20,9 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from experiment import _utils as fops
-from experiment._spatial import grid_parameters, modified_hausdorff, contours_vertices, binary_polygon, \
-    refine_machine
+from experiment._spatial import (binary_polygon, contours_vertices,
+                                 grid_parameters, modified_hausdorff,
+                                 refine_machine)
 from experiment._statistics import PosteriorIO
 
 
@@ -74,7 +75,8 @@ class UncertaintyQuantification:
         self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
-        f_names = list(map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+        f_names = list(
+            map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
         self.h_pco = joblib.load(jp(self.base_dir, 'h_pca.pkl'))
 
@@ -193,7 +195,8 @@ class UncertaintyQuantification:
         xykde = np.vstack([x_stack, y_stack]).T
         kde = KernelDensity(kernel='gaussian',  # Fit kernel density
                             bandwidth=bw).fit(xykde)
-        score = np.exp(kde.score_samples(xyu))  # Sample at the desired grid cells
+        # Sample at the desired grid cells
+        score = np.exp(kde.score_samples(xyu))
 
         def score_norm(sc, max_score=None):
             """
@@ -216,7 +219,8 @@ class UncertaintyQuantification:
         # Assign the computed scores to the grid
         z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
         z[inside] = score
-        z = np.flipud(z.reshape(X.shape))  # Flip to correspond to actual distribution.
+        # Flip to correspond to actual distribution.
+        z = np.flipud(z.reshape(X.shape))
 
         return z
 
@@ -225,9 +229,11 @@ class UncertaintyQuantification:
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
-        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
+        xys, nrow, ncol = grid_parameters(
+            x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
+        bin_whpa = [binary_polygon(
+            xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
@@ -246,7 +252,8 @@ class UncertaintyQuantification:
         n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
         v_h_true_cut = \
-            self.h_pco.custom_inverse_transform(self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
+            self.h_pco.custom_inverse_transform(
+                self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
 
         # Reminder: these are the focus parameters around the pumping well
         nrow, ncol, x, y = refine_machine(self.x_lim,
@@ -258,7 +265,8 @@ class UncertaintyQuantification:
                                      arrays=v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array([modified_hausdorff(v_h_true, vt) for vt in self.vertices])
+        mhds = np.array([modified_hausdorff(v_h_true, vt)
+                         for vt in self.vertices])
 
         # Save mhd
         np.save(jp(self.res_dir, 'haus'), mhds)

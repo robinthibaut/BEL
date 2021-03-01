@@ -10,7 +10,7 @@ from diavatly import model_map
 import experiment._spatial
 import experiment._visualization as mplot
 from experiment._core import Setup
-from experiment._spatial import grid_parameters, get_centroids, binary_polygon
+from experiment._spatial import binary_polygon, get_centroids, grid_parameters
 from experiment.processing.target_handle import travelling_particles
 
 
@@ -42,13 +42,16 @@ def active_zone(modflowmodel):
     for yc in yxz_grid[0]:
         for xc in yxz_grid[1]:
             xy_true.append([xc, yc])
-    xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))  # Flattens xy to correspond to node numbering
+    # Flattens xy to correspond to node numbering
+    xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))
 
-    wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
+    # Loads well stress period data
+    wells_data = np.load(jp(model_ws, 'spd.npy'))
     pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]  # PW layer row column
     pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
-    xy_pumping_well = xy_nodes_2d[pw_node]  # Get PW x, y coordinates (meters) from well node number
+    # Get PW x, y coordinates (meters) from well node number
+    xy_pumping_well = xy_nodes_2d[pw_node]
 
     injection_well_data = wells_data[1:]
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
@@ -76,13 +79,15 @@ def active_zone(modflowmodel):
     poly_deli = travelling_particles(xyw_scaled)  # Get polygon delineation
     poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
     # Assign 0|1 value
-    icbund = binary_polygon(sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
+    icbund = binary_polygon(sdm.xys, sdm.nrow, sdm.ncol,
+                            poly_xyw, outside=0, inside=1).reshape(nlay, nrow, ncol)
 
     mt_icbund_file = jp(Setup.Directories.grid_dir, 'mt3d_icbund.npy')
     np.save(mt_icbund_file, icbund)  # Save active zone
 
     # Check what we've done: plot the active zone.
-    val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
+    val_icbund = [item for sublist in icbund[0]
+                  for item in sublist]  # Flattening
     # Define a dummy grid with large cell dimensions to plot on it.
     grf_dummy = 10
     nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1]) / grf_dummy)
@@ -91,8 +96,10 @@ def active_zone(modflowmodel):
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
     inds = experiment._spatial.matrix_paste(xy_dummy, xy_true)
-    val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
-    val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))  # Reshape in n layers x n cells in refined grid.
+    val_dummy = [val_icbund[k]
+                 for k in inds]  # Contains k values for refined grid
+    # Reshape in n layers x n cells in refined grid.
+    val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))
 
     # We have to use flipud for the matrix to correspond.
     mplot.whpa_plot(grf=grf_dummy,
@@ -100,6 +107,7 @@ def active_zone(modflowmodel):
                     show_wells=True,
                     show=True)
 
-    grid1 = experiment._spatial.blocks_from_rc(np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy)
+    grid1 = experiment._spatial.blocks_from_rc(
+        np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)
     plt.show()

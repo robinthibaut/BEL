@@ -80,7 +80,8 @@ def flow(exe_name: str,
         """
         Refine X-Y axes.
         """
-        along_c = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
+        along_c = np.ones(ncol) * \
+            dx  # Size of each cell in x-dimension - columns
         along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
         r_a = experiment._spatial.refine_axis
         for p in r_params:
@@ -96,7 +97,8 @@ def flow(exe_name: str,
     disf = jp(grid_dir, 'dis.txt')  # discretization txt file
     if os.path.exists(disf):
         r_params_loaded = np.loadtxt(disf)  # loads dis info
-        if not np.array_equal(r_params, r_params_loaded):  # if new refinement parameters differ from the previous one
+        # if new refinement parameters differ from the previous one
+        if not np.array_equal(r_params, r_params_loaded):
             np.savetxt(disf, r_params)  # update file
             delc, delr = refine_()
         else:
@@ -124,7 +126,8 @@ def flow(exe_name: str,
 
     strt = np.zeros((nlay, nrow, ncol), dtype=np.float)  # Starting heads at 0
     h1 = -3  # Water table level at the right side
-    strt[0, :, -1] = h1  # Fixing the value, that will remain constant during the stress period
+    # Fixing the value, that will remain constant during the stress period
+    strt[0, :, -1] = h1
 
     # %% ModflowDis
 
@@ -152,7 +155,8 @@ def flow(exe_name: str,
                                     rotation=0.0,
                                     start_datetime=start_datetime)
 
-    ncd1 = dis5.get_node_coordinates()  # Get y, x, and z cell centroids of true model grid
+    # Get y, x, and z cell centroids of true model grid
+    ncd1 = dis5.get_node_coordinates()
 
     xy_true = []
     for yc in ncd1[0]:
@@ -164,13 +168,18 @@ def flow(exe_name: str,
         Produces well stress period data readable by Modflow.
         :param well_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         """
-        iw = [0, wcd.wells_data[well_name]['coordinates'][0], wcd.wells_data[well_name]['coordinates'][1]]
-        iwr = wcd.wells_data[well_name]['rates']  # Well rate for the defined time periods
-        iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))  # [0, row, column]
-        spiw = [iw_lrc + [r] for r in iwr]  # Defining list containing stress period data under correct format
+        iw = [0, wcd.wells_data[well_name]['coordinates']
+              [0], wcd.wells_data[well_name]['coordinates'][1]]
+        # Well rate for the defined time periods
+        iwr = wcd.wells_data[well_name]['rates']
+        # [0, row, column]
+        iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))
+        # Defining list containing stress period data under correct format
+        spiw = [iw_lrc + [r] for r in iwr]
         return [iw, iwr, iw_lrc, spiw]
 
-    my_wells = [make_well(o) for o in wcd.wells_data]  # Produce well stress period data readable by modflow
+    # Produce well stress period data readable by modflow
+    my_wells = [make_well(o) for o in wcd.wells_data]
 
     spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 
@@ -254,25 +263,30 @@ def flow(exe_name: str,
     # Flattening hk_array to plot it
     fl = [item for sublist in hk_array for item in sublist]
     val = []
-    for n in range(nlay):  # Adding 'nlay' times so all layers get the same conductivity.
+    # Adding 'nlay' times so all layers get the same conductivity.
+    for n in range(nlay):
         val.append(fl)
     val = [item for sublist in val for item in sublist]  # Flattening
 
     # If the statistical_simulation grid is different from the modflow grid, which might be the case since we
     # would like to refine in some ways the flow mesh, the piece of code below assigns to the flow grid the
     # values of the hk simulations based on the closest distance between cells.
-    inds_file = jp(grid_dir, 'inds.npy')  # Index file location - relates the position of closest cells
+    # Index file location - relates the position of closest cells
+    inds_file = jp(grid_dir, 'inds.npy')
     # between differently discretized meshes.
     if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
         # the new hk array on a new grid.
         if flag_dis == 0:
-            dm = distance_matrix(xy_true, xy_dummy)  # Compute distance matrix between refined and dummy grid.
-            inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
+            # Compute distance matrix between refined and dummy grid.
+            dm = distance_matrix(xy_true, xy_dummy)
+            inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[
+                0] for i in range(dm.shape[0])]
             np.save(inds_file, inds)  # Save index file to avoid re-computing
         else:  # If the inds file exists.
             inds = np.load(inds_file)
         valk = [val[k] for k in inds]  # Contains k values for refined grid
-        valkr = np.reshape(valk, (nlay, nrow, ncol))  # Reshape in n layers x n cells in refined grid.
+        # Reshape in n layers x n cells in refined grid.
+        valkr = np.reshape(valk, (nlay, nrow, ncol))
     else:
         valkr = hk_array[0]
 
@@ -347,7 +361,8 @@ def flow(exe_name: str,
 
     # %% Checking flow results
 
-    headobj = bf.HeadFile(jp(model_ws, f'{model_name}.hds'))  # Create the headfile and budget file objects
+    # Create the headfile and budget file objects
+    headobj = bf.HeadFile(jp(model_ws, f'{model_name}.hds'))
     times = headobj.get_times()
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()

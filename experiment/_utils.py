@@ -20,7 +20,8 @@ def data_read(file: str = None,
     with open(file, 'r') as fr:
         lines = np.copy(fr.readlines())[start:end]
         try:
-            op = np.array([list(map(float, line.split())) for line in lines], dtype=object)
+            op = np.array([list(map(float, line.split()))
+                           for line in lines], dtype=object)
         except ValueError:
             op = [line.split() for line in lines]
     return op
@@ -56,7 +57,8 @@ def empty_figs(root: str):
 
     subdir = os.path.join(Setup.Directories.forecasts_dir, root)
     listme = os.listdir(subdir)
-    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+    folders = list(filter(lambda d: os.path.isdir(
+        os.path.join(subdir, d)), listme))
 
     for f in folders:
         # pca
@@ -146,7 +148,8 @@ def remove_incomplete(res_tree: str, crit: str = None):
     """
 
     if crit is None:
-        ck = np.array([os.path.isfile(jp(res_tree, d)) for d in Setup.Files.output_files])
+        ck = np.array([os.path.isfile(jp(res_tree, d))
+                       for d in Setup.Files.output_files])
     else:
         ck = np.array([os.path.isfile(jp(res_tree, crit))])
 
@@ -199,7 +202,8 @@ def remove_bad_bkt(res_dir: str):
         rm = []  # Will contain indices to remove
         for i in range(len(tpt)):
             for j in range(len(tpt[i])):
-                if max(tpt[i][j][:, 1]) > 1:  # Check results files whose max computed head is > 1 and removes them
+                # Check results files whose max computed head is > 1 and removes them
+                if max(tpt[i][j][:, 1]) > 1:
                     rm.append(i)
                     break
         for index in sorted(rm, reverse=True):
@@ -260,8 +264,10 @@ def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
     'None' will indicate to use the original combination.
     """
-    cb = [list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)]  # Get all possible wel combinations
-    cb = [item for sublist in cb for item in sublist][::-1]  # Flatten and reverse to get all combination at index 0.
+    cb = [list(itertools.combinations(combi, i)) for i in range(
+        1, combi[-1] + 1)]  # Get all possible wel combinations
+    # Flatten and reverse to get all combination at index 0.
+    cb = [item for sublist in cb for item in sublist][::-1]
     return cb
 
 
@@ -271,7 +277,8 @@ def reload_trained_model(root: str,
     base_dir = jp(Setup.Directories.forecasts_dir, 'base')
     res_dir = jp(Setup.Directories.forecasts_dir, root, well, 'obj')
 
-    f_names = list(map(lambda fn: jp(res_dir, f'{fn}.pkl'), ['cca', 'd_pca', 'post']))
+    f_names = list(
+        map(lambda fn: jp(res_dir, f'{fn}.pkl'), ['cca', 'd_pca', 'post']))
     cca_operator, d_pco, post = list(map(joblib.load, f_names))
 
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))

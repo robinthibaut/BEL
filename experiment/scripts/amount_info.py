@@ -31,13 +31,16 @@ def by_mode(root: Root):
         an_i = 2
 
     wid = list(map(str, Setup.Wells.combination))  # Well identifiers (n)
-    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))  # Summed MHD when well #i appears
+    # Summed MHD when well #i appears
+    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
     colors = Setup.Wells.colors
 
     for r in root:  # For each root
-        droot = os.path.join(Setup.Directories.forecasts_dir, r)  # Starting point = root folder in forecast directory
+        # Starting point = root folder in forecast directory
+        droot = os.path.join(Setup.Directories.forecasts_dir, r)
         for e in wid:  # For each subfolder (well) in the main folder
-            fmhd = os.path.join(droot, e, 'obj', 'haus.npy')  # Get the MHD file
+            # Get the MHD file
+            fmhd = os.path.join(droot, e, 'obj', 'haus.npy')
             mhd = np.load(fmhd)  # Load MHD
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
@@ -50,7 +53,8 @@ if __name__ == '__main__':
     forecast_dir = Setup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
     listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit))  # Folders of combinations
+    duq = list(filter(lambda f: os.path.isdir(os.path.join(
+        forecast_dir, f)), listit))  # Folders of combinations
 
     by_mode(duq)
     by_mode(['818bf1676c424f76b83bd777ae588a1d'])

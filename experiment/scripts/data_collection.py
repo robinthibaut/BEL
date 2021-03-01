@@ -64,7 +64,8 @@ def simulation(folder=None):
 
     print(f'fwd {res_dir}')
     # Check if forwards have already been computed
-    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files])
+    opt = np.array([os.path.isfile(jp(results_dir, d))
+                    for d in Setup.Files.output_files])
 
     if not opt.all():
         # Resets folder
@@ -81,11 +82,13 @@ def simulation(folder=None):
                           hk_array=hk_array, xy_dummy=xy_dummy)
         # Run Transport and Backtracking
         if flow_model:  # If flow simulation succeeds
-            transport(modflowmodel=flow_model, exe_name=exe_name_mt, grid_dir=grid_dir, save_ucn=False)
+            transport(modflowmodel=flow_model, exe_name=exe_name_mt,
+                      grid_dir=grid_dir, save_ucn=False)
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
-            delineation = travelling_particles(end_points)  # indices of the vertices of the final protection zone
+            # indices of the vertices of the final protection zone
+            delineation = travelling_particles(end_points)
             # using TSP algorithm
             pzs = end_points[delineation]  # x-y coordinates protection zone
             np.save(jp(results_dir, 'pz'), pzs)  # Save those
@@ -115,10 +118,12 @@ def main(n_sim: int = None):
     if n_sim is None:
         # List directories in forwards folder
         listme = os.listdir(Setup.Directories.hydro_res_dir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(Setup.Directories.hydro_res_dir, d)), listme))
+        folders = list(filter(lambda d: os.path.isdir(
+            os.path.join(Setup.Directories.hydro_res_dir, d)), listme))
 
     elif n_sim == -1:
-        training_roots = fops.data_read(os.path.join(Setup.Directories.forecasts_dir, 'base', 'roots.dat'))
+        training_roots = fops.data_read(os.path.join(
+            Setup.Directories.forecasts_dir, 'base', 'roots.dat'))
         folders = [item for sublist in training_roots for item in sublist]
 
     else:

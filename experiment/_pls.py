@@ -12,12 +12,12 @@ import numpy as np
 from scipy.linalg import pinv2, svd
 from scipy.sparse.linalg import svds
 
-from .base import BaseEstimator, RegressorMixin, TransformerMixin
-from .base import MultiOutputMixin
+from .base import (BaseEstimator, MultiOutputMixin, RegressorMixin,
+                   TransformerMixin)
 from .exceptions import ConvergenceWarning
 from .extmath import svd_flip
-from .utils import check_array, check_consistent_length
-from .utils import check_is_fitted, FLOAT_DTYPES
+from .utils import (FLOAT_DTYPES, check_array, check_consistent_length,
+                    check_is_fitted)
 
 __all__ = ['PLSCanonical', 'PLSRegression', 'PLSSVD']
 
