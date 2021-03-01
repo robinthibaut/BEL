@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from experiment import _utils as fops
+from experiment._core import Setup
+
 sns.set_theme()
 # plt.style.use('dark_background')
 
-from experiment._core import Setup
-from experiment import _utils as fops
 
 x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 # Initiate Plot instance

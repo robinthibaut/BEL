@@ -8,7 +8,6 @@ from pysgems.io.sgio import export_eas
 
 from experiment._core import Setup
 
-
 # Define injection wells
 # [ [X, Y, [r#1, r#2... r#n]] ]
 # Pumping well located at [1000, 500]

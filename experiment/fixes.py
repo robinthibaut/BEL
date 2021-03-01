@@ -70,7 +70,6 @@ else:
         else:
             return -1
 
-
     def _arg_min_or_max_axis(self, axis, op, compare):
         if self.shape[axis] == 0:
             raise ValueError("Can't apply the operation along a zero-sized "
@@ -107,7 +106,6 @@ else:
             ret = ret.reshape(-1, 1)
 
         return np.asmatrix(ret)
-
 
     def _arg_min_or_max(self, axis, out, op, compare):
         if out is not None:
@@ -146,10 +144,8 @@ else:
 
         return _arg_min_or_max_axis(self, axis, op, compare)
 
-
     def _sparse_argmax(self, axis=None, out=None):
         return _arg_min_or_max(self, axis, out, np.argmax, np.greater)
-
 
     def _argmax(arr_or_matrix, axis=None):
         if sp.issparse(arr_or_matrix):

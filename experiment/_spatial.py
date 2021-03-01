@@ -32,7 +32,8 @@ def grid_parameters(x_lim: list = None,
     nrow = int(np.diff(y_lim) / grf)  # Number of rows
     ncol = int(np.diff(x_lim) / grf)  # Number of columns
     array = np.ones((nrow, ncol))  # Dummy array
-    xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)  # Centroids of dummy array
+    # Centroids of dummy array
+    xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)
 
     return xys, nrow, ncol
 
@@ -86,7 +87,8 @@ def modified_hausdorff(a, b):
     if a.shape[1] != b.shape[1]:
         raise ValueError('a and b must have the same number of columns')
 
-    d = cdist(a, b)  # Compute distance between each pair of the two collections of inputs.
+    # Compute distance between each pair of the two collections of inputs.
+    d = cdist(a, b)
     # dim(d) = (M, O)
     fhd = np.mean(np.min(d, axis=0))  # Mean of minimum values along rows
     rhd = np.mean(np.min(d, axis=1))  # Mean of minimum values along columns
@@ -105,8 +107,10 @@ def block_shaped(arr: np.array,
     each sub-block preserving the "physical" layout of arr.
     """
     h, w = arr.shape
-    assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
-    assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(w, ncols)
+    assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(
+        h, nrows)
+    assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(
+        w, ncols)
 
     return (arr.reshape(h // nrows, nrows, -1, ncols)
             .swapaxes(1, 2)
@@ -162,27 +166,34 @@ def refine_axis(widths: List[float],
         x0 = np.delete(x0, wherex)  # Delete old cells
         x0 = np.insert(x0, wherex[0], nwxs)  # insert new
 
-        cs = np.cumsum(x0)  # Cumulative width should equal x_lim, but it will not be the case, we have to adapt widths.
+        # Cumulative width should equal x_lim, but it will not be the case, we have to adapt widths.
+        cs = np.cumsum(x0)
         difx = xlim - cs[-1]
-        where_default = np.where(abs(x0 - dx) <= 5)[0]  # Location of cells whose widths will be adapted
-        where_left = where_default[np.where(where_default < wherex[0])]  # Where do we have the default cell size on
+        # Location of cells whose widths will be adapted
+        where_default = np.where(abs(x0 - dx) <= 5)[0]
+        # Where do we have the default cell size on
+        where_left = where_default[np.where(where_default < wherex[0])]
         # the left
-        where_right = where_default[np.where((where_default >= wherex[0] + len(nwxs)))]  # And on the right
+        where_right = where_default[np.where(
+            (where_default >= wherex[0] + len(nwxs)))]  # And on the right
         lwl = len(where_left)
         lwr = len(where_right)
 
         if lwl > lwr:
             rl = lwl / lwr  # Weights how many cells are on either sides of the refinement zone
-            dal = difx / ((lwl + lwr) / lwl)  # Splitting the extra widths on the left and right of the cells
+            # Splitting the extra widths on the left and right of the cells
+            dal = difx / ((lwl + lwr) / lwl)
             dal = dal + (difx - dal) / rl
             dar = difx - dal
         elif lwr > lwl:
             rl = lwr / lwl  # Weights how many cells are on either sides of the refinement zone
-            dar = difx / ((lwl + lwr) / lwr)  # Splitting the extra widths on the left and right of the cells
+            # Splitting the extra widths on the left and right of the cells
+            dar = difx / ((lwl + lwr) / lwr)
             dar = dar + (difx - dar) / rl
             dal = difx - dar
         else:
-            dal = difx / ((lwl + lwr) / lwl)  # Splitting the extra widths on the left and right of the cells
+            # Splitting the extra widths on the left and right of the cells
+            dal = difx / ((lwl + lwr) / lwl)
             dar = difx - dal
 
         x0[where_left] = x0[where_left] + dal / lwl
@@ -256,8 +267,10 @@ def blocks_from_rc(rows: np.array,
 
 
 def matrix_paste(c_big, c_small):
-    dm = distance_matrix(c_big, c_small)  # Compute distance matrix between refined and dummy grid.
-    inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])]
+    # Compute distance matrix between refined and dummy grid.
+    dm = distance_matrix(c_big, c_small)
+    inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[
+        0] for i in range(dm.shape[0])]
     return inds
 
 
@@ -290,7 +303,8 @@ def get_centroids(array: np.array,
     :param array: (m, n) array
     :param grf: float: Cell dimension
     """
-    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2))  # Getting centroids
+    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0)
+                     * grf - grf / 2))  # Getting centroids
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
@@ -322,7 +336,8 @@ def contours_vertices(x: list,
     if ignore_:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     else:
-        v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(len(c0.allsegs[0]))], dtype=object)
+        v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(
+            len(c0.allsegs[0]))], dtype=object)
     return v
 
 
@@ -349,8 +364,10 @@ def binary_polygon(xys: np.array,
     :return: phi = the binary matrix
     """
 
-    poly = Polygon(pzs, True)  # Creates a Polygon abject out of the polygon vertices in pzs
-    ind = np.nonzero(poly.contains_points(xys))[0]  # Checks which points are enclosed by polygon.
+    # Creates a Polygon abject out of the polygon vertices in pzs
+    poly = Polygon(pzs, True)
+    # Checks which points are enclosed by polygon.
+    ind = np.nonzero(poly.contains_points(xys))[0]
     phi = np.ones((nrow, ncol)) * outside  # SD - create matrix of 'outside'
     phi = phi.reshape((nrow * ncol))  # Flatten to have same dimension as 'ind'
     phi[ind] = inside  # Points inside the WHPA are assigned a value of 'inside'
@@ -364,7 +381,8 @@ def binary_stack(xys, nrow, ncol, vertices):
     Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
     """
     # Create binary images of WHPA stored in bin_whpa
-    bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
+    bin_whpa = [binary_polygon(
+        xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     # Scale from 0 to 1
     big_sum -= np.min(big_sum)

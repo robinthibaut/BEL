@@ -17,7 +17,8 @@ def dists(res_dir, folders=None):
     subdir = os.path.join(Setup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)
-        folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
+        folders = list(filter(lambda du: os.path.isdir(
+            os.path.join(subdir, du)), listme))
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]

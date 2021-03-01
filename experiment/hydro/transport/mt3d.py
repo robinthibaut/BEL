@@ -48,7 +48,8 @@ def transport(modflowmodel,
         for xc in yxz_grid[1]:
             xy_true.append([xc, yc])
 
-    wells_data = np.load(jp(model_ws, 'spd.npy'))  # Loads well stress period data
+    # Loads well stress period data
+    wells_data = np.load(jp(model_ws, 'spd.npy'))
     wells_number = wells_data.shape[0]  # Total number of wells
     pumping_well_data = wells_data[0]  # Pumping well in first
     pw_lrc = pumping_well_data[0][:3]  # PW layer row column
@@ -86,7 +87,8 @@ def transport(modflowmodel,
     ifmtrf = 0
     ifmtdp = 0
     savucn = save_ucn  # Save concentration array or not
-    nprs = len(tmstp)  # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is
+    # A flag indicating (i) the frequency of the output and (ii) whether the output frequency is
+    nprs = len(tmstp)
     # specified in terms of total elapsed simulation time or the transport step number. If nprs > 0 results will be
     # saved at the times as specified in timprs; if nprs = 0, results will not be saved except at the end of
     # simulation; if NPRS 0, simulation results will be saved whenever the number of transport steps is an even
@@ -258,16 +260,21 @@ def transport(modflowmodel,
                 c0 = 0  # concentration
                 if j == 0:  # if first well, need a dummy value
                     c0 = cc[0]  # concentration #0 -> concentration well #0
-                if ncomp > 1:  # if more than 1 injecting wells (assuming 1 different comp per iw)
-                    t = tuple(np.concatenate((np.array([l_r_c[j][0], l_r_c[j][1], l_r_c[j][2], c0, 2]), cc), axis=0))
+                # if more than 1 injecting wells (assuming 1 different comp per iw)
+                if ncomp > 1:
+                    t = tuple(np.concatenate(
+                        (np.array([l_r_c[j][0], l_r_c[j][1], l_r_c[j][2], c0, 2]), cc), axis=0))
                 else:
                     t = tuple([l_r_c[j][0], l_r_c[j][1], l_r_c[j][2], c0, 2])
-                spdt_i.append(t)  # Each well spd gets added to the empty spd array
+                # Each well spd gets added to the empty spd array
+                spdt_i.append(t)
             spdt[i] = spdt_i
         return spdt
 
-    iw_lrc = injection_well_data[:, 0, :3]  # R L C of each IW in the refined flow grid
-    iw_pr = np.array([[0, 1.5, 0] for _ in range(ncomp)])  # Injection rate for each time period. We decide to assign
+    # R L C of each IW in the refined flow grid
+    iw_lrc = injection_well_data[:, 0, :3]
+    # Injection rate for each time period. We decide to assign
+    iw_pr = np.array([[0, 1.5, 0] for _ in range(ncomp)])
     # the same for each IW.
     # The units are KG/D
 
@@ -338,8 +345,10 @@ def transport(modflowmodel,
                  report=True)
 
     # Export
-    only_files = [f for f in listdir(model_ws) if isfile(jp(model_ws, f))]  # Listing all files in results folder
-    obs_files = [jp(model_ws, x) for x in only_files if '.OBS' in x]  # Selects OBS files
+    only_files = [f for f in listdir(model_ws) if isfile(
+        jp(model_ws, f))]  # Listing all files in results folder
+    obs_files = [jp(model_ws, x)
+                 for x in only_files if '.OBS' in x]  # Selects OBS files
 
     wells_list = [os.path.basename(r.lower()).split('.')[0] for r in obs_files]
 
@@ -352,7 +361,8 @@ def transport(modflowmodel,
 
     obs_files_sorted = [x for _, x in sorted(zip(ids, obs_files))]
 
-    observations = [mt.load_obs(of) for of in obs_files_sorted]  # Loading observations results
+    # Loading observations results
+    observations = [mt.load_obs(of) for of in obs_files_sorted]
     fields = observations[0].dtype.names
     hey = np.array(
         [

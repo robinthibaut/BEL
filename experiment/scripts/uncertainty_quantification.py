@@ -46,10 +46,13 @@ def scan_roots(base,
     for r_ in obs:  # For each observation root
         for c in combinations:  # For each wel combination
             # PCA decomposition + CCA
-            sf = dcp.bel_fit_transform(base=base, training_roots=training, test_root=r_, well_comb=c)
+            sf = dcp.bel_fit_transform(
+                base=base, training_roots=training, test_root=r_, well_comb=c)
             # Uncertainty analysis
-            uq = UncertaintyQuantification(base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
-            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)  # Sample posterior
+            uq = UncertaintyQuantification(
+                base=base, study_folder=sf, base_dir=base_dir_path, wel_comb=c, seed=123456)
+            # Sample posterior
+            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
             uq.c0(write_vtk=False)  # Extract 0 contours
             mean = uq.mhd()  # Modified Hausdorff
             global_mean += mean
@@ -93,7 +96,8 @@ def analysis(base,
     md = base.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
-    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
+    folders = list(
+        filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
 
     def swap_root(pres: str):
         """Selects roots from main folder and swap them from training to observation"""
@@ -115,7 +119,8 @@ def analysis(base,
 
     if roots_obs is None:  # If no observation provided
         if n_training + n_obs <= len(folders):
-            roots_obs = folders[n_training:(n_training + n_obs)]  # List of m observation roots
+            # List of m observation roots
+            roots_obs = folders[n_training:(n_training + n_obs)]
         else:
             print("Incompatible training/observation numbers")
             return
@@ -176,10 +181,12 @@ def analysis(base,
 def get_roots():
     # List directories in forwards folder
 
-    training_roots = ut.data_read(os.path.join(Setup.Directories.storage_dir, 'roots.dat'))
+    training_roots = ut.data_read(os.path.join(
+        Setup.Directories.storage_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = ut.data_read(os.path.join(Setup.Directories.storage_dir, 'test_roots.dat'))
+    test_roots = ut.data_read(os.path.join(
+        Setup.Directories.storage_dir, 'test_roots.dat'))
     test_roots = [item for sublist in test_roots for item in sublist]
 
     return training_roots, test_roots

@@ -11,18 +11,13 @@ import warnings
 from collections.abc import Sequence
 
 import numpy as np
-from scipy.sparse import csr_matrix
-from scipy.sparse import dok_matrix
-from scipy.sparse import issparse
-from scipy.sparse import lil_matrix
+from scipy.sparse import csr_matrix, dok_matrix, issparse, lil_matrix
 from scipy.sparse.base import spmatrix
 from scipy.special import xlogy
 
 from .exceptions import UndefinedMetricWarning
-from .utils import _assert_all_finite
-from .utils import (check_array, check_consistent_length,
-                    _num_samples)
-from .utils import column_or_1d
+from .utils import (_assert_all_finite, _num_samples, check_array,
+                    check_consistent_length, column_or_1d)
 
 __ALL__ = [
     "max_error",
@@ -93,8 +88,8 @@ def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
         if multioutput not in allowed_multioutput_str:
             raise ValueError("Allowed 'multioutput' string values are {}. "
                              "You provided multioutput={!r}".format(
-                allowed_multioutput_str,
-                multioutput))
+                                 allowed_multioutput_str,
+                                 multioutput))
     elif multioutput is not None:
         multioutput = check_array(multioutput, ensure_2d=False)
         if n_outputs == 1:

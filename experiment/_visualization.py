@@ -16,13 +16,15 @@ from flopy.export import vtk as vtk_flow
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ma
-from scipy.interpolate import make_interp_spline, BSpline
+from scipy.interpolate import BSpline, make_interp_spline
 
 import experiment._spatial
 import experiment._statistics
-from experiment import _statistics as stats, _utils as ut
+from experiment import _statistics as stats
+from experiment import _utils as ut
 from experiment._core import Setup
-from experiment._spatial import grid_parameters, contours_vertices, binary_stack, refine_machine
+from experiment._spatial import (binary_stack, contours_vertices,
+                                 grid_parameters, refine_machine)
 from experiment._utils import reload_trained_model
 
 ftype = 'png'
@@ -35,7 +37,8 @@ def my_alphabet(az):
     :return:
     """
     alphabet = string.ascii_uppercase
-    extended_alphabet = [''.join(i) for i in list(itertools.permutations(alphabet, 2))]
+    extended_alphabet = [''.join(i) for i in list(
+        itertools.permutations(alphabet, 2))]
 
     if az <= 25:
         sub = alphabet[az]
@@ -218,7 +221,8 @@ def pca_scores(training,
         # Choose seaborn cmap
         # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
         # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
-        cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.15, reverse=True)
+        cmap = sns.cubehelix_palette(
+            as_cmap=True, dark=0, light=.15, reverse=True)
         # KDE plot
         sns.kdeplot(np.arange(1, n_comp + 1), training.T[:n_comp][:, 1], cmap=cmap, n_levels=60, shade=True,
                     vertical=True)
@@ -229,7 +233,8 @@ def pca_scores(training,
         pc_obs = prediction[sample_n]
         # Create beautiful spline to follow prediction scores
         xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        spl = make_interp_spline(np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3)  # type: BSpline
+        spl = make_interp_spline(
+            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3)  # type: BSpline
         power_smooth = spl(xnew)
         # I forgot why I had to put '-1'
         plt.plot(xnew - 1,
@@ -287,7 +292,8 @@ def cca_plot(cca_operator,
     :return:
     """
 
-    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
+    cca_coefficient = np.corrcoef(d, h).diagonal(
+        offset=cca_operator.n_components)  # Gets correlation coefficient
 
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
@@ -309,7 +315,8 @@ def cca_plot(cca_operator,
 
         if sdir:
             ut.dirmaker(sdir)
-            plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)), bbox_inches='tight', dpi=300, transparent=True)
+            plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)),
+                        bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -424,7 +431,8 @@ def whpa_plot(grf: float = None,
         contour = plt.contourf(new_x,
                                new_y,
                                1 - b_low,  # Trick to be able to fill contours
-                               [np.finfo(float).eps, 1 - np.finfo(float).eps],  # Use machine epsilon
+                               # Use machine epsilon
+                               [np.finfo(float).eps, 1 - np.finfo(float).eps],
                                colors=color,
                                alpha=alpha)
         if highlight:  # Also display curves
@@ -557,9 +565,11 @@ def h_pca_inverse_plot(pca_o,
     for i, r in enumerate(roots):
 
         if training:
-            h_to_plot = np.copy(pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
+            h_to_plot = np.copy(
+                pca_o.training_physical[i].reshape(1, shape[1], shape[2]))
         else:
-            h_to_plot = np.copy(pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
+            h_to_plot = np.copy(
+                pca_o.predict_physical[i].reshape(1, shape[1], shape[2]))
 
         whpa_plot(whpa=h_to_plot,
                   color='red',
@@ -620,7 +630,8 @@ def plot_results(d: bool = True,
     # Wells
     wells = Setup.Wells()
     wells_id = list(wells.wells_data.keys())
-    cols = [wells.wells_data[w]['color'] for w in wells_id if 'pumping' not in w]
+    cols = [wells.wells_data[w]['color']
+            for w in wells_id if 'pumping' not in w]
 
     # CCA pickle
     cca_operator = joblib.load(jp(md, 'obj', 'cca.pkl'))
@@ -682,7 +693,8 @@ def plot_results(d: bool = True,
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color='blue', alpha=.5)
-        whpa_plot(whpa=h_test, color='r', lw=2, alpha=.8, xlabel='X(m)', ylabel='Y(m)', labelsize=11)
+        whpa_plot(whpa=h_test, color='r', lw=2, alpha=.8,
+                  xlabel='X(m)', ylabel='Y(m)', labelsize=11)
         colors = ['blue', 'red']
         labels = ['Training', 'Test']
         legend = proxy_annotate(annotation=['C'], loc=2, fz=14)
@@ -825,7 +837,8 @@ def mode_histo(colors: list,
     legend_a = proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.savefig(os.path.join(Setup.Directories.forecasts_dir, f'{fig_name}_hist.pdf'), dpi=300, transparent=True)
+    plt.savefig(os.path.join(Setup.Directories.forecasts_dir,
+                             f'{fig_name}_hist.pdf'), dpi=300, transparent=True)
     plt.close()
     # plt.show()
 
@@ -904,9 +917,11 @@ def curves(cols: list,
     for i in range(n_sim):
         for t in range(n_wells):
             if i in highlight:
-                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=2, alpha=1)
+                plt.plot(tc[i][t] * factor, color=cols[t],
+                         linewidth=2, alpha=1)
             elif not ghost:
-                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=.2, alpha=0.5)
+                plt.plot(tc[i][t] * factor, color=cols[t],
+                         linewidth=.2, alpha=0.5)
 
     plt.grid(linewidth=.3, alpha=.4)
     plt.xlabel(xlabel)
@@ -950,14 +965,16 @@ def curves_i(cols, tc,
             if i in highlight:
                 plt.plot(tc[i][t] * factor, color='k', linewidth=2, alpha=1)
             else:
-                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=.2, alpha=0.5)
+                plt.plot(tc[i][t] * factor, color=cols[t],
+                         linewidth=.2, alpha=0.5)
         colors = [cols[t], 'k']
         plt.grid(linewidth=.3, alpha=.4)
         plt.tick_params(labelsize=labelsize)
         # plt.title(f'Well {t + 1}')
 
         alphabet = string.ascii_uppercase
-        legend_a = proxy_annotate([f'{alphabet[t]}. Well {t + 1}'], fz=12, loc=2)
+        legend_a = proxy_annotate(
+            [f'{alphabet[t]}. Well {t + 1}'], fz=12, loc=2)
 
         labels = ['Training', 'Test']
         proxy_legend(legend1=legend_a, colors=colors, labels=labels, loc=1)
@@ -966,7 +983,8 @@ def curves_i(cols, tc,
         plt.ylabel(ylabel)
         if sdir:
             ut.dirmaker(sdir)
-            plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'),
+                        dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -1003,7 +1021,8 @@ def plot_wells(wells,
 
 
 def plot_head_field(root: str = None):
-    matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
+    matrix = np.load(
+        jp(Setup.Directories.hydro_res_dir, root, 'whpa_heads.npy'))
     grid_dim = Setup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
@@ -1053,7 +1072,8 @@ def plot_pc_ba(root: str = None,
         hnc0 = h_pco.n_pc_cut
         # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
 
-        h_pred = np.load(os.path.join(base_dir, 'roots_whpa', f'{root}.npy'))  # Signed Distance
+        h_pred = np.load(os.path.join(base_dir, 'roots_whpa',
+                                      f'{root}.npy'))  # Signed Distance
         # Cut desired number of PC components
         h_pco.test_transform(h_pred, test_root=[root])
         h_pco.comp_refresh(hnc0)
@@ -1065,7 +1085,8 @@ def plot_pc_ba(root: str = None,
     if data:
         subdir = os.path.join(Setup.Directories.forecasts_dir, root)
         listme = os.listdir(subdir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+        folders = list(filter(lambda d: os.path.isdir(
+            os.path.join(subdir, d)), listme))
 
         for f in folders:
             res_dir = os.path.join(subdir, f, 'obj')
@@ -1155,7 +1176,8 @@ def cca_vision(root: str = None,
 
     if folders is None:
         listme = os.listdir(subdir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+        folders = list(filter(lambda d: os.path.isdir(
+            os.path.join(subdir, d)), listme))
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -1166,14 +1188,16 @@ def cca_vision(root: str = None,
         res_dir = os.path.join(subdir, f, 'obj')
 
         # Load objects
-        d_cca_training, h_cca_training, *rest = reload_trained_model(root=root, well=f)
+        d_cca_training, h_cca_training, * \
+            rest = reload_trained_model(root=root, well=f)
 
         kde_cca(root=root,
                 well=f,
                 sdir=os.path.join(subdir, f, 'cca'))
 
         # CCA coefficient plot
-        cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(offset=d_cca_training.shape[0])
+        cca_coefficient = np.corrcoef(d_cca_training, h_cca_training, ).diagonal(
+            offset=d_cca_training.shape[0])
         plt.plot(cca_coefficient, 'lightblue', zorder=1)
         plt.scatter(x=np.arange(len(cca_coefficient)),
                     y=cca_coefficient,
@@ -1185,7 +1209,8 @@ def cca_vision(root: str = None,
         cb = plt.colorbar()
         cb.ax.set_title('R')
         plt.grid(alpha=.4, linewidth=.5, zorder=0)
-        plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
+        plt.xticks(np.arange(len(cca_coefficient)),
+                   np.arange(1, len(cca_coefficient) + 1))
         plt.tick_params(labelsize=5)
         plt.yticks([])
         # plt.title('Decrease of CCA correlation coefficient with component number')
@@ -1232,7 +1257,8 @@ def pca_vision(root,
     subdir = os.path.join(Setup.Directories.forecasts_dir, root)
     if folders is None:
         listme = os.listdir(subdir)
-        folders = list(filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
+        folders = list(filter(lambda du: os.path.isdir(
+            os.path.join(subdir, du)), listme))
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -1281,7 +1307,8 @@ def pca_vision(root,
                        fig_file=fig_file)
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(hbase, 'roots_whpa', f'{root}_pca_exvar.pdf')
+            fig_file = os.path.join(
+                hbase, 'roots_whpa', f'{root}_pca_exvar.pdf')
             explained_variance(h_pco.operator,
                                n_comp=h_pco.n_pc_cut,
                                thr=.85,
@@ -1526,7 +1553,8 @@ def order_vertices(vertices):
     """
     # Compute center of vertices
     center = \
-        tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), vertices), [len(vertices)] * 2))
+        tuple(map(operator.truediv, reduce(lambda x, y: map(
+            operator.add, x, y), vertices), [len(vertices)] * 2))
 
     # Sort vertices according to angle
     so = sorted(vertices,
@@ -1552,7 +1580,8 @@ class ModelVTK:
         # Load flow model
         try:
             m_load = jp(self.results_dir, 'whpa.nam')
-            self.flow_model = ut.load_flow_model(m_load, model_ws=self.results_dir)
+            self.flow_model = ut.load_flow_model(
+                m_load, model_ws=self.results_dir)
             delr = self.flow_model.modelgrid.delr  # thicknesses along rows
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
@@ -1565,12 +1594,15 @@ class ModelVTK:
         try:
             # Transport model
             mt_load = jp(self.results_dir, 'whpa.mtnam')
-            self.transport_model = ut.load_transport_model(mt_load, self.flow_model, model_ws=self.results_dir)
+            self.transport_model = ut.load_transport_model(
+                mt_load, self.flow_model, model_ws=self.results_dir)
             ucn_files = [jp(self.results_dir, f'MT3D00{i}.UCN') for i in
                          Setup.Wells.combination]  # Files containing concentration
-            ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
+            ucn_obj = [flopy.utils.UcnFile(uf)
+                       for uf in ucn_files]  # Load them
             self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
-            self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
+            self.concs = np.array([uo.get_alldata()
+                                   for uo in ucn_obj])  # Get all data
         except Exception as e:
             print(e)
 
@@ -1607,7 +1639,8 @@ class ModelVTK:
         # First replace 1e+30 value (inactive cells) by 0.
         conc0 = np.abs(np.where(self.concs == 1e30, 0, self.concs))
         # Cells configuration for 3D blocks
-        cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))])) for i in range(len(self.blocks))]
+        cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))]))
+                 for i in range(len(self.blocks))]
         for j in range(self.concs.shape[1]):
             # Stack the concentration of each component at each time step to visualize them in one plot.
             array = np.zeros(self.blocks.shape[0])
@@ -1629,15 +1662,18 @@ class ModelVTK:
         ugrid = vtk.vtkUnstructuredGrid()
 
         for e, b in enumerate(self.blocks):
-            sb = sorted(b, key=lambda k: [k[1], k[0]])  # Order vertices in vtkPixel convention
+            # Order vertices in vtkPixel convention
+            sb = sorted(b, key=lambda k: [k[1], k[0]])
             [points.InsertPoint(e * 4 + es, bb) for es, bb in
              enumerate(sb)]  # Insert points by giving first their index e*4+es
-            ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(range(e * 4, e * 4 + 4)))  # Insert cell in UGrid
+            ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(
+                range(e * 4, e * 4 + 4)))  # Insert cell in UGrid
 
         ugrid.SetPoints(points)  # Set points
 
         for i in range(1, 7):  # For eaxh injecting well
-            conc_dir = jp(self.results_dir, 'vtk', 'transport', '{}_UCN'.format(i))
+            conc_dir = jp(self.results_dir, 'vtk',
+                          'transport', '{}_UCN'.format(i))
             ut.dirmaker(conc_dir)
             # Initiate array and give it a name
             concArray = vtk.vtkDoubleArray()
@@ -1696,7 +1732,8 @@ class ModelVTK:
 
         xs = points_x[:, 0]  # Data at first time step
         ys = points_y[:, 0]
-        zs = points_z[:, 0] * 0  # Replace elevation by 0 to project them in the surface
+        # Replace elevation by 0 to project them in the surface
+        zs = points_z[:, 0] * 0
         prev = \
             np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
@@ -1706,7 +1743,8 @@ class ModelVTK:
             # Get all particles positions
             xs = points_x[:, i]
             ys = points_y[:, i]
-            zs = points_z[:, i] * 0  # Replace elevation by 0 to project them in the surface
+            # Replace elevation by 0 to project them in the surface
+            zs = points_z[:, i] * 0
             xyz_particles_t_i = \
                 np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
@@ -1750,7 +1788,8 @@ class ModelVTK:
             # Write path lines
             if i and path:
                 for p in range(n_particles):
-                    short = np.vstack((points_x[p, :i + 1], points_y[p, :i + 1], np.abs(points_z[p, :i + 1] * 0))).T
+                    short = np.vstack(
+                        (points_x[p, :i + 1], points_y[p, :i + 1], np.abs(points_z[p, :i + 1] * 0))).T
                     points = vtk.vtkPoints()
                     [points.InsertNextPoint(c) for c in short]
 
@@ -1767,7 +1806,8 @@ class ModelVTK:
                     # Create value array and assign it to the polydata
                     speed = vtk.vtkDoubleArray()
                     speed.SetName("speed")
-                    [speed.InsertNextValue(speed_array[k][p]) for k in range(i + 1)]
+                    [speed.InsertNextValue(speed_array[k][p])
+                     for k in range(i + 1)]
                     polyData.GetPointData().AddArray(speed)
 
                     # Add the lines to the dataset
@@ -1776,23 +1816,27 @@ class ModelVTK:
                     # Export
                     writer = vtk.vtkXMLPolyDataWriter()
                     writer.SetInputData(polyData)
-                    writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
+                    writer.SetFileName(
+                        jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
                     writer.Write()
             else:
                 for p in range(n_particles):
                     xs = points_x[p, i]
                     ys = points_y[p, i]
-                    zs = points_z[p, i] * 0  # Replace elevation by 0 to project them in the surface
+                    # Replace elevation by 0 to project them in the surface
+                    zs = points_z[p, i] * 0
                     xyz_particles_t_i = \
                         np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
                     # Create points
                     points = vtk.vtkPoints()
-                    ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
+                    ids = [points.InsertNextPoint(c)
+                           for c in xyz_particles_t_i]
 
                     # Create a cell array to store the points
                     vertices = vtk.vtkCellArray()
-                    vertices.InsertNextCell(len(xyz_particles_t_i))  # Why is this line necessary ?
+                    # Why is this line necessary ?
+                    vertices.InsertNextCell(len(xyz_particles_t_i))
                     [vertices.InsertCellPoint(ix) for ix in ids]
 
                     # Create a polydata to store everything in
@@ -1804,7 +1848,8 @@ class ModelVTK:
                     # Export
                     writer = vtk.vtkXMLPolyDataWriter()
                     writer.SetInputData(polyData)
-                    writer.SetFileName(jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
+                    writer.SetFileName(
+                        jp(back_dir, 'path{}_t{}.vtp'.format(p, i)))
                     writer.Write()
 
     # %% Export wells objects as vtk
@@ -1815,7 +1860,8 @@ class ModelVTK:
         wbd = self.base.Wells().wells_data
 
         wels = np.array([wbd[o]['coordinates'] for o in wbd])
-        wels = np.insert(wels, 2, np.zeros(len(wels)), axis=1)  # Insert zero array for Z
+        wels = np.insert(wels, 2, np.zeros(len(wels)),
+                         axis=1)  # Insert zero array for Z
 
         # Export wells as VTK points
         points = vtk.vtkPoints()  # Points
@@ -1930,7 +1976,8 @@ def kde_cca(root: str,
         if vmax < maxloc:
             vmax = maxloc
 
-    cca_coefficient = np.corrcoef(d, h).diagonal(offset=cca_operator.n_components)  # Gets correlation coefficient
+    cca_coefficient = np.corrcoef(d, h).diagonal(
+        offset=cca_operator.n_components)  # Gets correlation coefficient
 
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
@@ -1947,7 +1994,8 @@ def kde_cca(root: str,
         y_samp = post_test_t[comp_n]
 
         # Plot h posterior given d
-        density, support = stats.kde_params(x=d[comp_n], y=h[comp_n], gridsize=1000)
+        density, support = stats.kde_params(
+            x=d[comp_n], y=h[comp_n], gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = stats.KDE()
@@ -2035,7 +2083,8 @@ def kde_cca(root: str,
         # Add custom artists
         subtitle = my_alphabet(comp_n)
         # Add title inside the box
-        an = [f'{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient[comp_n], 3)}']
+        an = [
+            f'{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient[comp_n], 3)}']
         legend_a = proxy_annotate(obj=ax_joint,
                                   annotation=an,
                                   loc=2,
@@ -2044,14 +2093,16 @@ def kde_cca(root: str,
         proxy_legend(obj=ax_joint,
                      legend1=legend_a,
                      colors=['black', 'white', 'red', 'deepskyblue'],
-                     labels=['$Training$', '$Test$', '$d^{c}_{*}$', '$h^{c}_{True}$'],
+                     labels=['$Training$', '$Test$',
+                             '$d^{c}_{*}$', '$h^{c}_{True}$'],
                      marker=['o', 'o', '-', '-'],
                      pec=['k', 'k', None, None],
                      fz=10)
 
         if sdir:
             ut.dirmaker(sdir)
-            plt.savefig(jp(sdir, f'cca_kde_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f'cca_kde_{comp_n}.pdf'),
+                        bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -2095,7 +2146,8 @@ def kde_cca(root: str,
 
             if sdir:
                 ut.dirmaker(sdir)
-                plt.savefig(jp(sdir, f'cca_prior_post_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
+                plt.savefig(
+                    jp(sdir, f'cca_prior_post_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
                 plt.close()
             if show:
                 plt.show()

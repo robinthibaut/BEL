@@ -38,7 +38,8 @@ class PC:
 
         self.obs_shape = None  # Original shape of observation
 
-        self.scaler = StandardScaler(with_mean=False)  # Divide the sample by their standard deviation.
+        # Divide the sample by their standard deviation.
+        self.scaler = StandardScaler(with_mean=False)
         # The samples are automatically scaled by scikit-learn PCA()
         self.operator = PCA()  # PCA operator (scikit-learn instance)
         # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
@@ -47,8 +48,10 @@ class PC:
         self.n_pc_cut = None  # Number of components to keep
 
         # Training set - physical space - flattened array
-        self.training_physical = np.array([item for sublist in training for item in sublist]).reshape(len(training), -1)
-        self.n_training = len(self.training_physical)  # Number of training samples
+        self.training_physical = np.array(
+            [item for sublist in training for item in sublist]).reshape(len(training), -1)
+        # Number of training samples
+        self.n_training = len(self.training_physical)
         self.training_pc = None  # Training PCA scores
 
         self.test_root = None  # List containing uuid of observation
@@ -80,7 +83,8 @@ class PC:
         self.obs_shape = test.shape
 
         # Flattened array
-        self.predict_physical = np.array([item for sublist in test for item in sublist]).reshape(len(test), -1)
+        self.predict_physical = np.array(
+            [item for sublist in test for item in sublist]).reshape(len(test), -1)
 
         # Transform prediction data into principal components
         pc_prediction = self.pipe.transform(self.predict_physical)
@@ -118,7 +122,8 @@ class PC:
         if n_comp is not None:
             self.n_pc_cut = n_comp  # Assign the number of components in the class for later use
 
-        pc_training = self.training_pc.copy()  # Reloads the original training components
+        # Reloads the original training components
+        pc_training = self.training_pc.copy()
         pc_training = pc_training[:, :self.n_pc_cut]  # Cut
 
         if self.predict_pc is not None:
@@ -135,12 +140,15 @@ class PC:
         :param n_rand: int: Number of random PC to use
         :return numpy.ndarray: Random PC scores
         """
-        rand_rows = np.random.choice(self.n_samples, n_rand)  # Selects n_posts rows from the training array
-        score_selection = self.training_pc[rand_rows, self.n_pc_cut:]  # Extracts those rows, from the number of
+        rand_rows = np.random.choice(
+            self.n_samples, n_rand)  # Selects n_posts rows from the training array
+        # Extracts those rows, from the number of
+        score_selection = self.training_pc[rand_rows, self.n_pc_cut:]
         # components used until the end of the array.
 
         # For each column of shape n_samples, n_components, selects a random PC component to add.
-        test = [np.random.choice(score_selection[:, i]) for i in range(score_selection.shape[1])]
+        test = [np.random.choice(score_selection[:, i])
+                for i in range(score_selection.shape[1])]
 
         return np.array(test)
 

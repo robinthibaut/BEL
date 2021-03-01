@@ -7,6 +7,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from experiment._config import get_config as _get_config
+
 from .exceptions import NotFittedError
 from .fixes import _object_dtype_isnan
 
@@ -639,4 +640,3 @@ def check_consistent_length(*arrays):
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"
                          " samples: %r" % [int(l) for l in lengths])
-
