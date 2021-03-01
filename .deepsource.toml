@@ -1,15 +1,19 @@
 version = 1
 
-exclude_patterns = [
-    "*/storage/**"
-]
-
 [[analyzers]]
 name = "python"
 enabled = true
 
   [analyzers.meta]
   runtime_version = "3.x.x"
+
+[[transformers]]
+name = "black"
+enabled = true
+
+[[transformers]]
+name = "yapf"
+enabled = true
 
 [[transformers]]
 name = "autopep8"
