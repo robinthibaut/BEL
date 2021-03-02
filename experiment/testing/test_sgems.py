@@ -8,8 +8,8 @@ import numpy as np
 
 import experiment._utils as fops
 import experiment.utils
-from experiment.algorithms.statistics import sgsim
 from experiment.algorithms.base import MySetup
+from experiment.algorithms.statistics import sgsim
 
 
 def test_sgems(folder=None):
@@ -30,12 +30,13 @@ def test_sgems(folder=None):
 
     # Statistical simulation
     wells_values = np.ones(len(MySetup.Wells.combination) + 1) * -9966699
-    hk_array, xy_dummy = sgsim(
-        model_ws=results_dir, grid_dir=grid_dir, wells_hk=wells_values)
+    hk_array, xy_dummy = sgsim(model_ws=results_dir,
+                               grid_dir=grid_dir,
+                               wells_hk=wells_values)
 
 
 if __name__ == "__main__":
     start = time.time()
-    test_sgems('macos')
+    test_sgems("macos")
     end = time.time()
     print((end - start) / 60)

@@ -37,11 +37,13 @@ def squared_norm(x):
         The Euclidean norm when x is a vector, the Frobenius norm when x
         is a matrix (2-d array).
     """
-    x = np.ravel(x, order='K')
+    x = np.ravel(x, order="K")
     if np.issubdtype(x.dtype, np.integer):
-        warnings.warn('Array type is integer, np.dot may overflow. '
-                      'Data should be float type to avoid this issue',
-                      UserWarning)
+        warnings.warn(
+            "Array type is integer, np.dot may overflow. "
+            "Data should be float type to avoid this issue",
+            UserWarning,
+        )
     return np.dot(x, x)
 
 
@@ -151,8 +153,8 @@ def safe_sparse_dot(a, b, dense_output=False):
     else:
         ret = a @ b
 
-    if (sparse.issparse(a) and sparse.issparse(b)
-            and dense_output and hasattr(ret, "toarray")):
+    if (sparse.issparse(a) and sparse.issparse(b) and dense_output
+            and hasattr(ret, "toarray")):
         return ret.toarray()
     return ret
 
@@ -437,7 +439,7 @@ def weighted_mode(a, w, axis=0):
     oldcounts = np.zeros(testshape)
     for score in scores:
         template = np.zeros(a.shape)
-        ind = (a == score)
+        ind = a == score
         template[ind] = w[ind]
         counts = np.expand_dims(np.sum(template, axis), axis)
         mostfrequent = np.where(counts > oldcounts, score, oldmostfreq)
@@ -584,6 +586,7 @@ def svd_flip(u, v, u_based_decision=True):
 #         return np.squeeze(out)
 #     return out
 #
+
 
 def softmax(X, copy=True):
     """
@@ -772,12 +775,12 @@ def _incremental_mean_and_var(X, last_mean, last_variance, last_sample_count):
             _safe_accumulator_op(np.nanvar, X, axis=0) * new_sample_count)
         last_unnormalized_variance = last_variance * last_sample_count
 
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             last_over_new_count = last_sample_count / new_sample_count
             updated_unnormalized_variance = (
                 last_unnormalized_variance + new_unnormalized_variance +
                 last_over_new_count / updated_sample_count *
-                (last_sum / last_over_new_count - new_sum) ** 2)
+                (last_sum / last_over_new_count - new_sum)**2)
 
         zeros = last_sample_count == 0
         updated_unnormalized_variance[zeros] = new_unnormalized_variance[zeros]
@@ -825,9 +828,15 @@ def stable_cumsum(arr, axis=None, rtol=1e-05, atol=1e-08):
     """
     out = np.cumsum(arr, axis=axis, dtype=np.float64)
     expected = np.sum(arr, axis=axis, dtype=np.float64)
-    if not np.all(np.isclose(out.take(-1, axis=axis), expected, rtol=rtol,
-                             atol=atol, equal_nan=True)):
-        warnings.warn('cumsum was found to be unstable: '
-                      'its last element does not correspond to sum',
-                      RuntimeWarning)
+    if not np.all(
+            np.isclose(out.take(-1, axis=axis),
+                       expected,
+                       rtol=rtol,
+                       atol=atol,
+                       equal_nan=True)):
+        warnings.warn(
+            "cumsum was found to be unstable: "
+            "its last element does not correspond to sum",
+            RuntimeWarning,
+        )
     return out

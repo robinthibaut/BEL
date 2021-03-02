@@ -4,9 +4,9 @@ import os
 from contextlib import contextmanager as contextmanager
 
 _global_config = {
-    'assume_finite': bool(os.environ.get('SKLEARN_ASSUME_FINITE', False)),
-    'working_memory': int(os.environ.get('SKLEARN_WORKING_MEMORY', 1024)),
-    'print_changed_only': False,
+    "assume_finite": bool(os.environ.get("SKLEARN_ASSUME_FINITE", False)),
+    "working_memory": int(os.environ.get("SKLEARN_WORKING_MEMORY", 1024)),
+    "print_changed_only": False,
 }
 
 
@@ -26,7 +26,8 @@ def get_config():
     return _global_config.copy()
 
 
-def set_config(assume_finite=None, working_memory=None,
+def set_config(assume_finite=None,
+               working_memory=None,
                print_changed_only=None):
     """Set global scikit-learn configuration
 
@@ -65,11 +66,11 @@ def set_config(assume_finite=None, working_memory=None,
     get_config: Retrieve current values of the global configuration
     """
     if assume_finite is not None:
-        _global_config['assume_finite'] = assume_finite
+        _global_config["assume_finite"] = assume_finite
     if working_memory is not None:
-        _global_config['working_memory'] = working_memory
+        _global_config["working_memory"] = working_memory
     if print_changed_only is not None:
-        _global_config['print_changed_only'] = print_changed_only
+        _global_config["print_changed_only"] = print_changed_only
 
 
 @contextmanager

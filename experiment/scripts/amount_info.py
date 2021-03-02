@@ -24,7 +24,7 @@ def by_mode(root: Root):
         root: list = [root]
 
     # Deals with the fact that only one root might be selected
-    fig_name = 'average'
+    fig_name = "average"
     an_i = 0  # Annotation index
     if len(root) == 1:
         fig_name = root[0]
@@ -40,7 +40,7 @@ def by_mode(root: Root):
         droot = os.path.join(Setup.Directories.forecasts_dir, r)
         for e in wid:  # For each subfolder (well) in the main folder
             # Get the MHD file
-            fmhd = os.path.join(droot, e, 'obj', 'haus.npy')
+            fmhd = os.path.join(droot, e, "obj", "haus.npy")
             mhd = np.load(fmhd)  # Load MHD
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
@@ -48,13 +48,14 @@ def by_mode(root: Root):
     mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Amount of information
     forecast_dir = Setup.Directories.forecasts_dir
     listit = os.listdir(forecast_dir)
-    listit.remove('base')
-    duq = list(filter(lambda f: os.path.isdir(os.path.join(
-        forecast_dir, f)), listit))  # Folders of combinations
+    listit.remove("base")
+    duq = list(
+        filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)),
+               listit))  # Folders of combinations
 
     by_mode(duq)
-    by_mode(['818bf1676c424f76b83bd777ae588a1d'])
+    by_mode(["818bf1676c424f76b83bd777ae588a1d"])

@@ -7,10 +7,10 @@ import experiment.visualization as myvis
 from experiment.core import Setup
 from experiment.utils import data_read
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    base_dir = os.path.join(Setup.Directories.forecasts_dir, 'base')
-    test_roots = data_read(os.path.join(base_dir, 'test_roots.dat'))
+    base_dir = os.path.join(Setup.Directories.forecasts_dir, "base")
+    test_roots = data_read(os.path.join(base_dir, "test_roots.dat"))
     samples = [item for sublist in test_roots for item in sublist]
 
     # roots = samples
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     #          '27ec76adab2e406794584fc993188c24',
     #          '9a389395bfbe4cd883dfa3e452752978']
 
-    roots = ['27ec76adab2e406794584fc993188c24']
+    roots = ["27ec76adab2e406794584fc993188c24"]
 
     alphabet = string.ascii_uppercase
 
@@ -30,15 +30,15 @@ if __name__ == '__main__':
     # ['123456', '1', '2', '3', '4', '5', '6']
 
     for i, sample in enumerate(roots):
-        print(f'Plotting root {sample}')
+        print(f"Plotting root {sample}")
 
-        wells = ['123456']
+        wells = ["123456"]
 
         for j, w in enumerate(wells):
 
-            print(f'Plotting well {w}')
+            print(f"Plotting well {w}")
 
-            if w == '123456':
+            if w == "123456":
                 annotation = alphabet[i]
             else:
                 annotation = alphabet[j - 1]
@@ -54,18 +54,17 @@ if __name__ == '__main__':
 
         myvis.plot_whpa(root=sample)
         #
-        myvis.pca_vision(root=sample,
-                         d=True,
-                         h=True,
-                         exvar=True,
-                         labels=True,
-                         scores=True,
-                         folders=wells)
+        myvis.pca_vision(
+            root=sample,
+            d=True,
+            h=True,
+            exvar=True,
+            labels=True,
+            scores=True,
+            folders=wells,
+        )
 
-        myvis.plot_pc_ba(root=sample,
-                         data=True,
-                         target=True)
+        myvis.plot_pc_ba(root=sample, data=True, target=True)
 
-        myvis.cca_vision(root=sample,
-                         folders=wells)
+        myvis.cca_vision(root=sample, folders=wells)
         #

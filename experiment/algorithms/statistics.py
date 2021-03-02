@@ -14,8 +14,8 @@ from pysgems.sgems import sg
 from scipy import integrate, ndimage, stats
 from sklearn.preprocessing import PowerTransformer
 
-from experiment.core import Setup
 from experiment.algorithms.spatial import get_block
+from experiment.core import Setup
 from experiment.utils import data_read
 
 
@@ -24,16 +24,17 @@ class KDE:
     Bivariate kernel density estimator.
     This class is adapted from the class of the same name in the package Seaborn 0.11.1
     https://seaborn.pydata.org/generated/seaborn.kdeplot.html
-       """
+    """
 
     def __init__(
-            self, *,
-            bw_method=None,
-            bw_adjust=1,
-            gridsize=200,
-            cut=3,
-            clip=None,
-            cumulative=False,
+        self,
+        *,
+        bw_method=None,
+        bw_adjust=1,
+        gridsize=200,
+        cut=3,
+        clip=None,
+        cumulative=False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -82,9 +83,8 @@ class KDE:
         """Create a 1D grid of evaluation points."""
         kde = self._fit(x, weights)
         bw = np.sqrt(kde.covariance.squeeze())
-        grid = self._define_support_grid(
-            x, bw, self.cut, self.clip, self.gridsize
-        )
+        grid = self._define_support_grid(x, bw, self.cut, self.clip,
+                                         self.gridsize)
         return grid
 
     def _define_support_bivariate(self, x1, x2, weights):
@@ -96,12 +96,10 @@ class KDE:
         kde = self._fit([x1, x2], weights)
         bw = np.sqrt(np.diag(kde.covariance).squeeze())
 
-        grid1 = self._define_support_grid(
-            x1, bw[0], self.cut, clip[0], self.gridsize
-        )
-        grid2 = self._define_support_grid(
-            x2, bw[1], self.cut, clip[1], self.gridsize
-        )
+        grid1 = self._define_support_grid(x1, bw[0], self.cut, clip[0],
+                                          self.gridsize)
+        grid2 = self._define_support_grid(x2, bw[1], self.cut, clip[1],
+                                          self.gridsize)
 
         return grid1, grid2
 
@@ -138,9 +136,8 @@ class KDE:
 
         if self.cumulative:
             s_0 = support[0]
-            density = np.array([
-                kde.integrate_box_1d(s_0, s_i) for s_i in support
-            ])
+            density = np.array(
+                [kde.integrate_box_1d(s_0, s_i) for s_i in support])
         else:
             density = kde(support)
 
@@ -177,8 +174,8 @@ class KDE:
 
 
 def univariate_density(
-        data_variable,
-        estimate_kws,
+    data_variable,
+    estimate_kws,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -201,8 +198,8 @@ def univariate_density(
 
 
 def bivariate_density(
-        data: pd.DataFrame,
-        estimate_kws: dict,
+    data: pd.DataFrame,
+    estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -238,12 +235,15 @@ def bivariate_density(
 
 
 def kde_params(
-        x: np.array = None,
-        y: np.array = None,
-        bw: float = None,
-        gridsize: int = 200,
-        cut: float = 3, clip=None, cumulative: bool = False,
-        bw_method: str = "scott", bw_adjust: int = 1
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    gridsize: int = 200,
+    cut: float = 3,
+    clip=None,
+    cumulative: bool = False,
+    bw_method: str = "scott",
+    bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -259,7 +259,7 @@ def kde_params(
     :return:
     """
 
-    data = {'x': x, 'y': y}
+    data = {"x": x, "y": y}
     frame = pd.DataFrame(data=data)
 
     # Handle deprecation of `bw`
@@ -277,10 +277,8 @@ def kde_params(
     )
 
     if y is None:
-        density, support = univariate_density(
-            data_variable=frame,
-            estimate_kws=estimate_kws
-        )
+        density, support = univariate_density(data_variable=frame,
+                                              estimate_kws=estimate_kws)
 
     else:
         density, support = bivariate_density(
@@ -291,9 +289,7 @@ def kde_params(
     return density, support
 
 
-def pixel_coordinate(line: list,
-                     x_1d: np.array,
-                     y_1d: np.array):
+def pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     """
     Gets the pixel coordinate of the value x or y, in order to get posterior conditional probability given a KDE.
     :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
@@ -314,12 +310,13 @@ def pixel_coordinate(line: list,
     return row, col
 
 
-def conditional_distribution(kde_array: np.array,
-                             x_array: np.array,
-                             y_array: np.array,
-                             x: float = None,
-                             y: float = None
-                             ):
+def conditional_distribution(
+    kde_array: np.array,
+    x_array: np.array,
+    y_array: np.array,
+    x: float = None,
+    y: float = None,
+):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
     Provide only one observation ! Either x or y.
@@ -351,8 +348,7 @@ def conditional_distribution(kde_array: np.array,
     return zi
 
 
-def normalize_distribution(post: np.array,
-                           support: np.array):
+def normalize_distribution(post: np.array, support: np.array):
     """
     When a cross-section is performed along a bivariate KDE, the integral might not = 1.
     This function normalizes such functions so that their integral = 1.
@@ -424,18 +420,20 @@ class PosteriorIO:
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.normalize_h = PowerTransformer(
-            method='yeo-johnson', standardize=True)
-        self.normalize_d = PowerTransformer(
-            method='yeo-johnson', standardize=True)
+        self.normalize_h = PowerTransformer(method="yeo-johnson",
+                                            standardize=True)
+        self.normalize_d = PowerTransformer(method="yeo-johnson",
+                                            standardize=True)
         self.directory = directory
 
-    def mvn_inference(self,
-                      h_cca_training_gaussian,
-                      d_cca_training,
-                      d_pc_training,
-                      d_rotations,
-                      d_cca_prediction):
+    def mvn_inference(
+        self,
+        h_cca_training_gaussian,
+        d_cca_training,
+        d_pc_training,
+        d_rotations,
+        d_cca_prediction,
+    ):
         """
         Estimating posterior mean and covariance of the target.
         .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
@@ -481,7 +479,7 @@ class PosteriorIO:
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         # Number of PCA components for the curves
         x_dim = np.size(d_pc_training, axis=1)
-        noise = .01
+        noise = 0.01
         # I matrix. (n_comp_PCA, n_comp_PCA)
         d_cov_operator = np.eye(x_dim) * noise
         # (n_comp_CCA, n_comp_CCA)
@@ -491,19 +489,18 @@ class PosteriorIO:
         # Pay attention to the transpose operator.
         # Computes the vector g that approximately solves the equation h @ g = d.
         g = np.linalg.lstsq(h_cca_training_gaussian,
-                            d_cca_training, rcond=None)[0].T
+                            d_cca_training,
+                            rcond=None)[0].T
         # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
         # Modeling error due to deviations from theory
         # (n_components_CCA, n_training)
         d_ls_predicted = h_cca_training_gaussian @ g.T
-        d_modeling_mean_error = np.mean(
-            d_cca_training - d_ls_predicted, axis=0)  # (n_comp_CCA, 1)
-        d_modeling_error = \
-            d_cca_training \
-            - d_ls_predicted \
-            - np.tile(d_modeling_mean_error, (n_training, 1))
+        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted,
+                                        axis=0)  # (n_comp_CCA, 1)
+        d_modeling_error = (d_cca_training - d_ls_predicted -
+                            np.tile(d_modeling_mean_error, (n_training, 1)))
         # (n_comp_CCA, n_training)
 
         # Information about the covariance of the posterior distribution in Canonical space.
@@ -526,9 +523,9 @@ class PosteriorIO:
         # Observe that posterior covariance does not depend on observed d.
         h_posterior_covariance = np.linalg.pinv(d11)
         # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
-        h_posterior_mean = h_posterior_covariance @ \
-            (d11 @ h_mean - d12 @
-             (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+        h_posterior_mean = h_posterior_covariance @ (
+            d11 @ h_mean -
+            d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
 
         # test = np.block([[d11, d12], [d21, d22]])
         # plt.matshow(test, cmap='coolwarm')
@@ -550,13 +547,15 @@ class PosteriorIO:
         # (n_comp_CCA, n_comp_CCA)
         self.posterior_covariance = h_posterior_covariance
 
-    def back_transform(self,
-                       h_posts_gaussian,
-                       cca_obj,
-                       pca_h,
-                       n_posts: int,
-                       add_comp: bool = False,
-                       save_target_pc: bool = False):
+    def back_transform(
+        self,
+        h_posts_gaussian,
+        cca_obj,
+        pca_h,
+        n_posts: int,
+        add_comp: bool = False,
+        save_target_pc: bool = False,
+    ):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
@@ -580,25 +579,27 @@ class PosteriorIO:
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
         # FIXME: Deprecation warning here about y_std_ and y_mean_
-        h_pca_reverse = np.matmul(
-            h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+        h_pca_reverse = (
+            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
+            cca_obj.y_mean_)
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.random_pc(n_posts)
-                             for _ in range(n_posts)])  # Get the extra components
-            h_pca_reverse = np.array([np.concatenate(
-                (h_pca_reverse[i], rnpc[i])) for i in range(n_posts)])  # Insert it
+            rnpc = np.array([pca_h.random_pc(n_posts) for _ in range(n_posts)
+                             ])  # Get the extra components
+            h_pca_reverse = np.array([
+                np.concatenate((h_pca_reverse[i], rnpc[i]))
+                for i in range(n_posts)
+            ])  # Insert it
 
         if save_target_pc:
-            fname = jp(self.directory, 'target_pc.npy')
+            fname = jp(self.directory, "target_pc.npy")
             np.save(fname, h_pca_reverse)
 
         # Generate forecast in the initial dimension and reshape.
-        forecast_posterior = \
-            pca_h.custom_inverse_transform(h_pca_reverse).reshape((n_posts,
-                                                                   pca_h.training_shape[1],
-                                                                   pca_h.training_shape[2]))
+        forecast_posterior = pca_h.custom_inverse_transform(
+            h_pca_reverse).reshape(
+                (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
 
         return forecast_posterior
 
@@ -613,9 +614,10 @@ class PosteriorIO:
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(mean=self.posterior_mean,
-                                                         cov=self.posterior_covariance,
-                                                         size=n_posts)
+        h_posts_gaussian = np.random.multivariate_normal(
+            mean=self.posterior_mean,
+            cov=self.posterior_covariance,
+            size=n_posts)
         return h_posts_gaussian
 
     def bel_predict(self,
@@ -664,15 +666,17 @@ class PosteriorIO:
 
             # Estimate the posterior mean and covariance (Tarantola)
 
-            self.mvn_inference(h_cca_training,
-                               d_cca_training,
-                               d_pc_training,
-                               d_rotations,
-                               d_cca_prediction)
+            self.mvn_inference(
+                h_cca_training,
+                d_cca_training,
+                d_pc_training,
+                d_rotations,
+                d_cca_prediction,
+            )
 
             # Set the seed for later use
             if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1, dtype='uint32')
+                self.seed = np.random.randint(2**32 - 1, dtype="uint32")
 
             if n_posts is None:
                 self.n_posts = Setup.HyperParameters.n_posts
@@ -681,24 +685,24 @@ class PosteriorIO:
 
             # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
             # This allows to reload this object later on and resample using the same seed.
-            joblib.dump(self, jp(self.directory, 'post.pkl'))
+            joblib.dump(self, jp(self.directory, "post.pkl"))
 
         # Sample the inferred multivariate gaussian distribution
         h_posts_gaussian = self.random_sample(self.n_posts)
 
         # Back-transform h posterior to the physical space
-        forecast_posterior = self.back_transform(h_posts_gaussian=h_posts_gaussian,
-                                                 cca_obj=cca_obj,
-                                                 pca_h=pca_h,
-                                                 n_posts=self.n_posts,
-                                                 add_comp=add_comp)
+        forecast_posterior = self.back_transform(
+            h_posts_gaussian=h_posts_gaussian,
+            cca_obj=cca_obj,
+            pca_h=pca_h,
+            n_posts=self.n_posts,
+            add_comp=add_comp,
+        )
 
         return forecast_posterior
 
 
-def log_transform(f,
-                  k_mean: float,
-                  k_std: float):
+def log_transform(f, k_mean: float, k_std: float):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data.
     :param: f: np.array: Simulation output = Hk field
@@ -708,7 +712,7 @@ def log_transform(f,
 
     ff = f * k_std + k_mean
 
-    return 10 ** ff
+    return 10**ff
 
 
 def sgsim(model_ws: str,
@@ -723,18 +727,22 @@ def sgsim(model_ws: str,
     :return:
     """
     # Initiate sgems pjt
-    pjt = sg.Sgems(project_name='sgsim', project_wd=grid_dir, res_dir=model_ws)
+    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws)
 
     # Load hard data point set
 
     data_dir = grid_dir
-    dataset = 'wells.eas'
+    dataset = "wells.eas"
     file_path = jp(data_dir, dataset)
 
     hd = PointSet(project=pjt, pointset_path=file_path)
 
     k_params = Setup.ModelParameters
-    k_min, k_max, k_std = k_params.k_min, k_params.k_max, k_params.k_std,
+    k_min, k_max, k_std = (
+        k_params.k_min,
+        k_params.k_max,
+        k_params.k_std,
+    )
 
     # Hydraulic conductivity exponent mean between x and y.
     k_mean = np.random.uniform(k_min, k_max)
@@ -748,23 +756,30 @@ def sgsim(model_ws: str,
         hku = wells_hk
 
     if not os.path.exists(jp(model_ws, Setup.Files.sgems_file)):
-        hd.dataframe['hd'] = hku
-        hd.export_01('hd')  # Exports modified dataset in binary
+        hd.dataframe["hd"] = hku
+        hd.export_01("hd")  # Exports modified dataset in binary
 
     # Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
     gd = Setup.GridDimensions()
-    Discretize(project=pjt, dx=gd.dx, dy=gd.dy, xo=gd.xo,
-               yo=gd.yo, x_lim=gd.x_lim, y_lim=gd.y_lim)
+    Discretize(
+        project=pjt,
+        dx=gd.dx,
+        dy=gd.dy,
+        xo=gd.xo,
+        yo=gd.yo,
+        x_lim=gd.x_lim,
+        y_lim=gd.y_lim,
+    )
 
     # Get sgems grid centers coordinates:
     x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
     y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy / 2
-    xv, yv = np.meshgrid(x, y, sparse=False, indexing='xy')
+    xv, yv = np.meshgrid(x, y, sparse=False, indexing="xy")
     centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
 
-    if os.path.exists(jp(model_ws, 'hk0.npy')):
-        hk0 = np.load(jp(model_ws, 'hk0.npy'))
+    if os.path.exists(jp(model_ws, "hk0.npy")):
+        hk0 = np.load(jp(model_ws, "hk0.npy"))
         return hk0, centers
 
     # Display point coordinates and grid
@@ -773,12 +788,12 @@ def sgsim(model_ws: str,
 
     # Load your algorithm xml file in the 'algorithms' folder.
     dir_path = os.path.abspath(__file__ + "/..")
-    algo_dir = jp(dir_path, '')
+    algo_dir = jp(dir_path, "")
     al = XML(project=pjt, algo_dir=algo_dir)
-    al.xml_reader('bel_sgsim')
+    al.xml_reader("bel_sgsim")
 
     # Modify xml below:
-    al.xml_update('Seed', 'value', str(np.random.randint(1e9)), show=0)
+    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=0)
 
     # Write python script
     pjt.write_command()
@@ -788,7 +803,7 @@ def sgsim(model_ws: str,
     # Plot 2D results
     # pl.plot_2d(save=True)
 
-    opl = jp(model_ws, 'results.grid')  # Output file location.
+    opl = jp(model_ws, "results.grid")  # Output file location.
 
     # Grid information directly derived from the output file.
     matrix = data_read(opl, start=3)
@@ -797,8 +812,8 @@ def sgsim(model_ws: str,
     tf = np.vectorize(log_transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
-    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol)
-                            )  # reshape - assumes 2D !
+    matrix = matrix.reshape(
+        (pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
     # import matplotlib.pyplot as plt
@@ -809,6 +824,6 @@ def sgsim(model_ws: str,
     # plt.show()
 
     if save:
-        np.save(jp(model_ws, 'hk0'), matrix)  # Save the un-discretized hk grid
+        np.save(jp(model_ws, "hk0"), matrix)  # Save the un-discretized hk grid
 
     return matrix, centers
