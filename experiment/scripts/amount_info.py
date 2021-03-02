@@ -5,8 +5,8 @@ from typing import List
 
 import numpy as np
 
-from experiment._core import Setup
-from experiment._visualization import mode_histo
+from experiment.core import Setup
+from experiment.visualization import mode_histo
 
 Root = List[str]
 

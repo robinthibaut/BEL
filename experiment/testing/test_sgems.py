@@ -7,8 +7,9 @@ from os.path import join as jp
 import numpy as np
 
 import experiment._utils as fops
-from experiment._statistics import sgsim
-from experiment.base.inventory import MySetup
+import experiment.utils
+from experiment.algorithms.statistics import sgsim
+from experiment.algorithms.base import MySetup
 
 
 def test_sgems(folder=None):
@@ -25,7 +26,7 @@ def test_sgems(folder=None):
 
     grid_dir = MySetup.Directories.grid_dir
     # Generates the result directory
-    fops.dirmaker(results_dir)
+    experiment.utils.dirmaker(results_dir)
 
     # Statistical simulation
     wells_values = np.ones(len(MySetup.Wells.combination) + 1) * -9966699

@@ -19,11 +19,12 @@ import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
 
+import experiment.utils
 from experiment import _utils as fops
-from experiment._spatial import (binary_polygon, contours_vertices,
-                                 grid_parameters, modified_hausdorff,
-                                 refine_machine)
-from experiment._statistics import PosteriorIO
+from experiment.algorithms.spatial import (binary_polygon, contours_vertices,
+                                           grid_parameters, modified_hausdorff,
+                                           refine_machine)
+from experiment.algorithms.statistics import PosteriorIO
 
 
 class UncertaintyQuantification:
@@ -135,7 +136,7 @@ class UncertaintyQuantification:
         self.vertices = contours_vertices(x, y, self.forecast_posterior)
         if write_vtk:
             vdir = jp(self.fig_pred_dir, 'vtk')
-            fops.dirmaker(vdir)
+            experiment.utils.dirmaker(vdir)
             for i, v in enumerate(self.vertices):
                 nv = len(v)
                 points = vtk.vtkPoints()

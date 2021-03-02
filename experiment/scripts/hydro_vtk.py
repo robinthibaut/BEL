@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-from experiment._core import Setup as base
-from experiment._visualization import ModelVTK
+from experiment.core import Setup as base
+from experiment.visualization import ModelVTK
 
 if __name__ == '__main__':
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim

@@ -24,9 +24,10 @@ import numpy as np
 
 import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
-from experiment._spatial import grid_parameters, signed_distance
-from experiment._visualization import whpa_plot
-from experiment.cross_decomposition import CCA
+import experiment.utils
+from experiment.algorithms.spatial import grid_parameters, signed_distance
+from experiment.visualization import whpa_plot
+from experiment.algorithms.cross_decomposition import CCA
 from experiment.processing.dimension_reduction import PC
 
 Root = List[str]
@@ -53,7 +54,7 @@ def base_pca(base,
     """
     if d_pca_obj is not None:
         # Loads the results:
-        tc0, _, _ = fops.data_loader(roots=roots, d=True)
+        tc0, _, _ = experiment.utils.data_loader(roots=roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -72,7 +73,7 @@ def base_pca(base,
 
     if h_pca_obj is not None:
         # Loads the results:
-        _, pzs, r = fops.data_loader(roots=roots, h=True)
+        _, pzs, r = experiment.utils.data_loader(roots=roots, h=True)
         # Load parameters:
         xys, nrow, ncol = grid_parameters(
             x_lim=x_lim, y_lim=y_lim, grf=grf)  # Initiate SD instance
@@ -86,7 +87,7 @@ def base_pca(base,
             # Load parameters:
             # instance
             fig_dir = jp(os.path.dirname(h_pca_obj), 'roots_whpa')
-            fops.dirmaker(fig_dir)
+            experiment.utils.dirmaker(fig_dir)
             for i, e in enumerate(h):
                 whpa_plot(whpa=[e],
                           x_lim=x_lim,
@@ -171,15 +172,15 @@ def bel_fit_transform(base,
     fig_pred_dir = jp(sub_dir, 'uq')
 
     # %% Creates directories
-    [fops.dirmaker(f) for f in [obj_dir, fig_data_dir,
-                                fig_pca_dir, fig_cca_dir, fig_pred_dir]]
+    [experiment.utils.dirmaker(f) for f in [obj_dir, fig_data_dir,
+                                            fig_pca_dir, fig_cca_dir, fig_pred_dir]]
 
     # Load training data
     # Refined breakthrough curves data file
     tsub = jp(base_dir, 'training_curves.npy')
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = fops.data_loader(
+        tc0, _, _ = experiment.utils.data_loader(
             res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
@@ -209,7 +210,7 @@ def bel_fit_transform(base,
     ndo = d_pco.n_pc_cut
     n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
-    tc0, _, _ = fops.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
+    tc0, _, _ = experiment.utils.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
@@ -224,7 +225,7 @@ def bel_fit_transform(base,
     h_pco = joblib.load(jp(base_dir, 'h_pca.pkl'))
     nho = h_pco.n_pc_cut  # Number of components to keep
     # Load whpa to predict
-    _, pzs, _ = fops.data_loader(roots=test_root, h=True)
+    _, pzs, _ = experiment.utils.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
@@ -236,7 +237,7 @@ def bel_fit_transform(base,
         joblib.dump(h_pco, jp(base_dir, 'h_pca.pkl'))
 
         fig_dir = jp(base_dir, 'roots_whpa')
-        fops.dirmaker(fig_dir)
+        experiment.utils.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
     else:
         # Cut components

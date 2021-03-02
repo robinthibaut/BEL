@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
 
-import experiment._visualization as mplot
-from experiment._core import Setup
+import experiment.visualization as mplot
+from experiment.core import Setup
 
 md = Setup.Directories
 

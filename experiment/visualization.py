@@ -18,14 +18,15 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
-import experiment._spatial
-import experiment._statistics
-from experiment import _statistics as stats
+import experiment.algorithms.spatial
+import experiment.algorithms.statistics
+import experiment.utils
+from experiment.algorithms import statistics as stats
 from experiment import _utils as ut
-from experiment._core import Setup
-from experiment._spatial import (binary_stack, contours_vertices,
-                                 grid_parameters, refine_machine)
-from experiment._utils import reload_trained_model
+from experiment.core import Setup
+from experiment.algorithms.spatial import (binary_stack, contours_vertices,
+                                           grid_parameters, refine_machine)
+from experiment.utils import reload_trained_model
 
 ftype = 'png'
 
@@ -109,7 +110,7 @@ def proxy_legend(legend1=None,
             obj.add_artist(el)
 
     if fig_file:
-        ut.dirmaker(os.path.dirname(fig_file))
+        experiment.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
 
@@ -182,7 +183,7 @@ def explained_variance(pca,
     plt.gca().add_artist(legend_a)
 
     if fig_file:
-        ut.dirmaker(os.path.dirname(fig_file))
+        experiment.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -265,7 +266,7 @@ def pca_scores(training,
                  marker=['o', 'o'])
 
     if fig_file:
-        ut.dirmaker(os.path.dirname(fig_file))
+        experiment.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=True)
         plt.close()
     if show:
@@ -314,7 +315,7 @@ def cca_plot(cca_operator,
                      pec=['k', 'k'])
 
         if sdir:
-            ut.dirmaker(sdir)
+            experiment.utils.dirmaker(sdir)
             plt.savefig(jp(sdir, 'cca{}.pdf'.format(i)),
                         bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
@@ -492,7 +493,7 @@ def whpa_plot(grf: float = None,
         plt.gca().add_artist(legend)
 
     if fig_file:
-        ut.dirmaker(os.path.dirname(fig_file))
+        experiment.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches='tight', dpi=300, transparent=True)
         plt.close()
     if show:
@@ -601,7 +602,7 @@ def h_pca_inverse_plot(pca_o,
                      marker=['-', '-'])
 
         if fig_dir is not None:
-            ut.dirmaker(fig_dir)
+            experiment.utils.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_h.pdf'), dpi=300, transparent=True)
             plt.close()
 
@@ -928,7 +929,7 @@ def curves(cols: list,
     plt.ylabel(ylabel)
     plt.tick_params(labelsize=labelsize)
     if sdir:
-        ut.dirmaker(sdir)
+        experiment.utils.dirmaker(sdir)
         plt.savefig(jp(sdir, f'{title}.pdf'), dpi=300, transparent=True)
         plt.close()
     if show:
@@ -982,7 +983,7 @@ def curves_i(cols, tc,
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         if sdir:
-            ut.dirmaker(sdir)
+            experiment.utils.dirmaker(sdir)
             plt.savefig(jp(sdir, f'{title}_{t + 1}.pdf'),
                         dpi=300, transparent=True)
             plt.close()
@@ -1326,7 +1327,7 @@ def check_root(xlim: list,
     :param root:
     :return:
     """
-    bkt, whpa, _ = ut.data_loader(roots=root)
+    bkt, whpa, _ = experiment.utils.data_loader(roots=root)
     whpa = whpa.squeeze()
     # self.curves_i(bkt, show=True)  # This function will not work
 
@@ -1394,7 +1395,7 @@ def d_pca_inverse_plot(pca_o,
         plt.ylim([0, yrange])
 
         if fig_dir is not None:
-            ut.dirmaker(fig_dir)
+            experiment.utils.dirmaker(fig_dir)
             plt.savefig(jp(fig_dir, f'{r}_d.pdf'), dpi=300, transparent=True)
             plt.close()
         if show:
@@ -1575,18 +1576,18 @@ class ModelVTK:
         self.bdir = md.main_dir
         self.results_dir = jp(md.hydro_res_dir, self.rn)
         self.vtk_dir = jp(self.results_dir, 'vtk')
-        ut.dirmaker(self.vtk_dir)
+        experiment.utils.dirmaker(self.vtk_dir)
 
         # Load flow model
         try:
             m_load = jp(self.results_dir, 'whpa.nam')
-            self.flow_model = ut.load_flow_model(
+            self.flow_model = experiment.utils.load_flow_model(
                 m_load, model_ws=self.results_dir)
             delr = self.flow_model.modelgrid.delr  # thicknesses along rows
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
             # blocks2d = mops.blocks_from_rc(delc, delr)
-            self.blocks = experiment._spatial.blocks_from_rc_3d(delc, delr)
+            self.blocks = experiment.algorithms.spatial.blocks_from_rc_3d(delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
             print(e)
@@ -1594,7 +1595,7 @@ class ModelVTK:
         try:
             # Transport model
             mt_load = jp(self.results_dir, 'whpa.mtnam')
-            self.transport_model = ut.load_transport_model(
+            self.transport_model = experiment.utils.load_transport_model(
                 mt_load, self.flow_model, model_ws=self.results_dir)
             ucn_files = [jp(self.results_dir, f'MT3D00{i}.UCN') for i in
                          Setup.Wells.combination]  # Files containing concentration
@@ -1612,7 +1613,7 @@ class ModelVTK:
 
         """
         dir_fv = jp(self.results_dir, 'vtk', 'flow')
-        ut.dirmaker(dir_fv)
+        experiment.utils.dirmaker(dir_fv)
         self.flow_model.export(dir_fv, fmt='vtk')
         vtk_flow.export_heads(self.flow_model,
                               jp(self.results_dir, 'whpa.hds'),
@@ -1627,7 +1628,7 @@ class ModelVTK:
 
         """
         dir_tv = jp(self.results_dir, 'vtk', 'transport')
-        ut.dirmaker(dir_tv)
+        experiment.utils.dirmaker(dir_tv)
         self.transport_model.export(dir_tv, fmt='vtk')
 
     # Export UCN to vtk
@@ -1635,7 +1636,7 @@ class ModelVTK:
     def stacked_conc_vtk(self):
         """Stack component concentrations for each time step and save vtk"""
         conc_dir = jp(self.results_dir, 'vtk', 'transport', 'concentration')
-        ut.dirmaker(conc_dir)
+        experiment.utils.dirmaker(conc_dir)
         # First replace 1e+30 value (inactive cells) by 0.
         conc0 = np.abs(np.where(self.concs == 1e30, 0, self.concs))
         # Cells configuration for 3D blocks
@@ -1674,7 +1675,7 @@ class ModelVTK:
         for i in range(1, 7):  # For eaxh injecting well
             conc_dir = jp(self.results_dir, 'vtk',
                           'transport', '{}_UCN'.format(i))
-            ut.dirmaker(conc_dir)
+            experiment.utils.dirmaker(conc_dir)
             # Initiate array and give it a name
             concArray = vtk.vtkDoubleArray()
             concArray.SetName(f"conc{i}")
@@ -1703,7 +1704,7 @@ class ModelVTK:
         :return:
         """
         back_dir = jp(self.results_dir, 'vtk', 'backtrack')
-        ut.dirmaker(back_dir)
+        experiment.utils.dirmaker(back_dir)
 
         # mp_reloaded = backtrack(flowmodel=flow_model, exe_name='', load=True)
         # load the endpoint data
@@ -2100,7 +2101,7 @@ def kde_cca(root: str,
                      fz=10)
 
         if sdir:
-            ut.dirmaker(sdir)
+            experiment.utils.dirmaker(sdir)
             plt.savefig(jp(sdir, f'cca_kde_{comp_n}.pdf'),
                         bbox_inches='tight', dpi=300, transparent=True)
             plt.close()
@@ -2145,7 +2146,7 @@ def kde_cca(root: str,
             plt.legend(loc=2)
 
             if sdir:
-                ut.dirmaker(sdir)
+                experiment.utils.dirmaker(sdir)
                 plt.savefig(
                     jp(sdir, f'cca_prior_post_{comp_n}.pdf'), bbox_inches='tight', dpi=300, transparent=True)
                 plt.close()

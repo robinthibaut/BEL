@@ -25,8 +25,9 @@ from os.path import join as jp
 import numpy as np
 
 import experiment._utils as fops
-from experiment._core import Machine, Setup
-from experiment._statistics import sgsim
+import experiment.utils
+from experiment.core import Machine, Setup
+from experiment.algorithms.statistics import sgsim
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport
@@ -60,7 +61,7 @@ def simulation(folder=None):
 
     grid_dir = Setup.Directories.grid_dir
     # Generates the result directory
-    fops.dirmaker(results_dir)
+    experiment.utils.dirmaker(results_dir)
 
     print(f'fwd {res_dir}')
     # Check if forwards have already been computed
@@ -96,7 +97,7 @@ def simulation(folder=None):
             hl = (time.time() - start_fwd) // 60
             print(f'done in {hl} min')
             if not folder:
-                fops.keep_essential(results_dir)
+                experiment.utils.keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
             print(f'terminated f{res_dir}')
@@ -122,7 +123,7 @@ def main(n_sim: int = None):
             os.path.join(Setup.Directories.hydro_res_dir, d)), listme))
 
     elif n_sim == -1:
-        training_roots = fops.data_read(os.path.join(
+        training_roots = experiment.utils.data_read(os.path.join(
             Setup.Directories.forecasts_dir, 'base', 'roots.dat'))
         folders = [item for sublist in training_roots for item in sublist]
 

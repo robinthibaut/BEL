@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 from scipy import stats
 
-from experiment._core import Setup
+from experiment.core import Setup
 
 plt.style.use('dark_background')
 

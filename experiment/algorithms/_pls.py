@@ -2,6 +2,8 @@
 The :mod:`sklearn.pls` module implements Partial Least Squares (PLS).
 """
 
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 # Author: Edouard Duchesnay <edouard.duchesnay@cea.fr>
 # License: BSD 3 clause
 
@@ -16,8 +18,8 @@ from .base import (BaseEstimator, MultiOutputMixin, RegressorMixin,
                    TransformerMixin)
 from .exceptions import ConvergenceWarning
 from .extmath import svd_flip
-from .utils import (FLOAT_DTYPES, check_array, check_consistent_length,
-                    check_is_fitted)
+from experiment.utils import (FLOAT_DTYPES, check_array, check_consistent_length,
+                              check_is_fitted)
 
 __all__ = ['PLSCanonical', 'PLSRegression', 'PLSSVD']
 

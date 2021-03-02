@@ -14,9 +14,9 @@ from pysgems.sgems import sg
 from scipy import integrate, ndimage, stats
 from sklearn.preprocessing import PowerTransformer
 
-from experiment._core import Setup
-from experiment._spatial import get_block
-from experiment._utils import data_read
+from experiment.core import Setup
+from experiment.algorithms.spatial import get_block
+from experiment.utils import data_read
 
 
 class KDE:
@@ -773,7 +773,7 @@ def sgsim(model_ws: str,
 
     # Load your algorithm xml file in the 'algorithms' folder.
     dir_path = os.path.abspath(__file__ + "/..")
-    algo_dir = jp(dir_path, 'algorithms')
+    algo_dir = jp(dir_path, '')
     al = XML(project=pjt, algo_dir=algo_dir)
     al.xml_reader('bel_sgsim')
 

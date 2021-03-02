@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiment._statistics import posterior_conditional
+from experiment.algorithms.statistics import posterior_conditional
 
 if __name__ == '__main__':
     # Generate some 2D data

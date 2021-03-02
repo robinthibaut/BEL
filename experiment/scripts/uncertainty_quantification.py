@@ -7,8 +7,9 @@ from typing import List
 import joblib
 import numpy as np
 
+import experiment.utils
 from experiment import _utils as ut
-from experiment._core import Setup
+from experiment.core import Setup
 from experiment.design.forecast_error import UncertaintyQuantification
 from experiment.learning import bel_pipeline as dcp
 
@@ -147,9 +148,9 @@ def analysis(base,
         except FileNotFoundError:
             pass
     obj_path = os.path.join(base.Directories.forecasts_dir, 'base')
-    fb = ut.dirmaker(obj_path)  # Returns bool according to folder status
+    fb = experiment.utils.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base and not fb:
-        ut.dirmaker(obj_path)
+        experiment.utils.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, 'h_pca.pkl')
         dcp.base_pca(base=base,
@@ -161,7 +162,7 @@ def analysis(base,
 
     if comb is None:
         comb = base.Wells.combination  # Get default combination (all)
-        belcomb = ut.combinator(comb)  # Get all possible combinations
+        belcomb = experiment.utils.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
 
@@ -181,11 +182,11 @@ def analysis(base,
 def get_roots():
     # List directories in forwards folder
 
-    training_roots = ut.data_read(os.path.join(
+    training_roots = experiment.utils.data_read(os.path.join(
         Setup.Directories.storage_dir, 'roots.dat'))
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = ut.data_read(os.path.join(
+    test_roots = experiment.utils.data_read(os.path.join(
         Setup.Directories.storage_dir, 'test_roots.dat'))
     test_roots = [item for sublist in test_roots for item in sublist]
 

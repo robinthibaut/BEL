@@ -9,8 +9,8 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-import experiment._spatial
-from experiment._core import Setup
+import experiment.algorithms.spatial
+from experiment.core import Setup
 
 
 def flow(exe_name: str,
@@ -83,7 +83,7 @@ def flow(exe_name: str,
         along_c = np.ones(ncol) * \
             dx  # Size of each cell in x-dimension - columns
         along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
-        r_a = experiment._spatial.refine_axis
+        r_a = experiment.algorithms.spatial.refine_axis
         for p in r_params:
             along_c = r_a(along_c, pt[0], p[1], p[0], dx, x_lim)
             along_r = r_a(along_r, pt[1], p[1], p[0], dy, y_lim)

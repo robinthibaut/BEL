@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pysgems.io.sgio import export_eas
 
-from experiment._core import Setup
+from experiment.core import Setup
 
 # Define injection wells
 # [ [X, Y, [r#1, r#2... r#n]] ]

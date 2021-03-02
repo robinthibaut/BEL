@@ -4,6 +4,8 @@ Base classes for all estimators.
 Used for VotingClassifier
 """
 
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 # Author: Gael Varoquaux <gael.varoquaux@normalesup.org>
 # License: BSD 3 clause
 
@@ -15,8 +17,8 @@ from collections import defaultdict
 
 import numpy as np
 
-from . import __version__
-from .utils import _IS_32BIT
+from experiment import __version__
+from experiment.utils import _IS_32BIT
 
 _DEFAULT_TAGS = {
     'non_deterministic': False,
@@ -530,7 +532,7 @@ class BiclusterMixin:
         Works with sparse matrices. Only works if ``rows_`` and
         ``columns_`` attributes exist.
         """
-        from .utils import check_array
+        from ..utils import check_array
         data = check_array(data, accept_sparse='csr')
         row_ind, col_ind = self.get_indices(i)
         return data[row_ind[:, np.newaxis], col_ind]

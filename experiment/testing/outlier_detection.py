@@ -20,7 +20,7 @@ import numpy as np
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 
-from experiment.base.inventory import MySetup
+from experiment.algorithms.base import MySetup
 
 # plt.style.use('dark_background')
 

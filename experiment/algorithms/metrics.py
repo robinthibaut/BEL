@@ -7,6 +7,8 @@ Function named as ``*_error`` or ``*_loss`` return a scalar value to minimize:
 the lower the better
 """
 
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import warnings
 from collections.abc import Sequence
 
@@ -16,8 +18,8 @@ from scipy.sparse.base import spmatrix
 from scipy.special import xlogy
 
 from .exceptions import UndefinedMetricWarning
-from .utils import (_assert_all_finite, _num_samples, check_array,
-                    check_consistent_length, column_or_1d)
+from experiment.utils import (_assert_all_finite, _num_samples, check_array,
+                              check_consistent_length, column_or_1d)
 
 __ALL__ = [
     "max_error",

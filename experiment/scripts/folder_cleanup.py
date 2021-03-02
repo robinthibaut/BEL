@@ -3,7 +3,8 @@
 import os
 
 import experiment._utils as fops
-from experiment._core import Setup
+import experiment.utils
+from experiment.core import Setup
 
 
 def cleanup():
@@ -11,9 +12,9 @@ def cleanup():
     # r=root, d=directories, f = files
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fops.keep_essential(r)
-            fops.remove_bad_bkt(r)
-            fops.remove_incomplete(r)
+            experiment.utils.keep_essential(r)
+            experiment.utils.remove_bad_bkt(r)
+            experiment.utils.remove_incomplete(r)
     print('Folders cleaned up')
 
 
@@ -21,8 +22,8 @@ def filter_file(crit):
     res_tree = Setup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fops.remove_bad_bkt(r)
-            fops.remove_incomplete(r, crit=crit)
+            experiment.utils.remove_bad_bkt(r)
+            experiment.utils.remove_incomplete(r, crit=crit)
     print(f'Folders filtered based on {crit}')
 
 
@@ -30,8 +31,8 @@ def spare_me():
     res_tree = Setup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
-            fops.keep_essential(r)
-            fops.remove_bad_bkt(r)
+            experiment.utils.keep_essential(r)
+            experiment.utils.remove_bad_bkt(r)
 
 
 if __name__ == '__main__':
