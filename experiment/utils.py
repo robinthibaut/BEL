@@ -17,6 +17,7 @@ from experiment.core import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 
+
 def _object_dtype_isnan(X):
     return X != X
 

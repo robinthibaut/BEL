@@ -487,6 +487,3 @@ class _PLS(TransformerMixin,
         x_scores if Y is not given, (x_scores, y_scores) otherwise.
         """
         return self.fit(X, y).transform(X, y)
-
-    def _more_tags(self):
-        return {"poor_score": True}
