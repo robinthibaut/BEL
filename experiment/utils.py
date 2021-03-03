@@ -2,7 +2,6 @@ import itertools
 import numbers
 import os
 import shutil
-import struct
 import warnings
 from inspect import isclass
 from os.path import join as jp
@@ -17,8 +16,6 @@ from experiment.algorithms.exceptions import NotFittedError
 from experiment.core import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
-_IS_32BIT = 8 * struct.calcsize("P") == 32
-
 
 def _object_dtype_isnan(X):
     return X != X
@@ -107,9 +104,6 @@ def _ensure_sparse_format(spmatrix, accept_sparse, dtype, copy,
         - False: accept both np.inf and np.nan in X.
         - 'allow-nan': accept only np.nan values in X. Values cannot be
           infinite.
-
-        .. versionadded:: 0.20
-           ``force_all_finite`` accepts the string ``'allow-nan'``.
 
     Returns
     -------

@@ -1,9 +1,6 @@
 import inspect
-import platform
 import warnings
 from collections import defaultdict
-
-from experiment.utils import _IS_32BIT
 
 
 class BaseEstimator:
@@ -164,17 +161,6 @@ class RegressorMixin:
         score : float
             R^2 of self.predict(X) wrt. y.
 
-        Notes
-        -----
-        The R2 score used when calling ``score`` on a regressor will use
-        ``multioutput='uniform_average'`` from version 0.23 to keep consistent
-        with :func:`~sklearn.metrics.r2_score`. This will influence the
-        ``score`` method of all the multioutput regressors (except for
-        :class:`~sklearn.multioutput.MultiOutputRegressor`). To specify the
-        default value manually and avoid the warning, please either call
-        :func:`~sklearn.metrics.r2_score` directly or make a custom scorer with
-        :func:`~sklearn.metrics.make_scorer` (the built-in scorer ``'r2'`` uses
-        ``multioutput='uniform_average'``).
         """
 
         from .metrics import _check_reg_targets, r2_score
@@ -222,21 +208,3 @@ class TransformerMixin:
         else:
             # fit method of arity 2 (supervised transformation)
             return self.fit(X, y, **fit_params).transform(X)
-
-
-class MultiOutputMixin:
-    """Mixin to mark estimators that support multioutput."""
-
-    def _more_tags(self):
-        return {"multioutput": True}
-
-
-class _UnstableArchMixin:
-    """Mark estimators that are non-determinstic on 32bit or PowerPC"""
-
-    def _more_tags(self):
-        return {
-            "non_deterministic": (_IS_32BIT or platform.machine().startswith(
-                ("ppc", "powerpc")))
-        }
-

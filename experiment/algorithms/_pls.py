@@ -8,7 +8,7 @@ from scipy.linalg import pinv2, svd
 from experiment.utils import (FLOAT_DTYPES, check_array,
                               check_consistent_length, check_is_fitted)
 
-from .base import (BaseEstimator, MultiOutputMixin, RegressorMixin,
+from .base import (BaseEstimator, RegressorMixin,
                    TransformerMixin)
 from .exceptions import ConvergenceWarning
 from .extmath import svd_flip
@@ -123,7 +123,6 @@ def _center_scale_xy(X, Y, scale=True):
 
 class _PLS(TransformerMixin,
            RegressorMixin,
-           MultiOutputMixin,
            BaseEstimator,
            metaclass=ABCMeta):
     """Partial Least Squares (PLS)

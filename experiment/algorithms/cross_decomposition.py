@@ -1,10 +1,9 @@
 from ._pls import _PLS
-from .base import _UnstableArchMixin
 
 __all__ = ["CCA"]
 
 
-class CCA(_UnstableArchMixin, _PLS):
+class CCA(_PLS):
     """CCA Canonical Correlation Analysis.
 
     CCA inherits from PLS with mode="B" and deflation_mode="canonical".
@@ -72,31 +71,6 @@ class CCA(_UnstableArchMixin, _PLS):
     The residual matrix of Y (Yk+1) block is obtained by deflation on the
     current Y score.
 
-    Examples
-    --------
-    >>> from sklearn.cross_decomposition import CCA
-    >>> X = [[0., 0., 1.], [1.,0.,0.], [2.,2.,2.], [3.,5.,4.]]
-    >>> Y = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
-    >>> cca = CCA(n_components=1)
-    >>> cca.fit(X, Y)
-    CCA(n_components=1)
-    >>> X_c, Y_c = cca.transform(X, Y)
-
-    References
-    ----------
-
-    Jacob A. Wegelin. A survey of Partial Least Squares (PLS) methods, with
-    emphasis on the two-block case. Technical Report 371, Department of
-    Statistics, University of Washington, Seattle, 2000.
-
-    In french but still a reference:
-    Tenenhaus, M. (1998). La regression PLS: theorie et pratique. Paris:
-    Editions Technic.
-
-    See also
-    --------
-    PLSCanonical
-    PLSSVD
     """
 
     def __init__(self,

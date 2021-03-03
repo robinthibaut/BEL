@@ -6,9 +6,6 @@ the better
 Function named as ``*_error`` or ``*_loss`` return a scalar value to minimize:
 the lower the better
 """
-
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
-
 import warnings
 
 import numpy as np
@@ -158,30 +155,6 @@ def r2_score(y_true,
     .. [1] `Wikipedia entry on the Coefficient of determination
             <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_
 
-    Examples
-    --------
-    >>> from sklearn.metrics import r2_score
-    >>> y_true = [3, -0.5, 2, 7]
-    >>> y_pred = [2.5, 0.0, 2, 8]
-    >>> r2_score(y_true, y_pred)
-    0.948...
-    >>> y_true = [[0.5, 1], [-1, 1], [7, -6]]
-    >>> y_pred = [[0, 2], [-1, 2], [8, -5]]
-    >>> r2_score(y_true, y_pred,
-    ...          multioutput='variance_weighted')
-    0.938...
-    >>> y_true = [1, 2, 3]
-    >>> y_pred = [1, 2, 3]
-    >>> r2_score(y_true, y_pred)
-    1.0
-    >>> y_true = [1, 2, 3]
-    >>> y_pred = [2, 2, 2]
-    >>> r2_score(y_true, y_pred)
-    0.0
-    >>> y_true = [1, 2, 3]
-    >>> y_pred = [3, 2, 1]
-    >>> r2_score(y_true, y_pred)
-    -3.0
     """
     y_type, y_true, y_pred, multioutput = _check_reg_targets(
         y_true, y_pred, multioutput)
