@@ -1,14 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-"""
-Forecast error analysis.
-
-- quantifying uncertainty
-- assessing uncertainty
-- modeling uncertainty
-- realistic assessment of uncertainty
-
-- Jef Caers, Modeling Uncertainty in the Earth Sciences, p. 50
-"""
 
 import os
 from os.path import join as jp

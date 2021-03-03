@@ -5,7 +5,6 @@ from collections import defaultdict
 
 import numpy as np
 
-from experiment import __version__
 from experiment.utils import _IS_32BIT
 
 _DEFAULT_TAGS = {
@@ -141,10 +140,18 @@ class BaseEstimator:
         return self
 
     def __getstate__(self):
-        pass
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            state = self.__dict__.copy()
+
+        return state
 
     def __setstate__(self, state):
-        pass
+        try:
+            super().__setstate__(state)
+        except AttributeError:
+            self.__dict__.update(state)
 
     def _more_tags(self):
         return _DEFAULT_TAGS
