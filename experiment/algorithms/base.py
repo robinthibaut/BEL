@@ -3,26 +3,7 @@ import platform
 import warnings
 from collections import defaultdict
 
-import numpy as np
-
 from experiment.utils import _IS_32BIT
-
-_DEFAULT_TAGS = {
-    "non_deterministic": False,
-    "requires_positive_X": False,
-    "requires_positive_y": False,
-    "X_types": ["2darray"],
-    "poor_score": False,
-    "no_validation": False,
-    "multioutput": False,
-    "allow_nan": False,
-    "stateless": False,
-    "multilabel": False,
-    "_skip_test": False,
-    "multioutput_only": False,
-    "binary_only": False,
-    "requires_fit": True,
-}
 
 
 class BaseEstimator:
@@ -53,14 +34,7 @@ class BaseEstimator:
             p for p in init_signature.parameters.values()
             if p.name != "self" and p.kind != p.VAR_KEYWORD
         ]
-        for p in parameters:
-            if p.kind == p.VAR_POSITIONAL:
-                raise RuntimeError("scikit-learn estimators should always "
-                                   "specify their parameters in the signature"
-                                   " of their __init__ (no varargs)."
-                                   " %s with constructor %s doesn't "
-                                   " follow this convention." %
-                                   (cls, init_signature))
+
         # Extract and sort argument names excluding 'self'
         return sorted([p.name for p in parameters])
 
@@ -153,54 +127,6 @@ class BaseEstimator:
         except AttributeError:
             self.__dict__.update(state)
 
-    def _more_tags(self):
-        return _DEFAULT_TAGS
-
-    def _get_tags(self):
-        collected_tags = {}
-        for base_class in reversed(inspect.getmro(self.__class__)):
-            if hasattr(base_class, "_more_tags"):
-                # need the if because mixins might not have _more_tags
-                # but might do redundant work in estimators
-                # (i.e. calling more tags on BaseEstimator multiple times)
-                more_tags = base_class._more_tags(self)
-                collected_tags.update(more_tags)
-        return collected_tags
-
-
-class ClassifierMixin:
-    """Mixin class for all classifiers in scikit-learn."""
-
-    _estimator_type = "classifier"
-
-    def score(self, X, y, sample_weight=None):
-        """
-        Return the mean accuracy on the given test data and labels.
-
-        In multi-label classification, this is the subset accuracy
-        which is a harsh metric since you require for each sample that
-        each label set be correctly predicted.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Test samples.
-
-        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
-            True labels for X.
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weights.
-
-        Returns
-        -------
-        score : float
-            Mean accuracy of self.predict(X) wrt. y.
-        """
-        from .metrics import accuracy_score
-
-        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
-
 
 class RegressorMixin:
     """Mixin class for all regression estimators in scikit-learn."""
@@ -256,127 +182,10 @@ class RegressorMixin:
         y_pred = self.predict(X)
         # XXX: Remove the check in 0.23
         y_type, _, _, _ = _check_reg_targets(y, y_pred, None)
-        if y_type == "continuous-multioutput":
-            warnings.warn(
-                "The default value of multioutput (not exposed in "
-                "score method) will change from 'variance_weighted' "
-                "to 'uniform_average' in 0.23 to keep consistent "
-                "with 'metrics.r2_score'. To specify the default "
-                "value manually and avoid the warning, please "
-                "either call 'metrics.r2_score' directly or make a "
-                "custom scorer with 'metrics.make_scorer' (the "
-                "built-in scorer 'r2' uses "
-                "multioutput='uniform_average').",
-                FutureWarning,
-            )
         return r2_score(y,
                         y_pred,
                         sample_weight=sample_weight,
                         multioutput="variance_weighted")
-
-
-class ClusterMixin:
-    """Mixin class for all cluster estimators in scikit-learn."""
-
-    _estimator_type = "clusterer"
-
-    def fit_predict(self, X, y=None):
-        """
-        Perform clustering on X and returns cluster labels.
-
-        Parameters
-        ----------
-        X : ndarray, shape (n_samples, n_features)
-            Input data.
-
-        y : Ignored
-            Not used, present for API consistency by convention.
-
-        Returns
-        -------
-        labels : ndarray, shape (n_samples,)
-            Cluster labels.
-        """
-        # non-optimized default implementation; override when a better
-        # method is possible for a given clustering algorithm
-        self.fit(X)
-        return self.labels_
-
-
-class BiclusterMixin:
-    """Mixin class for all bicluster estimators in scikit-learn"""
-
-    @property
-    def biclusters_(self):
-        """Convenient way to get row and column indicators together.
-
-        Returns the ``rows_`` and ``columns_`` members.
-        """
-        return self.rows_, self.columns_
-
-    def get_indices(self, i):
-        """Row and column indices of the i'th bicluster.
-
-        Only works if ``rows_`` and ``columns_`` attributes exist.
-
-        Parameters
-        ----------
-        i : int
-            The index of the cluster.
-
-        Returns
-        -------
-        row_ind : np.array, dtype=np.intp
-            Indices of rows in the dataset that belong to the bicluster.
-        col_ind : np.array, dtype=np.intp
-            Indices of columns in the dataset that belong to the bicluster.
-
-        """
-        rows = self.rows_[i]
-        columns = self.columns_[i]
-        return np.nonzero(rows)[0], np.nonzero(columns)[0]
-
-    def get_shape(self, i):
-        """Shape of the i'th bicluster.
-
-        Parameters
-        ----------
-        i : int
-            The index of the cluster.
-
-        Returns
-        -------
-        shape : (int, int)
-            Number of rows and columns (resp.) in the bicluster.
-        """
-        indices = self.get_indices(i)
-        return tuple(len(i) for i in indices)
-
-    def get_submatrix(self, i, data):
-        """Return the submatrix corresponding to bicluster `i`.
-
-        Parameters
-        ----------
-        i : int
-            The index of the cluster.
-        data : array
-            The data.
-
-        Returns
-        -------
-        submatrix : array
-            The submatrix corresponding to bicluster i.
-
-        Notes
-        -----
-        Works with sparse matrices. Only works if ``rows_`` and
-        ``columns_`` attributes exist.
-        """
-        from ..utils import check_array
-
-        data = check_array(data, accept_sparse="csr")
-        row_ind, col_ind = self.get_indices(i)
-        return data[row_ind[:, np.newaxis], col_ind]
 
 
 class TransformerMixin:
@@ -415,57 +224,6 @@ class TransformerMixin:
             return self.fit(X, y, **fit_params).transform(X)
 
 
-class DensityMixin:
-    """Mixin class for all density estimators in scikit-learn."""
-
-    _estimator_type = "DensityEstimator"
-
-    def score(self, X, y=None):
-        """Return the score of the model on the data X
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-
-        Returns
-        -------
-        score : float
-        """
-        pass
-
-
-class OutlierMixin:
-    """Mixin class for all outlier detection estimators in scikit-learn."""
-
-    _estimator_type = "outlier_detector"
-
-    def fit_predict(self, X, y=None):
-        """Perform fit on X and returns labels for X.
-
-        Returns -1 for outliers and 1 for inliers.
-
-        Parameters
-        ----------
-        X : ndarray, shape (n_samples, n_features)
-            Input data.
-
-        y : Ignored
-            Not used, present for API consistency by convention.
-
-        Returns
-        -------
-        y : ndarray, shape (n_samples,)
-            1 for inliers, -1 for outliers.
-        """
-        # override for transductive outlier detectors like LocalOulierFactor
-        return self.fit(X).predict(X)
-
-
-class MetaEstimatorMixin:
-    _required_parameters = ["estimator"]
-    """Mixin class for all meta estimators in scikit-learn."""
-
-
 class MultiOutputMixin:
     """Mixin to mark estimators that support multioutput."""
 
@@ -482,50 +240,3 @@ class _UnstableArchMixin:
                 ("ppc", "powerpc")))
         }
 
-
-def is_classifier(estimator):
-    """Return True if the given estimator is (probably) a classifier.
-
-    Parameters
-    ----------
-    estimator : object
-        Estimator object to test.
-
-    Returns
-    -------
-    out : bool
-        True if estimator is a classifier and False otherwise.
-    """
-    return getattr(estimator, "_estimator_type", None) == "classifier"
-
-
-def is_regressor(estimator):
-    """Return True if the given estimator is (probably) a regressor.
-
-    Parameters
-    ----------
-    estimator : object
-        Estimator object to test.
-
-    Returns
-    -------
-    out : bool
-        True if estimator is a regressor and False otherwise.
-    """
-    return getattr(estimator, "_estimator_type", None) == "regressor"
-
-
-def is_outlier_detector(estimator):
-    """Return True if the given estimator is (probably) an outlier detector.
-
-    Parameters
-    ----------
-    estimator : object
-        Estimator object to test.
-
-    Returns
-    -------
-    out : bool
-        True if estimator is an outlier detector and False otherwise.
-    """
-    return getattr(estimator, "_estimator_type", None) == "outlier_detector"

@@ -15,11 +15,14 @@ import scipy.sparse as sp
 
 from experiment.algorithms.config import get_config as _get_config
 from experiment.algorithms.exceptions import NotFittedError
-from experiment.algorithms.fixes import _object_dtype_isnan
 from experiment.core import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 _IS_32BIT = 8 * struct.calcsize("P") == 32
+
+
+def _object_dtype_isnan(X):
+    return X != X
 
 
 def column_or_1d(y, warn=False):
@@ -367,18 +370,18 @@ def _num_samples(x):
 
 
 def check_array(
-    array,
-    accept_sparse=False,
-    accept_large_sparse=True,
-    dtype="numeric",
-    order=None,
-    copy=False,
-    force_all_finite=True,
-    ensure_2d=True,
-    allow_nd=False,
-    ensure_min_samples=1,
-    ensure_min_features=1,
-    estimator=None,
+        array,
+        accept_sparse=False,
+        accept_large_sparse=True,
+        dtype="numeric",
+        order=None,
+        copy=False,
+        force_all_finite=True,
+        ensure_2d=True,
+        allow_nd=False,
+        ensure_min_samples=1,
+        ensure_min_features=1,
+        estimator=None,
 ):
     """Input validation on an array, list, sparse matrix or similar.
 
@@ -596,7 +599,6 @@ def check_array(
                 " a minimum of %d is required%s." %
                 (n_features, array.shape, ensure_min_features, context))
 
-
     if copy and np.may_share_memory(array, array_orig):
         array = np.array(array, dtype=dtype, order=order)
 
@@ -708,12 +710,12 @@ def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
 
 
 def load_transport_model(
-    nam_file: str,
-    modflowmodel,
-    exe_name: str = "",
-    model_ws: str = "",
-    ftl_file: str = "mt3d_link.ftl",
-    version: str = "mt3d-usgs",
+        nam_file: str,
+        modflowmodel,
+        exe_name: str = "",
+        model_ws: str = "",
+        ftl_file: str = "mt3d_link.ftl",
+        version: str = "mt3d-usgs",
 ):
     """
     Loads a transport model.
@@ -823,11 +825,11 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(
-    res_dir: str = None,
-    roots: List[str] = None,
-    test_roots: List[str] = None,
-    d: bool = False,
-    h: bool = False,
+        res_dir: str = None,
+        roots: List[str] = None,
+        test_roots: List[str] = None,
+        d: bool = False,
+        h: bool = False,
 ):
     """
     Loads results from main results folder.

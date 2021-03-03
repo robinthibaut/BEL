@@ -16,11 +16,6 @@ import warnings
 import numpy as np
 from scipy import sparse
 
-# from . import check_random_state
-# from ._logistic_sigmoid import _log_logistic_sigmoid
-# from .sparsefuncs_fast import csr_row_norms
-# from .deprecation import deprecated
-
 
 def svd_flip(u, v, u_based_decision=True):
     """Sign correction to ensure deterministic output from SVD.
