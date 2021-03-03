@@ -225,7 +225,6 @@ class _PLS(TransformerMixin,
             n_components=2,
             scale=True,
             deflation_mode="regression",
-            algorithm="nipals",
             norm_y_weights=False,
             max_iter=500,
             tol=1e-06,
@@ -235,7 +234,6 @@ class _PLS(TransformerMixin,
         self.deflation_mode = deflation_mode
         self.norm_y_weights = norm_y_weights
         self.scale = scale
-        self.algorithm = algorithm
         self.max_iter = max_iter
         self.tol = tol
         self.copy = copy
