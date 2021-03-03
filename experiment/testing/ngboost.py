@@ -4,11 +4,11 @@ import os
 
 import joblib
 import numpy as np
-from ngboost import NGBRegressor
 from ngboost.distns import Normal
 
 from experiment.algorithms.base import MySetup as base
 from experiment.visualization import Plot
+from ngboost import NGBRegressor
 
 fc = base.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim

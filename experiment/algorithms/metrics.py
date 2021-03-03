@@ -10,14 +10,10 @@ the lower the better
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import warnings
-from collections.abc import Sequence
 
 import numpy as np
-from scipy.sparse import csr_matrix, dok_matrix, issparse, lil_matrix
-from scipy.sparse.base import spmatrix
-from scipy.special import xlogy
 
-from experiment.utils import (_assert_all_finite, _num_samples, check_array,
+from experiment.utils import (_num_samples, check_array,
                               check_consistent_length, column_or_1d)
 
 from .exceptions import UndefinedMetricWarning
