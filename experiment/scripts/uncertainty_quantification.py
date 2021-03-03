@@ -249,7 +249,8 @@ def main_2(N):
 
 
 if __name__ == "__main__":
-    main_1()
+    # main_1()
     # n_try = np.linspace(100, 2000, 50)
-    # mv = main_2(N=n_try)
+    n_try = [100]
+    mv = main_2(N=n_try)
     # np.save(os.path.join(Setup.Directories.storage_dir, "means.npy"), mv)
