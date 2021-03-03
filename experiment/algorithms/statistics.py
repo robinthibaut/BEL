@@ -25,7 +25,6 @@ class KDE:
     This class is adapted from the class of the same name in the package Seaborn 0.11.1
     https://seaborn.pydata.org/generated/seaborn.kdeplot.html
     """
-
     def __init__(
         self,
         *,
@@ -414,7 +413,6 @@ class PosteriorIO:
     """
     Heart of the framework.
     """
-
     def __init__(self, directory: str = None):
         self.posterior_mean = None
         self.posterior_covariance = None

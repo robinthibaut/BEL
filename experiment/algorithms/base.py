@@ -556,7 +556,6 @@ class BiclusterMixin:
 
 class TransformerMixin:
     """Mixin class for all transformers in scikit-learn."""
-
     def fit_transform(self, X, y=None, **fit_params):
         """
         Fit to data, then transform it.
@@ -643,14 +642,12 @@ class MetaEstimatorMixin:
 
 class MultiOutputMixin:
     """Mixin to mark estimators that support multioutput."""
-
     def _more_tags(self):
         return {"multioutput": True}
 
 
 class _UnstableArchMixin:
     """Mark estimators that are non-determinstic on 32bit or PowerPC"""
-
     def _more_tags(self):
         return {
             "non_deterministic": (_IS_32BIT or platform.machine().startswith(

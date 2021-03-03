@@ -14,11 +14,14 @@ import numpy as np
 from scipy.linalg import pinv2, svd
 from scipy.sparse.linalg import svds
 
-from experiment.utils import (FLOAT_DTYPES, check_array,
-                              check_consistent_length, check_is_fitted)
+from experiment.utils import (
+    FLOAT_DTYPES,
+    check_array,
+    check_consistent_length,
+    check_is_fitted,
+)
 
-from .base import (BaseEstimator, MultiOutputMixin, RegressorMixin,
-                   TransformerMixin)
+from .base import BaseEstimator, MultiOutputMixin, RegressorMixin, TransformerMixin
 from .exceptions import ConvergenceWarning
 from .extmath import svd_flip
 
@@ -676,7 +679,6 @@ class PLSRegression(_PLS):
     Tenenhaus, M. (1998). La regression PLS: theorie et pratique. Paris:
     Editions Technic.
     """
-
     def __init__(self,
                  n_components=2,
                  scale=True,
@@ -831,7 +833,6 @@ class PLSCanonical(_PLS):
     CCA
     PLSSVD
     """
-
     def __init__(
         self,
         n_components=2,
@@ -913,7 +914,6 @@ class PLSSVD(TransformerMixin, BaseEstimator):
     PLSCanonical
     CCA
     """
-
     def __init__(self, n_components=2, scale=True, copy=True):
         self.n_components = n_components
         self.scale = scale

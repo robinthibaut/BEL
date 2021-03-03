@@ -98,7 +98,6 @@ class CCA(_UnstableArchMixin, _PLS):
     PLSCanonical
     PLSSVD
     """
-
     def __init__(self,
                  n_components=2,
                  scale=True,

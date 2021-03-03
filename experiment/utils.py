@@ -16,6 +16,7 @@ import scipy.sparse as sp
 from experiment.algorithms.config import get_config as _get_config
 from experiment.algorithms.exceptions import NotFittedError
 from experiment.algorithms.fixes import _object_dtype_isnan
+
 # from numpy.core.numeric import ComplexWarning
 from experiment.core import Setup
 
