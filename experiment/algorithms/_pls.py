@@ -133,22 +133,12 @@ class _PLS(TransformerMixin,
     This class implements the generic PLS algorithm, constructors' parameters
     allow to obtain a specific implementation such as:
 
-    - PLS2 regression, i.e., PLS 2 blocks, mode A, with asymmetric deflation
-      and unnormalized y weights such as defined by [Tenenhaus 1998] p. 132.
-      With univariate response it implements PLS1.
-
-    - PLS canonical, i.e., PLS 2 blocks, mode A, with symmetric deflation and
-      normalized y weights such as defined by [Tenenhaus 1998] (p. 132) and
-      [Wegelin et al. 2000]. This parametrization implements the original Wold
-      algorithm.
-
     We use the terminology defined by [Wegelin et al. 2000].
     This implementation uses the PLS Wold 2 blocks algorithm based on two
     nested loops:
         (i) The outer loop iterate over components.
         (ii) The inner loop estimates the weights vectors. This can be done
-        with two algo. (a) the inner loop of the original NIPALS algo. or (b) a
-        SVD on residuals cross-covariance matrices.
+        with one algo: the inner loop of the original NIPALS algo.
 
     n_components : int, number of components to keep. (default 2).
 
@@ -156,17 +146,17 @@ class _PLS(TransformerMixin,
 
     deflation_mode : str, "canonical" or "regression". See notes.
 
-    mode : "A" classical PLS and "B" CCA. See notes.
+    mode :  "B" CCA. See notes.
 
     norm_y_weights : boolean, normalize Y weights to one? (default False)
 
-    algorithm : string, "nipals" or "svd"
+    algorithm : string, "nipals"
         The algorithm used to estimate the weights. It will be called
         n_components times, i.e. once for each iteration of the outer loop.
 
     max_iter : int (default 500)
         The maximum number of iterations
-        of the NIPALS inner loop (used only if algorithm="nipals")
+        of the NIPALS inner loop
 
     tol : non-negative real, default 1e-06
         The tolerance used in the iterative algorithm.
@@ -231,12 +221,6 @@ class _PLS(TransformerMixin,
     Tenenhaus, M. (1998). La regression PLS: theorie et pratique. Paris:
     Editions Technic.
 
-    See also
-    --------
-    PLSCanonical
-    PLSRegression
-    CCA
-    PLS_SVD
     """
 
     @abstractmethod
@@ -333,8 +317,7 @@ class _PLS(TransformerMixin,
             )
             self.n_iter_.append(n_iter_)
             # Forces sign stability of x_weights and y_weights
-            # Sign undeterminacy issue from svd if algorithm == "svd"
-            # and from platform dependent computation if algorithm == 'nipals'
+            # from platform dependent computation if algorithm == 'nipals'
             x_weights, y_weights = svd_flip(x_weights, y_weights.T)
             y_weights = y_weights.T
             # compute scores

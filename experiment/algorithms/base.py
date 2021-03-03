@@ -141,31 +141,10 @@ class BaseEstimator:
         return self
 
     def __getstate__(self):
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            state = self.__dict__.copy()
-
-        if type(self).__module__.startswith("sklearn."):
-            return dict(state.items(), _sklearn_version=__version__)
-        else:
-            return state
+        pass
 
     def __setstate__(self, state):
-        if type(self).__module__.startswith("sklearn."):
-            pickle_version = state.pop("_sklearn_version", "pre-0.18")
-            if pickle_version != __version__:
-                warnings.warn(
-                    "Trying to unpickle estimator {0} from version {1} when "
-                    "using version {2}. This might lead to breaking code or "
-                    "invalid results. Use at your own risk.".format(
-                        self.__class__.__name__, pickle_version, __version__),
-                    UserWarning,
-                )
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            self.__dict__.update(state)
+        pass
 
     def _more_tags(self):
         return _DEFAULT_TAGS
