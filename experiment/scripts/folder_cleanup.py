@@ -2,7 +2,6 @@
 
 import os
 
-import experiment._utils as fops
 import experiment.utils
 from experiment.core import Setup
 

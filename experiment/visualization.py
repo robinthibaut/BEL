@@ -21,7 +21,6 @@ from scipy.interpolate import BSpline, make_interp_spline
 import experiment.algorithms.spatial
 import experiment.algorithms.statistics
 import experiment.utils
-from experiment import _utils as ut
 from experiment.algorithms import statistics as stats
 from experiment.algorithms.spatial import (binary_stack, contours_vertices,
                                            grid_parameters, refine_machine)

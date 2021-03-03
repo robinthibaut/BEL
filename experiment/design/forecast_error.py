@@ -19,7 +19,6 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 import experiment.utils
-from experiment import _utils as fops
 from experiment.algorithms.spatial import (binary_polygon, contours_vertices,
                                            grid_parameters, modified_hausdorff,
                                            refine_machine)

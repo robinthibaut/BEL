@@ -23,7 +23,6 @@ from os.path import join as jp
 
 import numpy as np
 
-import experiment._utils as fops
 import experiment.utils
 from experiment.algorithms.statistics import sgsim
 from experiment.core import Machine, Setup

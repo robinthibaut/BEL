@@ -21,7 +21,6 @@ from typing import List
 import joblib
 import numpy as np
 
-import experiment._utils as fops
 import experiment.processing.predictor_handle as dops
 import experiment.utils
 from experiment.algorithms.cross_decomposition import CCA
