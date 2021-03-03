@@ -10,20 +10,17 @@ def svd_flip(u, v, u_based_decision=True):
     Parameters
     ----------
     u : ndarray
-        u and v are the output of `linalg.svd` or
-        :func:`~sklearn.utils.extmath.randomized_svd`, with matching inner
+        u and v are the output of `linalg.svd`
         dimensions so one can compute `np.dot(u * s, v)`.
 
     v : ndarray
-        u and v are the output of `linalg.svd` or
-        :func:`~sklearn.utils.extmath.randomized_svd`, with matching inner
+        u and v are the output of `linalg.svd`, with matching inner
         dimensions so one can compute `np.dot(u * s, v)`.
 
     u_based_decision : boolean, (default=True)
         If True, use the columns of u as the basis for sign flipping.
         Otherwise, use the rows of v. The choice of which variable to base the
         decision on is generally algorithm dependent.
-
 
     Returns
     -------

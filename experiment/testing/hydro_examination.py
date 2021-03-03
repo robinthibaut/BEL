@@ -4,7 +4,7 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiment.core import Setup
+from experiment.config import Setup
 from experiment.visualization import proxy_annotate
 
 md = Setup.Directories

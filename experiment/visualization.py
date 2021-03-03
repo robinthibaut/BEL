@@ -28,7 +28,7 @@ from experiment.algorithms.spatial import (
     grid_parameters,
     refine_machine,
 )
-from experiment.core import Setup
+from experiment.config import Setup
 from experiment.utils import reload_trained_model
 
 ftype = "png"

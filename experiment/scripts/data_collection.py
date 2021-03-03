@@ -25,7 +25,7 @@ import numpy as np
 
 import experiment.utils
 from experiment.algorithms.statistics import sgsim
-from experiment.core import Machine, Setup
+from experiment.config import Machine, Setup
 from experiment.hydro.backtracking.modpath import backtrack
 from experiment.hydro.flow.modflow import flow
 from experiment.hydro.transport.mt3d import transport

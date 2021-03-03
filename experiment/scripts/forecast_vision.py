@@ -4,7 +4,7 @@ import os
 import string
 
 import experiment.visualization as myvis
-from experiment.core import Setup
+from experiment.config import Setup
 from experiment.utils import data_read
 
 if __name__ == "__main__":

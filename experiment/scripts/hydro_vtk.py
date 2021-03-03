@@ -1,6 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-from experiment.core import Setup as base
+from experiment.config import Setup as base
 from experiment.visualization import ModelVTK
 
 if __name__ == "__main__":

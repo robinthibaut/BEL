@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 import experiment.algorithms.spatial
-from experiment.core import Setup
+from experiment.config import Setup
 
 
 def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,

@@ -6,7 +6,7 @@ import numpy as np
 import seaborn as sb
 
 import experiment.visualization as mplot
-from experiment.core import Setup
+from experiment.config import Setup
 
 md = Setup.Directories
 

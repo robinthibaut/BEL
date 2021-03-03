@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 
 import experiment.utils
-from experiment.core import Setup
+from experiment.config import Setup
 
 sns.set_theme()
 # plt.style.use('dark_background')

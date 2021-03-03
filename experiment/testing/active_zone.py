@@ -11,7 +11,7 @@ import experiment.algorithms.spatial
 import experiment.visualization as mplot
 from experiment.algorithms.spatial import (binary_polygon, get_centroids,
                                            grid_parameters)
-from experiment.core import Setup
+from experiment.config import Setup
 from experiment.processing.target_handle import travelling_particles
 
 
