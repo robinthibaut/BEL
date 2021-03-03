@@ -2,6 +2,7 @@ __all__ = [
     "NotFittedError",
     "ConvergenceWarning",
     "EfficiencyWarning",
+    "UndefinedMetricWarning"
 ]
 
 
@@ -31,4 +32,12 @@ class EfficiencyWarning(UserWarning):
     This warning notifies the user that the efficiency may not be optimal due
     to some reason which may be included as a part of the warning message.
     This may be subclassed into a more specific Warning class.
+    """
+
+
+class UndefinedMetricWarning(UserWarning):
+    """Warning used when the metric is invalid
+
+    .. versionchanged:: 0.18
+       Moved from sklearn.base.
     """
