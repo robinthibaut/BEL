@@ -22,12 +22,8 @@ import experiment.algorithms.spatial
 import experiment.algorithms.statistics
 import experiment.utils
 from experiment.algorithms import statistics as stats
-from experiment.algorithms.spatial import (
-    binary_stack,
-    contours_vertices,
-    grid_parameters,
-    refine_machine,
-)
+from experiment.algorithms.spatial import (binary_stack, contours_vertices,
+                                           grid_parameters, refine_machine)
 from experiment.config import Setup
 from experiment.utils import reload_trained_model
 
@@ -1669,6 +1665,7 @@ class ModelVTK:
     """
     Loads flow/transport models and export the VTK objects.
     """
+
     def __init__(self, base=None, folder=None):
         self.base = base
         md = self.base.Directories()
