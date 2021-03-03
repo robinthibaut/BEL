@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-
 """
 Forecast error analysis.
 
@@ -28,13 +27,14 @@ from experiment.algorithms.statistics import PosteriorIO
 
 
 class UncertaintyQuantification:
-
-    def __init__(self,
-                 base,
-                 study_folder: str,
-                 base_dir: str = None,
-                 wel_comb: list = None,
-                 seed: int = None):
+    def __init__(
+        self,
+        base,
+        study_folder: str,
+        base_dir: str = None,
+        wel_comb: list = None,
+        seed: int = None,
+    ):
         """
 
         :param base: class: Base object (inventory)
@@ -66,20 +66,20 @@ class UncertaintyQuantification:
         # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
-            self.base_dir = jp(os.path.dirname(self.bel_dir), 'base', 'obj')
+            self.base_dir = jp(os.path.dirname(self.bel_dir), "base", "obj")
         else:
             self.base_dir = base_dir
-        self.res_dir = jp(self.bel_dir, 'obj')
-        self.fig_cca_dir = jp(self.bel_dir, 'cca')
-        self.fig_pred_dir = jp(self.bel_dir, 'uq')
+        self.res_dir = jp(self.bel_dir, "obj")
+        self.fig_cca_dir = jp(self.bel_dir, "cca")
+        self.fig_pred_dir = jp(self.bel_dir, "uq")
 
         self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
         f_names = list(
-            map(lambda fn: jp(self.res_dir, fn + '.pkl'), ['cca', 'd_pca']))
+            map(lambda fn: jp(self.res_dir, fn + ".pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
-        self.h_pco = joblib.load(jp(self.base_dir, 'h_pca.pkl'))
+        self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
 
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.n_pc_cut
@@ -102,8 +102,7 @@ class UncertaintyQuantification:
         self.vertices = None
 
     # %% Random sample from the posterior
-    def sample_posterior(self,
-                         n_posts: int = None):
+    def sample_posterior(self, n_posts: int = None):
         """
         Extracts n_posts random samples from the posterior.
         :param n_posts: int: Desired number of samples
@@ -115,19 +114,20 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        self.forecast_posterior = self.po.bel_predict(pca_d=self.d_pco,
-                                                      pca_h=self.h_pco,
-                                                      cca_obj=self.cca_operator,
-                                                      n_posts=self.n_posts,
-                                                      add_comp=False)
+        self.forecast_posterior = self.po.bel_predict(
+            pca_d=self.d_pco,
+            pca_h=self.h_pco,
+            cca_obj=self.cca_operator,
+            n_posts=self.n_posts,
+            add_comp=False,
+        )
 
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_shape
 
     # %% extract 0 contours
-    def c0(self,
-           write_vtk: bool = 1):
+    def c0(self, write_vtk: bool = 1):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
@@ -135,7 +135,7 @@ class UncertaintyQuantification:
         nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         self.vertices = contours_vertices(x, y, self.forecast_posterior)
         if write_vtk:
-            vdir = jp(self.fig_pred_dir, 'vtk')
+            vdir = jp(self.fig_pred_dir, "vtk")
             experiment.utils.dirmaker(vdir)
             for i, v in enumerate(self.vertices):
                 nv = len(v)
@@ -155,7 +155,7 @@ class UncertaintyQuantification:
                 writer = vtk.vtkXMLPolyDataWriter()
                 writer.SetInputData(poly_data)
 
-                writer.SetFileName(jp(vdir, f'forecast_posterior_{i}.vtp'))
+                writer.SetFileName(jp(vdir, f"forecast_posterior_{i}.vtp"))
                 writer.Write()
 
     # %% Kernel density
@@ -183,19 +183,20 @@ class UncertaintyQuantification:
 
         # Define a disk within which the KDE will be performed to save time
         x0, y0, radius = 1000, 500, 200
-        r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
+        r = np.sqrt((xy[:, 0] - x0)**2 + (xy[:, 1] - y0)**2)
         inside = r < radius
         xyu = xy[inside]  # Create mask
 
         # Perform KDE
-        bw = 1.  # Arbitrary 'smoothing' parameter
+        bw = 1.0  # Arbitrary 'smoothing' parameter
         # Reshape coordinates
         x_stack = np.hstack([vi[:, 0] for vi in self.vertices])
         y_stack = np.hstack([vi[:, 1] for vi in self.vertices])
         # Final array np.array([[x0, y0],...[xn,yn]])
         xykde = np.vstack([x_stack, y_stack]).T
-        kde = KernelDensity(kernel='gaussian',  # Fit kernel density
-                            bandwidth=bw).fit(xykde)
+        kde = KernelDensity(kernel="gaussian",
+                            bandwidth=bw).fit(  # Fit kernel density
+                                xykde)
         # Sample at the desired grid cells
         score = np.exp(kde.score_samples(xyu))
 
@@ -207,7 +208,7 @@ class UncertaintyQuantification:
             sc /= sc.max()
 
             sc += 1
-            sc = sc ** -1
+            sc = sc**-1
 
             sc -= sc.min()
             sc /= sc.max()
@@ -230,17 +231,24 @@ class UncertaintyQuantification:
         """
         Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
         """
-        xys, nrow, ncol = grid_parameters(
-            x_lim=self.x_lim, y_lim=self.y_lim, grf=self.grf)  # Initiate SD object
+        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim,
+                                          y_lim=self.y_lim,
+                                          grf=self.grf)  # Initiate SD object
         # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [binary_polygon(
-            xys, nrow, ncol, pzs=p, inside=1 / self.n_posts, outside=0) for p in self.vertices]
+        bin_whpa = [
+            binary_polygon(xys,
+                           nrow,
+                           ncol,
+                           pzs=p,
+                           inside=1 / self.n_posts,
+                           outside=0) for p in self.vertices
+        ]
         big_sum = np.sum(bin_whpa, axis=0)  # Stack them
         b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
         b_low = np.flipud(b_low)
 
         # Save result
-        np.save(jp(self.res_dir, 'bin'), b_low)
+        np.save(jp(self.res_dir, "bin"), b_low)
 
     # %% Hausdorff
     def mhd(self):
@@ -252,25 +260,21 @@ class UncertaintyQuantification:
         # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
-        v_h_true_cut = \
-            self.h_pco.custom_inverse_transform(
-                self.h_pco.predict_pc, n_cut).reshape((self.shape[1], self.shape[2]))
+        v_h_true_cut = self.h_pco.custom_inverse_transform(
+            self.h_pco.predict_pc, n_cut).reshape(
+                (self.shape[1], self.shape[2]))
 
         # Reminder: these are the focus parameters around the pumping well
-        nrow, ncol, x, y = refine_machine(self.x_lim,
-                                          self.y_lim,
-                                          self.grf)
+        nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         # Delineation vertices of the true array
-        v_h_true = contours_vertices(x=x,
-                                     y=y,
-                                     arrays=v_h_true_cut)[0]
+        v_h_true = contours_vertices(x=x, y=y, arrays=v_h_true_cut)[0]
 
         # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array([modified_hausdorff(v_h_true, vt)
-                         for vt in self.vertices])
+        mhds = np.array(
+            [modified_hausdorff(v_h_true, vt) for vt in self.vertices])
 
         # Save mhd
-        np.save(jp(self.res_dir, 'haus'), mhds)
+        np.save(jp(self.res_dir, "haus"), mhds)
 
         # Return the mean
         return np.mean(mhds)

@@ -17,9 +17,10 @@ from scipy.sparse import csr_matrix, dok_matrix, issparse, lil_matrix
 from scipy.sparse.base import spmatrix
 from scipy.special import xlogy
 
-from .exceptions import UndefinedMetricWarning
 from experiment.utils import (_assert_all_finite, _num_samples, check_array,
                               check_consistent_length, column_or_1d)
+
+from .exceptions import UndefinedMetricWarning
 
 __ALL__ = [
     "max_error",
@@ -84,31 +85,31 @@ def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
                          "({0}!={1})".format(y_true.shape[1], y_pred.shape[1]))
 
     n_outputs = y_true.shape[1]
-    allowed_multioutput_str = ('raw_values', 'uniform_average',
-                               'variance_weighted')
+    allowed_multioutput_str = ("raw_values", "uniform_average",
+                               "variance_weighted")
     if isinstance(multioutput, str):
         if multioutput not in allowed_multioutput_str:
             raise ValueError("Allowed 'multioutput' string values are {}. "
                              "You provided multioutput={!r}".format(
-                                 allowed_multioutput_str,
-                                 multioutput))
+                                 allowed_multioutput_str, multioutput))
     elif multioutput is not None:
         multioutput = check_array(multioutput, ensure_2d=False)
         if n_outputs == 1:
             raise ValueError("Custom weights are useful only in "
                              "multi-output cases.")
         elif n_outputs != len(multioutput):
-            raise ValueError(("There must be equally many custom weights "
-                              "(%d) as outputs (%d).") %
-                             (len(multioutput), n_outputs))
-    y_type = 'continuous' if n_outputs == 1 else 'continuous-multioutput'
+            raise ValueError(
+                ("There must be equally many custom weights "
+                 "(%d) as outputs (%d).") % (len(multioutput), n_outputs))
+    y_type = "continuous" if n_outputs == 1 else "continuous-multioutput"
 
     return y_type, y_true, y_pred, multioutput
 
 
-def mean_absolute_error(y_true, y_pred,
+def mean_absolute_error(y_true,
+                        y_pred,
                         sample_weight=None,
-                        multioutput='uniform_average'):
+                        multioutput="uniform_average"):
     """Mean absolute error regression loss
 
     Read more in the :ref:`User Guide <mean_absolute_error>`.
@@ -166,20 +167,23 @@ def mean_absolute_error(y_true, y_pred,
         y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
     output_errors = np.average(np.abs(y_pred - y_true),
-                               weights=sample_weight, axis=0)
+                               weights=sample_weight,
+                               axis=0)
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             return output_errors
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # pass None as weights to np.average: uniform mean
             multioutput = None
 
     return np.average(output_errors, weights=multioutput)
 
 
-def mean_squared_error(y_true, y_pred,
+def mean_squared_error(y_true,
+                       y_pred,
                        sample_weight=None,
-                       multioutput='uniform_average', squared=True):
+                       multioutput="uniform_average",
+                       squared=True):
     """Mean squared error regression loss
 
     Read more in the :ref:`User Guide <mean_squared_error>`.
@@ -239,12 +243,13 @@ def mean_squared_error(y_true, y_pred,
     y_type, y_true, y_pred, multioutput = _check_reg_targets(
         y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
-    output_errors = np.average((y_true - y_pred) ** 2, axis=0,
+    output_errors = np.average((y_true - y_pred)**2,
+                               axis=0,
                                weights=sample_weight)
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             return output_errors
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # pass None as weights to np.average: uniform mean
             multioutput = None
 
@@ -252,9 +257,10 @@ def mean_squared_error(y_true, y_pred,
     return mse if squared else np.sqrt(mse)
 
 
-def mean_squared_log_error(y_true, y_pred,
+def mean_squared_log_error(y_true,
+                           y_pred,
                            sample_weight=None,
-                           multioutput='uniform_average'):
+                           multioutput="uniform_average"):
     """Mean squared logarithmic error regression loss
 
     Read more in the :ref:`User Guide <mean_squared_log_error>`.
@@ -318,7 +324,7 @@ def mean_squared_log_error(y_true, y_pred,
                               sample_weight, multioutput)
 
 
-def median_absolute_error(y_true, y_pred, multioutput='uniform_average'):
+def median_absolute_error(y_true, y_pred, multioutput="uniform_average"):
     """Median absolute error regression loss
 
     Median absolute error output is non-negative floating point. The best value
@@ -372,18 +378,19 @@ def median_absolute_error(y_true, y_pred, multioutput='uniform_average'):
         y_true, y_pred, multioutput)
     output_errors = np.median(np.abs(y_pred - y_true), axis=0)
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             return output_errors
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # pass None as weights to np.average: uniform mean
             multioutput = None
 
     return np.average(output_errors, weights=multioutput)
 
 
-def explained_variance_score(y_true, y_pred,
+def explained_variance_score(y_true,
+                             y_pred,
                              sample_weight=None,
-                             multioutput='uniform_average'):
+                             multioutput="uniform_average"):
     """Explained variance regression score function
 
     Best possible score is 1.0, lower values are worse.
@@ -443,12 +450,14 @@ def explained_variance_score(y_true, y_pred,
     check_consistent_length(y_true, y_pred, sample_weight)
 
     y_diff_avg = np.average(y_true - y_pred, weights=sample_weight, axis=0)
-    numerator = np.average((y_true - y_pred - y_diff_avg) ** 2,
-                           weights=sample_weight, axis=0)
+    numerator = np.average((y_true - y_pred - y_diff_avg)**2,
+                           weights=sample_weight,
+                           axis=0)
 
     y_true_avg = np.average(y_true, weights=sample_weight, axis=0)
-    denominator = np.average((y_true - y_true_avg) ** 2,
-                             weights=sample_weight, axis=0)
+    denominator = np.average((y_true - y_true_avg)**2,
+                             weights=sample_weight,
+                             axis=0)
 
     nonzero_numerator = numerator != 0
     nonzero_denominator = denominator != 0
@@ -457,15 +466,15 @@ def explained_variance_score(y_true, y_pred,
 
     output_scores[valid_score] = 1 - (numerator[valid_score] /
                                       denominator[valid_score])
-    output_scores[nonzero_numerator & ~nonzero_denominator] = 0.
+    output_scores[nonzero_numerator & ~nonzero_denominator] = 0.0
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             # return scores individually
             return output_scores
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # passing to np.average() None as weights results is uniform mean
             avg_weights = None
-        elif multioutput == 'variance_weighted':
+        elif multioutput == "variance_weighted":
             avg_weights = denominator
     else:
         avg_weights = multioutput
@@ -473,7 +482,9 @@ def explained_variance_score(y_true, y_pred,
     return np.average(output_scores, weights=avg_weights)
 
 
-def r2_score(y_true, y_pred, sample_weight=None,
+def r2_score(y_true,
+             y_pred,
+             sample_weight=None,
              multioutput="uniform_average"):
     """R^2 (coefficient of determination) regression score function.
 
@@ -568,19 +579,19 @@ def r2_score(y_true, y_pred, sample_weight=None,
     if _num_samples(y_pred) < 2:
         msg = "R^2 score is not well-defined with less than two samples."
         warnings.warn(msg, UndefinedMetricWarning)
-        return float('nan')
+        return float("nan")
 
     if sample_weight is not None:
         sample_weight = column_or_1d(sample_weight)
         weight = sample_weight[:, np.newaxis]
     else:
-        weight = 1.
+        weight = 1.0
 
-    numerator = (weight * (y_true - y_pred) ** 2).sum(axis=0,
-                                                      dtype=np.float64)
-    denominator = (weight * (y_true - np.average(
-        y_true, axis=0, weights=sample_weight)) ** 2).sum(axis=0,
-                                                          dtype=np.float64)
+    numerator = (weight * (y_true - y_pred)**2).sum(axis=0, dtype=np.float64)
+    denominator = (
+        weight *
+        (y_true - np.average(y_true, axis=0, weights=sample_weight))**2).sum(
+            axis=0, dtype=np.float64)
     nonzero_denominator = denominator != 0
     nonzero_numerator = numerator != 0
     valid_score = nonzero_denominator & nonzero_numerator
@@ -589,15 +600,15 @@ def r2_score(y_true, y_pred, sample_weight=None,
                                       denominator[valid_score])
     # arbitrary set to zero to avoid -inf scores, having a constant
     # y_true is not interesting for scoring a regression anyway
-    output_scores[nonzero_numerator & ~nonzero_denominator] = 0.
+    output_scores[nonzero_numerator & ~nonzero_denominator] = 0.0
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             # return scores individually
             return output_scores
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # passing None as weights results is uniform mean
             avg_weights = None
-        elif multioutput == 'variance_weighted':
+        elif multioutput == "variance_weighted":
             avg_weights = denominator
             # avoid fail on constant y or one-element arrays
             if not np.any(nonzero_denominator):
@@ -639,7 +650,7 @@ def max_error(y_true, y_pred):
     1
     """
     y_type, y_true, y_pred, _ = _check_reg_targets(y_true, y_pred, None)
-    if y_type == 'continuous-multioutput':
+    if y_type == "continuous-multioutput":
         raise ValueError("Multioutput not supported in max_error")
     return np.max(np.abs(y_true - y_pred))
 
@@ -694,7 +705,7 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
     """
     y_type, y_true, y_pred, _ = _check_reg_targets(
         y_true, y_pred, None, dtype=[np.float64, np.float32])
-    if y_type == 'continuous-multioutput':
+    if y_type == "continuous-multioutput":
         raise ValueError("Multioutput not supported in mean_tweedie_deviance")
     check_consistent_length(y_true, y_pred, sample_weight)
 
@@ -702,19 +713,19 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
         sample_weight = column_or_1d(sample_weight)
         sample_weight = sample_weight[:, np.newaxis]
 
-    message = ("Mean Tweedie deviance error with power={} can only be used on "
-               .format(power))
+    message = "Mean Tweedie deviance error with power={} can only be used on ".format(
+        power)
     if power < 0:
         # 'Extreme stable', y_true any real number, y_pred > 0
         if (y_pred <= 0).any():
             raise ValueError(message + "strictly positive y_pred.")
-        dev = 2 * (np.power(np.maximum(y_true, 0), 2 - power)
-                   / ((1 - power) * (2 - power))
-                   - y_true * np.power(y_pred, 1 - power) / (1 - power)
-                   + np.power(y_pred, 2 - power) / (2 - power))
+        dev = 2 * (np.power(np.maximum(y_true, 0), 2 - power) /
+                   ((1 - power) *
+                    (2 - power)) - y_true * np.power(y_pred, 1 - power) /
+                   (1 - power) + np.power(y_pred, 2 - power) / (2 - power))
     elif power == 0:
         # Normal distribution, y_true and y_pred any real number
-        dev = (y_true - y_pred) ** 2
+        dev = (y_true - y_pred)**2
     elif power < 1:
         raise ValueError("Tweedie deviance is only defined for power<=0 and "
                          "power>=1.")
@@ -722,7 +733,7 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
         # Poisson distribution, y_true >= 0, y_pred > 0
         if (y_true < 0).any() or (y_pred <= 0).any():
             raise ValueError(message + "non-negative y_true and strictly "
-                                       "positive y_pred.")
+                             "positive y_pred.")
         dev = 2 * (xlogy(y_true, y_true / y_pred) - y_true + y_pred)
     elif power == 2:
         # Gamma distribution, y_true and y_pred > 0
@@ -734,15 +745,16 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
             # 1 < p < 2 is Compound Poisson, y_true >= 0, y_pred > 0
             if (y_true < 0).any() or (y_pred <= 0).any():
                 raise ValueError(message + "non-negative y_true and strictly "
-                                           "positive y_pred.")
+                                 "positive y_pred.")
         else:
             if (y_true <= 0).any() or (y_pred <= 0).any():
                 raise ValueError(message + "strictly positive y_true and "
-                                           "y_pred.")
+                                 "y_pred.")
 
-        dev = 2 * (np.power(y_true, 2 - power) / ((1 - power) * (2 - power))
-                   - y_true * np.power(y_pred, 1 - power) / (1 - power)
-                   + np.power(y_pred, 2 - power) / (2 - power))
+        dev = 2 * (np.power(y_true, 2 - power) /
+                   ((1 - power) *
+                    (2 - power)) - y_true * np.power(y_pred, 1 - power) /
+                   (1 - power) + np.power(y_pred, 2 - power) / (2 - power))
 
     return np.average(dev, weights=sample_weight)
 
@@ -779,9 +791,10 @@ def mean_poisson_deviance(y_true, y_pred, sample_weight=None):
     >>> mean_poisson_deviance(y_true, y_pred)
     1.4260...
     """
-    return mean_tweedie_deviance(
-        y_true, y_pred, sample_weight=sample_weight, power=1
-    )
+    return mean_tweedie_deviance(y_true,
+                                 y_pred,
+                                 sample_weight=sample_weight,
+                                 power=1)
 
 
 def mean_gamma_deviance(y_true, y_pred, sample_weight=None):
@@ -817,17 +830,18 @@ def mean_gamma_deviance(y_true, y_pred, sample_weight=None):
     >>> mean_gamma_deviance(y_true, y_pred)
     1.0568...
     """
-    return mean_tweedie_deviance(
-        y_true, y_pred, sample_weight=sample_weight, power=2
-    )
+    return mean_tweedie_deviance(y_true,
+                                 y_pred,
+                                 sample_weight=sample_weight,
+                                 power=2)
 
 
 def _is_integral_float(y):
-    return y.dtype.kind == 'f' and np.all(y.astype(int) == y)
+    return y.dtype.kind == "f" and np.all(y.astype(int) == y)
 
 
 def is_multilabel(y):
-    """ Check if ``y`` is in a multilabel format.
+    """Check if ``y`` is in a multilabel format.
 
     Parameters
     ----------
@@ -854,7 +868,7 @@ def is_multilabel(y):
     >>> is_multilabel(np.array([[1, 0, 0]]))
     True
     """
-    if hasattr(y, '__array__') or isinstance(y, Sequence):
+    if hasattr(y, "__array__") or isinstance(y, Sequence):
         y = np.asarray(y)
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
@@ -863,13 +877,16 @@ def is_multilabel(y):
         if isinstance(y, (dok_matrix, lil_matrix)):
             y = y.tocsr()
         return (len(y.data) == 0 or np.unique(y.data).size == 1 and
-                (y.dtype.kind in 'biu' or  # bool, int, uint
-                 _is_integral_float(np.unique(y.data))))
+                (y.dtype.kind in "biu"
+                 or _is_integral_float(np.unique(y.data))  # bool, int, uint
+                 ))
     else:
         labels = np.unique(y)
 
-        return len(labels) < 3 and (y.dtype.kind in 'biu' or  # bool, int, uint
-                                    _is_integral_float(labels))
+        return len(labels) < 3 and (y.dtype.kind in "biu"
+                                    or _is_integral_float(
+                                        labels)  # bool, int, uint
+                                    )
 
 
 def type_of_target(y):
@@ -936,45 +953,45 @@ def type_of_target(y):
     >>> type_of_target(np.array([[0, 1], [1, 1]]))
     'multilabel-indicator'
     """
-    valid = ((isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__'))
-             and not isinstance(y, str))
+    valid = (isinstance(y, (Sequence, spmatrix))
+             or hasattr(y, "__array__")) and not isinstance(y, str)
 
     if not valid:
-        raise ValueError('Expected array-like (array or non-string sequence), '
-                         'got %r' % y)
+        raise ValueError("Expected array-like (array or non-string sequence), "
+                         "got %r" % y)
 
-    sparse_pandas = (y.__class__.__name__ in ['SparseSeries', 'SparseArray'])
+    sparse_pandas = y.__class__.__name__ in ["SparseSeries", "SparseArray"]
     if sparse_pandas:
         raise ValueError("y cannot be class 'SparseSeries' or 'SparseArray'")
 
     if is_multilabel(y):
-        return 'multilabel-indicator'
+        return "multilabel-indicator"
 
     try:
         y = np.asarray(y)
     except ValueError:
         # Known to fail in numpy 1.3 for array of arrays
-        return 'unknown'
+        return "unknown"
 
     # The old sequence of sequences format
     try:
-        if (not hasattr(y[0], '__array__') and isinstance(y[0], Sequence)
+        if (not hasattr(y[0], "__array__") and isinstance(y[0], Sequence)
                 and not isinstance(y[0], str)):
-            raise ValueError('You appear to be using a legacy multi-label data'
-                             ' representation. Sequence of sequences are no'
-                             ' longer supported; use a binary array or sparse'
-                             ' matrix instead - the MultiLabelBinarizer'
-                             ' transformer can convert to this format.')
+            raise ValueError("You appear to be using a legacy multi-label data"
+                             " representation. Sequence of sequences are no"
+                             " longer supported; use a binary array or sparse"
+                             " matrix instead - the MultiLabelBinarizer"
+                             " transformer can convert to this format.")
     except IndexError:
         pass
 
     # Invalid inputs
-    if y.ndim > 2 or (y.dtype == object and len(y) and
-                      not isinstance(y.flat[0], str)):
-        return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
+    if y.ndim > 2 or (y.dtype == object and len(y)
+                      and not isinstance(y.flat[0], str)):
+        return "unknown"  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
     if y.ndim == 2 and y.shape[1] == 0:
-        return 'unknown'  # [[]]
+        return "unknown"  # [[]]
 
     if y.ndim == 2 and y.shape[1] > 1:
         suffix = "-multioutput"  # [[1, 2], [1, 2]]
@@ -982,15 +999,15 @@ def type_of_target(y):
         suffix = ""  # [1, 2, 3] or [[1], [2], [3]]
 
     # check float and contains non-integer float values
-    if y.dtype.kind == 'f' and np.any(y != y.astype(int)):
+    if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
         _assert_all_finite(y)
-        return 'continuous' + suffix
+        return "continuous" + suffix
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
-        return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
+        return "multiclass" + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     else:
-        return 'binary'  # [1, 2] or [["a"], ["b"]]
+        return "binary"  # [1, 2] or [["a"], ["b"]]
 
 
 def _check_targets(y_true, y_pred):
@@ -1036,7 +1053,7 @@ def _check_targets(y_true, y_pred):
     y_type = y_type.pop()
 
     # No metrics support "multiclass-multioutput" format
-    if (y_type not in ["binary", "multiclass", "multilabel-indicator"]):
+    if y_type not in ["binary", "multiclass", "multilabel-indicator"]:
         raise ValueError("{0} is not supported".format(y_type))
 
     if y_type in ["binary", "multiclass"]:
@@ -1047,10 +1064,10 @@ def _check_targets(y_true, y_pred):
             if len(unique_values) > 2:
                 y_type = "multiclass"
 
-    if y_type.startswith('multilabel'):
+    if y_type.startswith("multilabel"):
         y_true = csr_matrix(y_true)
         y_pred = csr_matrix(y_pred)
-        y_type = 'multilabel-indicator'
+        y_type = "multilabel-indicator"
 
     return y_type, y_true, y_pred
 
@@ -1084,8 +1101,8 @@ def count_nonzero(X, axis=None, sample_weight=None):
         axis = 1
     elif axis == -2:
         axis = 0
-    elif X.format != 'csr':
-        raise TypeError('Expected CSR sparse format, got {0}'.format(X.format))
+    elif X.format != "csr":
+        raise TypeError("Expected CSR sparse format, got {0}".format(X.format))
 
     # We rely here on the fact that np.diff(Y.indptr) for a CSR
     # will return the number of nonzero entries in each row.
@@ -1100,17 +1117,18 @@ def count_nonzero(X, axis=None, sample_weight=None):
         out = np.diff(X.indptr)
         if sample_weight is None:
             # astype here is for consistency with axis=0 dtype
-            return out.astype('intp')
+            return out.astype("intp")
         return out * sample_weight
     elif axis == 0:
         if sample_weight is None:
             return np.bincount(X.indices, minlength=X.shape[1])
         else:
             weights = np.repeat(sample_weight, np.diff(X.indptr))
-            return np.bincount(X.indices, minlength=X.shape[1],
+            return np.bincount(X.indices,
+                               minlength=X.shape[1],
                                weights=weights)
     else:
-        raise ValueError('Unsupported axis: {0}'.format(axis))
+        raise ValueError("Unsupported axis: {0}".format(axis))
 
 
 def accuracy_score(y_true, y_pred, normalize=True, sample_weight=None):
@@ -1176,7 +1194,7 @@ def accuracy_score(y_true, y_pred, normalize=True, sample_weight=None):
     # Compute accuracy for each possible representation
     y_type, y_true, y_pred = _check_targets(y_true, y_pred)
     check_consistent_length(y_true, y_pred, sample_weight)
-    if y_type.startswith('multilabel'):
+    if y_type.startswith("multilabel"):
         differing_labels = count_nonzero(y_true - y_pred, axis=1)
         score = differing_labels == 0
     else:

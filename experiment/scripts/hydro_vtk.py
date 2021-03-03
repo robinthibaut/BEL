@@ -3,11 +3,11 @@
 from experiment.core import Setup as base
 from experiment.visualization import ModelVTK
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     # Initiate Plot instance
     # VTK
-    mi = ModelVTK(base=base, folder='818bf1676c424f76b83bd777ae588a1d')
+    mi = ModelVTK(base=base, folder="818bf1676c424f76b83bd777ae588a1d")
     mi.flow_vtk()
     # mi.transport_vtk()
     # mi.conc_vtk()

@@ -20,7 +20,7 @@ from scipy.sparse.linalg import lsqr as sparse_lsqr  # noqa
 
 def _parse_version(version_string):
     version = []
-    for x in version_string.split('.'):
+    for x in version_string.split("."):
         try:
             version.append(int(x))
         except ValueError:
@@ -53,8 +53,10 @@ else:
     from scipy.linalg import pinvh  # noqa
 
 if sp_version >= (0, 19):
+
     def _argmax(arr_or_spmatrix, axis=None):
         return arr_or_spmatrix.argmax(axis=axis)
+
 else:
     # Backport of argmax functionality from scipy 0.19.1, can be removed
     # once support for scipy 0.18 and below is dropped
@@ -86,7 +88,7 @@ else:
         ret_size, line_size = mat._swap(mat.shape)
         ret = np.zeros(ret_size, dtype=int)
 
-        nz_lines, = np.nonzero(np.diff(mat.indptr))
+        (nz_lines, ) = np.nonzero(np.diff(mat.indptr))
         for i in nz_lines:
             p, q = mat.indptr[i:i + 2]
             data = mat.data[p:q]
@@ -153,7 +155,9 @@ else:
         else:
             return arr_or_matrix.argmax(axis=axis)
 
+
 if np_version < (1, 12):
+
     class MaskedArray(np.ma.MaskedArray):
         # Before numpy 1.12, np.ma.MaskedArray object is not picklable
         # This fix is needed to make our model_selection.GridSearchCV
@@ -163,10 +167,13 @@ if np_version < (1, 12):
             purposes.
 
             """
-            cf = 'CF'[self.flags.fnc]
+            cf = "CF"[self.flags.fnc]
             data_state = super(np.ma.MaskedArray, self).__reduce__()[2]
-            return data_state + (np.ma.getmaskarray(self).tostring(cf),
-                                 self._fill_value)
+            return data_state + (
+                np.ma.getmaskarray(self).tostring(cf),
+                self._fill_value,
+            )
+
 else:
     from numpy.ma import MaskedArray  # noqa
 
@@ -175,9 +182,12 @@ else:
 # instead of equality. This fix returns the mask of NaNs in an array of
 # numerical or object values for all numpy versions.
 if np_version < (1, 13):
+
     def _object_dtype_isnan(X):
         return np.frompyfunc(lambda x: x != x, 1, 1)(X).astype(bool)
+
 else:
+
     def _object_dtype_isnan(X):
         return X != X
 
@@ -189,7 +199,7 @@ def _astype_copy_false(X):
     otherwise don't specify
     """
     if sp_version >= (1, 1) or not sp.issparse(X):
-        return {'copy': False}
+        return {"copy": False}
     else:
         return {}
 
@@ -217,28 +227,30 @@ def _joblib_parallel_args(**kwargs):
     """
     import joblib
 
-    if joblib.__version__ >= LooseVersion('0.12'):
+    if joblib.__version__ >= LooseVersion("0.12"):
         return kwargs
 
-    extra_args = set(kwargs.keys()).difference({'prefer', 'require'})
+    extra_args = set(kwargs.keys()).difference({"prefer", "require"})
     if extra_args:
-        raise NotImplementedError('unhandled arguments %s with joblib %s'
-                                  % (list(extra_args), joblib.__version__))
+        raise NotImplementedError("unhandled arguments %s with joblib %s" %
+                                  (list(extra_args), joblib.__version__))
     args = {}
-    if 'prefer' in kwargs:
-        prefer = kwargs['prefer']
-        if prefer not in ['threads', 'processes', None]:
-            raise ValueError('prefer=%s is not supported' % prefer)
-        args['backend'] = {'threads': 'threading',
-                           'processes': 'multiprocessing',
-                           None: None}[prefer]
+    if "prefer" in kwargs:
+        prefer = kwargs["prefer"]
+        if prefer not in ["threads", "processes", None]:
+            raise ValueError("prefer=%s is not supported" % prefer)
+        args["backend"] = {
+            "threads": "threading",
+            "processes": "multiprocessing",
+            None: None,
+        }[prefer]
 
-    if 'require' in kwargs:
-        require = kwargs['require']
-        if require not in [None, 'sharedmem']:
-            raise ValueError('require=%s is not supported' % require)
-        if require == 'sharedmem':
-            args['backend'] = 'threading'
+    if "require" in kwargs:
+        require = kwargs["require"]
+        if require not in [None, "sharedmem"]:
+            raise ValueError("require=%s is not supported" % require)
+        if require == "sharedmem":
+            args["backend"] = "threading"
     return args
 
 

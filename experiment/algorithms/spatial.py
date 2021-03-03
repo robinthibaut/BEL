@@ -9,9 +9,7 @@ from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
 
 
-def grid_parameters(x_lim: list = None,
-                    y_lim: list = None,
-                    grf: float = 1):
+def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1):
     """
     Generates grid parameters necessary prior to SD calculation.
     :param x_lim:
@@ -38,10 +36,7 @@ def grid_parameters(x_lim: list = None,
     return xys, nrow, ncol
 
 
-def signed_distance(xys: np.array,
-                    nrow: int,
-                    ncol: int,
-                    grf: float,
+def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float,
                     pzs: np.array):
     """
     Given an array of coordinates of polygon vertices, computes its signed distance field.
@@ -81,11 +76,11 @@ def modified_hausdorff(a, b):
 
     """
 
-    a = np.asarray(a, dtype=np.float64, order='c')
-    b = np.asarray(b, dtype=np.float64, order='c')
+    a = np.asarray(a, dtype=np.float64, order="c")
+    b = np.asarray(b, dtype=np.float64, order="c")
 
     if a.shape[1] != b.shape[1]:
-        raise ValueError('a and b must have the same number of columns')
+        raise ValueError("a and b must have the same number of columns")
 
     # Compute distance between each pair of the two collections of inputs.
     d = cdist(a, b)
@@ -96,9 +91,7 @@ def modified_hausdorff(a, b):
     return max(fhd, rhd)
 
 
-def block_shaped(arr: np.array,
-                 nrows: int,
-                 ncols: int):
+def block_shaped(arr: np.array, nrows: int, ncols: int):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -112,17 +105,12 @@ def block_shaped(arr: np.array,
     assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(
         w, ncols)
 
-    return (arr.reshape(h // nrows, nrows, -1, ncols)
-            .swapaxes(1, 2)
-            .reshape(-1, nrows, ncols))
+    return (arr.reshape(h // nrows, nrows, -1,
+                        ncols).swapaxes(1, 2).reshape(-1, nrows, ncols))
 
 
-def refine_axis(widths: List[float],
-                r_pt: float,
-                ext: float,
-                cnd: float,
-                d_dim: float,
-                a_lim: float):
+def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
+                d_dim: float, a_lim: float):
     """
     Refines one 1D axis around a point belonging to it.
 
@@ -180,13 +168,17 @@ def refine_axis(widths: List[float],
         lwr = len(where_right)
 
         if lwl > lwr:
-            rl = lwl / lwr  # Weights how many cells are on either sides of the refinement zone
+            rl = (
+                lwl / lwr
+            )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
             dal = dal + (difx - dal) / rl
             dar = difx - dal
         elif lwr > lwl:
-            rl = lwr / lwl  # Weights how many cells are on either sides of the refinement zone
+            rl = (
+                lwr / lwl
+            )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
             dar = dar + (difx - dar) / rl
@@ -214,8 +206,7 @@ def rc_from_blocks(blocks: np.array):
     return dc, dr
 
 
-def blocks_from_rc_3d(rows: np.array,
-                      columns: np.array):
+def blocks_from_rc_3d(rows: np.array, columns: np.array):
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
@@ -230,18 +221,19 @@ def blocks_from_rc_3d(rows: np.array,
     blocks = []
     for c in range(nrow):
         for n in range(ncol):
-            b = [[c_sum[n] - delc[n], r_sum[c] - delr[c], 0.],
-                 [c_sum[n] - delc[n], r_sum[c], 0.],
-                 [c_sum[n], r_sum[c], 0.],
-                 [c_sum[n], r_sum[c] - delr[c], 0.]]
+            b = [
+                [c_sum[n] - delc[n], r_sum[c] - delr[c], 0.0],
+                [c_sum[n] - delc[n], r_sum[c], 0.0],
+                [c_sum[n], r_sum[c], 0.0],
+                [c_sum[n], r_sum[c] - delr[c], 0.0],
+            ]
             blocks.append(b)
     blocks = np.array(blocks)
 
     return blocks
 
 
-def blocks_from_rc(rows: np.array,
-                   columns: np.array):
+def blocks_from_rc(rows: np.array, columns: np.array):
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
@@ -256,10 +248,12 @@ def blocks_from_rc(rows: np.array,
     blocks = []
     for c in range(nrow):
         for n in range(ncol):
-            b = [[c_sum[n] - delc[n], r_sum[c] - delr[c]],
-                 [c_sum[n] - delc[n], r_sum[c]],
-                 [c_sum[n], r_sum[c]],
-                 [c_sum[n], r_sum[c] - delr[c]]]
+            b = [
+                [c_sum[n] - delc[n], r_sum[c] - delr[c]],
+                [c_sum[n] - delc[n], r_sum[c]],
+                [c_sum[n], r_sum[c]],
+                [c_sum[n], r_sum[c] - delr[c]],
+            ]
             blocks.append(b)
     blocks = np.array(blocks)
 
@@ -269,15 +263,14 @@ def blocks_from_rc(rows: np.array,
 def matrix_paste(c_big, c_small):
     # Compute distance matrix between refined and dummy grid.
     dm = distance_matrix(c_big, c_small)
-    inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[
-        0] for i in range(dm.shape[0])]
+    inds = [
+        np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0]
+        for i in range(dm.shape[0])
+    ]
     return inds
 
 
-def h_sub(h: np.array,
-          un: int,
-          uc: int,
-          sc: int):
+def h_sub(h: np.array, un: int, uc: int, sc: int):
     """
     Process signed distance array.
     :param h: Signed distance array
@@ -295,16 +288,15 @@ def h_sub(h: np.array,
     return h_u
 
 
-def get_centroids(array: np.array,
-                  grf: float):
+def get_centroids(array: np.array, grf: float):
     """
     Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
     centroids.
     :param array: (m, n) array
     :param grf: float: Cell dimension
     """
-    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0)
-                     * grf - grf / 2))  # Getting centroids
+    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0) * grf -
+                     grf / 2))  # Getting centroids
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
@@ -336,17 +328,24 @@ def contours_vertices(x: list,
     if ignore_:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     else:
-        v = np.array([c0.allsegs[0][i] for c0 in c0s for i in range(
-            len(c0.allsegs[0]))], dtype=object)
+        v = np.array(
+            [
+                c0.allsegs[0][i] for c0 in c0s
+                for i in range(len(c0.allsegs[0]))
+            ],
+            dtype=object,
+        )
     return v
 
 
-def binary_polygon(xys: np.array,
-                   nrow: int,
-                   ncol: int,
-                   pzs: np.array,
-                   outside: float = -1,
-                   inside: float = 1):
+def binary_polygon(
+    xys: np.array,
+    nrow: int,
+    ncol: int,
+    pzs: np.array,
+    outside: float = -1,
+    inside: float = 1,
+):
     """
     Given a polygon whose vertices are given by the array pzs, and a matrix of
     centroids coordinates of the surface discretization, assigns to the matrix a certain value
@@ -381,8 +380,10 @@ def binary_stack(xys, nrow, ncol, vertices):
     Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
     """
     # Create binary images of WHPA stored in bin_whpa
-    bin_whpa = [binary_polygon(
-        xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
+    bin_whpa = [
+        binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1)
+        for p in vertices
+    ]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     # Scale from 0 to 1
     big_sum -= np.min(big_sum)
@@ -417,6 +418,6 @@ def get_block(pm, i: int):
 def refine_machine(xlim, ylim, new_grf):
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
-    new_x, new_y = np.meshgrid(
-        np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow))
+    new_x, new_y = np.meshgrid(np.linspace(xlim[0], xlim[1], ncol),
+                               np.linspace(ylim[0], ylim[1], nrow))
     return nrow, ncol, new_x, new_y

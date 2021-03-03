@@ -13,10 +13,7 @@ import experiment.algorithms.spatial
 from experiment.core import Setup
 
 
-def flow(exe_name: str,
-         model_ws: str,
-         grid_dir: str,
-         hk_array: np.array,
+def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
          xy_dummy: np.array):
     """
     Builds and run customized MODFLOW simulation.
@@ -31,14 +28,16 @@ def flow(exe_name: str,
     # Model name
     model_name = Setup.Files.project_name
     # %% Modflow
-    model = flopy.modflow.Modflow(modelname=model_name,
-                                  namefile_ext='nam',
-                                  version='mf2005',
-                                  exe_name=exe_name,
-                                  structured=True,
-                                  listunit=2,
-                                  model_ws=model_ws,
-                                  verbose=False)
+    model = flopy.modflow.Modflow(
+        modelname=model_name,
+        namefile_ext="nam",
+        version="mf2005",
+        exe_name=exe_name,
+        structured=True,
+        listunit=2,
+        model_ws=model_ws,
+        verbose=False,
+    )
 
     # %% Model time discretization
 
@@ -49,7 +48,7 @@ def flow(exe_name: str,
     tsmult = [1, 1, 1.1]  # Time multiplier for each period
     steady = [True, False, False]  # State flags for each period
     td = date.today()  # Start date of the simulation
-    start_datetime = td.strftime('%Y-%m-%d')  # Start of simulation = today
+    start_datetime = td.strftime("%Y-%m-%d")  # Start of simulation = today
 
     # %% Model dimensions
 
@@ -70,9 +69,9 @@ def flow(exe_name: str,
 
     # Refinement
     wcd = Setup.Wells()
-    pw_d = wcd.wells_data['pumping0']
+    pw_d = wcd.wells_data["pumping0"]
     # Point around which refinement will occur
-    pt = pw_d['coordinates']
+    pt = pw_d["coordinates"]
     # [cell size, extent around pt in m]
     r_params = gd.r_params
 
@@ -80,21 +79,21 @@ def flow(exe_name: str,
         """
         Refine X-Y axes.
         """
-        along_c = np.ones(ncol) * \
-            dx  # Size of each cell in x-dimension - columns
+        along_c = np.ones(
+            ncol) * dx  # Size of each cell in x-dimension - columns
         along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
         r_a = experiment.algorithms.spatial.refine_axis
         for p in r_params:
             along_c = r_a(along_c, pt[0], p[1], p[0], dx, x_lim)
             along_r = r_a(along_r, pt[1], p[1], p[0], dy, y_lim)
-        np.save(jp(grid_dir, 'delc'), along_c)
-        np.save(jp(grid_dir, 'delr'), along_r)
+        np.save(jp(grid_dir, "delc"), along_c)
+        np.save(jp(grid_dir, "delr"), along_r)
 
         return along_c, along_r
 
     # Saving r_params to avoid computing distance matrix each time
     flag_dis = 0  # If discretization is different
-    disf = jp(grid_dir, 'dis.txt')  # discretization txt file
+    disf = jp(grid_dir, "dis.txt")  # discretization txt file
     if os.path.exists(disf):
         r_params_loaded = np.loadtxt(disf)  # loads dis info
         # if new refinement parameters differ from the previous one
@@ -104,8 +103,8 @@ def flow(exe_name: str,
         else:
             flag_dis = 1  # If discretization is the same, use old distance matrix
             try:
-                delc = np.load(jp(grid_dir, 'delc.npy'))
-                delr = np.load(jp(grid_dir, 'delr.npy'))
+                delc = np.load(jp(grid_dir, "delc.npy"))
+                delr = np.load(jp(grid_dir, "delr.npy"))
             except FileNotFoundError:
                 delc, delr = refine_()
     else:
@@ -135,25 +134,27 @@ def flow(exe_name: str,
     nrow_d = y_lim // min_cell_dim
     ncol_d = x_lim // min_cell_dim
 
-    dis5 = flopy.modflow.ModflowDis(model=model,
-                                    nlay=nlay,
-                                    nrow=nrow,
-                                    ncol=ncol,
-                                    nper=nper,
-                                    delr=delc,
-                                    delc=delr,
-                                    laycbd=0,
-                                    top=top,
-                                    botm=botm,
-                                    perlen=perlen,
-                                    nstp=nstp,
-                                    tsmult=tsmult,
-                                    steady=steady,
-                                    itmuni=itmuni,
-                                    lenuni=lenuni,
-                                    extension='dis',
-                                    rotation=0.0,
-                                    start_datetime=start_datetime)
+    dis5 = flopy.modflow.ModflowDis(
+        model=model,
+        nlay=nlay,
+        nrow=nrow,
+        ncol=ncol,
+        nper=nper,
+        delr=delc,
+        delc=delr,
+        laycbd=0,
+        top=top,
+        botm=botm,
+        perlen=perlen,
+        nstp=nstp,
+        tsmult=tsmult,
+        steady=steady,
+        itmuni=itmuni,
+        lenuni=lenuni,
+        extension="dis",
+        rotation=0.0,
+        start_datetime=start_datetime,
+    )
 
     # Get y, x, and z cell centroids of true model grid
     ncd1 = dis5.get_node_coordinates()
@@ -168,10 +169,13 @@ def flow(exe_name: str,
         Produces well stress period data readable by Modflow.
         :param well_name: [ r, c, [rate sp #0, ..., rate sp# n] ]
         """
-        iw = [0, wcd.wells_data[well_name]['coordinates']
-              [0], wcd.wells_data[well_name]['coordinates'][1]]
+        iw = [
+            0,
+            wcd.wells_data[well_name]["coordinates"][0],
+            wcd.wells_data[well_name]["coordinates"][1],
+        ]
         # Well rate for the defined time periods
-        iwr = wcd.wells_data[well_name]['rates']
+        iwr = wcd.wells_data[well_name]["rates"]
         # [0, row, column]
         iw_lrc = [0] + list(dis5.get_rc_from_node_coordinates(iw[1], iw[2]))
         # Defining list containing stress period data under correct format
@@ -183,7 +187,7 @@ def flow(exe_name: str,
 
     spd = np.array([mw[-1] for mw in my_wells])  # Collecting SPD for each well
 
-    np.save(jp(model_ws, 'spd'), spd)  # Saves the SPD
+    np.save(jp(model_ws, "spd"), spd)  # Saves the SPD
 
     # %% ModflowWel
 
@@ -204,36 +208,40 @@ def flow(exe_name: str,
 
     # %% ModflowBas
 
-    flopy.modflow.ModflowBas(model=model,
-                             ibound=ibound,
-                             strt=strt,
-                             ifrefm=True,
-                             ixsec=False,
-                             ichflg=False,
-                             stoper=None,
-                             hnoflo=-999.99,
-                             extension='bas',
-                             unitnumber=None,
-                             filenames=None)
+    flopy.modflow.ModflowBas(
+        model=model,
+        ibound=ibound,
+        strt=strt,
+        ifrefm=True,
+        ixsec=False,
+        ichflg=False,
+        stoper=None,
+        hnoflo=-999.99,
+        extension="bas",
+        unitnumber=None,
+        filenames=None,
+    )
 
     # %% ModflowPcg
 
-    flopy.modflow.ModflowPcg(model=model,
-                             mxiter=70,
-                             iter1=70,
-                             npcond=1,
-                             hclose=1e-3,
-                             rclose=1e-3,
-                             relax=0.99,
-                             nbpol=0,
-                             iprpcg=0,
-                             mutpcg=3,
-                             damp=1.0,
-                             dampt=1.0,
-                             ihcofadd=0,
-                             extension='pcg',
-                             unitnumber=None,
-                             filenames=None)
+    flopy.modflow.ModflowPcg(
+        model=model,
+        mxiter=70,
+        iter1=70,
+        npcond=1,
+        hclose=1e-3,
+        rclose=1e-3,
+        relax=0.99,
+        nbpol=0,
+        iprpcg=0,
+        mutpcg=3,
+        damp=1.0,
+        dampt=1.0,
+        ihcofadd=0,
+        extension="pcg",
+        unitnumber=None,
+        filenames=None,
+    )
 
     # %% ModflowOc
 
@@ -243,10 +251,12 @@ def flow(exe_name: str,
         for kstp in range(nstp[kper]):  # For each time step per time period
             # MT3DMS needs HEAD
             # MODPATH needs BUDGET
-            stress_period_data_oc[(kper, kstp)] = ['save head',
-                                                   'print head',
-                                                   'save budget',
-                                                   'print budget']
+            stress_period_data_oc[(kper, kstp)] = [
+                "save head",
+                "print head",
+                "save budget",
+                "print budget",
+            ]
 
     flopy.modflow.ModflowOc(model=model,
                             stress_period_data=stress_period_data_oc,
@@ -254,10 +264,9 @@ def flow(exe_name: str,
 
     # %% ModflowLmt
     # Necessary to create a xxx.ftl file to link modflow simulation to mt3dms transport simulation.
-    output_file_name = 'mt3d_link.ftl'
+    output_file_name = "mt3d_link.ftl"
 
-    flopy.modflow.ModflowLmt(model=model,
-                             output_file_name=output_file_name)
+    flopy.modflow.ModflowLmt(model=model, output_file_name=output_file_name)
 
     # %% SGEMS
     # Flattening hk_array to plot it
@@ -272,15 +281,19 @@ def flow(exe_name: str,
     # would like to refine in some ways the flow mesh, the piece of code below assigns to the flow grid the
     # values of the hk simulations based on the closest distance between cells.
     # Index file location - relates the position of closest cells
-    inds_file = jp(grid_dir, 'inds.npy')
+    inds_file = jp(grid_dir, "inds.npy")
     # between differently discretized meshes.
-    if nrow_d != nrow or ncol_d != ncol:  # if mismatch between nrow and ncol, that is to say, we must copy/paste
+    if (
+            nrow_d != nrow or ncol_d != ncol
+    ):  # if mismatch between nrow and ncol, that is to say, we must copy/paste
         # the new hk array on a new grid.
         if flag_dis == 0:
             # Compute distance matrix between refined and dummy grid.
             dm = distance_matrix(xy_true, xy_dummy)
-            inds = [np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[
-                0] for i in range(dm.shape[0])]
+            inds = [
+                np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0]
+                for i in range(dm.shape[0])
+            ]
             np.save(inds_file, inds)  # Save index file to avoid re-computing
         else:  # If the inds file exists.
             inds = np.load(inds_file)
@@ -290,7 +303,7 @@ def flow(exe_name: str,
     else:
         valkr = hk_array[0]
 
-    np.save(jp(model_ws, 'hk'), valkr)
+    np.save(jp(model_ws, "hk"), valkr)
 
     # %% Layer 1 properties
 
@@ -300,7 +313,7 @@ def flow(exe_name: str,
     layvka = 0
     laywet = 0
     ipakcb = 53
-    hdry = -1E+30
+    hdry = -1e30
     iwdflg = 0
     wetfct = 0.1
     iwetit = 1
@@ -322,57 +335,59 @@ def flow(exe_name: str,
 
     # %% ModflowLpf
 
-    flopy.modflow.ModflowLpf(model=model,
-                             laytyp=laytyp,
-                             layavg=layavg,
-                             chani=chani,
-                             layvka=layvka,
-                             laywet=laywet,
-                             ipakcb=ipakcb,
-                             hdry=hdry,
-                             iwdflg=iwdflg,
-                             wetfct=wetfct,
-                             iwetit=iwetit,
-                             ihdwet=ihdwet,
-                             hk=hk,
-                             hani=hani,
-                             vka=vka,
-                             ss=ss,
-                             sy=sy,
-                             vkcb=vkcb,
-                             wetdry=wetdry,
-                             storagecoefficient=storagecoefficient,
-                             constantcv=constantcv,
-                             thickstrt=thickstrt,
-                             nocvcorrection=nocvcorrection,
-                             novfc=novfc,
-                             extension='lpf')
+    flopy.modflow.ModflowLpf(
+        model=model,
+        laytyp=laytyp,
+        layavg=layavg,
+        chani=chani,
+        layvka=layvka,
+        laywet=laywet,
+        ipakcb=ipakcb,
+        hdry=hdry,
+        iwdflg=iwdflg,
+        wetfct=wetfct,
+        iwetit=iwetit,
+        ihdwet=ihdwet,
+        hk=hk,
+        hani=hani,
+        vka=vka,
+        ss=ss,
+        sy=sy,
+        vkcb=vkcb,
+        wetdry=wetdry,
+        storagecoefficient=storagecoefficient,
+        constantcv=constantcv,
+        thickstrt=thickstrt,
+        nocvcorrection=nocvcorrection,
+        novfc=novfc,
+        extension="lpf",
+    )
 
     # %% Modflow Run
 
     model.write_input()
 
     # Run the model
-    model.run_model(silent=True,
-                    pause=False,
-                    report=True)
+    model.run_model(silent=True, pause=False, report=True)
 
     # model.check(level=0)
 
     # %% Checking flow results
 
     # Create the headfile and budget file objects
-    headobj = bf.HeadFile(jp(model_ws, f'{model_name}.hds'))
+    headobj = bf.HeadFile(jp(model_ws, f"{model_name}.hds"))
     times = headobj.get_times()
     head = headobj.get_data(totim=times[-1])  # Get last data
     headobj.close()
 
-    if head.max() > np.max(top) + 1:  # Quick check - if the maximum computed head is higher than the layer top,
+    if (
+            head.max() > np.max(top) + 1
+    ):  # Quick check - if the maximum computed head is higher than the layer top,
         # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         model = None
-    if head.min() == -1e+30:
+    if head.min() == -1e30:
         model = None
     else:
-        np.save(jp(model_ws, f'{model_name}_heads.npy'), head)
+        np.save(jp(model_ws, f"{model_name}_heads.npy"), head)
 
     return model

@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-
 """
 The one-class SVM aims to fit a minimal volume
 hypersphere around the samples in {d(1), d(2),…, d(L)}.
@@ -30,8 +29,8 @@ def svm1(res_dir, d=True, h=False, folders=None):
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)
-        folders = list(filter(lambda du: os.path.isdir(
-            os.path.join(subdir, du)), listme))
+        folders = list(
+            filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -41,20 +40,20 @@ def svm1(res_dir, d=True, h=False, folders=None):
 
         for f in folders:
             # For d only
-            pcaf = os.path.join(subdir, f, 'obj', 'd_pca.pkl')
+            pcaf = os.path.join(subdir, f, "obj", "d_pca.pkl")
             d_pco = joblib.load(pcaf)
             obj_.append(d_pco)
 
     return obj_
 
 
-sample = '6a4d614c838442629d7a826cc1f498a8'
-default = ['123456']
+sample = "6a4d614c838442629d7a826cc1f498a8"
+default = ["123456"]
 
 dpc = svm1(sample, folders=default)[0]
 
-dataset = np.concatenate(
-    [dpc.training_pc[:, :2], dpc.predict_pc[:, :2]], axis=0)
+dataset = np.concatenate([dpc.training_pc[:, :2], dpc.predict_pc[:, :2]],
+                         axis=0)
 sc = StandardScaler()
 dataset = sc.fit_transform(dataset)
 # dataset -= np.min(dataset)
@@ -81,22 +80,47 @@ algorithm.fit(dataset)
 y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
-a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='#ff7f00')
-b = plt.contourf(xx, yy, Z, levels=np.linspace(
-    Z.min(), 0, 7), cmap=plt.cm.PuBu_r, alpha=.9)
+a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="#ff7f00")
+b = plt.contourf(xx,
+                 yy,
+                 Z,
+                 levels=np.linspace(Z.min(), 0, 7),
+                 cmap=plt.cm.PuBu_r,
+                 alpha=0.9)
 cbar = plt.colorbar()
-cbar.set_label('Distance to boundary')
-c = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors='darkred')
+cbar.set_label("Distance to boundary")
+c = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="darkred")
 # plt.clabel(c, inline=1, fontsize=10)
-c.collections[0].set_label('Learned boundary')
-d = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors='orange', alpha=.9)
-e = plt.plot(dataset[:, 0], dataset[:, 1], 'wo',
-             markersize=3, markeredgecolor='k', label='Training')
-f = plt.plot(dataset[-1, 0], dataset[-1, 1], 'ro',
-             markersize=5, markeredgecolor='k', label='Observation')
-plt.xlabel('First PC score')
-plt.ylabel('Second PC score')
-plt.legend(loc='lower right', fontsize=8)
-plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, sample, default[0], 'pca', f'{sample}_pc1_outlier.png'),
-            dpi=300, transparent=True)
+c.collections[0].set_label("Learned boundary")
+d = plt.contourf(xx, yy, Z, levels=[0, Z.max()], colors="orange", alpha=0.9)
+e = plt.plot(
+    dataset[:, 0],
+    dataset[:, 1],
+    "wo",
+    markersize=3,
+    markeredgecolor="k",
+    label="Training",
+)
+f = plt.plot(
+    dataset[-1, 0],
+    dataset[-1, 1],
+    "ro",
+    markersize=5,
+    markeredgecolor="k",
+    label="Observation",
+)
+plt.xlabel("First PC score")
+plt.ylabel("Second PC score")
+plt.legend(loc="lower right", fontsize=8)
+plt.savefig(
+    os.path.join(
+        MySetup.Directories.forecasts_dir,
+        sample,
+        default[0],
+        "pca",
+        f"{sample}_pc1_outlier.png",
+    ),
+    dpi=300,
+    transparent=True,
+)
 plt.show()
