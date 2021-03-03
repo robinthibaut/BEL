@@ -144,8 +144,6 @@ class _PLS(TransformerMixin,
 
     deflation_mode : str, "canonical" or "regression". See notes.
 
-    mode :  "B" CCA. See notes.
-
     norm_y_weights : boolean, normalize Y weights to one? (default False)
 
     algorithm : string, "nipals"
@@ -227,7 +225,6 @@ class _PLS(TransformerMixin,
             n_components=2,
             scale=True,
             deflation_mode="regression",
-            mode="B",
             algorithm="nipals",
             norm_y_weights=False,
             max_iter=500,
@@ -236,7 +233,6 @@ class _PLS(TransformerMixin,
     ):
         self.n_components = n_components
         self.deflation_mode = deflation_mode
-        self.mode = mode
         self.norm_y_weights = norm_y_weights
         self.scale = scale
         self.algorithm = algorithm
@@ -308,7 +304,6 @@ class _PLS(TransformerMixin,
             x_weights, y_weights, n_iter_ = _nipals_twoblocks_inner_loop(
                 X=Xk,
                 Y=Yk,
-                mode=self.mode,
                 max_iter=self.max_iter,
                 tol=self.tol,
                 norm_y_weights=self.norm_y_weights,
