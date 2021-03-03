@@ -27,14 +27,14 @@ class KDE:
     """
 
     def __init__(
-            self,
-            *,
-            bw_method=None,
-            bw_adjust=1,
-            gridsize=200,
-            cut=3,
-            clip=None,
-            cumulative=False,
+        self,
+        *,
+        bw_method=None,
+        bw_adjust=1,
+        gridsize=200,
+        cut=3,
+        clip=None,
+        cumulative=False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -174,8 +174,8 @@ class KDE:
 
 
 def univariate_density(
-        data_variable,
-        estimate_kws,
+    data_variable,
+    estimate_kws,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -198,8 +198,8 @@ def univariate_density(
 
 
 def bivariate_density(
-        data: pd.DataFrame,
-        estimate_kws: dict,
+    data: pd.DataFrame,
+    estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -235,15 +235,15 @@ def bivariate_density(
 
 
 def kde_params(
-        x: np.array = None,
-        y: np.array = None,
-        bw: float = None,
-        gridsize: int = 200,
-        cut: float = 3,
-        clip=None,
-        cumulative: bool = False,
-        bw_method: str = "scott",
-        bw_adjust: int = 1,
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    gridsize: int = 200,
+    cut: float = 3,
+    clip=None,
+    cumulative: bool = False,
+    bw_method: str = "scott",
+    bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -311,11 +311,11 @@ def pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
 
 
 def conditional_distribution(
-        kde_array: np.array,
-        x_array: np.array,
-        y_array: np.array,
-        x: float = None,
-        y: float = None,
+    kde_array: np.array,
+    x_array: np.array,
+    y_array: np.array,
+    x: float = None,
+    y: float = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -427,12 +427,12 @@ class PosteriorIO:
         self.directory = directory
 
     def mvn_inference(
-            self,
-            h_cca_training_gaussian,
-            d_cca_training,
-            d_pc_training,
-            d_rotations,
-            d_cca_prediction,
+        self,
+        h_cca_training_gaussian,
+        d_cca_training,
+        d_pc_training,
+        d_rotations,
+        d_cca_prediction,
     ):
         """
         Estimating posterior mean and covariance of the target.
@@ -524,8 +524,8 @@ class PosteriorIO:
         h_posterior_covariance = np.linalg.pinv(d11)
         # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
         h_posterior_mean = h_posterior_covariance @ (
-                d11 @ h_mean -
-                d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+            d11 @ h_mean -
+            d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
 
         # test = np.block([[d11, d12], [d21, d22]])
         # plt.matshow(test, cmap='coolwarm')
@@ -548,13 +548,13 @@ class PosteriorIO:
         self.posterior_covariance = h_posterior_covariance
 
     def back_transform(
-            self,
-            h_posts_gaussian,
-            cca_obj,
-            pca_h,
-            n_posts: int,
-            add_comp: bool = False,
-            save_target_pc: bool = False,
+        self,
+        h_posts_gaussian,
+        cca_obj,
+        pca_h,
+        n_posts: int,
+        add_comp: bool = False,
+        save_target_pc: bool = False,
     ):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
@@ -580,8 +580,8 @@ class PosteriorIO:
         # and add the y_mean.
         # FIXME: Deprecation warning here about y_std_ and y_mean_
         h_pca_reverse = (
-                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
-                cca_obj.y_mean_)
+            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
+            cca_obj.y_mean_)
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
@@ -599,7 +599,7 @@ class PosteriorIO:
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(
             h_pca_reverse).reshape(
-            (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
+                (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
 
         return forecast_posterior
 
@@ -676,7 +676,7 @@ class PosteriorIO:
 
             # Set the seed for later use
             if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+                self.seed = np.random.randint(2**32 - 1, dtype="uint32")
 
             if n_posts is None:
                 self.n_posts = Setup.HyperParameters.n_posts
@@ -712,7 +712,7 @@ def log_transform(f, k_mean: float, k_std: float):
 
     ff = f * k_std + k_mean
 
-    return 10 ** ff
+    return 10**ff
 
 
 def sgsim(model_ws: str,

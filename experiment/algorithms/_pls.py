@@ -12,9 +12,11 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from scipy.linalg import pinv2, svd
+from scipy.sparse.linalg import svds
 
 from experiment.utils import (FLOAT_DTYPES, check_array,
                               check_consistent_length, check_is_fitted)
+
 from .base import (BaseEstimator, MultiOutputMixin, RegressorMixin,
                    TransformerMixin)
 from .exceptions import ConvergenceWarning

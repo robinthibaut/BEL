@@ -19,6 +19,7 @@ from scipy.special import xlogy
 
 from experiment.utils import (_assert_all_finite, _num_samples, check_array,
                               check_consistent_length, column_or_1d)
+
 from .exceptions import UndefinedMetricWarning
 
 __ALL__ = [
@@ -90,7 +91,7 @@ def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
         if multioutput not in allowed_multioutput_str:
             raise ValueError("Allowed 'multioutput' string values are {}. "
                              "You provided multioutput={!r}".format(
-                allowed_multioutput_str, multioutput))
+                                 allowed_multioutput_str, multioutput))
     elif multioutput is not None:
         multioutput = check_array(multioutput, ensure_2d=False)
         if n_outputs == 1:
@@ -242,7 +243,7 @@ def mean_squared_error(y_true,
     y_type, y_true, y_pred, multioutput = _check_reg_targets(
         y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
-    output_errors = np.average((y_true - y_pred) ** 2,
+    output_errors = np.average((y_true - y_pred)**2,
                                axis=0,
                                weights=sample_weight)
     if isinstance(multioutput, str):
@@ -449,12 +450,12 @@ def explained_variance_score(y_true,
     check_consistent_length(y_true, y_pred, sample_weight)
 
     y_diff_avg = np.average(y_true - y_pred, weights=sample_weight, axis=0)
-    numerator = np.average((y_true - y_pred - y_diff_avg) ** 2,
+    numerator = np.average((y_true - y_pred - y_diff_avg)**2,
                            weights=sample_weight,
                            axis=0)
 
     y_true_avg = np.average(y_true, weights=sample_weight, axis=0)
-    denominator = np.average((y_true - y_true_avg) ** 2,
+    denominator = np.average((y_true - y_true_avg)**2,
                              weights=sample_weight,
                              axis=0)
 
@@ -586,11 +587,11 @@ def r2_score(y_true,
     else:
         weight = 1.0
 
-    numerator = (weight * (y_true - y_pred) ** 2).sum(axis=0, dtype=np.float64)
+    numerator = (weight * (y_true - y_pred)**2).sum(axis=0, dtype=np.float64)
     denominator = (
-            weight *
-            (y_true - np.average(y_true, axis=0, weights=sample_weight)) ** 2).sum(
-        axis=0, dtype=np.float64)
+        weight *
+        (y_true - np.average(y_true, axis=0, weights=sample_weight))**2).sum(
+            axis=0, dtype=np.float64)
     nonzero_denominator = denominator != 0
     nonzero_numerator = numerator != 0
     valid_score = nonzero_denominator & nonzero_numerator
@@ -724,7 +725,7 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
                    (1 - power) + np.power(y_pred, 2 - power) / (2 - power))
     elif power == 0:
         # Normal distribution, y_true and y_pred any real number
-        dev = (y_true - y_pred) ** 2
+        dev = (y_true - y_pred)**2
     elif power < 1:
         raise ValueError("Tweedie deviance is only defined for power<=0 and "
                          "power>=1.")
@@ -732,7 +733,7 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
         # Poisson distribution, y_true >= 0, y_pred > 0
         if (y_true < 0).any() or (y_pred <= 0).any():
             raise ValueError(message + "non-negative y_true and strictly "
-                                       "positive y_pred.")
+                             "positive y_pred.")
         dev = 2 * (xlogy(y_true, y_true / y_pred) - y_true + y_pred)
     elif power == 2:
         # Gamma distribution, y_true and y_pred > 0
@@ -744,11 +745,11 @@ def mean_tweedie_deviance(y_true, y_pred, sample_weight=None, power=0):
             # 1 < p < 2 is Compound Poisson, y_true >= 0, y_pred > 0
             if (y_true < 0).any() or (y_pred <= 0).any():
                 raise ValueError(message + "non-negative y_true and strictly "
-                                           "positive y_pred.")
+                                 "positive y_pred.")
         else:
             if (y_true <= 0).any() or (y_pred <= 0).any():
                 raise ValueError(message + "strictly positive y_true and "
-                                           "y_pred.")
+                                 "y_pred.")
 
         dev = 2 * (np.power(y_true, 2 - power) /
                    ((1 - power) *
@@ -884,7 +885,7 @@ def is_multilabel(y):
 
         return len(labels) < 3 and (y.dtype.kind in "biu"
                                     or _is_integral_float(
-                    labels)  # bool, int, uint
+                                        labels)  # bool, int, uint
                                     )
 
 

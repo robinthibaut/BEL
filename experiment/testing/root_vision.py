@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 
 import experiment.utils
+from experiment import _utils as fops
 from experiment.core import Setup
 
 sns.set_theme()
