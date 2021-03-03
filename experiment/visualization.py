@@ -19,7 +19,6 @@ from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
 import experiment.algorithms.spatial
-import experiment.algorithms.statistics
 import experiment.utils
 from experiment.algorithms import statistics as stats
 from experiment.algorithms.spatial import (binary_stack, contours_vertices,
