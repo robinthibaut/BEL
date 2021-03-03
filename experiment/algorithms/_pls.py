@@ -18,7 +18,6 @@ __all__ = ["_PLS"]
 
 def _nipals_twoblocks_inner_loop(X,
                                  Y,
-                                 mode="B",
                                  max_iter=500,
                                  tol=1e-06,
                                  norm_y_weights=False):
@@ -39,16 +38,15 @@ def _nipals_twoblocks_inner_loop(X,
     X_pinv = Y_pinv = None
     eps = np.finfo(X.dtype).eps
 
-    if mode == "B":
-        # Uses condition from scipy<1.3 in pinv2 which was changed in
-        # https://github.com/scipy/scipy/pull/10067. In scipy 1.3, the
-        # condition was changed to depend on the largest singular value
-        X_t = X.dtype.char.lower()
-        Y_t = Y.dtype.char.lower()
-        factor = {"f": 1e3, "d": 1e6}
+    # Uses condition from scipy<1.3 in pinv2 which was changed in
+    # https://github.com/scipy/scipy/pull/10067. In scipy 1.3, the
+    # condition was changed to depend on the largest singular value
+    X_t = X.dtype.char.lower()
+    Y_t = Y.dtype.char.lower()
+    factor = {"f": 1e3, "d": 1e6}
 
-        cond_X = factor[X_t] * eps
-        cond_Y = factor[Y_t] * eps
+    cond_X = factor[X_t] * eps
+    cond_Y = factor[Y_t] * eps
 
     # Inner loop of the Wold algo.
     while True:

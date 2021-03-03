@@ -16,7 +16,6 @@ import scipy.sparse as sp
 from experiment.algorithms.config import get_config as _get_config
 from experiment.algorithms.exceptions import NotFittedError
 from experiment.algorithms.fixes import _object_dtype_isnan
-# from numpy.core.numeric import ComplexWarning
 from experiment.core import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
@@ -306,9 +305,6 @@ def as_float_array(X, copy=True, force_all_finite=True):
         - 'allow-nan': accept only np.nan values in X. Values cannot be
           infinite.
 
-        .. versionadded:: 0.20
-           ``force_all_finite`` accepts the string ``'allow-nan'``.
-
     Returns
     -------
     XT : {array, sparse matrix}
@@ -382,7 +378,6 @@ def check_array(
     allow_nd=False,
     ensure_min_samples=1,
     ensure_min_features=1,
-    warn_on_dtype=None,
     estimator=None,
 ):
     """Input validation on an array, list, sparse matrix or similar.
@@ -407,8 +402,6 @@ def check_array(
         If a CSR, CSC, COO or BSR sparse matrix is supplied and accepted by
         accept_sparse, accept_large_sparse=False will cause it to be accepted
         only if its indices are stored with a 32-bit dtype.
-
-        .. versionadded:: 0.20
 
     dtype : string, type, list of types or None (default="numeric")
         Data type of result. If None, the dtype of the input is preserved.
@@ -438,8 +431,6 @@ def check_array(
 
         For object dtyped data, only np.nan is checked and not np.inf.
 
-        .. versionadded:: 0.20
-           ``force_all_finite`` accepts the string ``'allow-nan'``.
 
     ensure_2d : boolean (default=True)
         Whether to raise a value error if array is not 2D.
@@ -458,14 +449,6 @@ def check_array(
         dimensions or is originally 1D and ``ensure_2d`` is True. Setting to 0
         disables this check.
 
-    warn_on_dtype : boolean or None, optional (default=None)
-        Raise DataConversionWarning if the dtype of the input data structure
-        does not match the requested dtype, causing a memory copy.
-
-        .. deprecated:: 0.21
-            ``warn_on_dtype`` is deprecated in version 0.21 and will be
-            removed in 0.23.
-
     estimator : str or estimator instance (default=None)
         If passed, include the name of the estimator in warning messages.
 
@@ -474,15 +457,6 @@ def check_array(
     array_converted : object
         The converted and validated array.
     """
-    # warn_on_dtype deprecation
-    if warn_on_dtype is not None:
-        warnings.warn(
-            "'warn_on_dtype' is deprecated in version 0.21 and will be "
-            "removed in 0.23. Don't set `warn_on_dtype` to remove this "
-            "warning.",
-            FutureWarning,
-            stacklevel=2,
-        )
 
     # store reference to original array to check if copy is needed when
     # function returns
@@ -569,9 +543,7 @@ def check_array(
                     array = array.astype(dtype, casting="unsafe", copy=False)
                 else:
                     array = np.asarray(array, order=order, dtype=dtype)
-            # except ComplexWarning:
-            #     raise ValueError("Complex data not supported\n"
-            #                      "{}\n".format(array))
+
             except Exception as e:
                 print(e)
 
@@ -596,19 +568,6 @@ def check_array(
                     "Reshape your data either using array.reshape(-1, 1) if "
                     "your data has a single feature or array.reshape(1, -1) "
                     "if it contains a single sample.".format(array))
-
-        # in the future np.flexible dtypes will be handled like object dtypes
-        if dtype_numeric and np.issubdtype(array.dtype, np.flexible):
-            warnings.warn(
-                "Beginning in version 0.22, arrays of bytes/strings will be "
-                "converted to decimal numbers if dtype='numeric'. "
-                "It is recommended that you convert the array to "
-                "a float dtype before using it in scikit-learn, "
-                "for example by using "
-                "your_array = your_array.astype(np.float64).",
-                FutureWarning,
-                stacklevel=2,
-            )
 
         # make sure we actually converted to numeric:
         if dtype_numeric and array.dtype.kind == "O":
@@ -637,28 +596,9 @@ def check_array(
                 " a minimum of %d is required%s." %
                 (n_features, array.shape, ensure_min_features, context))
 
-    if warn_on_dtype and dtype_orig is not None and array.dtype != dtype_orig:
-        msg = "Data with input dtype %s was converted to %s%s." % (
-            dtype_orig,
-            array.dtype,
-            context,
-        )
-        warnings.warn(msg, stacklevel=2)
 
     if copy and np.may_share_memory(array, array_orig):
         array = np.array(array, dtype=dtype, order=order)
-
-    if warn_on_dtype and dtypes_orig is not None and {array.dtype
-                                                      } != set(dtypes_orig):
-        # if there was at the beginning some other types than the final one
-        # (for instance in a DataFrame that can contain several dtypes) then
-        # some data must have been converted
-        msg = "Data with input dtype %s were all converted to %s%s." % (
-            ", ".join(map(str, sorted(set(dtypes_orig)))),
-            array.dtype,
-            context,
-        )
-        warnings.warn(msg, stacklevel=3)
 
     return array
 
