@@ -1,18 +1,9 @@
-"""
-The :mod:`sklearn.pls` module implements Partial Least Squares (PLS).
-"""
-
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
-
-# Author: Edouard Duchesnay <edouard.duchesnay@cea.fr>
-# License: BSD 3 clause
 
 import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from scipy.linalg import pinv2, svd
-from scipy.sparse.linalg import svds
 
 from experiment.utils import (FLOAT_DTYPES, check_array,
                               check_consistent_length, check_is_fitted)
@@ -27,7 +18,7 @@ __all__ = ["_PLS"]
 
 def _nipals_twoblocks_inner_loop(X,
                                  Y,
-                                 mode="A",
+                                 mode="B",
                                  max_iter=500,
                                  tol=1e-06,
                                  norm_y_weights=False):
@@ -100,7 +91,7 @@ def _nipals_twoblocks_inner_loop(X,
 
 def _svd_cross_product(X, Y):
     C = np.dot(X.T, Y)
-    U, s, Vh = svd(C, full_matrices=False)
+    U, s, Vh = svd(C, full_matrices=False, compute_uv=True)
     u = U[:, [0]]
     v = Vh.T[:, [0]]
     return u, v
@@ -254,7 +245,7 @@ class _PLS(TransformerMixin,
             n_components=2,
             scale=True,
             deflation_mode="regression",
-            mode="A",
+            mode="B",
             algorithm="nipals",
             norm_y_weights=False,
             max_iter=500,
@@ -302,12 +293,6 @@ class _PLS(TransformerMixin,
         if self.n_components < 1 or self.n_components > p:
             raise ValueError("Invalid number of components: %d" %
                              self.n_components)
-        if self.algorithm not in ("svd", "nipals"):
-            raise ValueError("Got algorithm %s when only 'svd' "
-                             "and 'nipals' are known" % self.algorithm)
-        if self.algorithm == "svd" and self.mode == "B":
-            raise ValueError("Incompatible configuration: mode B is not "
-                             "implemented with svd algorithm")
         if self.deflation_mode not in ["canonical", "regression"]:
             raise ValueError("The deflation mode is unknown")
         # Scale (in place)
@@ -334,22 +319,19 @@ class _PLS(TransformerMixin,
                 break
             # 1) weights estimation (inner loop)
             # -----------------------------------
-            if self.algorithm == "nipals":
-                # Replace columns that are all close to zero with zeros
-                Yk_mask = np.all(np.abs(Yk) < 10 * Y_eps, axis=0)
-                Yk[:, Yk_mask] = 0.0
+            # Replace columns that are all close to zero with zeros
+            Yk_mask = np.all(np.abs(Yk) < 10 * Y_eps, axis=0)
+            Yk[:, Yk_mask] = 0.0
 
-                x_weights, y_weights, n_iter_ = _nipals_twoblocks_inner_loop(
-                    X=Xk,
-                    Y=Yk,
-                    mode=self.mode,
-                    max_iter=self.max_iter,
-                    tol=self.tol,
-                    norm_y_weights=self.norm_y_weights,
-                )
-                self.n_iter_.append(n_iter_)
-            elif self.algorithm == "svd":
-                x_weights, y_weights = _svd_cross_product(X=Xk, Y=Yk)
+            x_weights, y_weights, n_iter_ = _nipals_twoblocks_inner_loop(
+                X=Xk,
+                Y=Yk,
+                mode=self.mode,
+                max_iter=self.max_iter,
+                tol=self.tol,
+                norm_y_weights=self.norm_y_weights,
+            )
+            self.n_iter_.append(n_iter_)
             # Forces sign stability of x_weights and y_weights
             # Sign undeterminacy issue from svd if algorithm == "svd"
             # and from platform dependent computation if algorithm == 'nipals'
@@ -413,16 +395,15 @@ class _PLS(TransformerMixin,
         else:
             self.y_rotations_ = np.ones(1)
 
-        if True or self.deflation_mode == "regression":
-            # FIXME what's with the if?
-            # Estimate regression coefficient
-            # Regress Y on T
-            # Y = TQ' + Err,
-            # Then express in function of X
-            # Y = X W(P'W)^-1Q' + Err = XB + Err
-            # => B = W*Q' (p x q)
-            self.coef_ = np.dot(self.x_rotations_, self.y_loadings_.T)
-            self.coef_ = self.coef_ * self.y_std_
+        # Estimate regression coefficient
+        # Regress Y on T
+        # Y = TQ' + Err,
+        # Then express in function of X
+        # Y = X W(P'W)^-1Q' + Err = XB + Err
+        # => B = W*Q' (p x q)
+        self.coef_ = np.dot(self.x_rotations_, self.y_loadings_.T)
+        self.coef_ = self.coef_ * self.y_std_
+
         return self
 
     def transform(self, X, Y=None, copy=True):
@@ -536,166 +517,3 @@ class _PLS(TransformerMixin,
 
     def _more_tags(self):
         return {"poor_score": True}
-
-#
-# class PLSSVD(TransformerMixin, BaseEstimator):
-#     """Partial Least Square SVD
-#
-#     Simply perform a svd on the crosscovariance matrix: X'Y
-#     There are no iterative deflation here.
-#
-#     Read more in the :ref:`User Guide <cross_decomposition>`.
-#
-#     .. versionadded:: 0.8
-#
-#     Parameters
-#     ----------
-#     n_components : int, default 2
-#         Number of components to keep.
-#
-#     scale : boolean, default True
-#         Whether to scale X and Y.
-#
-#     copy : boolean, default True
-#         Whether to copy X and Y, or perform in-place computations.
-#
-#     Attributes
-#     ----------
-#     x_weights_ : array, [p, n_components]
-#         X block weights vectors.
-#
-#     y_weights_ : array, [q, n_components]
-#         Y block weights vectors.
-#
-#     x_scores_ : array, [n_samples, n_components]
-#         X scores.
-#
-#     y_scores_ : array, [n_samples, n_components]
-#         Y scores.
-#
-#     Examples
-#     --------
-#     >>> import numpy as np
-#     >>> from sklearn.cross_decomposition import PLSSVD
-#     >>> X = np.array([[0., 0., 1.],
-#     ...     [1.,0.,0.],
-#     ...     [2.,2.,2.],
-#     ...     [2.,5.,4.]])
-#     >>> Y = np.array([[0.1, -0.2],
-#     ...     [0.9, 1.1],
-#     ...     [6.2, 5.9],
-#     ...     [11.9, 12.3]])
-#     >>> plsca = PLSSVD(n_components=2)
-#     >>> plsca.fit(X, Y)
-#     PLSSVD()
-#     >>> X_c, Y_c = plsca.transform(X, Y)
-#     >>> X_c.shape, Y_c.shape
-#     ((4, 2), (4, 2))
-#
-#     See also
-#     --------
-#     PLSCanonical
-#     CCA
-#     """
-#
-#     def __init__(self, n_components=2, scale=True, copy=True):
-#         self.n_components = n_components
-#         self.scale = scale
-#         self.copy = copy
-#
-#     def fit(self, X, Y):
-#         """Fit model to data.
-#
-#         Parameters
-#         ----------
-#         X : array-like of shape (n_samples, n_features)
-#             Training vectors, where n_samples is the number of samples and
-#             n_features is the number of predictors.
-#
-#         Y : array-like of shape (n_samples, n_targets)
-#             Target vectors, where n_samples is the number of samples and
-#             n_targets is the number of response variables.
-#         """
-#         # copy since this will contains the centered data
-#         check_consistent_length(X, Y)
-#         X = check_array(X,
-#                         dtype=np.float64,
-#                         copy=self.copy,
-#                         ensure_min_samples=2)
-#         Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
-#         if Y.ndim == 1:
-#             Y = Y.reshape(-1, 1)
-#
-#         if self.n_components > max(Y.shape[1], X.shape[1]):
-#             raise ValueError("Invalid number of components n_components=%d"
-#                              " with X of shape %s and Y of shape %s." %
-#                              (self.n_components, str(X.shape), str(Y.shape)))
-#
-#         # Scale (in place)
-#         X, Y, self.x_mean_, self.y_mean_, self.x_std_, self.y_std_ = _center_scale_xy(
-#             X, Y, self.scale)
-#         # svd(X'Y)
-#         C = np.dot(X.T, Y)
-#
-#         # The arpack svds solver only works if the number of extracted
-#         # components is smaller than rank(X) - 1. Hence, if we want to extract
-#         # all the components (C.shape[1]), we have to use another one. Else,
-#         # let's use arpacks to compute only the interesting components.
-#         if self.n_components >= np.min(C.shape):
-#             U, s, V = svd(C, full_matrices=False)
-#         else:
-#             U, s, V = svds(C, k=self.n_components)
-#         # Deterministic output
-#         U, V = svd_flip(U, V)
-#         V = V.T
-#         self.x_scores_ = np.dot(X, U)
-#         self.y_scores_ = np.dot(Y, V)
-#         self.x_weights_ = U
-#         self.y_weights_ = V
-#         return self
-#
-#     def transform(self, X, Y=None):
-#         """
-#         Apply the dimension reduction learned on the train data.
-#
-#         Parameters
-#         ----------
-#         X : array-like of shape (n_samples, n_features)
-#             Training vectors, where n_samples is the number of samples and
-#             n_features is the number of predictors.
-#
-#         Y : array-like of shape (n_samples, n_targets)
-#             Target vectors, where n_samples is the number of samples and
-#             n_targets is the number of response variables.
-#         """
-#         check_is_fitted(self)
-#         X = check_array(X, dtype=np.float64)
-#         Xr = (X - self.x_mean_) / self.x_std_
-#         x_scores = np.dot(Xr, self.x_weights_)
-#         if Y is not None:
-#             Y = check_array(Y, ensure_2d=False, dtype=np.float64)
-#             if Y.ndim == 1:
-#                 Y = Y.reshape(-1, 1)
-#             Yr = (Y - self.y_mean_) / self.y_std_
-#             y_scores = np.dot(Yr, self.y_weights_)
-#             return x_scores, y_scores
-#         return x_scores
-#
-#     def fit_transform(self, X, y=None):
-#         """Learn and apply the dimension reduction on the train data.
-#
-#         Parameters
-#         ----------
-#         X : array-like of shape (n_samples, n_features)
-#             Training vectors, where n_samples is the number of samples and
-#             n_features is the number of predictors.
-#
-#         y : array-like of shape (n_samples, n_targets)
-#             Target vectors, where n_samples is the number of samples and
-#             n_targets is the number of response variables.
-#
-#         Returns
-#         -------
-#         x_scores if Y is not given, (x_scores, y_scores) otherwise.
-#         """
-#         return self.fit(X, y).transform(X, y)

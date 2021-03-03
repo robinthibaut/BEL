@@ -1,15 +1,3 @@
-"""
-Base classes for all estimators.
-
-Used for VotingClassifier
-"""
-
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
-
-# Author: Gael Varoquaux <gael.varoquaux@normalesup.org>
-# License: BSD 3 clause
-
-import copy
 import inspect
 import platform
 import warnings
