@@ -11,10 +11,8 @@ Extended math utilities.
 #          Giorgio Patrini
 # License: BSD 3 clause
 
-import warnings
-
 import numpy as np
-from scipy import sparse
+
 
 # from . import check_random_state
 # from ._logistic_sigmoid import _log_logistic_sigmoid

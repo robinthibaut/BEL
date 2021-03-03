@@ -169,7 +169,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
 
         if lwl > lwr:
             rl = (
-                lwl / lwr
+                    lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
@@ -177,7 +177,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
             dar = difx - dal
         elif lwr > lwl:
             rl = (
-                lwr / lwl
+                    lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
@@ -339,12 +339,12 @@ def contours_vertices(x: list,
 
 
 def binary_polygon(
-    xys: np.array,
-    nrow: int,
-    ncol: int,
-    pzs: np.array,
-    outside: float = -1,
-    inside: float = 1,
+        xys: np.array,
+        nrow: int,
+        ncol: int,
+        pzs: np.array,
+        outside: float = -1,
+        inside: float = 1,
 ):
     """
     Given a polygon whose vertices are given by the array pzs, and a matrix of

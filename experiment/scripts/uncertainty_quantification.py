@@ -71,15 +71,15 @@ def scan_roots(base,
 
 
 def analysis(
-    base,
-    comb: List[List[int]] = None,
-    n_training: int = 200,
-    n_obs: int = 50,
-    flag_base: bool = False,
-    wipe: bool = False,
-    roots_training: Root = None,
-    to_swap: Root = None,
-    roots_obs: Root = None,
+        base,
+        comb: List[List[int]] = None,
+        n_training: int = 200,
+        n_obs: int = 50,
+        flag_base: bool = False,
+        wipe: bool = False,
+        roots_training: Root = None,
+        to_swap: Root = None,
+        roots_obs: Root = None,
 ):
     """
 

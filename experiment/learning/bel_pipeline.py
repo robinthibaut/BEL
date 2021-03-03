@@ -33,13 +33,13 @@ Combination = List[int]
 
 
 def base_pca(
-    base,
-    base_dir: str,
-    roots: Root,
-    test_roots: Root,
-    d_pca_obj=None,
-    h_pca_obj=None,
-    check: bool = False,
+        base,
+        base_dir: str,
+        roots: Root,
+        test_roots: Root,
+        d_pca_obj=None,
+        h_pca_obj=None,
+        check: bool = False,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -125,10 +125,10 @@ def base_pca(
 
 
 def bel_fit_transform(
-    base,
-    well_comb: Combination = None,
-    training_roots: Root = None,
-    test_root: Root = None,
+        base,
+        well_comb: Combination = None,
+        training_roots: Root = None,
+        test_root: Root = None,
 ):
     """
     This function loads raw data and perform both PCA and CCA on it.

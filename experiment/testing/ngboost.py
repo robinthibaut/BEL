@@ -4,11 +4,11 @@ import os
 
 import joblib
 import numpy as np
-from ngboost import NGBRegressor
 from ngboost.distns import Normal
 
 from experiment.algorithms.base import MySetup as base
 from experiment.visualization import Plot
+from ngboost import NGBRegressor
 
 fc = base.Focus()
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
@@ -61,7 +61,7 @@ random_samples = random_samples.reshape(n_samples, nhco)
 # Generate forecast in the initial dimension and reshape.
 forecast_posterior = h_pco.custom_inverse_transform(
     random_samples[:, :15]).reshape(
-        (n_samples, h_pco.shape[1], h_pco.shape[2]))
+    (n_samples, h_pco.shape[1], h_pco.shape[2]))
 mplot.whpa_plot(h=forecast_posterior, show_wells=True, show=True)
 
 # test Mean Squared Error

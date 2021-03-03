@@ -9,7 +9,6 @@ Used for VotingClassifier
 # Author: Gael Varoquaux <gael.varoquaux@normalesup.org>
 # License: BSD 3 clause
 
-import copy
 import inspect
 import platform
 import warnings

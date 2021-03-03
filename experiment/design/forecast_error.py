@@ -31,12 +31,12 @@ from experiment.algorithms.statistics import PosteriorIO
 
 class UncertaintyQuantification:
     def __init__(
-        self,
-        base,
-        study_folder: str,
-        base_dir: str = None,
-        wel_comb: list = None,
-        seed: int = None,
+            self,
+            base,
+            study_folder: str,
+            base_dir: str = None,
+            wel_comb: list = None,
+            seed: int = None,
     ):
         """
 
@@ -186,7 +186,7 @@ class UncertaintyQuantification:
 
         # Define a disk within which the KDE will be performed to save time
         x0, y0, radius = 1000, 500, 200
-        r = np.sqrt((xy[:, 0] - x0)**2 + (xy[:, 1] - y0)**2)
+        r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
         inside = r < radius
         xyu = xy[inside]  # Create mask
 
@@ -199,7 +199,7 @@ class UncertaintyQuantification:
         xykde = np.vstack([x_stack, y_stack]).T
         kde = KernelDensity(kernel="gaussian",
                             bandwidth=bw).fit(  # Fit kernel density
-                                xykde)
+            xykde)
         # Sample at the desired grid cells
         score = np.exp(kde.score_samples(xyu))
 
@@ -211,7 +211,7 @@ class UncertaintyQuantification:
             sc /= sc.max()
 
             sc += 1
-            sc = sc**-1
+            sc = sc ** -1
 
             sc -= sc.min()
             sc /= sc.max()
@@ -265,7 +265,7 @@ class UncertaintyQuantification:
         # Inverse transform and reshape
         v_h_true_cut = self.h_pco.custom_inverse_transform(
             self.h_pco.predict_pc, n_cut).reshape(
-                (self.shape[1], self.shape[2]))
+            (self.shape[1], self.shape[2]))
 
         # Reminder: these are the focus parameters around the pumping well
         nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
