@@ -13,7 +13,6 @@ import joblib
 import numpy as np
 import scipy.sparse as sp
 
-from experiment.algorithms.config import get_config as _get_config
 from experiment.algorithms.exceptions import NotFittedError
 from experiment.core import Setup
 
@@ -248,8 +247,6 @@ def _assert_all_finite(X, allow_nan=False, msg_dtype=None):
     # validation is also imported in extmath
     from experiment.algorithms.extmath import _safe_accumulator_op
 
-    if _get_config()["assume_finite"]:
-        return
     X = np.asanyarray(X)
     # First try an O(n) time, O(1) space solution for the common case that
     # everything is finite; fall back to O(n) space np.isfinite to prevent
