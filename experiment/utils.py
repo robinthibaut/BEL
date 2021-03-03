@@ -596,7 +596,6 @@ def check_array(
                 " a minimum of %d is required%s." %
                 (n_features, array.shape, ensure_min_features, context))
 
-
     if copy and np.may_share_memory(array, array_orig):
         array = np.array(array, dtype=dtype, order=order)
 

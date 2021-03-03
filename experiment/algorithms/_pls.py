@@ -1,4 +1,3 @@
-
 import warnings
 from abc import ABCMeta, abstractmethod
 
@@ -218,17 +217,16 @@ class _PLS(TransformerMixin,
     Editions Technic.
 
     """
-
     @abstractmethod
     def __init__(
-            self,
-            n_components=2,
-            scale=True,
-            deflation_mode="regression",
-            norm_y_weights=False,
-            max_iter=500,
-            tol=1e-06,
-            copy=True,
+        self,
+        n_components=2,
+        scale=True,
+        deflation_mode="regression",
+        norm_y_weights=False,
+        max_iter=500,
+        tol=1e-06,
+        copy=True,
     ):
         self.n_components = n_components
         self.deflation_mode = deflation_mode

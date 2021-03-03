@@ -34,7 +34,6 @@ class BaseEstimator:
     at the class level in their ``__init__`` as explicit keyword
     arguments (no ``*args`` or ``**kwargs``).
     """
-
     @classmethod
     def _get_param_names(cls):
         """Get parameter names for the estimator"""
@@ -305,7 +304,6 @@ class ClusterMixin:
 
 class BiclusterMixin:
     """Mixin class for all bicluster estimators in scikit-learn"""
-
     @property
     def biclusters_(self):
         """Convenient way to get row and column indicators together.
