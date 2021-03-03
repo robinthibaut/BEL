@@ -38,104 +38,6 @@ _DEFAULT_TAGS = {
 }
 
 
-def clone(estimator, safe=True):
-    """Constructs a new estimator with the same parameters.
-
-    Clone does a deep copy of the model in an estimator
-    without actually copying attached data. It yields a new estimator
-    with the same parameters that has not been fit on any data.
-
-    Parameters
-    ----------
-    estimator : estimator object, or list, tuple or set of objects
-        The estimator or group of estimators to be cloned
-
-    safe : boolean, optional
-        If safe is false, clone will fall back to a deep copy on objects
-        that are not estimators.
-
-    """
-    estimator_type = type(estimator)
-    # XXX: not handling dictionaries
-    if estimator_type in (list, tuple, set, frozenset):
-        return estimator_type([clone(e, safe=safe) for e in estimator])
-    elif not hasattr(estimator, "get_params") or isinstance(estimator, type):
-        if not safe:
-            return copy.deepcopy(estimator)
-        else:
-            raise TypeError(
-                "Cannot clone object '%s' (type %s): "
-                "it does not seem to be a scikit-learn estimator "
-                "as it does not implement a 'get_params' methods." %
-                (repr(estimator), type(estimator)))
-    klass = estimator.__class__
-    new_object_params = estimator.get_params(deep=False)
-    for name, param in new_object_params.items():
-        new_object_params[name] = clone(param, safe=False)
-    new_object = klass(**new_object_params)
-    params_set = new_object.get_params(deep=False)
-
-    # quick sanity check of the parameters of the clone
-    for name in new_object_params:
-        param1 = new_object_params[name]
-        param2 = params_set[name]
-        if param1 is not param2:
-            raise RuntimeError("Cannot clone object %s, as the constructor "
-                               "either does not set or modifies parameter %s" %
-                               (estimator, name))
-    return new_object
-
-
-def _pprint(params, offset=0, printer=repr):
-    """Pretty print the dictionary 'params'
-
-    Parameters
-    ----------
-    params : dict
-        The dictionary to pretty print
-
-    offset : int
-        The offset in characters to add at the begin of each line.
-
-    printer : callable
-        The function to convert entries to strings, typically
-        the builtin str or repr
-
-    """
-    # Do a multi-line justified repr:
-    options = np.get_printoptions()
-    np.set_printoptions(precision=5, threshold=64, edgeitems=2)
-    params_list = list()
-    this_line_length = offset
-    line_sep = ",\n" + (1 + offset // 2) * " "
-    for i, (k, v) in enumerate(sorted(params.items())):
-        if type(v) is float:
-            # use str for representing floating point numbers
-            # this way we get consistent representation across
-            # architectures and versions.
-            this_repr = "%s=%s" % (k, str(v))
-        else:
-            # use repr of the rest
-            this_repr = "%s=%s" % (k, printer(v))
-        if len(this_repr) > 500:
-            this_repr = this_repr[:300] + "..." + this_repr[-100:]
-        if i > 0:
-            if this_line_length + len(this_repr) >= 75 or "\n" in this_repr:
-                params_list.append(line_sep)
-                this_line_length = len(line_sep)
-            else:
-                params_list.append(", ")
-                this_line_length += 2
-        params_list.append(this_repr)
-        this_line_length += len(this_repr)
-
-    np.set_printoptions(**options)
-    lines = "".join(params_list)
-    # Strip trailing space to avoid nightmare in doctests
-    lines = "\n".join(l.rstrip(" ") for l in lines.split("\n"))
-    return lines
-
-
 class BaseEstimator:
     """Base class for all estimators in scikit-learn
 
@@ -145,6 +47,7 @@ class BaseEstimator:
     at the class level in their ``__init__`` as explicit keyword
     arguments (no ``*args`` or ``**kwargs``).
     """
+
     @classmethod
     def _get_param_names(cls):
         """Get parameter names for the estimator"""
@@ -195,10 +98,7 @@ class BaseEstimator:
                 value = getattr(self, key)
             except AttributeError:
                 warnings.warn(
-                    "From version 0.24, get_params will raise an "
-                    "AttributeError if a parameter cannot be "
-                    "retrieved as an instance attribute. Previously "
-                    "it would return None.",
+                    "Attribute Error",
                     FutureWarning,
                 )
                 value = None
@@ -251,56 +151,6 @@ class BaseEstimator:
             valid_params[key].set_params(**sub_params)
 
         return self
-
-    #
-    # def __repr__(self, N_CHAR_MAX=700):
-    #     # N_CHAR_MAX is the (approximate) maximum number of non-blank
-    #     # characters to render. We pass it as an optional parameter to ease
-    #     # the tests.
-    #
-    #     from .utils._pprint import _EstimatorPrettyPrinter
-    #
-    #     N_MAX_ELEMENTS_TO_SHOW = 30  # number of elements to show in sequences
-    #
-    #     # use ellipsis for sequences with a lot of elements
-    #     pp = _EstimatorPrettyPrinter(
-    #         compact=True, indent=1, indent_at_name=True,
-    #         n_max_elements_to_show=N_MAX_ELEMENTS_TO_SHOW)
-    #
-    #     repr_ = pp.pformat(self)
-    #
-    #     # Use bruteforce ellipsis when there are a lot of non-blank characters
-    #     n_nonblank = len(''.join(repr_.split()))
-    #     if n_nonblank > N_CHAR_MAX:
-    #         lim = N_CHAR_MAX // 2  # apprx number of chars to keep on both ends
-    #         regex = r'^(\s*\S){%d}' % lim
-    #         # The regex '^(\s*\S){%d}' % n
-    #         # matches from the start of the string until the nth non-blank
-    #         # character:
-    #         # - ^ matches the start of string
-    #         # - (pattern){n} matches n repetitions of pattern
-    #         # - \s*\S matches a non-blank char following zero or more blanks
-    #         left_lim = re.match(regex, repr_).end()
-    #         right_lim = re.match(regex, repr_[::-1]).end()
-    #
-    #         if '\n' in repr_[left_lim:-right_lim]:
-    #             # The left side and right side aren't on the same line.
-    #             # To avoid weird cuts, e.g.:
-    #             # categoric...ore',
-    #             # we need to start the right side with an appropriate newline
-    #             # character so that it renders properly as:
-    #             # categoric...
-    #             # handle_unknown='ignore',
-    #             # so we add [^\n]*\n which matches until the next \n
-    #             regex += r'[^\n]*\n'
-    #             right_lim = re.match(regex, repr_[::-1]).end()
-    #
-    #         ellipsis = '...'
-    #         if left_lim + len(ellipsis) < len(repr_) - right_lim:
-    #             # Only add ellipsis if it results in a shorter repr
-    #             repr_ = repr_[:left_lim] + '...' + repr_[-right_lim:]
-    #
-    #     return repr_
 
     def __getstate__(self):
         try:
@@ -481,6 +331,7 @@ class ClusterMixin:
 
 class BiclusterMixin:
     """Mixin class for all bicluster estimators in scikit-learn"""
+
     @property
     def biclusters_(self):
         """Convenient way to get row and column indicators together.
