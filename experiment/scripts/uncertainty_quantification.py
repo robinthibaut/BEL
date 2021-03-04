@@ -163,13 +163,11 @@ def analysis(
         experiment.utils.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, "h_pca.pkl")
-        dcp.base_pca(
-            base=base,
-            base_dir=obj_path,
-            roots=roots_training,
-            test_roots=roots_obs,
-            h_pca_obj=obj
-        )
+        dcp.base_pca(base=base,
+                     base_dir=obj_path,
+                     roots=roots_training,
+                     test_roots=roots_obs,
+                     h_pca_obj=obj)
 
     if comb is None:
         comb = base.Wells.combination  # Get default combination (all)
