@@ -242,9 +242,9 @@ def main_2(N):
             wipe=True,
             flag_base=True,
         )
-        means.append(mhd_mean)
+        means.append([n, mhd_mean])
 
-    return means
+    return np.array(means)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,8 @@ if __name__ == "__main__":
     #          '27ec76adab2e406794584fc993188c24',
     #          '9a389395bfbe4cd883dfa3e452752978']
 
-    roots = ["27ec76adab2e406794584fc993188c24"]
+    roots = ["818bf1676c424f76b83bd777ae588a1d"]
+    # roots = ["27ec76adab2e406794584fc993188c24"]
 
     alphabet = string.ascii_uppercase
 
@@ -67,4 +68,4 @@ if __name__ == "__main__":
         myvis.plot_pc_ba(root=sample, data=True, target=True)
 
         myvis.cca_vision(root=sample, folders=wells)
-        #
+
