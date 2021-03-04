@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 from ngboost.distns import Normal
 
-from experiment.algorithms.base import MySetup as base
+from experiment.base import MySetup as base
 from experiment.visualization import Plot
 from ngboost import NGBRegressor
 

@@ -16,7 +16,7 @@ from experiment.config import Setup
 def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
          xy_dummy: np.array):
     """
-    Builds and run customized MODFLOW simulation.
+    Builds and run a customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
     :param model_ws: Path to the working directory.
     :param grid_dir: Path to wells data directory.

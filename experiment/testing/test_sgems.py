@@ -7,7 +7,7 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.utils
-from experiment.algorithms.base import MySetup
+from experiment.base import MySetup
 from experiment.algorithms.statistics import sgsim
 
 

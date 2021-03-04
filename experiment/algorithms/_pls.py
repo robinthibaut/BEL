@@ -8,9 +8,9 @@ from scipy.linalg import pinv2, svd
 from experiment.utils import (FLOAT_DTYPES, check_array,
                               check_consistent_length, check_is_fitted)
 
-from .base import (BaseEstimator, RegressorMixin,
-                   TransformerMixin)
-from .exceptions import ConvergenceWarning
+from experiment.base import (BaseEstimator, RegressorMixin,
+                             TransformerMixin)
+from experiment.exceptions import ConvergenceWarning
 from .extmath import svd_flip
 
 __all__ = ["_PLS"]

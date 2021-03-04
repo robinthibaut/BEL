@@ -1,3 +1,5 @@
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import inspect
 import warnings
 from collections import defaultdict
@@ -163,7 +165,7 @@ class RegressorMixin:
 
         """
 
-        from .metrics import _check_reg_targets, r2_score
+        from experiment.algorithms.metrics import _check_reg_targets, r2_score
 
         y_pred = self.predict(X)
         # XXX: Remove the check in 0.23
