@@ -168,8 +168,7 @@ def analysis(
             base_dir=obj_path,
             roots=roots_training,
             test_roots=roots_obs,
-            h_pca_obj=obj,
-            check=False,
+            h_pca_obj=obj
         )
 
     if comb is None:
@@ -202,7 +201,7 @@ def get_roots():
     training_roots = [item for sublist in training_roots for item in sublist]
 
     test_roots = experiment.utils.data_read(
-        os.path.join(Setup.Directories.storage_dir, "test_root.dat"))
+        os.path.join(Setup.Directories.storage_dir, "test_roots.dat"))
     test_roots = [item for sublist in test_roots for item in sublist]
 
     return training_roots, test_roots
