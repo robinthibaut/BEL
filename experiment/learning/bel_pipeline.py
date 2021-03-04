@@ -26,7 +26,6 @@ import experiment.utils
 from experiment.algorithms.cross_decomposition import CCA
 from experiment.spatial import grid_parameters, signed_distance
 from experiment.processing.dimension_reduction import PC
-from experiment.visualization import whpa_plot
 
 Root = List[str]
 Combination = List[int]
@@ -39,7 +38,6 @@ def base_pca(
     test_roots: Root,
     d_pca_obj=None,
     h_pca_obj=None,
-    check: bool = False,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -49,7 +47,6 @@ def base_pca(
     :param test_roots: list:
     :param d_pca_obj:
     :param h_pca_obj:
-    :param check: bool: Flag to plot
     :return:
     """
     if d_pca_obj is not None:
@@ -84,22 +81,6 @@ def base_pca(
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
-
-        if check:
-            # Load parameters:
-            # instance
-            fig_dir = jp(os.path.dirname(h_pca_obj), "roots_whpa")
-            experiment.utils.dirmaker(fig_dir)
-            for i, e in enumerate(h):
-                whpa_plot(
-                    whpa=[e],
-                    x_lim=x_lim,
-                    y_lim=y_lim,
-                    well_comb=base.Wells.combination,
-                    lw=1,
-                    fig_file=jp(fig_dir, "".join((r[i], ".png"))),
-                )
-                np.save(jp(fig_dir, "".join((r[i], ".npy"))), e)
 
         # Initiate h pca object
         h_pco = PC(name="h", training=h, roots=roots, directory=base_dir)
