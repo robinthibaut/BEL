@@ -1,16 +1,14 @@
-
 import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from scipy.linalg import pinv2, svd
 
+from experiment.base import BaseEstimator, RegressorMixin, TransformerMixin
+from experiment.exceptions import ConvergenceWarning
 from experiment.utils import (FLOAT_DTYPES, check_array,
                               check_consistent_length, check_is_fitted)
 
-from experiment.base import (BaseEstimator, RegressorMixin,
-                             TransformerMixin)
-from experiment.exceptions import ConvergenceWarning
 from .extmath import svd_flip
 
 __all__ = ["_PLS"]
@@ -121,10 +119,7 @@ def _center_scale_xy(X, Y, scale=True):
     return X, Y, x_mean, y_mean, x_std, y_std
 
 
-class _PLS(TransformerMixin,
-           RegressorMixin,
-           BaseEstimator,
-           metaclass=ABCMeta):
+class _PLS(TransformerMixin, RegressorMixin, BaseEstimator, metaclass=ABCMeta):
     """Partial Least Squares (PLS)
 
     This class implements the generic PLS algorithm, constructors' parameters
@@ -217,17 +212,16 @@ class _PLS(TransformerMixin,
     Editions Technic.
 
     """
-
     @abstractmethod
     def __init__(
-            self,
-            n_components=2,
-            scale=True,
-            deflation_mode="regression",
-            norm_y_weights=False,
-            max_iter=500,
-            tol=1e-06,
-            copy=True,
+        self,
+        n_components=2,
+        scale=True,
+        deflation_mode="regression",
+        norm_y_weights=False,
+        max_iter=500,
+        tol=1e-06,
+        copy=True,
     ):
         self.n_components = n_components
         self.deflation_mode = deflation_mode

@@ -1,7 +1,5 @@
 __all__ = [
-    "NotFittedError",
-    "ConvergenceWarning",
-    "EfficiencyWarning",
+    "NotFittedError", "ConvergenceWarning", "EfficiencyWarning",
     "UndefinedMetricWarning"
 ]
 

@@ -10,14 +10,11 @@ import warnings
 
 import numpy as np
 
+from experiment.exceptions import UndefinedMetricWarning
 from experiment.utils import (_num_samples, check_array,
                               check_consistent_length, column_or_1d)
 
-from experiment.exceptions import UndefinedMetricWarning
-
-__ALL__ = [
-    "r2_score"
-]
+__ALL__ = ["r2_score"]
 
 
 def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):

@@ -12,8 +12,8 @@ import joblib
 import numpy as np
 import scipy.sparse as sp
 
-from experiment.exceptions import NotFittedError
 from experiment.config import Setup
+from experiment.exceptions import NotFittedError
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 

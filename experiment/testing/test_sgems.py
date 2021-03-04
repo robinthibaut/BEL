@@ -7,8 +7,8 @@ from os.path import join as jp
 import numpy as np
 
 import experiment.utils
-from experiment.base import MySetup
 from experiment.algorithms.statistics import sgsim
+from experiment.base import MySetup
 
 
 def test_sgems(folder=None):

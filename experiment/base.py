@@ -14,7 +14,6 @@ class BaseEstimator:
     at the class level in their ``__init__`` as explicit keyword
     arguments (no ``*args`` or ``**kwargs``).
     """
-
     @classmethod
     def _get_param_names(cls):
         """Get parameter names for the estimator"""
