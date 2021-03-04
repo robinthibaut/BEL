@@ -9,7 +9,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 import experiment.utils
-from experiment.algorithms.spatial import (
+from experiment.spatial import (
     binary_polygon,
     contours_vertices,
     grid_parameters,

@@ -109,7 +109,7 @@ def simulation(folder=None):
     else:
         print(f"pass {res_dir}")
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
-        # Run Flow
+        # Run Flow Modelling
         flow(
             exe_name=exe_name_mf,
             model_ws=results_dir,
@@ -120,10 +120,13 @@ def simulation(folder=None):
 
 
 def main(n_sim: int = None):
+    """Main function for multiprocessing"""
+    # Automatically selects num,ber of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
     print(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
 
+    # If n_sim arg is left to None, redo all simulations in folders already presents
     if n_sim is None:
         # List directories in forwards folder
         listme = os.listdir(Setup.Directories.hydro_res_dir)
@@ -134,14 +137,17 @@ def main(n_sim: int = None):
                 listme,
             ))
 
+    # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
         training_roots = experiment.utils.data_read(
             os.path.join(Setup.Directories.forecasts_dir, "base", "roots.dat"))
         folders = [item for sublist in training_roots for item in sublist]
 
+    # If n_sim is any positive integer, performs the number of selected forward modelling
     else:
         folders = np.zeros(n_sim)
 
+    # Start processes
     pool.map(simulation, folders)
 
 

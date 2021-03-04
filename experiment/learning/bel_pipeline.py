@@ -24,7 +24,7 @@ import numpy as np
 import experiment.processing.predictor_handle as dops
 import experiment.utils
 from experiment.algorithms.cross_decomposition import CCA
-from experiment.algorithms.spatial import grid_parameters, signed_distance
+from experiment.spatial import grid_parameters, signed_distance
 from experiment.processing.dimension_reduction import PC
 from experiment.visualization import whpa_plot
 

@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from diavatly import model_map
 
-import experiment.algorithms.spatial
 import experiment.visualization as mplot
-from experiment.algorithms.spatial import (binary_polygon, get_centroids,
-                                           grid_parameters)
+from experiment.spatial.spatial import (binary_polygon, get_centroids,
+                                        grid_parameters)
 from experiment.config import Setup
 from experiment.processing.target_handle import travelling_particles
 
@@ -102,7 +101,7 @@ def active_zone(modflowmodel):
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
-    inds = experiment.algorithms.spatial.matrix_paste(xy_dummy, xy_true)
+    inds = experiment.spatial.spatial.matrix_paste(xy_dummy, xy_true)
     val_dummy = [val_icbund[k]
                  for k in inds]  # Contains k values for refined grid
     # Reshape in n layers x n cells in refined grid.
@@ -116,7 +115,7 @@ def active_zone(modflowmodel):
         show=True,
     )
 
-    grid1 = experiment.algorithms.spatial.blocks_from_rc(
+    grid1 = experiment.spatial.spatial.blocks_from_rc(
         np.ones(nrow_dummy) * grf_dummy,
         np.ones(ncol_dummy) * grf_dummy)
     model_map(grid1, vals=val_dummy, log=0)

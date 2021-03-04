@@ -14,7 +14,7 @@ from pysgems.sgems import sg
 from scipy import integrate, ndimage, stats
 from sklearn.preprocessing import PowerTransformer
 
-from experiment.algorithms.spatial import get_block
+from experiment.spatial import get_block
 from experiment.config import Setup
 from experiment.utils import data_read
 
