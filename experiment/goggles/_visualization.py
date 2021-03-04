@@ -747,7 +747,10 @@ def plot_results(
         colors = ["blue", "red"]
         labels = ["Training", "Test"]
         legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
-        _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+        _proxy_legend(legend1=legend,
+                      colors=colors,
+                      labels=labels,
+                      fig_file=ff)
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{cca_operator.n_components}.pdf")
