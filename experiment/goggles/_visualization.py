@@ -28,11 +28,10 @@ from experiment.utils import reload_trained_model
 
 ftype = "png"
 
-
 __all__ = ['plot_results', 'plot_K_field', 'plot_head_field', 'plot_whpa', 'cca_vision', 'pca_vision', 'plot_pc_ba']
 
 
-def my_alphabet(az):
+def _my_alphabet(az):
     """
     Method used to make custom figure annotations.
     :param az:
@@ -52,7 +51,7 @@ def my_alphabet(az):
     return sub
 
 
-def proxy_legend(
+def _proxy_legend(
         legend1=None,
         colors: list = None,
         labels: list = None,
@@ -119,10 +118,10 @@ def proxy_legend(
         plt.close()
 
 
-def proxy_annotate(annotation: list = None,
-                   loc: int = 1,
-                   fz: float = 11,
-                   obj=None):
+def _proxy_annotate(annotation: list = None,
+                    loc: int = 1,
+                    fz: float = 11,
+                    obj=None):
     """
     Places annotation (or title) within the figure box
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
@@ -195,7 +194,7 @@ def explained_variance(
     plt.xlabel("PC number", fontsize=11)
     plt.ylabel("Cumulative explained variance (%)", fontsize=11)
     # Legend
-    legend_a = proxy_annotate(annotation=annotation, loc=2, fz=14)
+    legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     if fig_file:
@@ -284,8 +283,8 @@ def pca_scores(
     plt.tick_params(labelsize=11)
     # Add legend
     # Add title inside the box
-    legend_a = proxy_annotate(annotation=annotation, loc=2, fz=14)
-    proxy_legend(
+    legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
+    _proxy_legend(
         legend1=legend_a,
         colors=["blue", "red"],
         labels=["Training", "Test"],
@@ -331,13 +330,13 @@ def cca_plot(
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
             pass
 
-        subtitle = my_alphabet(i)
+        subtitle = _my_alphabet(i)
 
         # Add title inside the box
         an = [f"{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}"]
-        legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
+        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
 
-        proxy_legend(
+        _proxy_legend(
             legend1=legend_a,
             colors=["black", "white"],
             labels=["Training", "Test"],
@@ -516,7 +515,7 @@ def whpa_plot(
     plt.tick_params(labelsize=labelsize, colors="k")
 
     if annotation:
-        legend = proxy_annotate(annotation=annotation, fz=14, loc=2)
+        legend = _proxy_annotate(annotation=annotation, fz=14, loc=2)
         plt.gca().add_artist(legend)
 
     if fig_file:
@@ -620,9 +619,9 @@ def h_pca_inverse_plot(pca_o,
         # Add title inside the box
         an = ["B"]
 
-        legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
+        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
 
-        proxy_legend(
+        _proxy_legend(
             legend1=legend_a,
             colors=["red", "blue"],
             labels=["Physical", "Back transformed"],
@@ -745,8 +744,8 @@ def plot_results(
         )
         colors = ["blue", "red"]
         labels = ["Training", "Test"]
-        legend = proxy_annotate(annotation=["C"], loc=2, fz=14)
-        proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+        legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
+        _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{cca_operator.n_components}.pdf")
@@ -799,10 +798,10 @@ def plot_results(
         )
 
         # Other tricky operation to add annotation
-        legend_an = proxy_annotate(annotation=annotation, loc=2, fz=14)
+        legend_an = _proxy_annotate(annotation=annotation, loc=2, fz=14)
 
         # Tricky operation to add a second legend:
-        proxy_legend(
+        _proxy_legend(
             legend1=well_legend,
             extra=[legend_an],
             colors=colors,
@@ -869,7 +868,7 @@ def mode_histo(colors: list,
              axis="y",
              alpha=0.7)
 
-    legend_a = proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
+    legend_a = _proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
@@ -891,7 +890,7 @@ def mode_histo(colors: list,
     plt.gca().add_artist(legend_1)
     plt.grid(alpha=0.2)
 
-    legend_a = proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
+    legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
@@ -1044,12 +1043,12 @@ def curves_i(
         # plt.title(f'Well {t + 1}')
 
         alphabet = string.ascii_uppercase
-        legend_a = proxy_annotate([f"{alphabet[t]}. Well {t + 1}"],
-                                  fz=12,
-                                  loc=2)
+        legend_a = _proxy_annotate([f"{alphabet[t]}. Well {t + 1}"],
+                                   fz=12,
+                                   loc=2)
 
         labels = ["Training", "Test"]
-        proxy_legend(legend1=legend_a, colors=colors, labels=labels, loc=1)
+        _proxy_legend(legend1=legend_a, colors=colors, labels=labels, loc=1)
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -1221,8 +1220,8 @@ def plot_whpa(root: str = None):
         )
 
         labels = ["Training", "Test"]
-        legend = proxy_annotate(annotation=["C"], loc=2, fz=14)
-        proxy_legend(
+        legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
+        _proxy_legend(
             legend1=legend,
             colors=["darkblue", "darkred"],
             labels=labels,
@@ -1265,7 +1264,7 @@ def cca_vision(root: str = None, folders: list = None):
         d_cca_training, h_cca_training, *rest = reload_trained_model(root=root,
                                                                      well=f)
 
-        kde_cca(root=root, well=f, sdir=os.path.join(subdir, f, "cca"))
+        _kde_cca(root=root, well=f, sdir=os.path.join(subdir, f, "cca"))
 
         # CCA coefficient plot
         cca_coefficient = np.corrcoef(
@@ -1295,7 +1294,7 @@ def cca_vision(root: str = None, folders: list = None):
         plt.xlabel("Component number")
 
         # Add annotation
-        legend = proxy_annotate(annotation=["D"], fz=14, loc=1)
+        legend = _proxy_annotate(annotation=["D"], fz=14, loc=1)
         plt.gca().add_artist(legend)
 
         plt.savefig(
@@ -1466,8 +1465,8 @@ def d_pca_inverse_plot(
         plt.plot(v_pred * factor, "b", alpha=0.8)
         # Add title inside the box
         an = ["A"]
-        legend_a = proxy_annotate(annotation=an, loc=2, fz=14)
-        proxy_legend(
+        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
+        _proxy_legend(
             legend1=legend_a,
             colors=["red", "blue"],
             labels=["Physical", "Back transformed"],
@@ -1523,7 +1522,7 @@ def hydro_examination(root: str):
     plt.ylabel("Y(m)")
     plt.tick_params(labelsize=11)
 
-    legend = proxy_annotate(annotation=["A"], loc=2, fz=14)
+    legend = _proxy_annotate(annotation=["A"], loc=2, fz=14)
     plt.gca().add_artist(legend)
 
     plt.savefig(
@@ -1535,7 +1534,7 @@ def hydro_examination(root: str):
     plt.show()
 
 
-def despine(
+def _despine(
         fig=None,
         ax=None,
         top=True,
@@ -1993,7 +1992,7 @@ class ModelVTK:
         writer.Write()
 
 
-def get_defaults_kde_plot():
+def _get_defaults_kde_plot():
     height = 6
     ratio = 6
     space = 0
@@ -2052,10 +2051,10 @@ def get_defaults_kde_plot():
         ax_joint.set_ylim(ylim)
 
     # Make the grid look nice
-    despine(f)
+    _despine(f)
     if not marginal_ticks:
-        despine(ax=ax_marg_x, left=True)
-        despine(ax=ax_marg_y, bottom=True)
+        _despine(ax=ax_marg_x, left=True)
+        _despine(ax=ax_marg_y, bottom=True)
 
     for axes in [ax_marg_x, ax_marg_y, ax_cb]:
         for axis in [axes.xaxis, axes.yaxis]:
@@ -2066,7 +2065,7 @@ def get_defaults_kde_plot():
     return ax_joint, ax_marg_x, ax_marg_y, ax_cb
 
 
-def kde_cca(
+def _kde_cca(
         root: str,
         well: str,
         sample_n: int = 0,
@@ -2096,7 +2095,7 @@ def kde_cca(
 
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
-        ax_joint, ax_marg_x, ax_marg_y, ax_cb = get_defaults_kde_plot()
+        ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
         # Conditional:
         hp, sup = stats.posterior_conditional(x=d[comp_n],
@@ -2243,14 +2242,14 @@ def kde_cca(
         plt.tick_params(labelsize=14)
 
         # Add custom artists
-        subtitle = my_alphabet(comp_n)
+        subtitle = _my_alphabet(comp_n)
         # Add title inside the box
         an = [
             f"{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient[comp_n], 3)}"
         ]
-        legend_a = proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
+        legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #
-        proxy_legend(
+        _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
             colors=["black", "white", "red", "deepskyblue"],
