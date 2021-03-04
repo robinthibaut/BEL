@@ -8,8 +8,8 @@ import numpy as np
 from diavatly import model_map
 
 import experiment.visualization as mplot
-from experiment.spatial.spatial import (binary_polygon, get_centroids,
-                                        grid_parameters)
+from experiment.spatial import (binary_polygon, get_centroids,
+                                         grid_parameters)
 from experiment.config import Setup
 from experiment.processing.target_handle import travelling_particles
 

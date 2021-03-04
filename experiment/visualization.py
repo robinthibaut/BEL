@@ -21,8 +21,8 @@ from scipy.interpolate import BSpline, make_interp_spline
 import experiment.spatial as spatial
 import experiment.utils
 from experiment.algorithms import statistics as stats
-from experiment.spatial.spatial import (binary_stack, contours_vertices,
-                                        grid_parameters, refine_machine)
+from experiment.spatial import (binary_stack, contours_vertices,
+                                         grid_parameters, refine_machine)
 from experiment.config import Setup
 from experiment.utils import reload_trained_model
 
@@ -1683,7 +1683,7 @@ class ModelVTK:
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
             # blocks2d = mops.blocks_from_rc(delc, delr)
-            self.blocks = experiment.spatial.spatial.blocks_from_rc_3d(
+            self.blocks = experiment.spatial._spatial.blocks_from_rc_3d(
                 delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
