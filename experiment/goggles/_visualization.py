@@ -21,14 +21,16 @@ from scipy.interpolate import BSpline, make_interp_spline
 import experiment.spatial as spatial
 import experiment.utils
 from experiment.algorithms import statistics as stats
+from experiment.config import Setup
 from experiment.spatial import (binary_stack, contours_vertices,
                                 grid_parameters, refine_machine)
-from experiment.config import Setup
 from experiment.utils import reload_trained_model
 
 ftype = "png"
-
-__all__ = ['plot_results', 'plot_K_field', 'plot_head_field', 'plot_whpa', 'cca_vision', 'pca_vision', 'plot_pc_ba']
+__all__ = [
+    'plot_results', 'plot_K_field', 'plot_head_field', 'plot_whpa',
+    'cca_vision', 'pca_vision', 'plot_pc_ba'
+]
 
 
 def _my_alphabet(az):
@@ -52,16 +54,16 @@ def _my_alphabet(az):
 
 
 def _proxy_legend(
-        legend1=None,
-        colors: list = None,
-        labels: list = None,
-        loc: int = 4,
-        marker: list = None,
-        pec: list = None,
-        fz: float = 11,
-        fig_file: str = None,
-        extra: list = None,
-        obj=None,
+    legend1=None,
+    colors: list = None,
+    labels: list = None,
+    loc: int = 4,
+    marker: list = None,
+    pec: list = None,
+    fz: float = 11,
+    fig_file: str = None,
+    extra: list = None,
+    obj=None,
 ):
     """
     Add a second legend to a figure @ bottom right (loc=4)
@@ -146,12 +148,12 @@ def _proxy_annotate(annotation: list = None,
 
 
 def explained_variance(
-        pca,
-        n_comp: int = 0,
-        thr: float = 1.0,
-        annotation: list = None,
-        fig_file: str = None,
-        show: bool = False,
+    pca,
+    n_comp: int = 0,
+    thr: float = 1.0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
 ):
     """
     PCA explained variance plot
@@ -207,13 +209,13 @@ def explained_variance(
 
 
 def pca_scores(
-        training,
-        prediction,
-        n_comp: int,
-        annotation: list,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training,
+    prediction,
+    n_comp: int,
+    annotation: list,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
@@ -300,13 +302,13 @@ def pca_scores(
 
 
 def cca_plot(
-        cca_operator,
-        d: np.array,
-        h: np.array,
-        d_pc_prediction: np.array,
-        h_pc_prediction: np.array,
-        sdir: str = None,
-        show: bool = False,
+    cca_operator,
+    d: np.array,
+    h: np.array,
+    d_pc_prediction: np.array,
+    h_pc_prediction: np.array,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     CCA plots.
@@ -359,30 +361,30 @@ def cca_plot(
 
 
 def whpa_plot(
-        grf: float = None,
-        well_comb: list = None,
-        whpa: np.array = None,
-        alpha: float = 0.4,
-        halpha: float = None,
-        lw: float = 0.5,
-        bkg_field_array: np.array = None,
-        vmin: float = None,
-        vmax: float = None,
-        x_lim: list = None,
-        y_lim: list = None,
-        xlabel: str = None,
-        ylabel: str = None,
-        cb_title: str = None,
-        labelsize: float = 5,
-        cmap: str = "coolwarm",
-        color: str = "white",
-        show_wells: bool = False,
-        well_ids: list = None,
-        title: str = None,
-        annotation: list = None,
-        fig_file: str = None,
-        highlight: bool = False,
-        show: bool = False,
+    grf: float = None,
+    well_comb: list = None,
+    whpa: np.array = None,
+    alpha: float = 0.4,
+    halpha: float = None,
+    lw: float = 0.5,
+    bkg_field_array: np.array = None,
+    vmin: float = None,
+    vmax: float = None,
+    x_lim: list = None,
+    y_lim: list = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    cb_title: str = None,
+    labelsize: float = 5,
+    cmap: str = "coolwarm",
+    color: str = "white",
+    show_wells: bool = False,
+    well_ids: list = None,
+    title: str = None,
+    annotation: list = None,
+    fig_file: str = None,
+    highlight: bool = False,
+    show: bool = False,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -639,11 +641,11 @@ def h_pca_inverse_plot(pca_o,
 
 
 def plot_results(
-        d: bool = True,
-        h: bool = True,
-        root: str = None,
-        folder: str = None,
-        annotation: list = None,
+    d: bool = True,
+    h: bool = True,
+    root: str = None,
+    folder: str = None,
+    annotation: list = None,
 ):
     """
     Plots forecasts results in the 'uq' folder
@@ -947,17 +949,17 @@ def mode_histo(colors: list,
 
 
 def curves(
-        cols: list,
-        tc: np.array,
-        highlight=None,
-        ghost=False,
-        sdir=None,
-        labelsize=12,
-        factor=1,
-        xlabel=None,
-        ylabel=None,
-        title="curves",
-        show=False,
+    cols: list,
+    tc: np.array,
+    highlight=None,
+    ghost=False,
+    sdir=None,
+    labelsize=12,
+    factor=1,
+    xlabel=None,
+    ylabel=None,
+    title="curves",
+    show=False,
 ):
     """
     Shows every breakthrough curve stacked on a plot.
@@ -1002,15 +1004,15 @@ def curves(
 
 
 def curves_i(
-        cols,
-        tc,
-        highlight=None,
-        labelsize=12,
-        factor=1,
-        xlabel=None,
-        ylabel=None,
-        sdir=None,
-        show=False,
+    cols,
+    tc,
+    highlight=None,
+    labelsize=12,
+    factor=1,
+    xlabel=None,
+    ylabel=None,
+    sdir=None,
+    show=False,
 ):
     """
     Shows every breakthrough individually for each observation point.
@@ -1421,14 +1423,14 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        pca_o,
-        factor: float = 1.0,
-        xlabel: str = None,
-        ylabel: str = None,
-        labelsize: float = 11.0,
-        training=True,
-        fig_dir=None,
-        show=False,
+    pca_o,
+    factor: float = 1.0,
+    xlabel: str = None,
+    ylabel: str = None,
+    labelsize: float = 11.0,
+    training=True,
+    fig_dir=None,
+    show=False,
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.
@@ -1535,14 +1537,14 @@ def hydro_examination(root: str):
 
 
 def _despine(
-        fig=None,
-        ax=None,
-        top=True,
-        right=True,
-        left=False,
-        bottom=False,
-        offset=None,
-        trim=False,
+    fig=None,
+    ax=None,
+    top=True,
+    right=True,
+    left=False,
+    bottom=False,
+    offset=None,
+    trim=False,
 ):
     """Remove the top and right spines from plot(s).
 
@@ -2066,12 +2068,12 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        root: str,
-        well: str,
-        sample_n: int = 0,
-        sdir: str = None,
-        show: bool = False,
-        dist_plot: bool = False,
+    root: str,
+    well: str,
+    sample_n: int = 0,
+    sdir: str = None,
+    show: bool = False,
+    dist_plot: bool = False,
 ):
     # Reload model
     d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(
