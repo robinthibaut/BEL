@@ -3,7 +3,7 @@
 import os
 import string
 
-import experiment.visualization as myvis
+import experiment.goggles as myvis
 from experiment.config import Setup
 from experiment.utils import data_read
 
