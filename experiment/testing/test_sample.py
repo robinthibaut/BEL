@@ -1,5 +1,4 @@
 import os
-
 import unittest
 
 from experiment.config import Setup
@@ -8,7 +7,6 @@ from experiment.utils import get_roots
 
 
 class TestUQ(unittest.TestCase):
-
     def test_uq(self):
         training_file = os.path.join(Setup.Directories.test_dir, "roots.dat")
         test_file = os.path.join(Setup.Directories.test_dir, "test_roots.dat")
