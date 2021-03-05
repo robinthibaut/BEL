@@ -3,7 +3,7 @@
 import numpy as np
 
 from experiment.config import Setup
-from experiment.learning.bel_pipeline import analysis
+from experiment.design.forecast_error import analysis
 from experiment.utils import get_roots
 
 

@@ -10,5 +10,5 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = ['base', 'config', 'exceptions', 'utils', 'goggles',
-           'algorithms', 'design', 'hydro', 'learning', 'processing']
+           'algorithms', 'design', 'hydro', 'learning', 'processing', 'spatial']
 

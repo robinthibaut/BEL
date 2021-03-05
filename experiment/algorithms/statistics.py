@@ -286,7 +286,7 @@ def kde_params(
     return density, support
 
 
-def pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
+def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     """
     Gets the pixel coordinate of the value x or y, in order to get posterior conditional probability given a KDE.
     :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
@@ -337,7 +337,7 @@ def conditional_distribution(
         return 0
 
     # Convert line to row/column
-    row, col = pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
+    row, col = _pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
 
     # Extract the values along the line, using cubic interpolation
     zi = ndimage.map_coordinates(kde_array, np.vstack((row, col)))

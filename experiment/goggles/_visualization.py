@@ -26,7 +26,6 @@ from experiment.spatial import (binary_stack, contours_vertices,
                                 grid_parameters, refine_machine)
 from experiment.utils import reload_trained_model
 
-ftype = "png"
 __all__ = [
     'plot_results', 'plot_K_field', 'plot_head_field', 'plot_whpa', 'whpa_plot',
     'cca_vision', 'pca_vision', 'plot_pc_ba', 'mode_histo', 'ModelVTK'

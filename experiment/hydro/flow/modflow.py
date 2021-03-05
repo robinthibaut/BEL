@@ -9,8 +9,8 @@ import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
 
-from experiment.spatial import refine_axis
-from experiment.config import Setup
+from ...spatial import refine_axis
+from ...config import Setup
 
 
 def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,

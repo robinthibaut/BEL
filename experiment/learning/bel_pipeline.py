@@ -14,7 +14,6 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 """
 
 import os
-import shutil
 import warnings
 from os.path import join as jp
 from typing import List
@@ -26,9 +25,8 @@ from sklearn.preprocessing import PowerTransformer
 from .. import utils
 from ..config import Setup
 
-from ..design.forecast_error import Root, UncertaintyQuantification
 from ..processing import predictor_handle as dops
-import experiment.utils
+
 from ..algorithms.cross_decomposition import CCA
 from ..spatial import grid_parameters, signed_distance, get_block
 from ..processing.dimension_reduction import PC
@@ -57,7 +55,7 @@ def base_pca(
     """
     if d_pca_obj is not None:
         # Loads the results:
-        tc0, _, _ = experiment.utils.data_loader(roots=roots, d=True)
+        tc0, _, _ = utils.data_loader(roots=roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA
         # roots_ = simulation id
@@ -78,7 +76,7 @@ def base_pca(
 
     if h_pca_obj is not None:
         # Loads the results:
-        _, pzs, r = experiment.utils.data_loader(roots=roots, h=True)
+        _, pzs, r = utils.data_loader(roots=roots, h=True)
         # Load parameters:
         xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim,
                                           grf=grf)  # Initiate SD instance
@@ -166,7 +164,7 @@ def bel_fit_transform(
 
     # %% Creates directories
     [
-        experiment.utils.dirmaker(f) for f in
+        utils.dirmaker(f) for f in
         [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]
     ]
 
@@ -175,7 +173,7 @@ def bel_fit_transform(
     tsub = jp(base_dir, "training_curves.npy")
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = experiment.utils.data_loader(res_dir=res_dir,
+        tc0, _, _ = utils.data_loader(res_dir=res_dir,
                                                  roots=training_roots,
                                                  d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
@@ -206,7 +204,7 @@ def bel_fit_transform(
     ndo = d_pco.n_pc_cut
     n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
-    tc0, _, _ = experiment.utils.data_loader(res_dir=res_dir,
+    tc0, _, _ = utils.data_loader(res_dir=res_dir,
                                              test_roots=test_root,
                                              d=True)
     # Subdivide d in an arbitrary number of time steps:
@@ -223,7 +221,7 @@ def bel_fit_transform(
     h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
     nho = h_pco.n_pc_cut  # Number of components to keep
     # Load whpa to predict
-    _, pzs, _ = experiment.utils.data_loader(roots=test_root, h=True)
+    _, pzs, _ = utils.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.predict_pc is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
@@ -235,7 +233,7 @@ def bel_fit_transform(
         joblib.dump(h_pco, jp(base_dir, "h_pca.pkl"))
 
         fig_dir = jp(base_dir, "roots_whpa")
-        experiment.utils.dirmaker(fig_dir)
+        utils.dirmaker(fig_dir)
         np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
     else:
         # Cut components
@@ -255,183 +253,6 @@ def bel_fit_transform(
     joblib.dump(cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
 
     return sub_dir
-
-
-def scan_roots(base,
-               training: Root,
-               obs: Root,
-               combinations: List[int],
-               base_dir_path: str = None) -> float:
-    """
-    Scan forward roots and perform base decomposition.
-    :param base: class: Base class (inventory)
-    :param training: list: List of uuid of each root for training
-    :param obs: list: List of uuid of each root for observation
-    :param combinations: list: List of wells combinations, e.g. [[1, 2, 3, 4, 5, 6]]
-    :param base_dir_path: str: Path to the base directory containing training roots uuid file
-    :return: MHD mean (float)
-    """
-
-    if not isinstance(obs, (list, tuple)):
-        obs = [obs]
-
-    if not isinstance(combinations, (list, tuple)):
-        combinations = [combinations]
-
-    # Resets the target PCA object' predictions to None before starting
-    try:
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
-    except FileNotFoundError:
-        pass
-
-    global_mean = 0
-    for r_ in obs:  # For each observation root
-        for c in combinations:  # For each wel combination
-            # PCA decomposition + CCA
-            sf = bel_fit_transform(base=base,
-                                   training_roots=training,
-                                   test_root=r_,
-                                   well_comb=c)
-            # Uncertainty analysis
-            uq = UncertaintyQuantification(
-                base=base,
-                study_folder=sf,
-                base_dir=base_dir_path,
-                wel_comb=c,
-                seed=123456,
-            )
-            # Sample posterior
-            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            uq.c0(write_vtk=False)  # Extract 0 contours
-            mean = uq.mhd()  # Modified Hausdorff
-            global_mean += mean
-
-        # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
-
-    return global_mean
-
-
-def analysis(
-        base,
-        comb: List[List[int]] = None,
-        n_training: int = 200,
-        n_obs: int = 50,
-        flag_base: bool = False,
-        wipe: bool = False,
-        roots_training: Root = None,
-        to_swap: Root = None,
-        roots_obs: Root = None,
-):
-    """
-    I. First, defines the roots for training from simulations in the hydro results directory.
-    II. Define one 'observation' root (roots_obs in params).
-    III. Perform PCA decomposition on the training targets and store the output in the 'base' folder,
-    to avoid recomputing it every time.
-    IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
-
-    :param base: class: Base class (inventory)
-    :param wipe: bool: Whether to wipe the 'forecast' folder or not
-    :param comb: list: List of well IDs
-    :param n_training: int: Index from which training and data are separated
-    :param n_obs: int: Number of predictors to take
-    :param flag_base: bool: Recompute base PCA on target if True
-    :param roots_training: list: List of roots considered as training.
-    :param to_swap: list: List of roots to swap from training to observations.
-    :param roots_obs: list: List of roots considered as observations.
-    :return: list: List of training roots, list: List of observation roots
-
-    """
-    # Results location
-    md = base.Directories.hydro_res_dir
-    listme = os.listdir(md)
-    # Filter folders out
-    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)),
-                          listme))
-
-    def swap_root(pres: str):
-        """Selects roots from main folder and swap them from training to observation"""
-        if pres in roots_training:
-            idx = roots_training.index(pres)
-            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[
-                0]
-        elif pres in folders:
-            idx = folders.index(pres)
-            roots_obs[0] = folders[idx]
-        else:
-            pass
-
-    if roots_training is None:
-        roots_training = folders[:n_training]  # List of n training roots
-    else:
-        n_training = len(roots_training)
-
-    # base.HyperParameters.n_posts = n_training
-
-    if roots_obs is None:  # If no observation provided
-        if n_training + n_obs <= len(folders):
-            # List of m observation roots
-            roots_obs = folders[n_training:(n_training + n_obs)]
-        else:
-            print("Incompatible training/observation numbers")
-            return
-
-    for i, r in enumerate(roots_training):
-        choices = folders[n_training:].copy()
-        if r in roots_obs:
-            random_root = np.random.choice(choices)
-            roots_training[i] = random_root
-            choices.remove(random_root)
-
-    for r in roots_obs:
-        if r in roots_training:
-            print(f"obs {r} is located in the training roots")
-            return
-
-    if to_swap is not None:
-        [swap_root(ts) for ts in to_swap]
-
-    # Perform PCA on target (whpa) and store the object in a base folder
-    if wipe:
-        try:
-            shutil.rmtree(base.Directories.forecasts_dir)
-        except FileNotFoundError:
-            pass
-    obj_path = os.path.join(base.Directories.forecasts_dir, "base")
-    fb = utils.dirmaker(
-        obj_path)  # Returns bool according to folder status
-    if flag_base:
-        utils.dirmaker(obj_path, erase=flag_base)
-        # Creates main target PCA object
-        obj = os.path.join(obj_path, "h_pca.pkl")
-        base_pca(
-            base=base,
-            base_dir=obj_path,
-            roots=roots_training,
-            test_roots=roots_obs,
-            h_pca_obj=obj
-        )
-
-    if comb is None:
-        comb = base.Wells.combination  # Get default combination (all)
-        belcomb = utils.combinator(
-            comb)  # Get all possible combinations
-    else:
-        belcomb = comb
-
-    # Perform base decomposition on the m roots
-    global_mean = scan_roots(
-        base=base,
-        training=roots_training,
-        obs=roots_obs,
-        combinations=belcomb,
-        base_dir_path=obj_path,
-    )
-
-    if wipe:
-        shutil.rmtree(Setup.Directories.forecasts_dir)
-
-    return roots_training, roots_obs, global_mean
 
 
 class PosteriorIO:

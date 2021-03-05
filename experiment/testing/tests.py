@@ -4,9 +4,9 @@ from os.path import join as jp
 import joblib
 import numpy as np
 
-from experiment.config import Setup
-from .. import bel_pipeline
-from experiment.utils import get_roots
+from .. import design
+from ..config import Setup
+from ..utils import get_roots
 
 
 class TestUQ(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestUQ(unittest.TestCase):
         test_dir = jp(test_base.Directories.test_dir, "forecast")
         test_base.Directories.forecasts_dir = test_dir
 
-        bel_pipeline.analysis(
+        design.analysis(
             base=test_base,
             comb=wells,
             roots_training=training_r,
