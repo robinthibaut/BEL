@@ -154,12 +154,6 @@ def main(n_sim: int = None):
     pool.map(simulation, folders)
 
 
-def test():
-    # TODO: Design test
-    name = "test"
-    return simulation(name)
-
-
 if __name__ == "__main__":
     start = time.time()
     simulation("test190221")

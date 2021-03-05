@@ -114,16 +114,16 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
     ncol = len(delc)  # new number of columns
     nrow = len(delr)  # new number of rows
 
-    top = np.zeros((nrow, ncol), dtype=np.float)  # Model top (m)
+    top = np.zeros((nrow, ncol), dtype=float)  # Model top (m)
     botm = [-dz]  # List containing bottom location (m) of each layer
 
     # %% Model initial conditions
 
-    ibound = np.ones((nlay, nrow, ncol), dtype=np.int)  # Active cells
+    ibound = np.ones((nlay, nrow, ncol), dtype=int)  # Active cells
     ibound[0, :, 0] = -1  # Fixed left side - set value to -1
     ibound[0, :, -1] = -1  # Fixed right side
 
-    strt = np.zeros((nlay, nrow, ncol), dtype=np.float)  # Starting heads at 0
+    strt = np.zeros((nlay, nrow, ncol), dtype=float)  # Starting heads at 0
     h1 = -3  # Water table level at the right side
     # Fixing the value, that will remain constant during the stress period
     strt[0, :, -1] = h1
