@@ -1,9 +1,8 @@
+import unittest
+import warnings
 from os.path import join as jp
 
-import unittest
 import joblib
-import warnings
-
 import numpy as np
 
 from experiment.config import Setup
@@ -12,7 +11,6 @@ from experiment.utils import get_roots
 
 
 class TestUQ(unittest.TestCase):
-
     def test_posterior(self):
         """Compare posterior samples with reference"""
         training_file = jp(Setup.Directories.test_dir, "roots.dat")
@@ -39,8 +37,10 @@ class TestUQ(unittest.TestCase):
 
         ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
-        ref_post = joblib.load(jp(ref_dir, test_r[0], "123456", "obj", "post.pkl"))
-        test_post = joblib.load(jp(test_dir, test_r[0], "123456", "obj", "post.pkl"))
+        ref_post = joblib.load(
+            jp(ref_dir, test_r[0], "123456", "obj", "post.pkl"))
+        test_post = joblib.load(
+            jp(test_dir, test_r[0], "123456", "obj", "post.pkl"))
 
         msg1 = "The posterior means are different"
         np.testing.assert_array_equal(test_post.posterior_mean,
