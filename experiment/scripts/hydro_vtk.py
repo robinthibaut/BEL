@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-from ..config import Setup as base
-from ..goggles import ModelVTK
+from experiment.config import Setup as base
+from experiment.goggles import ModelVTK
 
 if __name__ == "__main__":
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim

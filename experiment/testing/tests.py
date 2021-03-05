@@ -4,9 +4,9 @@ from os.path import join as jp
 import joblib
 import numpy as np
 
-from .. import design
-from ..config import Setup
-from ..utils import get_roots
+from experiment import design
+from experiment.config import Setup
+from experiment.utils import get_roots
 
 
 class TestUQ(unittest.TestCase):

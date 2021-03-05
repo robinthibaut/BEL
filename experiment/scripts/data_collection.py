@@ -21,8 +21,8 @@ import time
 import numpy as np
 
 import experiment.utils
-from ..config import Setup
-from ..hydro.simulation import forward_modelling
+from experiment.config import Setup
+from experiment.hydro.simulation import forward_modelling
 
 
 def main(n_sim: int = None):
