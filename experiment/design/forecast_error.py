@@ -19,7 +19,7 @@ from ..spatial import (
     modified_hausdorff,
     refine_machine,
 )
-from ..algorithms.statistics import PosteriorIO
+from .. import bel_pipeline
 
 Root = List[str]
 
@@ -71,7 +71,7 @@ class UncertaintyQuantification:
         self.fig_cca_dir = jp(self.bel_dir, "cca")
         self.fig_pred_dir = jp(self.bel_dir, "uq")
 
-        self.po = PosteriorIO(directory=self.res_dir)
+        self.po = bel_pipeline.PosteriorIO(directory=self.res_dir)
 
         # Load objects
         f_names = list(

@@ -5,7 +5,7 @@ import joblib
 import numpy as np
 
 from experiment.config import Setup
-from experiment.learning.bel_pipeline import analysis
+from .. import bel_pipeline
 from experiment.utils import get_roots
 
 
@@ -26,7 +26,7 @@ class TestUQ(unittest.TestCase):
         test_dir = jp(test_base.Directories.test_dir, "forecast")
         test_base.Directories.forecasts_dir = test_dir
 
-        analysis(
+        bel_pipeline.analysis(
             base=test_base,
             comb=wells,
             roots_training=training_r,
