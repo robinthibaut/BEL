@@ -252,8 +252,8 @@ def main_2(N):
 
 
 def test():
-    training_file = os.path.join(Setup.Directories.storage_dir, "test", "roots.dat")
-    test_file = os.path.join(Setup.Directories.storage_dir, "test", "test_roots.dat")
+    training_file = os.path.join(Setup.Directories.main_dir, "testing", "roots.dat")
+    test_file = os.path.join(Setup.Directories.main_dir, "testing", "test_roots.dat")
     training_r, test_r = get_roots(training_file=training_file,
                                    test_file=test_file)
 
@@ -262,20 +262,21 @@ def test():
     test_base = Setup
 
     test_base.Directories.forecasts_dir = \
-        os.path.join(test_base.Directories.storage_dir, "test")
+        os.path.join(test_base.Directories.main_dir, "testing", "forecast")
 
     analysis(
         base=test_base,
         comb=wells,
         roots_training=training_r,
         roots_obs=test_r,
-        wipe=False,
+        wipe=True,
         flag_base=True,
     )
 
 
 if __name__ == "__main__":
-    main_1()
+    test()
+    # main_1()
     # n_try = np.linspace(100, 2000, 50)
     # n_try = [100]
     # mv = main_2(N=n_try)
