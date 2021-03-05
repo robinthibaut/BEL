@@ -3,7 +3,7 @@
 import os
 
 import experiment.utils
-from experiment.config import Setup
+from ..config import Setup
 
 
 def cleanup():

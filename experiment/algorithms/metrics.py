@@ -131,7 +131,6 @@ def r2_score(y_true,
             Scores of all outputs are averaged, weighted by the variances
             of each individual output.
 
-        .. versionchanged:: 0.19
             Default value of multioutput is 'uniform_average'.
 
     Returns

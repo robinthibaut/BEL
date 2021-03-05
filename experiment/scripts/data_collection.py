@@ -33,12 +33,12 @@ from experiment.processing.target_handle import travelling_particles
 
 
 def simulation(folder=None):
+    """Data collection"""
     if folder == 0:
         folder = None
     # Directories
     main_dir = Setup.Directories.main_dir
-    exe_loc = jp(main_dir, "hydro", "exe")  #
-    # directory
+    exe_loc = jp(main_dir, "hydro", "exe")
     # EXE files directory.
     if Machine.computer == "MacBook-Pro.local":
         exe_name_mf = jp(exe_loc, "mf2005")
@@ -106,6 +106,7 @@ def simulation(folder=None):
         else:
             shutil.rmtree(results_dir)
             print(f"terminated f{res_dir}")
+            return 0
     else:
         print(f"pass {res_dir}")
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
@@ -117,6 +118,8 @@ def simulation(folder=None):
             hk_array=hk_array,
             xy_dummy=xy_dummy,
         )
+
+    return results_dir
 
 
 def main(n_sim: int = None):
@@ -149,6 +152,11 @@ def main(n_sim: int = None):
 
     # Start processes
     pool.map(simulation, folders)
+
+
+def test():
+    name = "test"
+    return simulation(name)
 
 
 if __name__ == "__main__":

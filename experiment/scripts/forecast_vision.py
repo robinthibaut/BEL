@@ -4,8 +4,8 @@ import os
 import string
 
 import experiment.goggles as myvis
-from experiment.config import Setup
-from experiment.utils import data_read
+from ..config import Setup
+from ..utils import data_read
 
 if __name__ == "__main__":
 
