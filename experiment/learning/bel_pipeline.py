@@ -22,15 +22,15 @@ from typing import List
 import joblib
 import numpy as np
 
-from .. import utils
-from ..config import Setup
+import experiment.utils
 
+from .. import utils
+from ..algorithms.cross_decomposition import CCA
+from ..config import Setup
 from ..design.forecast_error import Root, UncertaintyQuantification
 from ..processing import predictor_handle as dops
-import experiment.utils
-from ..algorithms.cross_decomposition import CCA
-from ..spatial import grid_parameters, signed_distance
 from ..processing.dimension_reduction import PC
+from ..spatial import grid_parameters, signed_distance
 
 Root = List[str]
 Combination = List[int]
@@ -312,15 +312,15 @@ def scan_roots(base,
 
 
 def analysis(
-        base,
-        comb: List[List[int]] = None,
-        n_training: int = 200,
-        n_obs: int = 50,
-        flag_base: bool = False,
-        wipe: bool = False,
-        roots_training: Root = None,
-        to_swap: Root = None,
-        roots_obs: Root = None,
+    base,
+    comb: List[List[int]] = None,
+    n_training: int = 200,
+    n_obs: int = 50,
+    flag_base: bool = False,
+    wipe: bool = False,
+    roots_training: Root = None,
+    to_swap: Root = None,
+    roots_obs: Root = None,
 ):
     """
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -397,24 +397,20 @@ def analysis(
         except FileNotFoundError:
             pass
     obj_path = os.path.join(base.Directories.forecasts_dir, "base")
-    fb = utils.dirmaker(
-        obj_path)  # Returns bool according to folder status
+    fb = utils.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base:
         utils.dirmaker(obj_path, erase=flag_base)
         # Creates main target PCA object
         obj = os.path.join(obj_path, "h_pca.pkl")
-        dcp.base_pca(
-            base=base,
-            base_dir=obj_path,
-            roots=roots_training,
-            test_roots=roots_obs,
-            h_pca_obj=obj
-        )
+        dcp.base_pca(base=base,
+                     base_dir=obj_path,
+                     roots=roots_training,
+                     test_roots=roots_obs,
+                     h_pca_obj=obj)
 
     if comb is None:
         comb = base.Wells.combination  # Get default combination (all)
-        belcomb = utils.combinator(
-            comb)  # Get all possible combinations
+        belcomb = utils.combinator(comb)  # Get all possible combinations
     else:
         belcomb = comb
 
