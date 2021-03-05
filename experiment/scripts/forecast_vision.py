@@ -4,6 +4,7 @@ import os
 import string
 
 import experiment.goggles as myvis
+
 from ..config import Setup
 from ..utils import data_read
 
@@ -68,4 +69,3 @@ if __name__ == "__main__":
         myvis.plot_pc_ba(root=sample, data=True, target=True)
 
         myvis.cca_vision(root=sample, folders=wells)
-
