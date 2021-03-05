@@ -37,17 +37,19 @@ class TestUQ(unittest.TestCase):
 
         ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
-        ref_post = joblib.load(jp(ref_dir, test_r[0], "123456", "obj", "post.pkl"))
+        ref_mean = np.load(jp(ref_dir, test_r[0], "123456", "ref_mean.npy"))
+        ref_covariance = np.load(jp(ref_dir, test_r[0], "123456", "ref_covariance.npy"))
+
         test_post = joblib.load(jp(test_dir, test_r[0], "123456", "obj", "post.pkl"))
 
         msg1 = "The posterior means are different"
         np.testing.assert_array_equal(test_post.posterior_mean,
-                                      ref_post.posterior_mean,
+                                      ref_mean,
                                       err_msg=msg1)
 
         msg2 = "The posterior covariances are different"
         np.testing.assert_array_equal(test_post.posterior_covariance,
-                                      ref_post.posterior_covariance,
+                                      ref_covariance,
                                       err_msg=msg2)
 
 
