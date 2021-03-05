@@ -943,10 +943,10 @@ def get_roots(training_file: str = None,
         test_file = os.path.join(Setup.Directories.storage_dir, "test_roots.dat")
 
     # List directories in forwards folder
-    training_roots = experiment.utils.data_read(training_file)
+    training_roots = data_read(training_file)
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = experiment.utils.data_read(test_file)
+    test_roots = data_read(test_file)
     test_roots = [item for sublist in test_roots for item in sublist]
 
     return training_roots, test_roots

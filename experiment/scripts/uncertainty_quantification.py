@@ -4,7 +4,6 @@ import numpy as np
 
 from experiment.config import Setup
 from experiment.design.forecast_error import analysis
-from experiment.testing._test import _test
 from experiment.utils import get_roots
 
 
@@ -49,8 +48,7 @@ def main_2(N):
 
 
 if __name__ == "__main__":
-    _test()
-    # main_1()
+    main_1()
     # n_try = np.linspace(100, 2000, 50)
     # n_try = [100]
     # mv = main_2(N=n_try)
