@@ -416,6 +416,7 @@ def _log_transform(f, k_mean: float, k_std: float):
     :param: k_mean: float: Mean of the Hk field
     :param: k_std: float: Standard deviation of the Hk field
     """
+    # TODO: Move this to pysgems package
 
     ff = f * k_std + k_mean
 
@@ -426,6 +427,7 @@ def sgsim(model_ws: str,
           grid_dir: str,
           wells_hk: list = None,
           save: bool = True):
+    # TODO: Move this to pysgems package
     """
     Perform sequential gaussian simulation to generate K fields.
     :param model_ws: str: Working directory
