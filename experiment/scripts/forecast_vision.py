@@ -68,4 +68,3 @@ if __name__ == "__main__":
         myvis.plot_pc_ba(root=sample, data=True, target=True)
 
         myvis.cca_vision(root=sample, folders=wells)
-

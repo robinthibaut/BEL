@@ -174,8 +174,8 @@ def bel_fit_transform(
     if not os.path.exists(tsub):
         # Loads the results:
         tc0, _, _ = utils.data_loader(res_dir=res_dir,
-                                                 roots=training_roots,
-                                                 d=True)
+                                      roots=training_roots,
+                                      d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
@@ -205,8 +205,8 @@ def bel_fit_transform(
     n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
     tc0, _, _ = utils.data_loader(res_dir=res_dir,
-                                             test_roots=test_root,
-                                             d=True)
+                                  test_roots=test_root,
+                                  d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation

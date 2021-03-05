@@ -5,7 +5,6 @@ import os
 from experiment.design.forecast_error import by_mode
 from ..config import Setup
 
-
 if __name__ == "__main__":
     # Amount of information
     forecast_dir = Setup.Directories.forecasts_dir
