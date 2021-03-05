@@ -252,8 +252,10 @@ def main_2(N):
 
 
 def test():
+
     training_file = os.path.join(Setup.Directories.main_dir, "testing", "roots.dat")
     test_file = os.path.join(Setup.Directories.main_dir, "testing", "test_roots.dat")
+
     training_r, test_r = get_roots(training_file=training_file,
                                    test_file=test_file)
 

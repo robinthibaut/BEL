@@ -130,7 +130,7 @@ def bel_fit_transform(
         base.Wells.combination = well_comb
 
     # Directories
-    md = base.Directories()
+    md = base.Directories
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
 
     # Parse test_root
