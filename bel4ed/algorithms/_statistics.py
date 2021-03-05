@@ -172,7 +172,7 @@ class KDE:
             return self._eval_bivariate(x1, x2, weights)
 
 
-def univariate_density(
+def _univariate_density(
     data_variable,
     estimate_kws,
 ):
@@ -196,7 +196,7 @@ def univariate_density(
     return density, support
 
 
-def bivariate_density(
+def _bivariate_density(
     data: pd.DataFrame,
     estimate_kws: dict,
 ):
@@ -276,11 +276,11 @@ def kde_params(
     )
 
     if y is None:
-        density, support = univariate_density(data_variable=frame,
-                                              estimate_kws=estimate_kws)
+        density, support = _univariate_density(data_variable=frame,
+                                               estimate_kws=estimate_kws)
 
     else:
-        density, support = bivariate_density(
+        density, support = _bivariate_density(
             data=frame,
             estimate_kws=estimate_kws,
         )
@@ -309,7 +309,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     return row, col
 
 
-def conditional_distribution(
+def _conditional_distribution(
     kde_array: np.array,
     x_array: np.array,
     y_array: np.array,
@@ -347,7 +347,7 @@ def conditional_distribution(
     return zi
 
 
-def normalize_distribution(post: np.array, support: np.array):
+def _normalize_distribution(post: np.array, support: np.array):
     """
     When a cross-section is performed along a bivariate KDE, the integral might not = 1.
     This function normalizes such functions so that their integral = 1.
@@ -385,31 +385,31 @@ def posterior_conditional(x: np.array,
         # Extract the density values along the line, using cubic interpolation
         if type(x_obs) is list or tuple:
             x_obs = x_obs[0]
-        post = conditional_distribution(x=x_obs,
-                                        x_array=xg,
-                                        y_array=yg,
-                                        kde_array=dens)
+        post = _conditional_distribution(x=x_obs,
+                                         x_array=xg,
+                                         y_array=yg,
+                                         kde_array=dens)
     elif y_obs is not None:
         support = xg
         # Extract the density values along the line, using cubic interpolation
         if type(y_obs) is list or tuple:
             y_obs = x_obs[0]
-        post = conditional_distribution(y=y_obs,
-                                        x_array=xg,
-                                        y_array=yg,
-                                        kde_array=dens)
+        post = _conditional_distribution(y=y_obs,
+                                         x_array=xg,
+                                         y_array=yg,
+                                         kde_array=dens)
 
     else:
         msg = "No observation point included."
         warnings.warn(msg, UserWarning)
         return 0
 
-    post = normalize_distribution(post, support)
+    post = _normalize_distribution(post, support)
 
     return post, support
 
 
-def log_transform(f, k_mean: float, k_std: float):
+def _log_transform(f, k_mean: float, k_std: float):
     """
     Transforms the values of the statistical_simulation simulations into meaningful data.
     :param: f: np.array: Simulation output = Hk field
@@ -516,7 +516,7 @@ def sgsim(model_ws: str,
     matrix = data_read(opl, start=3)
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-    tf = np.vectorize(log_transform)  # Transform values from log10
+    tf = np.vectorize(_log_transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
     matrix = matrix.reshape(
