@@ -10,6 +10,7 @@ import os
 import platform
 from dataclasses import dataclass
 from os.path import dirname, join
+from typing import List
 
 import numpy as np
 
@@ -174,3 +175,7 @@ class Setup:
         k_min: float = 1.4
         k_max: float = 2
         k_std: float = 0.4
+
+
+Root = List[str]
+Combination = List[int]

@@ -16,23 +16,19 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 import os
 import warnings
 from os.path import join as jp
-from typing import List
 
 import joblib
 import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
 from .. import utils
-from ..config import Setup
+from ..config import Setup, Root, Combination
 
 from ..processing import curve_interpolation
 
 from ..algorithms.cross_decomposition import CCA
 from ..spatial import grid_parameters, signed_distance, get_block
 from ..processing import PC
-
-Root = List[str]
-Combination = List[int]
 
 
 def base_pca(

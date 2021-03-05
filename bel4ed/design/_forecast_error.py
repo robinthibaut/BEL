@@ -11,7 +11,7 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 from .. import utils
-from ..config import Setup
+from ..config import Setup, Root
 from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
@@ -21,8 +21,6 @@ from ..spatial import (
     modified_hausdorff,
     refine_machine,
 )
-
-Root = List[str]
 
 __all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
 
