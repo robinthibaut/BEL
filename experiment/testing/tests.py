@@ -1,9 +1,7 @@
+import unittest
 from os.path import join as jp
 
-import unittest
 import joblib
-import warnings
-
 import numpy as np
 
 from experiment.config import Setup
@@ -14,7 +12,7 @@ from experiment.utils import get_roots
 class TestUQ(unittest.TestCase):
 
     def test_posterior(self):
-        """Compare posterior samples with reference"""
+        """Compare posterior samples with reference default values"""
         training_file = jp(Setup.Directories.test_dir, "roots.dat")
         test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
 
@@ -54,6 +52,4 @@ class TestUQ(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
-        unittest.main()
+    unittest.main()
