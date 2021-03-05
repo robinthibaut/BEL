@@ -11,18 +11,17 @@ import vtk
 from sklearn.neighbors import KernelDensity
 
 import experiment.utils
-from experiment.config import Setup
-from experiment.goggles import mode_histo
-from experiment.learning import bel_pipeline as dcp
-from experiment.scripts.amount_info import Root
-from experiment.spatial import (
+from ..config import Setup
+from ..goggles import mode_histo
+from .. import bel_pipeline as dcp
+from ..spatial import (
     binary_polygon,
     contours_vertices,
     grid_parameters,
     modified_hausdorff,
     refine_machine,
 )
-from experiment.algorithms.statistics import PosteriorIO
+from ..algorithms.statistics import PosteriorIO
 
 Root = List[str]
 
