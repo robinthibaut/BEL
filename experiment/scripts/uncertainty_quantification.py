@@ -193,15 +193,19 @@ def analysis(
     return roots_training, roots_obs, global_mean
 
 
-def get_roots():
-    # List directories in forwards folder
+def get_roots(training_file: str = None,
+              test_file: str = None):
 
-    training_roots = experiment.utils.data_read(
-        os.path.join(Setup.Directories.storage_dir, "roots.dat"))
+    if training_file is None:
+        training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
+    if test_file is None:
+        test_file = os.path.join(Setup.Directories.storage_dir, "test_roots.dat")
+
+    # List directories in forwards folder
+    training_roots = experiment.utils.data_read(training_file)
     training_roots = [item for sublist in training_roots for item in sublist]
 
-    test_roots = experiment.utils.data_read(
-        os.path.join(Setup.Directories.storage_dir, "test_roots.dat"))
+    test_roots = experiment.utils.data_read(test_file)
     test_roots = [item for sublist in test_roots for item in sublist]
 
     return training_roots, test_roots
@@ -245,6 +249,29 @@ def main_2(N):
         means.append([n, mhd_mean])
 
     return np.array(means)
+
+
+def test():
+    training_file = os.path.join(Setup.Directories.storage_dir, "test", "roots.dat")
+    test_file = os.path.join(Setup.Directories.storage_dir, "test", "test_roots.dat")
+    training_r, test_r = get_roots(training_file=training_file,
+                                   test_file=test_file)
+
+    wells = [[1, 2, 3, 4, 5, 6]]
+
+    test_base = Setup
+
+    test_base.Directories.forecasts_dir = \
+        os.path.join(test_base.Directories.storage_dir, "test")
+
+    analysis(
+        base=test_base,
+        comb=wells,
+        roots_training=training_r,
+        roots_obs=test_r,
+        wipe=False,
+        flag_base=True,
+    )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 """
+Boilerplate
 Grid geometry parameters need to be passed around modules.
 Defining data classes allows to avoid declaring those parameters several times.
 """
@@ -17,6 +18,7 @@ class Machine(object):
 
 
 class Setup:
+
     @dataclass
     class Directories:
         """Define main directories and file names"""
@@ -68,10 +70,7 @@ class Setup:
 
         # Refinement parameters around the pumping well.
         r_params = np.array([
-            [
-                9,
-                150,
-            ],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
+            [9, 150],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
             [8, 100],
             [7, 90],
             [6, 80],
