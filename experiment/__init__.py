@@ -7,6 +7,6 @@ __version__ = '1.0.dev0'
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['base', 'config', 'exceptions', 'utils', 'visualization',
+__all__ = ['base', 'config', 'exceptions', 'utils', 'goggles',
            'algorithms', 'design', 'hydro', 'learning', 'processing']
 
