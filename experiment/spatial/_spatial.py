@@ -8,9 +8,12 @@ from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
 
-__all__ = ['grid_parameters', 'signed_distance', 'modified_hausdorff', 'block_shaped', 'refine_axis', 'rc_from_blocks',
-           'blocks_from_rc', 'blocks_from_rc_3d', 'matrix_paste', 'h_sub', 'get_centroids', 'contours_vertices',
-           'binary_polygon', 'binary_stack', 'get_block', 'refine_machine']
+__all__ = [
+    'grid_parameters', 'signed_distance', 'modified_hausdorff', 'block_shaped',
+    'refine_axis', 'rc_from_blocks', 'blocks_from_rc', 'blocks_from_rc_3d',
+    'matrix_paste', 'h_sub', 'get_centroids', 'contours_vertices',
+    'binary_polygon', 'binary_stack', 'get_block', 'refine_machine'
+]
 
 
 def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1):
@@ -173,7 +176,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
 
         if lwl > lwr:
             rl = (
-                    lwl / lwr
+                lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
@@ -181,7 +184,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
             dar = difx - dal
         elif lwr > lwl:
             rl = (
-                    lwr / lwl
+                lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
@@ -343,12 +346,12 @@ def contours_vertices(x: list,
 
 
 def binary_polygon(
-        xys: np.array,
-        nrow: int,
-        ncol: int,
-        pzs: np.array,
-        outside: float = -1,
-        inside: float = 1,
+    xys: np.array,
+    nrow: int,
+    ncol: int,
+    pzs: np.array,
+    outside: float = -1,
+    inside: float = 1,
 ):
     """
     Given a polygon whose vertices are given by the array pzs, and a matrix of
