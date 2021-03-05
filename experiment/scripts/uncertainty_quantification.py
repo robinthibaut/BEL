@@ -163,13 +163,11 @@ def analysis(
         experiment.utils.dirmaker(obj_path)
         # Creates main target PCA object
         obj = os.path.join(obj_path, "h_pca.pkl")
-        dcp.base_pca(
-            base=base,
-            base_dir=obj_path,
-            roots=roots_training,
-            test_roots=roots_obs,
-            h_pca_obj=obj
-        )
+        dcp.base_pca(base=base,
+                     base_dir=obj_path,
+                     roots=roots_training,
+                     test_roots=roots_obs,
+                     h_pca_obj=obj)
 
     if comb is None:
         comb = base.Wells.combination  # Get default combination (all)
@@ -193,13 +191,14 @@ def analysis(
     return roots_training, roots_obs, global_mean
 
 
-def get_roots(training_file: str = None,
-              test_file: str = None):
+def get_roots(training_file: str = None, test_file: str = None):
 
     if training_file is None:
-        training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
+        training_file = os.path.join(Setup.Directories.storage_dir,
+                                     "roots.dat")
     if test_file is None:
-        test_file = os.path.join(Setup.Directories.storage_dir, "test_roots.dat")
+        test_file = os.path.join(Setup.Directories.storage_dir,
+                                 "test_roots.dat")
 
     # List directories in forwards folder
     training_roots = experiment.utils.data_read(training_file)
@@ -252,8 +251,10 @@ def main_2(N):
 
 
 def test():
-    training_file = os.path.join(Setup.Directories.main_dir, "testing", "roots.dat")
-    test_file = os.path.join(Setup.Directories.main_dir, "testing", "test_roots.dat")
+    training_file = os.path.join(Setup.Directories.main_dir, "testing",
+                                 "roots.dat")
+    test_file = os.path.join(Setup.Directories.main_dir, "testing",
+                             "test_roots.dat")
     training_r, test_r = get_roots(training_file=training_file,
                                    test_file=test_file)
 
