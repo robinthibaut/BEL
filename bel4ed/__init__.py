@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 from .learning import bel_pipeline
-from .hydro import simulation
+from .hydro import _simulation
 import logging
 
 __version__ = '1.0.dev0'

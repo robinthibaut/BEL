@@ -25,11 +25,11 @@ from sklearn.preprocessing import PowerTransformer
 from .. import utils
 from ..config import Setup
 
-from ..processing import predictor_handle as dops
+from ..processing import curve_interpolation
 
 from ..algorithms.cross_decomposition import CCA
 from ..spatial import grid_parameters, signed_distance, get_block
-from ..processing.dimension_reduction import PC
+from ..processing import PC
 
 Root = List[str]
 Combination = List[int]
@@ -61,7 +61,7 @@ def base_pca(
         # roots_ = simulation id
         # Subdivide d in an arbitrary number of time steps:
         # tc has shape (n_sim, n_wells, n_time_steps)
-        tc = dops.curve_interpolation(tc0=tc0)
+        tc = curve_interpolation(tc0=tc0)
         # with n_sim = n_training + n_test
         # PCA on transport curves
         d_pco = PC(name="d",
@@ -117,7 +117,7 @@ def bel_fit_transform(
 ):
     """
     This function loads raw data and perform both PCA and CCA on it.
-    It saves results as pkl objects that have to be loaded in the forecast_error.py script to perform predictions.
+    It saves results as pkl objects that have to be loaded in the _forecast_error.py script to perform predictions.
 
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
@@ -181,7 +181,7 @@ def bel_fit_transform(
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
         # tc has shape (n_sim, n_wells, n_time_steps)
-        tc = dops.curve_interpolation(tc0=tc0, n_time_steps=200)
+        tc = curve_interpolation(tc0=tc0, n_time_steps=200)
         # with n_sim = n_training + n_test
         np.save(tsub, tc)
         # Save file roots
@@ -208,7 +208,7 @@ def bel_fit_transform(
                                   test_roots=test_root,
                                   d=True)
     # Subdivide d in an arbitrary number of time steps:
-    tcp = dops.curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
+    tcp = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
     # Perform transformation on testing curves
     d_pco.test_transform(tcp, test_root=test_root)

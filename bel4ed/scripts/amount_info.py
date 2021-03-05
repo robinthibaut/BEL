@@ -2,8 +2,8 @@
 
 import os
 
-from bel4ed.design.forecast_error import by_mode
-from ..config import Setup
+from bel4ed.design import by_mode
+from bel4ed.config import Setup
 
 if __name__ == "__main__":
     # Amount of information

@@ -22,7 +22,7 @@ import numpy as np
 
 import bel4ed.utils
 from bel4ed.config import Setup
-from bel4ed.hydro.simulation import forward_modelling
+from bel4ed.hydro import forward_modelling
 
 
 def main(n_sim: int = None):

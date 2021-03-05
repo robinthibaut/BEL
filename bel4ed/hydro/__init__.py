@@ -1,3 +1,3 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-from .simulation import forward_modelling
+from ._simulation import forward_modelling

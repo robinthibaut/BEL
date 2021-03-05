@@ -3,7 +3,7 @@
 import numpy as np
 
 from bel4ed.config import Setup
-from bel4ed.design.forecast_error import analysis
+from bel4ed.design import analysis
 from bel4ed.utils import get_roots
 
 
