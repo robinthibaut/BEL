@@ -240,7 +240,7 @@ def _ensure_no_complex_data(array):
 def _assert_all_finite(X, allow_nan=False, msg_dtype=None):
     """Like assert_all_finite, but only for ndarray."""
     # validation is also imported in extmath
-    from bel4ed.algorithms.extmath import _safe_accumulator_op
+    from bel4ed.algorithms import safe_accumulator_op
 
     X = np.asanyarray(X)
     # First try an O(n) time, O(1) space solution for the common case that
@@ -248,7 +248,7 @@ def _assert_all_finite(X, allow_nan=False, msg_dtype=None):
     # false positives from overflow in sum method. The sum is also calculated
     # safely to reduce dtype induced overflows.
     is_float = X.dtype.kind in "fc"
-    if is_float and (np.isfinite(_safe_accumulator_op(np.sum, X))):
+    if is_float and (np.isfinite(safe_accumulator_op(np.sum, X))):
         pass
     elif is_float:
         msg_err = "Input contains {} or a value too large for {!r}."

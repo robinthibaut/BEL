@@ -8,8 +8,8 @@ from scipy.linalg import pinv2, svd
 from bel4ed.utils import (FLOAT_DTYPES, check_array,
                           check_consistent_length, check_is_fitted)
 
-from bel4ed.base import (BaseEstimator, RegressorMixin,
-                         TransformerMixin)
+from ._base import (BaseEstimator, RegressorMixin,
+                    TransformerMixin)
 from bel4ed.exceptions import ConvergenceWarning
 from .extmath import svd_flip
 

@@ -19,7 +19,7 @@ from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
 import bel4ed.utils
-from bel4ed.algorithms import statistics as stats
+from bel4ed.algorithms import KDE, kde_params, posterior_conditional
 from bel4ed.config import Setup
 from bel4ed.spatial import (binary_stack, contours_vertices,
                             grid_parameters, refine_machine)
@@ -2083,12 +2083,12 @@ def _kde_cca(
     vmax = 0
     for comp_n in range(cca_operator.n_components):
 
-        hp, sup = stats.posterior_conditional(x=d[comp_n],
+        hp, sup = posterior_conditional(x=d[comp_n],
                                               y=h[comp_n],
                                               x_obs=d_cca_prediction[comp_n])
 
         # Plot h posterior given d
-        density, _ = stats.kde_params(x=d[comp_n], y=h[comp_n])
+        density, _ = kde_params(x=d[comp_n], y=h[comp_n])
         maxloc = np.max(density)
         if vmax < maxloc:
             vmax = maxloc
@@ -2101,7 +2101,7 @@ def _kde_cca(
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
         # Conditional:
-        hp, sup = stats.posterior_conditional(x=d[comp_n],
+        hp, sup = posterior_conditional(x=d[comp_n],
                                               y=h[comp_n],
                                               x_obs=d_cca_prediction[comp_n])
 
@@ -2111,13 +2111,13 @@ def _kde_cca(
         y_samp = post_test_t[comp_n]
 
         # Plot h posterior given d
-        density, support = stats.kde_params(x=d[comp_n],
+        density, support = kde_params(x=d[comp_n],
                                             y=h[comp_n],
                                             gridsize=1000)
         xx, yy = support
 
-        marginal_eval_x = stats.KDE()
-        marginal_eval_y = stats.KDE()
+        marginal_eval_x = KDE()
+        marginal_eval_y = KDE()
 
         # support is cached
         kde_x, sup_x = marginal_eval_x(d[comp_n])

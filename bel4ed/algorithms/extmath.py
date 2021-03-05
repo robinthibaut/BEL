@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ['svd_flip', 'safe_accumulator_op']
+
 
 def svd_flip(u, v, u_based_decision=True):
     """Sign correction to ensure deterministic output from SVD.
@@ -45,7 +47,7 @@ def svd_flip(u, v, u_based_decision=True):
 # Use at least float64 for the accumulating functions to avoid precision issue
 # see https://github.com/numpy/numpy/issues/9393. The float64 is also retained
 # as it is in case the float overflows
-def _safe_accumulator_op(op, x, *args, **kwargs):
+def safe_accumulator_op(op, x, *args, **kwargs):
     """
     This function provides numpy accumulator functions with a float64 dtype
     when used on a floating point input. This prevents accumulator overflow on

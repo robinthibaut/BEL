@@ -15,7 +15,7 @@ from bel4ed.utils import (_num_samples, check_array,
 
 from bel4ed.exceptions import UndefinedMetricWarning
 
-__ALL__ = [
+__all__ = [
     "r2_score"
 ]
 

@@ -15,6 +15,8 @@ from scipy import integrate, ndimage, stats
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
 
+__all__ = ['KDE', 'kde_params', 'posterior_conditional', 'sgsim']
+
 
 class KDE:
     """

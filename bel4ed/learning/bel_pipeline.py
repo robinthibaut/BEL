@@ -26,7 +26,7 @@ from ..config import Setup, Root, Combination
 
 from ..processing import curve_interpolation
 
-from ..algorithms.cross_decomposition import CCA
+from ..algorithms import CCA
 from ..spatial import grid_parameters, signed_distance, get_block
 from ..processing import PC
 
