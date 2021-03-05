@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 """
 Boilerplate
+-----------
 Grid geometry parameters need to be passed around modules.
 Defining data classes allows to avoid declaring those parameters several times.
 """
@@ -29,6 +30,8 @@ class Setup:
         hydro_res_dir: str = join(storage_dir, "forwards")
         forecasts_dir: str = join(storage_dir, "forecasts")
         grid_dir: str = join(main_dir, "spatial", "parameters")
+        test_dir: str = join(main_dir, "testing")
+        ref_dir: str = join(test_dir, "reference")
 
     @dataclass
     class Files:

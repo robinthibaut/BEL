@@ -671,10 +671,11 @@ def empty_figs(root: str):
         folder_reset(os.path.join(subdir, f, "cca"))
 
 
-def dirmaker(dird: str):
+def dirmaker(dird: str, erase: bool = False):
     """
     Given a folder path, check if it exists, and if not, creates it.
     :param dird: str: Directory path.
+    :param erase: bool: Whether to delete existing folder or not.
     :return:
     """
     try:
@@ -682,6 +683,9 @@ def dirmaker(dird: str):
             os.makedirs(dird)
             return 0
         else:
+            if erase:
+                shutil.rmtree(dird)
+                os.makedirs(dird)
             return 1
     except Exception as e:
         print(e)
@@ -929,3 +933,20 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     d_cca_prediction = d_cca_prediction.T
 
     return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
+
+
+def get_roots(training_file: str = None,
+              test_file: str = None):
+    if training_file is None:
+        training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
+    if test_file is None:
+        test_file = os.path.join(Setup.Directories.storage_dir, "test_roots.dat")
+
+    # List directories in forwards folder
+    training_roots = experiment.utils.data_read(training_file)
+    training_roots = [item for sublist in training_roots for item in sublist]
+
+    test_roots = experiment.utils.data_read(test_file)
+    test_roots = [item for sublist in test_roots for item in sublist]
+
+    return training_roots, test_roots
