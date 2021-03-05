@@ -10,14 +10,11 @@ import warnings
 
 import numpy as np
 
-from bel4ed.utils import (_num_samples, check_array,
-                          check_consistent_length, column_or_1d)
-
 from bel4ed.exceptions import UndefinedMetricWarning
+from bel4ed.utils import (_num_samples, check_array, check_consistent_length,
+                          column_or_1d)
 
-__all__ = [
-    "r2_score"
-]
+__all__ = ["r2_score"]
 
 
 def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):

@@ -22,22 +22,19 @@ import numpy as np
 from sklearn.preprocessing import PowerTransformer
 
 from .. import utils
-from ..config import Setup, Root, Combination
-
-from ..processing import curve_interpolation
-
 from ..algorithms import CCA
-from ..spatial import grid_parameters, signed_distance, get_block
-from ..processing import PC
+from ..config import Combination, Root, Setup
+from ..processing import PC, curve_interpolation
+from ..spatial import get_block, grid_parameters, signed_distance
 
 
 def base_pca(
-        base,
-        base_dir: str,
-        roots: Root,
-        test_roots: Root,
-        d_pca_obj=None,
-        h_pca_obj=None,
+    base,
+    base_dir: str,
+    roots: Root,
+    test_roots: Root,
+    d_pca_obj=None,
+    h_pca_obj=None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -106,10 +103,10 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base,
-        well_comb: Combination = None,
-        training_roots: Root = None,
-        test_root: Root = None,
+    base,
+    well_comb: Combination = None,
+    training_roots: Root = None,
+    test_root: Root = None,
 ):
     """
     This function loads raw data and perform both PCA and CCA on it.
@@ -268,12 +265,12 @@ class PosteriorIO:
         self.directory = directory
 
     def mvn_inference(
-            self,
-            h_cca_training_gaussian,
-            d_cca_training,
-            d_pc_training,
-            d_rotations,
-            d_cca_prediction,
+        self,
+        h_cca_training_gaussian,
+        d_cca_training,
+        d_pc_training,
+        d_rotations,
+        d_cca_prediction,
     ):
         """
         Estimating posterior mean and covariance of the target.
@@ -365,8 +362,8 @@ class PosteriorIO:
         h_posterior_covariance = np.linalg.pinv(d11)
         # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
         h_posterior_mean = h_posterior_covariance @ (
-                d11 @ h_mean -
-                d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+            d11 @ h_mean -
+            d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
 
         # test = np.block([[d11, d12], [d21, d22]])
         # plt.matshow(test, cmap='coolwarm')
@@ -389,13 +386,13 @@ class PosteriorIO:
         self.posterior_covariance = h_posterior_covariance
 
     def back_transform(
-            self,
-            h_posts_gaussian,
-            cca_obj,
-            pca_h,
-            n_posts: int,
-            add_comp: bool = False,
-            save_target_pc: bool = False,
+        self,
+        h_posts_gaussian,
+        cca_obj,
+        pca_h,
+        n_posts: int,
+        add_comp: bool = False,
+        save_target_pc: bool = False,
     ):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
@@ -421,8 +418,8 @@ class PosteriorIO:
         # and add the y_mean.
         # FIXME: Deprecation warning here about y_std_ and y_mean_
         h_pca_reverse = (
-                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
-                cca_obj.y_mean_)
+            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
+            cca_obj.y_mean_)
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
@@ -440,7 +437,7 @@ class PosteriorIO:
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(
             h_pca_reverse).reshape(
-            (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
+                (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
 
         return forecast_posterior
 
@@ -517,7 +514,7 @@ class PosteriorIO:
 
             # Set the seed for later use
             if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+                self.seed = np.random.randint(2**32 - 1, dtype="uint32")
 
             if n_posts is None:
                 self.n_posts = Setup.HyperParameters.n_posts

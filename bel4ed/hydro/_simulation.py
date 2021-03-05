@@ -10,7 +10,7 @@ import numpy as np
 
 import bel4ed.utils
 from bel4ed.algorithms import sgsim
-from bel4ed.config import Setup, Machine
+from bel4ed.config import Machine, Setup
 from bel4ed.hydro.backtracking.modpath import backtrack
 from bel4ed.hydro.flow.modflow import flow
 from bel4ed.hydro.transport.mt3d import transport

@@ -12,8 +12,8 @@ import joblib
 import numpy as np
 import scipy.sparse as sp
 
-from .exceptions import NotFittedError
 from .config import Setup
+from .exceptions import NotFittedError
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 
@@ -935,12 +935,13 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
 
 
-def get_roots(training_file: str = None,
-              test_file: str = None):
+def get_roots(training_file: str = None, test_file: str = None):
     if training_file is None:
-        training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
+        training_file = os.path.join(Setup.Directories.storage_dir,
+                                     "roots.dat")
     if test_file is None:
-        test_file = os.path.join(Setup.Directories.storage_dir, "test_roots.dat")
+        test_file = os.path.join(Setup.Directories.storage_dir,
+                                 "test_roots.dat")
 
     # List directories in forwards folder
     training_roots = data_read(training_file)
