@@ -1,51 +1,9 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
-from typing import List
 
-import numpy as np
-
+from experiment.design.forecast_error import by_mode
 from ..config import Setup
-from ..goggles import mode_histo
-
-Root = List[str]
-
-
-def by_mode(root: Root):
-    """
-    Computes the combined amount of information for n observations.
-    see also
-    https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
-    :param root: list: List containing the roots whose wells contributions will be taken into account.
-    :return:
-    """
-
-    if not isinstance(root, (list, tuple)):
-        root: list = [root]
-
-    # Deals with the fact that only one root might be selected
-    fig_name = "average"
-    an_i = 0  # Annotation index
-    if len(root) == 1:
-        fig_name = root[0]
-        an_i = 2
-
-    wid = list(map(str, Setup.Wells.combination))  # Well identifiers (n)
-    # Summed MHD when well #i appears
-    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
-    colors = Setup.Wells.colors
-
-    for r in root:  # For each root
-        # Starting point = root folder in forecast directory
-        droot = os.path.join(Setup.Directories.forecasts_dir, r)
-        for e in wid:  # For each subfolder (well) in the main folder
-            # Get the MHD file
-            fmhd = os.path.join(droot, e, "obj", "haus.npy")
-            mhd = np.load(fmhd)  # Load MHD
-            idw = int(e) - 1  # -1 to respect 0 index (Well index)
-            wm[idw] += mhd  # Add MHD at each well
-
-    mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
 if __name__ == "__main__":
