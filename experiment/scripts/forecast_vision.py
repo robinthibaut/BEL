@@ -13,14 +13,14 @@ if __name__ == "__main__":
     test_roots = data_read(os.path.join(base_dir, "test_roots.dat"))
     samples = [item for sublist in test_roots for item in sublist]
 
-    # roots = samples
+    roots = samples
     #
     # roots = ['818bf1676c424f76b83bd777ae588a1d',
     #          'dc996e54728b4bb4a7234ee691729076',
     #          '27ec76adab2e406794584fc993188c24',
     #          '9a389395bfbe4cd883dfa3e452752978']
 
-    roots = ["818bf1676c424f76b83bd777ae588a1d"]
+    # roots = ["818bf1676c424f76b83bd777ae588a1d"]
     # roots = ["27ec76adab2e406794584fc993188c24"]
 
     alphabet = string.ascii_uppercase
