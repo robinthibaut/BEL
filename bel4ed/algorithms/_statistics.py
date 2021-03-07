@@ -423,6 +423,7 @@ def _log_transform(f, k_mean: float, k_std: float):
 
     return 10 ** ff
 
+
 def sgsim(model_ws: str,
           grid_dir: str,
           wells_hk: list = None,
@@ -455,8 +456,6 @@ def sgsim(model_ws: str,
 
     # Hydraulic conductivity exponent mean between x and y.
     k_mean = np.random.uniform(k_min, k_max)
-    # print(f'hk mean={10 ** k_mean} m/d')
-    k_std = k_std  # Log value of the standard deviation
 
     if wells_hk is None:
         # Fix hard data values at wells location
@@ -491,10 +490,6 @@ def sgsim(model_ws: str,
         hk0 = np.load(jp(model_ws, "hk0.npy"))
         return hk0, centers
 
-    # Display point coordinates and grid
-    # pl = Plots(project=pjt)
-    # pl.plot_coordinates()
-
     # Load your algorithm xml file in the 'algorithms' folder.
     dir_path = os.path.abspath(__file__ + "/..")
     algo_dir = jp(dir_path, "")
@@ -509,8 +504,6 @@ def sgsim(model_ws: str,
 
     # Run sgems
     pjt.run()
-    # Plot 2D results
-    # pl.plot_2d(save=True)
 
     opl = jp(model_ws, "results.grid")  # Output file location.
 
