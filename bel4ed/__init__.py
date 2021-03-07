@@ -11,7 +11,7 @@ from .learning import bel_pipeline
 __version__ = '1.0.dev0'
 
 # Set up logger
-logger.add(jp(os.getcwd(), "logs", f"{date.today()}.log"), backtrace=True, diagnose=True, enqueue=True)
+logger.add(jp(os.getcwd(), "logs", f"{__name__}_{date.today()}.log"), backtrace=True, diagnose=True, enqueue=True)
 logger.debug("Beginning logging session!")
 
 __all__ = ['config', 'exceptions', 'utils', 'goggles',
