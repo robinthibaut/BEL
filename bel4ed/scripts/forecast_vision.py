@@ -3,6 +3,8 @@
 import os
 import string
 
+from loguru import logger
+
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
@@ -31,13 +33,13 @@ if __name__ == "__main__":
     # ['123456', '1', '2', '3', '4', '5', '6']
 
     for i, sample in enumerate(roots):
-        print(f"Plotting root {sample}")
+        logger.info(f"Plotting root {sample}")
 
         wells = ["123456"]
 
         for j, w in enumerate(wells):
 
-            print(f"Plotting well {w}")
+            logger.info(f"Plotting well {w}")
 
             if w == "123456":
                 annotation = alphabet[i]

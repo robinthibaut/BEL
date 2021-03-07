@@ -11,6 +11,7 @@ import flopy
 import joblib
 import numpy as np
 import scipy.sparse as sp
+from loguru import logger
 
 from .exceptions import NotFittedError
 from .config import Setup
@@ -540,7 +541,7 @@ def check_array(
                     array = np.asarray(array, order=order, dtype=dtype)
 
             except Exception as e:
-                print(e)
+                logger.error(e)
 
         # It is possible that the np.array(..) gave no warning. This happens
         # when no dtype conversion happened, for example dtype = None. The
@@ -640,7 +641,7 @@ def folder_reset(folder: str, exceptions: list = None):
                     if os.path.isfile(file_path):
                         os.unlink(file_path)
                 except Exception as e:
-                    print("Failed to delete %s. Reason: %s" % (file_path, e))
+                    logger.warning("Failed to delete %s. Reason: %s" % (file_path, e))
     except FileNotFoundError:
         pass
 
@@ -650,7 +651,7 @@ def empty_figs(root: str):
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
-            print("Input error")
+            logger.error("Input error")
             return
         else:
             root = root[0]
@@ -688,7 +689,7 @@ def dirmaker(dird: str, erase: bool = False):
                 os.makedirs(dird)
             return 1
     except Exception as e:
-        print(e)
+        logger.warning(e)
         return 0
 
 
@@ -790,7 +791,7 @@ def keep_essential(res_dir: str):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print(e)
+                logger.warning(e)
 
 
 def remove_bad_bkt(res_dir: str):
@@ -960,7 +961,7 @@ def cleanup():
             keep_essential(r)
             remove_bad_bkt(r)
             remove_incomplete(r)
-    print("Folders cleaned up")
+    logger.info("Folders cleaned up")
 
 
 def filter_file(crit):
@@ -969,7 +970,7 @@ def filter_file(crit):
         if r != res_tree:
             remove_bad_bkt(r)
             remove_incomplete(r, crit=crit)
-    print(f"Folders filtered based on {crit}")
+    logger.info(f"Folders filtered based on {crit}")
 
 
 def spare_me():

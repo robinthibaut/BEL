@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import numpy as np
+from loguru import logger
 
 from bel4ed.config import Setup
 from bel4ed.design import analysis
@@ -28,9 +29,9 @@ def main_2(N):
     for n in N:
         Setup.HyperParameters.n_total = n
         Setup.HyperParameters.n_training = int(n * 0.8)
-        print(f"n_training={int(n * .8)}")
+        logger.info(f"n_training={int(n * .8)}")
         Setup.HyperParameters.n_test = int(n * 0.2)
-        print(f"n_test={int(n * .2)}")
+        logger.info(f"n_test={int(n * .2)}")
 
         # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
         wells = [[1, 2, 3, 4, 5, 6]]

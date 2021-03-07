@@ -20,6 +20,7 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from sklearn.preprocessing import PowerTransformer
+from loguru import logger
 
 from .. import utils
 from ..config import Setup, Root, Combination
@@ -104,7 +105,7 @@ def base_pca(
                 for r in test_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + "\n")
 
-
+@logger.catch
 def bel_fit_transform(
         base,
         well_comb: Combination = None,

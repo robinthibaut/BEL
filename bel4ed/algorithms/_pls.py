@@ -1,8 +1,8 @@
-
 import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
+from loguru import logger
 from scipy.linalg import pinv2, svd
 
 from bel4ed.utils import (FLOAT_DTYPES, check_array,
@@ -10,7 +10,6 @@ from bel4ed.utils import (FLOAT_DTYPES, check_array,
 
 from ._base import (BaseEstimator, RegressorMixin,
                     TransformerMixin)
-from bel4ed.exceptions import ConvergenceWarning
 from .extmath import svd_flip
 
 __all__ = ["_PLS"]
@@ -79,8 +78,8 @@ def _nipals_twoblocks_inner_loop(X,
         if np.dot(x_weights_diff.T, x_weights_diff) < tol or Y.shape[1] == 1:
             break
         if ite == max_iter:
-            warnings.warn("Maximum number of iterations reached",
-                          ConvergenceWarning)
+            msg = "Maximum number of iterations reached"
+            logger.warning(msg)
             break
         x_weights_old = x_weights
         ite += 1
@@ -121,6 +120,7 @@ def _center_scale_xy(X, Y, scale=True):
     return X, Y, x_mean, y_mean, x_std, y_std
 
 
+@logger.catch
 class _PLS(TransformerMixin,
            RegressorMixin,
            BaseEstimator,
@@ -290,7 +290,7 @@ class _PLS(TransformerMixin,
         for k in range(self.n_components):
             if np.all(np.dot(Yk.T, Yk) < np.finfo(np.double).eps):
                 # Yk constant
-                warnings.warn("Y residual constant at iteration %s" % k)
+                logger.warning("Y residual constant at iteration %s" % k)
                 break
             # 1) weights estimation (inner loop)
             # -----------------------------------
@@ -319,7 +319,7 @@ class _PLS(TransformerMixin,
             y_scores = np.dot(Yk, y_weights) / y_ss
             # test for null variance
             if np.dot(x_scores.T, x_scores) < np.finfo(np.double).eps:
-                warnings.warn("X scores are null at iteration %s" % k)
+                logger.warning("X scores are null at iteration %s" % k)
                 break
             # 2) Deflation (in place)
             # ----------------------

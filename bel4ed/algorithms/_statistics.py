@@ -6,6 +6,7 @@ from os.path import join as jp
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
@@ -18,6 +19,7 @@ from bel4ed.utils import data_read
 __all__ = ['KDE', 'kde_params', 'posterior_conditional', 'sgsim']
 
 
+@logger.catch
 class KDE:
     """
     Bivariate kernel density estimator.
@@ -26,14 +28,14 @@ class KDE:
     """
 
     def __init__(
-        self,
-        *,
-        bw_method=None,
-        bw_adjust=1,
-        gridsize=200,
-        cut=3,
-        clip=None,
-        cumulative=False,
+            self,
+            *,
+            bw_method=None,
+            bw_adjust=1,
+            gridsize=200,
+            cut=3,
+            clip=None,
+            cumulative=False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -173,8 +175,8 @@ class KDE:
 
 
 def _univariate_density(
-    data_variable,
-    estimate_kws,
+        data_variable,
+        estimate_kws,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -197,8 +199,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-    data: pd.DataFrame,
-    estimate_kws: dict,
+        data: pd.DataFrame,
+        estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -234,15 +236,15 @@ def _bivariate_density(
 
 
 def kde_params(
-    x: np.array = None,
-    y: np.array = None,
-    bw: float = None,
-    gridsize: int = 200,
-    cut: float = 3,
-    clip=None,
-    cumulative: bool = False,
-    bw_method: str = "scott",
-    bw_adjust: int = 1,
+        x: np.array = None,
+        y: np.array = None,
+        bw: float = None,
+        gridsize: int = 200,
+        cut: float = 3,
+        clip=None,
+        cumulative: bool = False,
+        bw_method: str = "scott",
+        bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -310,11 +312,11 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
 
 
 def _conditional_distribution(
-    kde_array: np.array,
-    x_array: np.array,
-    y_array: np.array,
-    x: float = None,
-    y: float = None,
+        kde_array: np.array,
+        x_array: np.array,
+        y_array: np.array,
+        x: float = None,
+        y: float = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -420,9 +422,9 @@ def _log_transform(f, k_mean: float, k_std: float):
 
     ff = f * k_std + k_mean
 
-    return 10**ff
+    return 10 ** ff
 
-
+@logger.catch
 def sgsim(model_ws: str,
           grid_dir: str,
           wells_hk: list = None,
@@ -466,7 +468,7 @@ def sgsim(model_ws: str,
 
     if not os.path.exists(jp(model_ws, Setup.Files.sgems_file)):
         hd.dataframe["hd"] = hku
-        hd.export_01("hd")  # Exports modified dataset in binary
+        hd.export_01(["hd"])  # Exports modified dataset in binary
 
     # Generate grid. Grid dimensions can automatically be generated based on the data points
     # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified

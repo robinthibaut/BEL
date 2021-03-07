@@ -15,6 +15,7 @@ import vtk
 from flopy.export import vtk as vtk_flow
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from loguru import logger
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
@@ -1130,7 +1131,7 @@ def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
-            print("Input error")
+            logger.error("Input error")
             return
         else:
             root = root[0]
@@ -1192,7 +1193,7 @@ def plot_whpa(root: str = None):
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
-            print("Input error")
+            logger.error("Input error")
             return
         else:
             root = root[0]
@@ -1243,7 +1244,7 @@ def cca_vision(root: str = None, folders: list = None):
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
-            print("Input error")
+            logger.error("Input error")
             return
         else:
             root = root[0]
@@ -1330,7 +1331,7 @@ def pca_vision(root,
 
     if isinstance(root, (list, tuple)):
         if len(root) > 1:
-            print("Input error")
+            logger.error("Input error")
             return
         else:
             root = root[0]
@@ -1692,7 +1693,7 @@ class ModelVTK:
                 delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
         try:
             # Transport model
@@ -1709,7 +1710,7 @@ class ModelVTK:
             self.concs = np.array([uo.get_alldata()
                                    for uo in ucn_obj])  # Get all data
         except Exception as e:
-            print(e)
+            logger.error(e)
 
     def flow_vtk(self):
         """

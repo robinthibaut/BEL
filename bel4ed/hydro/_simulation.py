@@ -7,6 +7,7 @@ import uuid
 from os.path import join as jp
 
 import numpy as np
+from loguru import logger
 
 import bel4ed.utils
 from bel4ed.algorithms import sgsim
@@ -48,7 +49,7 @@ def forward_modelling(folder=None):
     # Generates the result directory
     bel4ed.utils.dirmaker(results_dir)
 
-    print(f"fwd {res_dir}")
+    logger.info(f"fwd {res_dir}")
     # Check if forwards have already been computed
     opt = np.array(
         [os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files])
@@ -87,15 +88,15 @@ def forward_modelling(folder=None):
             np.save(jp(results_dir, "pz"), pzs)  # Save those
             # Deletes everything except final results
             hl = (time.time() - start_fwd) // 60
-            print(f"done in {hl} min")
+            logger.info(f"done in {hl} min")
             if not folder:
                 bel4ed.utils.keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
-            print(f"terminated f{res_dir}")
+            logger.info(f"terminated f{res_dir}")
             return 0
     else:
-        print(f"pass {res_dir}")
+        logger.info(f"pass {res_dir}")
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
         # Run Flow Modelling
         flow(

@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from loguru import logger
 
 __all__ = ['PC']
 
@@ -183,4 +184,4 @@ class PC:
         self.predict_physical = None
         # Re-dumps pca object
         joblib.dump(self, os.path.join(self.directory, f'{self.name}_pca.pkl'))
-        print(f'Target properties reset to {self.predict_pc}')
+        logger.info(f'Target properties of {self.name} reset to {self.predict_pc}')

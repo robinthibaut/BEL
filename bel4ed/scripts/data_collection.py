@@ -19,6 +19,7 @@ import os
 import time
 
 import numpy as np
+from loguru import logger
 
 import bel4ed.utils
 from bel4ed.config import Setup
@@ -29,7 +30,7 @@ def main(n_sim: int = None):
     """Main function for multiprocessing"""
     # Automatically selects num,ber of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
-    print(f"working on {n_cpu} cpu - good luck")
+    logger.info(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
 
     # If n_sim arg is left to None, redo all simulations in folders already presents
@@ -62,4 +63,4 @@ if __name__ == "__main__":
     forward_modelling("test190221")
     # main(10)
     end = time.time()
-    print(f"TET (hours) {(end - start) / 60 / 60}")
+    logger.info(f"TET (hours) {(end - start) / 60 / 60}")
