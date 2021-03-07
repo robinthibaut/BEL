@@ -1,4 +1,3 @@
-import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -120,7 +119,6 @@ def _center_scale_xy(X, Y, scale=True):
     return X, Y, x_mean, y_mean, x_std, y_std
 
 
-@logger.catch
 class _PLS(TransformerMixin,
            RegressorMixin,
            BaseEstimator,

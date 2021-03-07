@@ -105,7 +105,6 @@ def base_pca(
                 for r in test_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + "\n")
 
-@logger.catch
 def bel_fit_transform(
         base,
         well_comb: Combination = None,

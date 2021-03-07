@@ -19,7 +19,6 @@ from bel4ed.utils import data_read
 __all__ = ['KDE', 'kde_params', 'posterior_conditional', 'sgsim']
 
 
-@logger.catch
 class KDE:
     """
     Bivariate kernel density estimator.
@@ -424,7 +423,6 @@ def _log_transform(f, k_mean: float, k_std: float):
 
     return 10 ** ff
 
-@logger.catch
 def sgsim(model_ws: str,
           grid_dir: str,
           wells_hk: list = None,
