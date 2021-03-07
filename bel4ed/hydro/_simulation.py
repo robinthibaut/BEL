@@ -16,6 +16,8 @@ from bel4ed.hydro.flow.modflow import flow
 from bel4ed.hydro.transport.mt3d import transport
 from bel4ed.processing import travelling_particles
 
+__all__ = ["forward_modelling"]
+
 
 def forward_modelling(folder=None):
     """Data collection"""

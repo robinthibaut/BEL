@@ -9,3 +9,6 @@ joblib
 vtk
 pandas
 seaborn
+dataclasses
+pysgems
+loguru
