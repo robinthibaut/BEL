@@ -10,9 +10,10 @@ from .learning import bel_pipeline
 
 __version__ = '1.0.dev0'
 
+source = __name__.split('.')[-1]
 # Set up logger
-logger.add(jp(os.getcwd(), "logs", f"{__name__}_{date.today()}.log"), backtrace=True, diagnose=True, enqueue=True)
-logger.debug(f"Beginning logging session for {__name__}!")
+logger.add(jp(os.getcwd(), "logs", f"{source}_{date.today()}.log"), backtrace=True, diagnose=True, enqueue=True)
+logger.debug(f"Beginning logging session for {source}!")
 
 __all__ = ['config', 'exceptions', 'utils', 'goggles',
            'algorithms', 'design', 'hydro', 'learning', 'processing', 'spatial']
