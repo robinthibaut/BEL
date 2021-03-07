@@ -12,7 +12,7 @@ __version__ = '1.0.dev0'
 
 # Set up logger
 logger.add(jp(os.getcwd(), "logs", f"{__name__}_{date.today()}.log"), backtrace=True, diagnose=True, enqueue=True)
-logger.debug("Beginning logging session!")
+logger.debug(f"Beginning logging session for {__name__}!")
 
 __all__ = ['config', 'exceptions', 'utils', 'goggles',
            'algorithms', 'design', 'hydro', 'learning', 'processing', 'spatial']
