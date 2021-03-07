@@ -518,13 +518,6 @@ def sgsim(model_ws: str,
         (pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
-    # import matplotlib.pyplot as plt
-    # extent = (pjt.dis.xo, pjt.dis.x_lim, pjt.dis.yo, pjt.dis.y_lim)
-    # plt.imshow(np.log10(matrix), cmap='coolwarm', extent=extent)
-    # plt.plot(pjt.point_set.raw_data[:, 0], pjt.point_set.raw_data[:, 1], 'k+', markersize=1, alpha=.7)
-    # plt.colorbar()
-    # plt.show()
-
     if save:
         np.save(jp(model_ws, "hk0"), matrix)  # Save the un-discretized hk grid
 
