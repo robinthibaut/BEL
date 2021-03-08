@@ -20,6 +20,7 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from sklearn.preprocessing import PowerTransformer
+from loguru import logger
 
 from .. import utils
 from ..config import Setup, Root, Combination
@@ -103,6 +104,7 @@ def base_pca(
             with open(jp(base_dir, "test_roots.dat"), "w") as f:
                 for r in test_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r) + "\n")
+
 
 def bel_fit_transform(
         base,
@@ -246,7 +248,8 @@ def bel_fit_transform(
               tol=1e-06)
     cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
-
+    msg = f"model trained and saved in {obj_dir}"
+    logger.info(msg)
     return sub_dir
 
 
@@ -268,11 +271,11 @@ class PosteriorIO:
 
     def mvn_inference(
             self,
-            h_cca_training_gaussian,
-            d_cca_training,
-            d_pc_training,
-            d_rotations,
-            d_cca_prediction,
+            h_cca_training_gaussian: np.array,
+            d_cca_training: np.array,
+            d_pc_training: np.array,
+            d_rotations: np.array,
+            d_cca_prediction: np.array,
     ):
         """
         Estimating posterior mean and covariance of the target.
@@ -287,21 +290,11 @@ class PosteriorIO:
         :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
-        # TODO: add dimension check
-        if isinstance(h_cca_training_gaussian, (list, tuple, np.ndarray)):
-            # Shape = (n_components_CCA, n_training)
-            shctg = np.shape(h_cca_training_gaussian)
-        if isinstance(d_cca_training, (list, tuple, np.ndarray)):
-            # Shape = (n_components_CCA, n_training)
-            sdct = np.shape(d_cca_training)
-        if isinstance(d_pc_training, (list, tuple, np.ndarray)):
-            # Shape = (n_training, n_components_PCA)
-            sdpt = np.shape(d_pc_training)
-        if isinstance(d_rotations, (list, tuple, np.ndarray)):
-            # Shape = (n_components_PCA_d, n_components_CCA_h)
-            sdr = np.shape(d_rotations)
-        if isinstance(d_cca_prediction, (list, tuple, np.ndarray)):
-            sdcp = np.shape(d_cca_prediction)  # Shape = (n_components_CCA, 1)
+        h_cca_training_gaussian = utils.check_array(h_cca_training_gaussian)
+        d_cca_training = utils.check_array(d_cca_training)
+        d_pc_training = utils.check_array(d_pc_training)
+        d_rotations = utils.check_array(d_rotations)
+        d_cca_prediction = utils.check_array(d_cca_prediction)
 
         # Size of the set
         n_training = d_cca_training.shape[0]
@@ -366,22 +359,6 @@ class PosteriorIO:
         h_posterior_mean = h_posterior_covariance @ (
                 d11 @ h_mean -
                 d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
-
-        # test = np.block([[d11, d12], [d21, d22]])
-        # plt.matshow(test, cmap='coolwarm')
-        # plt.colorbar()
-        # plt.show()
-
-        # Also works:
-        # Inverse of the sample covariance matrix of d ( Sig dd )
-        # ddd_inv = np.linalg.pinv(g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance)
-        # h_posterior_covariance = h_cov_operator - \
-        #     h_cov_operator @ g.T @ ddd_inv @ g @ h_cov_operator
-        #
-        # h_posterior_mean = \
-        #     h_mean + h_cov_operator @ g.T @ ddd_inv @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
-
-        # h_posterior_covariance = (h_posterior_covariance + h_posterior_covariance.T) / 2  # (n_comp_CCA, n_comp_CCA)
 
         self.posterior_mean = h_posterior_mean  # (n_comp_CCA,)
         # (n_comp_CCA, n_comp_CCA)
