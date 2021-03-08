@@ -23,6 +23,7 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
+from ..utils import ModuleType
 from ..config import Setup, Root, Combination
 
 from ..processing import curve_interpolation
@@ -33,7 +34,7 @@ from ..processing import PC
 
 
 def base_pca(
-        base: object,
+        base: ModuleType,
         base_dir: str,
         roots: Root,
         test_roots: Root,
@@ -107,7 +108,7 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base: object,
+        base: ModuleType,
         well_comb: Combination = None,
         training_roots: Root = None,
         test_root: Root = None,
@@ -367,8 +368,8 @@ class PosteriorIO:
     def back_transform(
             self,
             h_posts_gaussian: np.array,
-            cca_obj: object,
-            pca_h: object,
+            cca_obj: ModuleType,
+            pca_h: ModuleType,
             n_posts: int,
             add_comp: bool = False,
             save_target_pc: bool = False,
@@ -395,7 +396,6 @@ class PosteriorIO:
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
-        # FIXME: Deprecation warning here about y_std_ and y_mean_
         h_pca_reverse = (
                 np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
                 cca_obj.y_mean_)
@@ -438,9 +438,9 @@ class PosteriorIO:
         return h_posts_gaussian
 
     def bel_predict(self,
-                    pca_d: object,
-                    pca_h: object,
-                    cca_obj: object,
+                    pca_d: ModuleType,
+                    pca_h: ModuleType,
+                    cca_obj: ModuleType,
                     n_posts: int,
                     add_comp: bool = False) -> np.array:
         """

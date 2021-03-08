@@ -28,12 +28,12 @@ class KDE:
     def __init__(
             self,
             *,
-            bw_method=None,
-            bw_adjust=1,
-            gridsize=200,
-            cut=3,
-            clip=None,
-            cumulative=False,
+            bw_method: str = None,
+            bw_adjust: float = 1,
+            gridsize: int = 200,
+            cut: float = 3,
+            clip: list = None,
+            cumulative: bool = False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -70,7 +70,7 @@ class KDE:
         self.support = None
 
     @staticmethod
-    def _define_support_grid(x, bw, cut, clip, gridsize):
+    def _define_support_grid(x: np.array, bw: float, cut: float, clip: list, gridsize: int):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
@@ -78,7 +78,7 @@ class KDE:
         gridmax = min(x.max() + bw * cut, clip_hi)
         return np.linspace(gridmin, gridmax, gridsize)
 
-    def _define_support_univariate(self, x, weights):
+    def _define_support_univariate(self, x: np.array, weights: np.array):
         """Create a 1D grid of evaluation points."""
         kde = self._fit(x, weights)
         bw = np.sqrt(kde.covariance.squeeze())
@@ -86,7 +86,7 @@ class KDE:
                                          self.gridsize)
         return grid
 
-    def _define_support_bivariate(self, x1, x2, weights):
+    def _define_support_bivariate(self, x1: np.array, x2: np.array, weights: np.array):
         """Create a 2D grid of evaluation points."""
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):
@@ -102,7 +102,7 @@ class KDE:
 
         return grid1, grid2
 
-    def define_support(self, x1, x2=None, weights=None, cache=True):
+    def define_support(self, x1: np.array, x2: np.array = None, weights: np.array = None, cache: bool = True):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
             support = self._define_support_univariate(x1, weights)
@@ -114,7 +114,7 @@ class KDE:
 
         return support
 
-    def _fit(self, fit_data, weights=None):
+    def _fit(self, fit_data: np.array, weights: np.array = None):
         """Fit the scipy kde"""
         fit_kws = {"bw_method": self.bw_method}
         if weights is not None:
@@ -125,7 +125,7 @@ class KDE:
 
         return kde
 
-    def _eval_univariate(self, x, weights=None):
+    def _eval_univariate(self, x: np.array, weights=None):
         """Fit and evaluate on univariate data."""
         support = self.support
         if support is None:
@@ -142,7 +142,7 @@ class KDE:
 
         return density, support
 
-    def _eval_bivariate(self, x1, x2, weights=None):
+    def _eval_bivariate(self, x1: np.array, x2: np.array, weights: np.array = None):
         """Fit and evaluate on bivariate data."""
         support = self.support
         if support is None:
@@ -173,8 +173,8 @@ class KDE:
 
 
 def _univariate_density(
-        data_variable,
-        estimate_kws,
+        data_variable: pd.DataFrame,
+        estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
