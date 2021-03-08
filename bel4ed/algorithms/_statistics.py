@@ -6,7 +6,6 @@ from os.path import join as jp
 
 import numpy as np
 import pandas as pd
-from loguru import logger
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet

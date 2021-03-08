@@ -20,15 +20,14 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from sklearn.preprocessing import PowerTransformer
-from loguru import logger
 
 from .. import utils
 from ..config import Setup, Root, Combination
 
 from ..processing import curve_interpolation
 
-from ..algorithms import CCA
-from ..spatial import grid_parameters, signed_distance, get_block
+from ..algorithms import CCA, signed_distance
+from ..spatial import grid_parameters, get_block
 from ..processing import PC
 
 

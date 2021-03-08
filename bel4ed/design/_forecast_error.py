@@ -19,9 +19,9 @@ from ..spatial import (
     binary_polygon,
     contours_vertices,
     grid_parameters,
-    modified_hausdorff,
     refine_machine,
 )
+from ..algorithms.metrics import modified_hausdorff
 
 __all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
 

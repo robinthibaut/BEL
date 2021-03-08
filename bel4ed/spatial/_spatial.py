@@ -6,9 +6,8 @@ import skfmm  # Library to compute the signed distance
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
-from scipy.spatial.distance import cdist
 
-__all__ = ['grid_parameters', 'signed_distance', 'modified_hausdorff', 'block_shaped', 'refine_axis', 'rc_from_blocks',
+__all__ = ['grid_parameters', 'signed_distance', 'block_shaped', 'refine_axis', 'rc_from_blocks',
            'blocks_from_rc', 'blocks_from_rc_3d', 'matrix_paste', 'h_sub', 'get_centroids', 'contours_vertices',
            'binary_polygon', 'binary_stack', 'get_block', 'refine_machine']
 
@@ -57,42 +56,6 @@ def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float,
     sd = skfmm.distance(phi, dx=grf)  # Signed distance computation
 
     return sd
-
-
-def modified_hausdorff(a: np.array, b: np.array) -> float:
-    """
-    Compute the modified Hausdorff distance between two N-D arrays.
-    Distances between pairs are calculated using an Euclidean metric.
-
-    .. [1] M. P. Dubuisson and A. K. Jain. A Modified Hausdorff distance for object
-           matching. In ICPR94, pages A:566-568, Jerusalem, Israel, 1994.
-           http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=576361
-
-    :param a : (M,N) ndarray. Input array.
-    :param b : (O,N) ndarray. Input array.
-
-    :return: d : double. The modified Hausdorff distance between arrays `a` and `b`.
-
-    :raise ValueError: An exception is thrown if `a` and `b` do not have the same number of columns.
-
-    Another Python implementation:
-    https://github.com/sapphire008/Python/blob/master/generic/HausdorffDistance.py
-
-    """
-
-    a = np.asarray(a, dtype=np.float64, order="c")
-    b = np.asarray(b, dtype=np.float64, order="c")
-
-    if a.shape[1] != b.shape[1]:
-        raise ValueError("a and b must have the same number of columns")
-
-    # Compute distance between each pair of the two collections of inputs.
-    d = cdist(a, b)
-    # dim(d) = (M, O)
-    fhd = np.mean(np.min(d, axis=0))  # Mean of minimum values along rows
-    rhd = np.mean(np.min(d, axis=1))  # Mean of minimum values along columns
-
-    return max(fhd, rhd)
 
 
 def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
