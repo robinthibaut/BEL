@@ -10,7 +10,7 @@ class NotFittedError(ValueError, AttributeError):
     This class inherits from both ValueError and AttributeError to help with
     exception handling and backward compatibility.
 
-    NotFittedError("This LinearSVC instance is not fitted yet. Call 'fit' with
+    NotFittedError("This instance is not fitted yet. Call 'fit' with
     appropriate arguments before using this estimator."...)
 
     """

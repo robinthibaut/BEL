@@ -46,7 +46,7 @@ class PC:
         # The samples are automatically scaled by scikit-learn PCA()
         self.operator = PCA()  # PCA operator (scikit-learn instance)
         # self.transformer = PowerTransformer(method='yeo-johnson', standardize=True)
-        self.pipe = make_pipeline(self.scaler, self.operator, verbose=True)
+        self.pipe = make_pipeline(self.scaler, self.operator, verbose=False)
 
         self.n_pc_cut = None  # Number of components to keep
 
