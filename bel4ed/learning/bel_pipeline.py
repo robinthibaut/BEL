@@ -33,7 +33,7 @@ from ..processing import PC
 
 
 def base_pca(
-        base,
+        base: object,
         base_dir: str,
         roots: Root,
         test_roots: Root,
@@ -107,7 +107,7 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base,
+        base: object,
         well_comb: Combination = None,
         training_roots: Root = None,
         test_root: Root = None,
@@ -366,13 +366,13 @@ class PosteriorIO:
 
     def back_transform(
             self,
-            h_posts_gaussian,
-            cca_obj,
-            pca_h,
+            h_posts_gaussian: np.array,
+            cca_obj: object,
+            pca_h: object,
             n_posts: int,
             add_comp: bool = False,
             save_target_pc: bool = False,
-    ):
+    ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
@@ -420,7 +420,7 @@ class PosteriorIO:
 
         return forecast_posterior
 
-    def random_sample(self, n_posts: int = None):
+    def random_sample(self, n_posts: int = None) -> np.array:
         """
 
         :param n_posts:
@@ -438,11 +438,11 @@ class PosteriorIO:
         return h_posts_gaussian
 
     def bel_predict(self,
-                    pca_d,
-                    pca_h,
-                    cca_obj,
+                    pca_d: object,
+                    pca_h: object,
+                    cca_obj: object,
                     n_posts: int,
-                    add_comp: bool = False):
+                    add_comp: bool = False) -> np.array:
         """
         Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observations.
