@@ -34,7 +34,7 @@ from ..processing import PC
 
 
 def base_pca(
-        base: any,
+        base: Setup,
         base_dir: str,
         roots: Root,
         test_roots: Root,
@@ -108,7 +108,7 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base: any,
+        base: Setup,
         well_comb: Combination = None,
         training_roots: Root = None,
         test_root: Root = None,
@@ -368,8 +368,8 @@ class PosteriorIO:
     def back_transform(
             self,
             h_posts_gaussian: np.array,
-            cca_obj: any,
-            pca_h: any,
+            cca_obj: CCA,
+            pca_h: PC,
             n_posts: int,
             add_comp: bool = False,
             save_target_pc: bool = False,
@@ -438,9 +438,9 @@ class PosteriorIO:
         return h_posts_gaussian
 
     def bel_predict(self,
-                    pca_d: any,
-                    pca_h: any,
-                    cca_obj: any,
+                    pca_d: PC,
+                    pca_h: PC,
+                    cca_obj: CCA,
                     n_posts: int,
                     add_comp: bool = False) -> np.array:
         """
