@@ -13,7 +13,7 @@ __all__ = ['grid_parameters', 'signed_distance', 'modified_hausdorff', 'block_sh
            'binary_polygon', 'binary_stack', 'get_block', 'refine_machine']
 
 
-def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1):
+def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1) -> (np.array, int, int):
     """
     Generates grid parameters necessary prior to SD calculation.
     :param x_lim:
@@ -59,7 +59,7 @@ def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float,
     return sd
 
 
-def modified_hausdorff(a, b):
+def modified_hausdorff(a: np.array, b: np.array) -> float:
     """
     Compute the modified Hausdorff distance between two N-D arrays.
     Distances between pairs are calculated using an Euclidean metric.
@@ -95,7 +95,7 @@ def modified_hausdorff(a, b):
     return max(fhd, rhd)
 
 
-def block_shaped(arr: np.array, nrows: int, ncols: int):
+def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -114,7 +114,7 @@ def block_shaped(arr: np.array, nrows: int, ncols: int):
 
 
 def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
-                d_dim: float, a_lim: float):
+                d_dim: float, a_lim: float) -> np.array:
     """
     Refines one 1D axis around a point belonging to it.
 
@@ -198,7 +198,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
     return x0
 
 
-def rc_from_blocks(blocks: np.array):
+def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
     """
     Computes the x and y dimensions of each block
     :param blocks:
@@ -210,7 +210,7 @@ def rc_from_blocks(blocks: np.array):
     return dc, dr
 
 
-def blocks_from_rc_3d(rows: np.array, columns: np.array):
+def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
@@ -237,7 +237,7 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array):
     return blocks
 
 
-def blocks_from_rc(rows: np.array, columns: np.array):
+def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
     """
@@ -264,7 +264,7 @@ def blocks_from_rc(rows: np.array, columns: np.array):
     return blocks
 
 
-def matrix_paste(c_big, c_small):
+def matrix_paste(c_big: np.array, c_small: np.array) -> list:
     # Compute distance matrix between refined and dummy grid.
     dm = distance_matrix(c_big, c_small)
     inds = [
@@ -274,7 +274,7 @@ def matrix_paste(c_big, c_small):
     return inds
 
 
-def h_sub(h: np.array, un: int, uc: int, sc: int):
+def h_sub(h: np.array, un: int, uc: int, sc: int) -> np.array:
     """
     Process signed distance array.
     :param h: Signed distance array
@@ -292,7 +292,7 @@ def h_sub(h: np.array, un: int, uc: int, sc: int):
     return h_u
 
 
-def get_centroids(array: np.array, grf: float):
+def get_centroids(array: np.array, grf: float) -> np.array:
     """
     Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
     centroids.
@@ -308,7 +308,7 @@ def contours_vertices(x: list,
                       y: list,
                       arrays: np.array,
                       c: float = 0,
-                      ignore_: bool = True):
+                      ignore_: bool = True) -> np.array:
     """
     Extracts contour vertices from a list of matrices.
     :param x:
@@ -349,7 +349,7 @@ def binary_polygon(
         pzs: np.array,
         outside: float = -1,
         inside: float = 1,
-):
+) -> np.array:
     """
     Given a polygon whose vertices are given by the array pzs, and a matrix of
     centroids coordinates of the surface discretization, assigns to the matrix a certain value
@@ -379,7 +379,7 @@ def binary_polygon(
     return phi
 
 
-def binary_stack(xys, nrow, ncol, vertices):
+def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.array:
     """
     Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
     """
@@ -395,7 +395,7 @@ def binary_stack(xys, nrow, ncol, vertices):
     return big_sum
 
 
-def get_block(pm, i: int):
+def get_block(pm: np.array, i: int) -> np.array:
     """
     Extracts block from a 2x2 partitioned matrix.
     :param pm: Partitioned matrix
@@ -419,7 +419,7 @@ def get_block(pm, i: int):
         return 0
 
 
-def refine_machine(xlim, ylim, new_grf):
+def refine_machine(xlim: list, ylim: list, new_grf: int or float) -> (int, int, np.array, np.array):
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
     new_x, new_y = np.meshgrid(np.linspace(xlim[0], xlim[1], ncol),
