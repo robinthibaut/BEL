@@ -25,7 +25,7 @@ def _object_dtype_isnan(X):
     return X != X
 
 
-def column_or_1d(y, warn=False):
+def column_or_1d(y: np.array, warn: bool = False):
     """Ravel column or 1d numpy array, else raises an error
 
     Parameters
@@ -57,7 +57,7 @@ def column_or_1d(y, warn=False):
     raise ValueError("bad input shape {0}".format(shape))
 
 
-def _check_large_sparse(X, accept_large_sparse=False):
+def _check_large_sparse(X: np.array, accept_large_sparse: bool = False):
     """Raise a ValueError if X has 64bit indices and accept_large_sparse=False"""
     if not accept_large_sparse:
         supported_indices = ["int32"]

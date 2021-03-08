@@ -156,7 +156,7 @@ class PC:
         return np.array(test)
 
     def custom_inverse_transform(self,
-                                 pc_to_invert,
+                                 pc_to_invert: np.array,
                                  n_comp: int = None):
         """
         Inverse transform PC based on the desired number of PC (stored in the shape of the argument).

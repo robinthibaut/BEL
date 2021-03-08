@@ -14,16 +14,19 @@ import seaborn as sns
 import vtk
 from flopy.export import vtk as vtk_flow
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import legend
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from loguru import logger
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
 import bel4ed.utils
-from bel4ed.algorithms import KDE, kde_params, posterior_conditional
+from bel4ed.utils import Root
+from bel4ed.algorithms import KDE, kde_params, posterior_conditional, CCA
 from bel4ed.config import Setup
+from bel4ed.processing import PC
 from bel4ed.spatial import (binary_stack, contours_vertices,
-                            grid_parameters, refine_machine)
+                            grid_parameters, refine_machine, blocks_from_rc_3d)
 from bel4ed.utils import reload_trained_model
 
 __all__ = [
@@ -32,7 +35,7 @@ __all__ = [
 ]
 
 
-def _my_alphabet(az):
+def _my_alphabet(az: int):
     """
     Method used to make custom figure annotations.
     :param az:
@@ -53,7 +56,7 @@ def _my_alphabet(az):
 
 
 def _proxy_legend(
-        legend1=None,
+        legend1: legend = None,
         colors: list = None,
         labels: list = None,
         loc: int = 4,
@@ -147,7 +150,7 @@ def _proxy_annotate(annotation: list = None,
 
 
 def explained_variance(
-        pca,
+        pca: PC,
         n_comp: int = 0,
         thr: float = 1.0,
         annotation: list = None,
@@ -208,8 +211,8 @@ def explained_variance(
 
 
 def pca_scores(
-        training,
-        prediction,
+        training: np.array,
+        prediction: np.array,
         n_comp: int,
         annotation: list,
         fig_file: str = None,
@@ -301,11 +304,10 @@ def pca_scores(
 
 
 def cca_plot(
-        cca_operator,
+        cca_operator: CCA,
         d: np.array,
         h: np.array,
         d_pc_prediction: np.array,
-        h_pc_prediction: np.array,
         sdir: str = None,
         show: bool = False,
 ):
@@ -316,7 +318,6 @@ def cca_plot(
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
-    :param h_pc_prediction: h test PC scores
     :param sdir: str:
     :param show: bool:
     :return:
@@ -327,7 +328,6 @@ def cca_plot(
 
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
-        comp_n = i
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
             pass
 
@@ -388,6 +388,8 @@ def whpa_plot(
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+    :param grf: Grid cell size
+    :param well_comb: List of well combination
     :param highlight: Boolean to display lines on top of filling between contours or not.
     :param annotation: List of annotations (str)
     :param xlabel:
@@ -570,7 +572,7 @@ def post_examination(root: str,
     plt.close()
 
 
-def h_pca_inverse_plot(pca_o,
+def h_pca_inverse_plot(pca_o: PC,
                        training: bool = True,
                        fig_dir: str = None,
                        show: bool = False):
@@ -903,68 +905,24 @@ def mode_histo(colors: list,
         transparent=True,
     )
     plt.close()
-    # plt.show()
-
-    # %% Facet histograms
-    # ids = np.array(np.concatenate([np.ones(wm.shape[1]) * i for i in range(1, 7)]), dtype='int')
-    # master = wm.flatten()
-    #
-    # data = np.concatenate([[master], [ids]], axis=0)
-    #
-    # master_x = pd.DataFrame(data=data.T, columns=['MHD', 'well'])
-    # master_x['well'] = np.array(ids)
-    # g = sns.FacetGrid(master_x,  # the dataframe to pull from
-    #                   row="well",
-    #                   hue="well",
-    #                   aspect=3,  # aspect * height = width
-    #                   height=1.5,  # height of each subplot
-    #                   palette=colors  # google colors
-    #                   )
-    #
-    # g.map(sns.kdeplot, "MHD", shade=True, alpha=1, lw=1.5)
-    # g.map(plt.axhline, y=0, lw=4)
-    # for ax in g.axes:
-    #     ax[0].set_xlim((500, 1000))
-    #
-    # def label(x, color, label):
-    #     ax = plt.gca()  # get the axes of the current object
-    #     ax.text(0, .2,  # location of text
-    #             label,  # text label
-    #             fontweight="bold", color=color, size=20,  # text attributes
-    #             ha="left", va="center",  # alignment specifications
-    #             transform=ax.transAxes)  # specify axes of transformation)
-    #
-    # g.map(label, "MHD")  # the function counts as a plotting object!
-    #
-    # sns.set(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
-    # g.fig.subplots_adjust(hspace=-.25)
-    #
-    # g.set_titles("")  # set title to blank
-    # g.set_xlabels(color="white")
-    # g.set_xticklabels(color='white', fontsize=14)
-    # g.set(yticks=[])  # set y ticks to blank
-    # g.despine(bottom=True, left=True)  # remove 'spines'
-    #
-    # plt.savefig(os.path.join(MySetup.Directories.forecasts_dir, f'{fig_name}_facet.pdf'), dpi=300, transparent=True)
-    # plt.close()
-    # plt.show()
 
 
 def curves(
         cols: list,
         tc: np.array,
-        highlight=None,
-        ghost=False,
-        sdir=None,
-        labelsize=12,
-        factor=1,
-        xlabel=None,
-        ylabel=None,
-        title="curves",
-        show=False,
+        highlight: list = None,
+        ghost: bool = False,
+        sdir: str = None,
+        labelsize: float = 12,
+        factor: float = 1,
+        xlabel: str = None,
+        ylabel: str = None,
+        title: str = "curves",
+        show: bool = False,
 ):
     """
     Shows every breakthrough curve stacked on a plot.
+    :param cols: List of colors
     :param ylabel:
     :param xlabel:
     :param factor:
@@ -1006,19 +964,20 @@ def curves(
 
 
 def curves_i(
-        cols,
-        tc,
-        highlight=None,
-        labelsize=12,
-        factor=1,
-        xlabel=None,
-        ylabel=None,
-        sdir=None,
-        show=False,
+        cols: list,
+        tc: np.array,
+        highlight: list = None,
+        labelsize: float = 12,
+        factor: float = 1,
+        xlabel: str = None,
+        ylabel: str = None,
+        sdir: str = None,
+        show: bool = False,
 ):
     """
     Shows every breakthrough individually for each observation point.
     Will produce n_well figures of n_sim curves each.
+    :param cols: List of colors
     :param labelsize:
     :param factor:
     :param xlabel:
@@ -1027,6 +986,7 @@ def curves_i(
     :param highlight: list: List of indices of curves to highlight in the plot
     :param sdir: Directory in which to save figure
     :param show: Whether to show or not
+
     """
     if highlight is None:
         highlight = []
@@ -1067,7 +1027,7 @@ def curves_i(
             plt.close()
 
 
-def plot_wells(wells, well_ids=None, markersize: float = 4.0):
+def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0):
     if well_ids is None:
         comb = [0] + list(wells.combination)
     else:
@@ -1310,13 +1270,13 @@ def cca_vision(root: str = None, folders: list = None):
         plt.close()
 
 
-def pca_vision(root,
-               d=True,
-               h=False,
-               scores=True,
-               exvar=True,
-               labels=False,
-               folders=None):
+def pca_vision(root: str or Root,
+               d: bool = True,
+               h: bool = False,
+               scores: bool = True,
+               exvar: bool = True,
+               labels: bool = False,
+               folders: list = None):
     """
     Loads PCA pickles and plot scores for all folders
     :param labels:
@@ -1425,14 +1385,14 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        pca_o,
+        pca_o: PC = None,
         factor: float = 1.0,
         xlabel: str = None,
         ylabel: str = None,
         labelsize: float = 11.0,
-        training=True,
-        fig_dir=None,
-        show=False,
+        training: bool = True,
+        fig_dir: str = None,
+        show: bool = False,
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.
@@ -1642,7 +1602,7 @@ def _despine(
                 ax_i.set_yticks(newticks)
 
 
-def order_vertices(vertices):
+def order_vertices(vertices: np.array) -> np.array:
     """
     Paraview expects vertices in a particular order, with the origin at the bottom left corner.
     :param vertices: (x, y) coordinates of the polygon vertices
@@ -1671,7 +1631,7 @@ class ModelVTK:
     Loads flow/transport models and export the VTK objects.
     """
 
-    def __init__(self, base=None, folder=None):
+    def __init__(self, base: Setup = None, folder: str = None):
         self.base = base
         md = self.base.Directories()
         self.rn = folder
@@ -1689,7 +1649,7 @@ class ModelVTK:
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
             # blocks2d = mops.blocks_from_rc(delc, delr)
-            self.blocks = bel4ed.spatial._spatial.blocks_from_rc_3d(
+            self.blocks = blocks_from_rc_3d(
                 delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
@@ -2085,8 +2045,8 @@ def _kde_cca(
     for comp_n in range(cca_operator.n_components):
 
         hp, sup = posterior_conditional(x=d[comp_n],
-                                              y=h[comp_n],
-                                              x_obs=d_cca_prediction[comp_n])
+                                        y=h[comp_n],
+                                        x_obs=d_cca_prediction[comp_n])
 
         # Plot h posterior given d
         density, _ = kde_params(x=d[comp_n], y=h[comp_n])
@@ -2103,8 +2063,8 @@ def _kde_cca(
 
         # Conditional:
         hp, sup = posterior_conditional(x=d[comp_n],
-                                              y=h[comp_n],
-                                              x_obs=d_cca_prediction[comp_n])
+                                        y=h[comp_n],
+                                        x_obs=d_cca_prediction[comp_n])
 
         # load prediction object
         post_test = post.random_sample(Setup.HyperParameters.n_posts).T
@@ -2113,8 +2073,8 @@ def _kde_cca(
 
         # Plot h posterior given d
         density, support = kde_params(x=d[comp_n],
-                                            y=h[comp_n],
-                                            gridsize=1000)
+                                      y=h[comp_n],
+                                      gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = KDE()
