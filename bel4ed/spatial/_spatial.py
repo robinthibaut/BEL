@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 
+plt.rcParams.update({'figure.max_open_warning': 0})
+
 __all__ = ['grid_parameters', 'signed_distance', 'block_shaped', 'refine_axis', 'rc_from_blocks',
            'blocks_from_rc', 'blocks_from_rc_3d', 'matrix_paste', 'h_sub', 'get_centroids', 'contours_vertices',
            'binary_polygon', 'binary_stack', 'get_block', 'refine_machine']
