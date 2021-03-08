@@ -12,12 +12,13 @@ import joblib
 import numpy as np
 import scipy.sparse as sp
 from loguru import logger
-from types import ModuleType
 
 from .exceptions import NotFittedError
 from .config import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
+Root = List[str]
+Combination = List[int]
 
 
 def _object_dtype_isnan(X):
@@ -980,3 +981,5 @@ def spare_me():
         if r != res_tree:
             keep_essential(r)
             remove_bad_bkt(r)
+
+

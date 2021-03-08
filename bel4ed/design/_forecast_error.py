@@ -9,10 +9,10 @@ import joblib
 import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
-from loguru import logger
 
 from .. import utils
-from ..config import Setup, Root
+from ..config import Setup
+from ..utils import Root
 from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (

@@ -23,8 +23,8 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import ModuleType
-from ..config import Setup, Root, Combination
+from ..utils import Root, Combination
+from ..config import Setup
 
 from ..processing import curve_interpolation
 
@@ -34,12 +34,12 @@ from ..processing import PC
 
 
 def base_pca(
-        base: ModuleType,
+        base: any,
         base_dir: str,
         roots: Root,
         test_roots: Root,
-        d_pca_obj=None,
-        h_pca_obj=None,
+        d_pca_obj: str = None,
+        h_pca_obj: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -108,7 +108,7 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base: ModuleType,
+        base: any,
         well_comb: Combination = None,
         training_roots: Root = None,
         test_root: Root = None,
@@ -368,8 +368,8 @@ class PosteriorIO:
     def back_transform(
             self,
             h_posts_gaussian: np.array,
-            cca_obj: ModuleType,
-            pca_h: ModuleType,
+            cca_obj: any,
+            pca_h: any,
             n_posts: int,
             add_comp: bool = False,
             save_target_pc: bool = False,
@@ -438,9 +438,9 @@ class PosteriorIO:
         return h_posts_gaussian
 
     def bel_predict(self,
-                    pca_d: ModuleType,
-                    pca_h: ModuleType,
-                    cca_obj: ModuleType,
+                    pca_d: any,
+                    pca_h: any,
+                    cca_obj: any,
                     n_posts: int,
                     add_comp: bool = False) -> np.array:
         """
