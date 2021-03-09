@@ -22,7 +22,6 @@ from ..spatial import (
     grid_parameters,
     refine_machine,
 )
-from ..algorithms.metrics import modified_hausdorff, structural_similarity
 
 __all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
 
@@ -54,13 +53,13 @@ class UncertaintyQuantification:
 
         self.base = base
 
-        fc = self.base.Focus()
+        fc = self.base.Focus
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         self.wel_comb = wel_comb
 
         # Directories & files paths
-        md = self.base.Directories()
+        md = self.base.Directories
         self.main_dir = md.main_dir
 
         self.grid_dir = md.grid_dir
@@ -375,7 +374,7 @@ def scan_roots(base: Type[Setup],
             # Sample posterior
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
             # uq.c0(write_vtk=False)  # Extract 0 contours
-            uq.metric = modified_hausdorff
+            uq.metric = metric
             mean = uq.objective_function()
             global_mean += mean
 
