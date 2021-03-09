@@ -16,6 +16,7 @@ It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosyst
 import os
 import warnings
 from os.path import join as jp
+from typing import Type
 
 import joblib
 import numpy as np
@@ -34,7 +35,7 @@ from ..processing import PC
 
 
 def base_pca(
-        base: Setup,
+        base: Type[Setup],
         base_dir: str,
         roots: Root,
         test_roots: Root,
@@ -108,8 +109,8 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base: Setup,
-        well_comb: Combination = None,
+        base: Type[Setup],
+        well_comb: list = None,
         training_roots: Root = None,
         test_root: Root = None,
 ):
@@ -171,9 +172,9 @@ def bel_fit_transform(
     tsub = jp(base_dir, "training_curves.npy")
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, _, _ = utils.data_loader(res_dir=res_dir,
-                                      roots=training_roots,
-                                      d=True)
+        tc0, *_ = utils.data_loader(res_dir=res_dir,
+                                    roots=training_roots,
+                                    d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
@@ -202,9 +203,9 @@ def bel_fit_transform(
     ndo = d_pco.n_pc_cut
     n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
-    tc0, _, _ = utils.data_loader(res_dir=res_dir,
-                                  test_roots=test_root,
-                                  d=True)
+    tc0, *_ = utils.data_loader(res_dir=res_dir,
+                                test_roots=test_root,
+                                d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
@@ -291,11 +292,11 @@ class PosteriorIO:
         :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
-        h_cca_training_gaussian = utils.check_array(h_cca_training_gaussian)
-        d_cca_training = utils.check_array(d_cca_training)
-        d_pc_training = utils.check_array(d_pc_training)
-        d_rotations = utils.check_array(d_rotations)
-        d_cca_prediction = utils.check_array(d_cca_prediction)
+        h_cca_training_gaussian = utils.check_array(h_cca_training_gaussian, copy=True, ensure_2d=False)
+        d_cca_training = utils.check_array(d_cca_training, copy=True, ensure_2d=False)
+        d_pc_training = utils.check_array(d_pc_training, copy=True, ensure_2d=False)
+        d_rotations = utils.check_array(d_rotations, copy=True, ensure_2d=False)
+        d_cca_prediction = utils.check_array(d_cca_prediction, copy=True, ensure_2d=False)
 
         # Size of the set
         n_training = d_cca_training.shape[0]

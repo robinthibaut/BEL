@@ -9,6 +9,7 @@ from typing import List
 
 import flopy
 import joblib
+import types
 import numpy as np
 import scipy.sparse as sp
 from loguru import logger
@@ -18,7 +19,8 @@ from .config import Setup
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
 Root = List[str]
-Combination = List[int]
+Combination = List[List[int]]
+Function = types.FunctionType
 
 
 def _object_dtype_isnan(X):
@@ -218,7 +220,7 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
                "appropriate arguments before using this estimator.")
 
     if not hasattr(estimator, "fit"):
-        raise TypeError("%s is not an estimator instance." % (estimator))
+        raise TypeError("%s is not an estimator instance." % estimator)
 
     if attributes is not None:
         if not isinstance(attributes, (list, tuple)):
@@ -365,18 +367,18 @@ def _num_samples(x):
 
 
 def check_array(
-    array,
-    accept_sparse=False,
-    accept_large_sparse=True,
-    dtype="numeric",
-    order=None,
-    copy=False,
-    force_all_finite=True,
-    ensure_2d=True,
-    allow_nd=False,
-    ensure_min_samples=1,
-    ensure_min_features=1,
-    estimator=None,
+        array,
+        accept_sparse=False,
+        accept_large_sparse=True,
+        dtype="numeric",
+        order=None,
+        copy=False,
+        force_all_finite=True,
+        ensure_2d=True,
+        allow_nd=False,
+        ensure_min_samples=1,
+        ensure_min_features=1,
+        estimator=None,
 ):
     """Input validation on an array, list, sparse matrix or similar.
 
@@ -709,12 +711,12 @@ def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
 
 
 def load_transport_model(
-    nam_file: str,
-    modflowmodel,
-    exe_name: str = "",
-    model_ws: str = "",
-    ftl_file: str = "mt3d_link.ftl",
-    version: str = "mt3d-usgs",
+        nam_file: str,
+        modflowmodel,
+        exe_name: str = "",
+        model_ws: str = "",
+        ftl_file: str = "mt3d_link.ftl",
+        version: str = "mt3d-usgs",
 ):
     """
     Loads a transport model.
@@ -824,11 +826,11 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(
-    res_dir: str = None,
-    roots: List[str] = None,
-    test_roots: List[str] = None,
-    d: bool = False,
-    h: bool = False,
+        res_dir: str = None,
+        roots: List[str] = None,
+        test_roots: List[str] = None,
+        d: bool = False,
+        h: bool = False,
 ):
     """
     Loads results from main results folder.
@@ -981,5 +983,3 @@ def spare_me():
         if r != res_tree:
             keep_essential(r)
             remove_bad_bkt(r)
-
-

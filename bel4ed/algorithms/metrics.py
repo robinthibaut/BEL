@@ -10,6 +10,7 @@ import warnings
 
 import numpy as np
 from scipy.spatial.distance import cdist
+from skimage.metrics import structural_similarity
 
 from bel4ed.utils import (_num_samples, check_array,
                           check_consistent_length, column_or_1d)
@@ -17,7 +18,7 @@ from bel4ed.utils import (_num_samples, check_array,
 from bel4ed.exceptions import UndefinedMetricWarning
 
 __all__ = [
-    "r2_score", "modified_hausdorff"
+    "r2_score", "modified_hausdorff", "structural_similarity"
 ]
 
 

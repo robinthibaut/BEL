@@ -3,16 +3,17 @@
 import os
 import shutil
 from os.path import join as jp
-from typing import List
+from typing import List, Type
 
 import joblib
 import numpy as np
 import vtk
 from sklearn.neighbors import KernelDensity
+from loguru import logger
 
 from .. import utils
 from ..config import Setup
-from ..utils import Root
+from ..utils import Root, Function, Combination
 from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
@@ -21,7 +22,7 @@ from ..spatial import (
     grid_parameters,
     refine_machine,
 )
-from ..algorithms.metrics import modified_hausdorff
+from ..algorithms.metrics import modified_hausdorff, structural_similarity
 
 __all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
 
@@ -29,10 +30,11 @@ __all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
 class UncertaintyQuantification:
     def __init__(
             self,
-            base,
+            base: Type[Setup],
             study_folder: str,
             base_dir: str = None,
             wel_comb: list = None,
+            metric: Function = None,
             seed: int = None,
     ):
         """
@@ -89,6 +91,9 @@ class UncertaintyQuantification:
         d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
         self.h_pco.comp_refresh(hnc0)
 
+        # Metric
+        self.metric = metric
+
         # Sampling
         self.n_training = len(d_pc_training)
         self.n_posts = self.base.HyperParameters.n_posts
@@ -127,12 +132,12 @@ class UncertaintyQuantification:
         self.shape = self.h_pco.training_shape
 
     # %% extract 0 contours
-    def c0(self, write_vtk: bool = 1):
+    def c0(self, write_vtk: bool = False):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
         """
-        nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
+        *_, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         self.vertices = contours_vertices(x, y, self.forecast_posterior)
         if write_vtk:
             vdir = jp(self.fig_pred_dir, "vtk")
@@ -157,6 +162,7 @@ class UncertaintyQuantification:
 
                 writer.SetFileName(jp(vdir, f"forecast_posterior_{i}.vtp"))
                 writer.Write()
+        return x, y
 
     # %% Kernel density
     def kernel_density(self):
@@ -182,6 +188,7 @@ class UncertaintyQuantification:
         xy = np.vstack([X.ravel(), Y.ravel()]).T
 
         # Define a disk within which the KDE will be performed to save time
+        # TODO: Move this to parameter file
         x0, y0, radius = 1000, 500, 200
         r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
         inside = r < radius
@@ -250,34 +257,36 @@ class UncertaintyQuantification:
         # Save result
         np.save(jp(self.res_dir, "bin"), b_low)
 
-    # %% Hausdorff
-    def mhd(self):
+    def objective_function(self):
         """
-        Computes the Modified Hausdorff Distance between the true WHPA that has been recovered from its n first PCA
+        Computes the metric between the true WHPA that has been recovered from its n first PCA
         components to allow proper comparison.
         """
 
-        # The new idea is to compute MHD with the observed WHPA recovered from it's n first PC.
+        # The new idea is to compute the metric with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
-        v_h_true_cut = self.h_pco.custom_inverse_transform(
+        true_image = self.h_pco.custom_inverse_transform(
             self.h_pco.predict_pc, n_cut).reshape(
             (self.shape[1], self.shape[2]))
 
-        # Reminder: these are the focus parameters around the pumping well
-        nrow, ncol, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
-        # Delineation vertices of the true array
-        v_h_true = contours_vertices(x=x, y=y, arrays=v_h_true_cut)[0]
+        method_name = self.metric.__name__
+        if method_name == "modified_hausdorff":
+            x, y = self.c0()
+            to_compare = self.vertices
+            true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
+        else:
+            to_compare = self.forecast_posterior
+            true_feature = true_image
 
-        # Compute MHD between the 'true vertices' and the n sampled vertices
-        mhds = np.array(
-            [modified_hausdorff(v_h_true, vt) for vt in self.vertices])
+        # Compute metric between the 'true image' and the n sampled images or images feature
+        similarity = np.array(
+            [self.metric(true_feature, f) for f in to_compare])
 
-        # Save mhd
-        np.save(jp(self.res_dir, "haus"), mhds)
+        # Save objective_function result
+        np.save(jp(self.res_dir, f"{method_name}"), similarity)
 
-        # Return the mean
-        return np.mean(mhds)
+        return np.mean(similarity)
 
 
 def by_mode(root: Root):
@@ -317,10 +326,11 @@ def by_mode(root: Root):
     mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
-def scan_roots(base,
+def scan_roots(base: Type[Setup],
                training: Root,
                obs: Root,
                combinations: List[int],
+               metric: Function = None,
                base_dir_path: str = None) -> float:
     """
     Scan forward roots and perform base decomposition.
@@ -328,6 +338,7 @@ def scan_roots(base,
     :param training: list: List of uuid of each root for training
     :param obs: list: List of uuid of each root for observation
     :param combinations: list: List of wells combinations, e.g. [[1, 2, 3, 4, 5, 6]]
+    :param metric: Function: Metric method
     :param base_dir_path: str: Path to the base directory containing training roots uuid file
     :return: MHD mean (float)
     """
@@ -358,12 +369,14 @@ def scan_roots(base,
                 study_folder=sf,
                 base_dir=base_dir_path,
                 wel_comb=c,
+                metric=metric,
                 seed=123456,
             )
             # Sample posterior
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            uq.c0(write_vtk=False)  # Extract 0 contours
-            mean = uq.mhd()  # Modified Hausdorff
+            # uq.c0(write_vtk=False)  # Extract 0 contours
+            uq.metric = modified_hausdorff
+            mean = uq.objective_function()
             global_mean += mean
 
         # Resets the target PCA object' predictions to None before moving on to the next root
@@ -373,10 +386,11 @@ def scan_roots(base,
 
 
 def analysis(
-        base,
-        comb: List[List[int]] = None,
+        base: Type[Setup],
+        comb: Combination = None,
         n_training: int = 200,
         n_obs: int = 50,
+        metric: Function = None,
         flag_base: bool = False,
         wipe: bool = False,
         roots_training: Root = None,
@@ -395,6 +409,7 @@ def analysis(
     :param comb: list: List of well IDs
     :param n_training: int: Index from which training and data are separated
     :param n_obs: int: Number of predictors to take
+    :param metric: Function: Metric method
     :param flag_base: bool: Recompute base PCA on target if True
     :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
@@ -433,7 +448,7 @@ def analysis(
             # List of m observation roots
             roots_obs = folders[n_training:(n_training + n_obs)]
         else:
-            print("Incompatible training/observation numbers")
+            logger.error("Incompatible training/observation numbers")
             return
 
     for i, r in enumerate(roots_training):
@@ -445,7 +460,7 @@ def analysis(
 
     for r in roots_obs:
         if r in roots_training:
-            print(f"obs {r} is located in the training roots")
+            logger.warning(f"obs {r} is located in the training roots")
             return
 
     if to_swap is not None:
@@ -485,6 +500,7 @@ def analysis(
         training=roots_training,
         obs=roots_obs,
         combinations=belcomb,
+        metric=metric,
         base_dir_path=obj_path,
     )
 
