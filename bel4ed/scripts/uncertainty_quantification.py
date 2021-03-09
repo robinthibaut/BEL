@@ -23,7 +23,7 @@ def main_1(metric=None):
         base=base,
         roots_training=training_r,
         roots_obs=test_r,
-        wipe=False,
+        wipe=True,
         flag_base=True,
     )
     measure_info_mode(base, test_r)

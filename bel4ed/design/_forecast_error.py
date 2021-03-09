@@ -292,6 +292,7 @@ def analysis(
         utils.dirmaker(obj_path, erase=flag_base)
         # Creates main target PCA object
         obj = os.path.join(obj_path, "h_pca.pkl")
+        logger.info("Performing base PCA")
         base_pca(
             base=base,
             base_dir=obj_path,
@@ -314,10 +315,11 @@ def analysis(
     combinations = base.Wells.combination.copy()
 
     global_mean = 0
-    for r_ in obs:  # For each observation root
-        logger.info(f"root {r_}")
+    total = len(obs)
+    for ix, r_ in enumerate(obs):  # For each observation root
+        logger.info(f"[{ix+1}/{total}]-{r_}")
         for c in combinations:  # For each wel combination
-            logger.info(f"{r_}-{c}")
+            logger.info(f"[{ix}/{total}]-{r_}-{c}/{len(combinations)}")
             # PCA decomposition + CCA
             base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")
