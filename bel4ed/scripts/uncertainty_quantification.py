@@ -19,13 +19,14 @@ def main_1(metric=None):
     base = Setup
     base.Wells.combination = wells
     base.ED.metric = metric
-    analysis(
-        base=base,
-        roots_training=training_r,
-        roots_obs=test_r,
-        wipe=True,
-        flag_base=True,
-    )
+    # analysis(
+    #     base=base,
+    #     roots_training=training_r,
+    #     roots_obs=test_r,
+    #     wipe=True,
+    #     flag_base=True,
+    # )
+    base.Wells.combination = wells
     measure_info_mode(base, test_r)
 
 

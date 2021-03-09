@@ -156,7 +156,7 @@ class UncertaintyQuantification:
         Computes the metric between the true WHPA that has been recovered from its n first PCA
         components to allow proper comparison.
         """
-
+        # TODO : Extract this function ?
         # The new idea is to compute the metric with the observed WHPA recovered from it's n first PC.
         n_cut = self.h_pco.n_pc_cut  # Number of components to keep
         # Inverse transform and reshape
@@ -181,6 +181,8 @@ class UncertaintyQuantification:
         # Save objective_function result
         np.save(jp(self.res_dir, f"{method_name}"), similarity)
 
+        logger.info(f"Similarity : {np.mean(similarity)}")
+
         return np.mean(similarity)
 
 
@@ -202,6 +204,7 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root):
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
 
+    logger.info("Done")
     np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{base.ED.__name__}.npy"), wm)
 
 
@@ -318,8 +321,8 @@ def analysis(
     total = len(obs)
     for ix, r_ in enumerate(obs):  # For each observation root
         logger.info(f"[{ix+1}/{total}]-{r_}")
-        for c in combinations:  # For each wel combination
-            logger.info(f"[{ix}/{total}]-{r_}-{c}/{len(combinations)}")
+        for ixw, c in enumerate(combinations):  # For each wel combination
+            logger.info(f"[{ix+1}/{total}]-{r_}-{ixw+1}/{len(combinations)}")
             # PCA decomposition + CCA
             base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")

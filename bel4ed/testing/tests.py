@@ -18,7 +18,6 @@ def test_posterior():
     training_r, test_r = get_roots(training_file=training_file,
                                    test_file=test_file)
 
-    # wells = [[1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6]]
 
     test_base = Setup
@@ -26,7 +25,7 @@ def test_posterior():
     test_dir = jp(test_base.Directories.test_dir, "forecast")
     test_base.Directories.forecasts_dir = test_dir
     test_base.Wells.combination = wells
-    test_base.ED.metric = modified_hausdorff
+    test_base.ED.metric = structural_similarity
 
     design.analysis(
         base=test_base,
