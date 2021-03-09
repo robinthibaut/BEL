@@ -29,7 +29,6 @@ class UncertaintyQuantification:
             base: Type[Setup],
             study_folder: str,
             base_dir: str = None,
-            wel_comb: list = None,
             metric: Function = None,
             seed: int = None,
     ):
@@ -38,7 +37,6 @@ class UncertaintyQuantification:
         :param base: class: Base object (inventory)
         :param study_folder: str: Name of the root uuid in the 'forecast' directory on which UQ will be performed
         :param base_dir: str: Path to base directory
-        :param wel_comb: list: List of data source combinations
         :param seed: int: Seed
         """
 
@@ -52,8 +50,6 @@ class UncertaintyQuantification:
 
         fc = self.base.Focus
         self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
-
-        self.wel_comb = wel_comb
 
         # Directories & files paths
         md = self.base.Directories
@@ -232,7 +228,6 @@ class UncertaintyQuantification:
 def scan_roots(base: Type[Setup],
                training: Root,
                obs: Root,
-               combinations: List[int],
                metric: Function = None,
                base_dir_path: str = None) -> float:
     """
@@ -240,7 +235,6 @@ def scan_roots(base: Type[Setup],
     :param base: class: Base class (inventory)
     :param training: list: List of uuid of each root for training
     :param obs: list: List of uuid of each root for observation
-    :param combinations: list: List of wells combinations, e.g. [[1, 2, 3, 4, 5, 6]]
     :param metric: Function: Metric method
     :param base_dir_path: str: Path to the base directory containing training roots uuid file
     :return: MHD mean (float)
@@ -249,15 +243,12 @@ def scan_roots(base: Type[Setup],
     if not isinstance(obs, (list, tuple)):
         obs = [obs]
 
-    if not isinstance(combinations, (list, tuple)):
-        combinations = [combinations]
-
     # Resets the target PCA object' predictions to None before starting
     try:
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
     except FileNotFoundError:
         pass
-
+    combinations = base.Wells.combination
     global_mean = 0
     for r_ in obs:  # For each observation root
         logger.info(f"root {r_}")
@@ -275,7 +266,6 @@ def scan_roots(base: Type[Setup],
                 base=base,
                 study_folder=sf,
                 base_dir=base_dir_path,
-                wel_comb=c,
                 metric=metric,
                 seed=123456,
             )
@@ -297,7 +287,6 @@ def scan_roots(base: Type[Setup],
 
 def analysis(
         base: Type[Setup],
-        comb: Combination = None,
         n_training: int = 200,
         n_obs: int = 50,
         metric: Function = None,
@@ -316,7 +305,6 @@ def analysis(
 
     :param base: class: Base class (inventory)
     :param wipe: bool: Whether to wipe the 'forecast' folder or not
-    :param comb: list: List of well IDs
     :param n_training: int: Index from which training and data are separated
     :param n_obs: int: Number of predictors to take
     :param metric: Function: Metric method
@@ -350,8 +338,6 @@ def analysis(
         roots_training = folders[:n_training]  # List of n training roots
     else:
         n_training = len(roots_training)
-
-    # base.HyperParameters.n_posts = n_training
 
     if roots_obs is None:  # If no observation provided
         if n_training + n_obs <= len(folders):
@@ -397,19 +383,11 @@ def analysis(
             h_pca_obj=obj
         )
 
-    if comb is None:
-        comb = base.Wells.combination  # Get default combination (all)
-        belcomb = utils.combinator(
-            comb)  # Get all possible combinations
-    else:
-        belcomb = comb
-
     # Perform base decomposition on the m roots
     global_mean = scan_roots(
         base=base,
         training=roots_training,
         obs=roots_obs,
-        combinations=belcomb,
         metric=metric,
         base_dir_path=obj_path,
     )

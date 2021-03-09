@@ -16,9 +16,10 @@ def main_1(metric=None):
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
     wells = [[1, 2, 3, 4, 5, 6]]
+    base = Setup
+    base.Wells.combination = wells
     analysis(
         base=Setup,
-        comb=wells,
         roots_training=training_r,
         metric=metric,
         roots_obs=test_r,
@@ -31,7 +32,9 @@ def main_2(N, metric=None):
     if metric is None:
         metric = modified_hausdorff
     means = []
-
+    wells = [[1, 2, 3, 4, 5, 6]]
+    base = Setup
+    base.Wells.combination = wells
     for n in N:
         Setup.HyperParameters.n_total = n
         Setup.HyperParameters.n_training = int(n * 0.8)
@@ -39,11 +42,8 @@ def main_2(N, metric=None):
         Setup.HyperParameters.n_test = int(n * 0.2)
         logger.info(f"n_test={int(n * .2)}")
 
-        # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-        wells = [[1, 2, 3, 4, 5, 6]]
         *_, mhd_mean = analysis(
-            base=Setup,
-            comb=wells,
+            base=base,
             metric=metric,
             n_training=Setup.HyperParameters.n_training,
             n_obs=Setup.HyperParameters.n_test,
