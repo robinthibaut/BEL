@@ -451,7 +451,7 @@ class PosteriorIO:
         :param cca_obj: CCA object.
         :param n_posts: Number of posteriors to extract.
         :param add_comp: Flag to add remaining components.
-        :return: forecast_posterior
+        :return: forecast_posterior in original space
         """
 
         if self.posterior_mean is None and self.posterior_covariance is None:
