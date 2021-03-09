@@ -222,9 +222,9 @@ class UncertaintyQuantification:
                 idw = int(e) - 1  # -1 to respect 0 index (Well index)
                 wm[idw] += mhd  # Add MHD at each well
         
-        np.save()
-
-        mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
+        # np.save()
+        # TODO: Save arrays and move plotting to somewhere it belongs
+        # mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
 def scan_roots(base: Type[Setup],
@@ -232,6 +232,7 @@ def scan_roots(base: Type[Setup],
                obs: Root,
                metric: Function = None,
                base_dir_path: str = None) -> float:
+    # TODO: merge in 'analysis', this is messy
     """
     Scan forward roots and perform base decomposition.
     :param base: class: Base class (inventory)
@@ -279,7 +280,8 @@ def scan_roots(base: Type[Setup],
             mean = uq.objective_function()
             global_mean += mean
             logger.info("Plotting results")
-            uq.by_mode(r_)
+            if len(combinations) > 1:
+                uq.by_mode(r_)
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
