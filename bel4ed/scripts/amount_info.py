@@ -16,4 +16,4 @@ if __name__ == "__main__":
                listit))  # Folders of combinations
 
     # by_mode(duq)
-    UQ.by_mode(["818bf1676c424f76b83bd777ae588a1d"])
+    # UQ.by_mode(["818bf1676c424f76b83bd777ae588a1d"])

@@ -205,7 +205,7 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root):
             wm[idw] += mhd  # Add MHD at each well
 
     logger.info("Done")
-    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{base.ED.__name__}.npy"), wm)
+    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{base.ED.metric.__name__}.npy"), wm)
 
 
 def analysis(
@@ -329,6 +329,8 @@ def analysis(
             sf = bel_fit_transform(base=base,
                                    training_roots=roots_training,
                                    test_root=r_)
+
+            # TODO: Extract this
             # Uncertainty analysis
             logger.info("Uncertainty quantification")
 
