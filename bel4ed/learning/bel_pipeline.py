@@ -24,7 +24,7 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import Root, Combination
+from ..utils import Root
 from ..config import Setup
 
 from ..processing import curve_interpolation
@@ -110,9 +110,8 @@ def base_pca(
 
 def bel_fit_transform(
         base: Type[Setup],
-        well_comb: list = None,
         training_roots: Root = None,
-        test_root: Root = None,
+        test_root: Root or str = None,
 ):
     """
     This function loads raw data and perform both PCA and CCA on it.
@@ -120,7 +119,6 @@ def bel_fit_transform(
 
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
-    :param well_comb: list: List of injection wells used to make prediction
     :param test_root: list: Folder path containing output to be predicted
     """
 
@@ -128,9 +126,6 @@ def bel_fit_transform(
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim,
                                       grf=grf)  # Initiate SD instance
-
-    if well_comb is not None:
-        base.Wells.combination = well_comb
 
     # Directories
     md = base.Directories
@@ -150,8 +145,7 @@ def bel_fit_transform(
     # Base directory that will contain target objects and processed data
     base_dir = jp(md.forecasts_dir, "base")
 
-    new_dir = "".join(list(map(
-        str, base.Wells.combination)))  # sub-directory for forecasts
+    new_dir = "".join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders

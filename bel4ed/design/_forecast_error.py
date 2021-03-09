@@ -12,7 +12,7 @@ from loguru import logger
 
 from .. import utils
 from ..config import Setup
-from ..utils import Root, Function, Combination
+from ..utils import Root, Function
 from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
@@ -20,7 +20,7 @@ from ..spatial import (
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'scan_roots', 'analysis']
+__all__ = ['UncertaintyQuantification', 'analysis']
 
 
 class UncertaintyQuantification:
@@ -227,67 +227,6 @@ class UncertaintyQuantification:
         # mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
-def scan_roots(base: Type[Setup],
-               training: Root,
-               obs: Root,
-               metric: Function = None,
-               base_dir_path: str = None) -> float:
-    # TODO: merge in 'analysis', this is messy
-    """
-    Scan forward roots and perform base decomposition.
-    :param base: class: Base class (inventory)
-    :param training: list: List of uuid of each root for training
-    :param obs: list: List of uuid of each root for observation
-    :param metric: Function: Metric method
-    :param base_dir_path: str: Path to the base directory containing training roots uuid file
-    :return: MHD mean (float)
-    """
-
-    if not isinstance(obs, (list, tuple)):
-        obs = [obs]
-
-    # Resets the target PCA object' predictions to None before starting
-    try:
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
-    except FileNotFoundError:
-        pass
-    combinations = base.Wells.combination
-    global_mean = 0
-    for r_ in obs:  # For each observation root
-        logger.info(f"root {r_}")
-        for c in combinations:  # For each wel combination
-            logger.info(f"{c}")
-            # PCA decomposition + CCA
-            logger.info("Fit - Transform")
-            sf = bel_fit_transform(base=base,
-                                   training_roots=training,
-                                   test_root=r_,
-                                   well_comb=c)
-            # Uncertainty analysis
-            logger.info("Uncertainty quantification")
-            uq = UncertaintyQuantification(
-                base=base,
-                study_folder=sf,
-                base_dir=base_dir_path,
-                metric=metric,
-                seed=123456,
-            )
-            # Sample posterior
-            logger.info("Sample posterior")
-            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            uq.metric = metric
-            logger.info("Similarity measure")
-            mean = uq.objective_function()
-            global_mean += mean
-            logger.info("Plotting results")
-            if len(combinations) > 1:
-                uq.by_mode(r_)
-
-        # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
-
-    return global_mean
-
 
 def analysis(
         base: Type[Setup],
@@ -373,8 +312,7 @@ def analysis(
         except FileNotFoundError:
             pass
     obj_path = os.path.join(base.Directories.forecasts_dir, "base")
-    fb = utils.dirmaker(
-        obj_path)  # Returns bool according to folder status
+    utils.dirmaker(obj_path)  # Returns bool according to folder status
     if flag_base:
         utils.dirmaker(obj_path, erase=flag_base)
         # Creates main target PCA object
@@ -387,16 +325,65 @@ def analysis(
             h_pca_obj=obj
         )
 
-    # Perform base decomposition on the m roots
-    global_mean = scan_roots(
-        base=base,
-        training=roots_training,
-        obs=roots_obs,
-        metric=metric,
-        base_dir_path=obj_path,
-    )
+    # --------------------------------------------------------
 
     if wipe:
         shutil.rmtree(Setup.Directories.forecasts_dir)
 
-    return roots_training, roots_obs, global_mean
+    obs = roots_obs
+
+    base_dir_path = obj_path
+    # Resets the target PCA object' predictions to None before starting
+    try:
+        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
+    except FileNotFoundError:
+        pass
+    combinations = base.Wells.combination
+    global_mean = 0
+    for r_ in obs:  # For each observation root
+        logger.info(f"root {r_}")
+        for c in combinations:  # For each wel combination
+            logger.info(f"{c}")
+            # PCA decomposition + CCA
+            base.Wells.combination = c
+            logger.info("Fit - Transform")
+            sf = bel_fit_transform(base=base,
+                                   training_roots=roots_training,
+                                   test_root=r_)
+            # Uncertainty analysis
+            logger.info("Uncertainty quantification")
+
+            uq = UncertaintyQuantification(
+                base=base,
+                study_folder=sf,
+                base_dir=base_dir_path,
+                metric=metric,
+                seed=123456,
+            )
+            # Sample posterior
+            logger.info("Sample posterior")
+            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
+            uq.metric = metric
+            logger.info("Similarity measure")
+            mean = uq.objective_function()
+            global_mean += mean
+
+        # Resets the target PCA object' predictions to None before moving on to the next root
+        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
+
+        logger.info("Saving UQ results")
+        for r in roots_obs:
+            wid = list(map(str, base.Wells.combination))  # Well identifiers (n)
+            wm = np.zeros((len(wid), base.HyperParameters.n_posts))
+            # Starting point = root folder in forecast directory
+            droot = os.path.join(base.Directories.forecasts_dir, r)
+            for e in wid:  # For each sub folder (well) in the main folder
+                # Get the objective function file
+                ufp = os.path.join(droot, e, "obj")
+                fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
+                mhd = np.load(fmhd)  # Load MHD
+                idw = int(e) - 1  # -1 to respect 0 index (Well index)
+                wm[idw] += mhd  # Add MHD at each well
+                np.save(os.path.join(ufp, f"uq_{metric.__name__}.npy"), wm)
+
+    return global_mean
