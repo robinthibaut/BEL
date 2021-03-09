@@ -221,6 +221,8 @@ class UncertaintyQuantification:
                 mhd = np.load(fmhd)  # Load MHD
                 idw = int(e) - 1  # -1 to respect 0 index (Well index)
                 wm[idw] += mhd  # Add MHD at each well
+        
+        np.save()
 
         mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
