@@ -26,12 +26,12 @@ def test_posterior():
     test_dir = jp(test_base.Directories.test_dir, "forecast")
     test_base.Directories.forecasts_dir = test_dir
     test_base.Wells.combination = wells
+    test_base.ED.metric = modified_hausdorff
 
     design.analysis(
         base=test_base,
         roots_training=training_r,
         roots_obs=test_r,
-        metric=modified_hausdorff,
         wipe=False,
         flag_base=True,
     )

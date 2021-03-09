@@ -5,7 +5,7 @@ from loguru import logger
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
-from bel4ed.design import analysis
+from bel4ed.design import analysis, measure_info_mode
 from bel4ed.utils import get_roots
 
 
@@ -20,12 +20,13 @@ def main_1(metric=None):
     base.Wells.combination = wells
     base.ED.metric = metric
     analysis(
-        base=Setup,
+        base=base,
         roots_training=training_r,
         roots_obs=test_r,
         wipe=False,
         flag_base=True,
     )
+    measure_info_mode(base, test_r)
 
 
 def main_2(N, metric=None):

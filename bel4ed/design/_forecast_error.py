@@ -19,7 +19,7 @@ from ..spatial import (
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'analysis']
+__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode']
 
 
 class UncertaintyQuantification:
@@ -184,11 +184,11 @@ class UncertaintyQuantification:
         return np.mean(similarity)
 
 
-def _mode(base, roots_obs):
+def measure_info_mode(base: Type[Setup], roots_obs: Root):
 
     logger.info("Computing ED results")
 
-    wid = list(map(str, [_[0] for _ in base.Wells.combinations]))  # Well identifiers (n)
+    wid = list(map(str, [_[0] for _ in base.Wells.combination]))  # Well identifiers (n)
     wm = np.zeros((len(wid), base.HyperParameters.n_posts))
 
     for r in roots_obs:
@@ -311,7 +311,7 @@ def analysis(
     except FileNotFoundError:
         pass
 
-    combinations = base.Wells.combination
+    combinations = base.Wells.combination.copy()
 
     global_mean = 0
     for r_ in obs:  # For each observation root
