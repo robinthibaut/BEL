@@ -270,6 +270,7 @@ class UncertaintyQuantification:
             (self.shape[1], self.shape[2]))
 
         method_name = self.metric.__name__
+        logger.info(f"Quantifying image difference based on {method_name}")
         if method_name == "modified_hausdorff":
             x, y = self.c0()
             to_compare = self.vertices
@@ -356,13 +357,17 @@ def scan_roots(base: Type[Setup],
 
     global_mean = 0
     for r_ in obs:  # For each observation root
+        logger.info(f"root {r_}")
         for c in combinations:  # For each wel combination
+            logger.info(f"{c}")
             # PCA decomposition + CCA
+            logger.info("Fit - Transform")
             sf = bel_fit_transform(base=base,
                                    training_roots=training,
                                    test_root=r_,
                                    well_comb=c)
             # Uncertainty analysis
+            logger.info("Uncertainty quantification")
             uq = UncertaintyQuantification(
                 base=base,
                 study_folder=sf,
@@ -372,9 +377,10 @@ def scan_roots(base: Type[Setup],
                 seed=123456,
             )
             # Sample posterior
+            logger.info("Sample posterior")
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            # uq.c0(write_vtk=False)  # Extract 0 contours
             uq.metric = metric
+            logger.info("Similarity measure")
             mean = uq.objective_function()
             global_mean += mean
 

@@ -2,13 +2,16 @@
 
 import numpy as np
 from loguru import logger
+from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
 from bel4ed.design import analysis
 from bel4ed.utils import get_roots
 
 
-def main_1():
+def main_1(metric=None):
+    if metric is None:
+        metric = modified_hausdorff
     training_r, test_r = get_roots()
 
     # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
@@ -17,13 +20,16 @@ def main_1():
         base=Setup,
         comb=wells,
         roots_training=training_r,
+        metric=metric,
         roots_obs=test_r,
         wipe=False,
         flag_base=True,
     )
 
 
-def main_2(N):
+def main_2(N, metric=None):
+    if metric is None:
+        metric = modified_hausdorff
     means = []
 
     for n in N:
@@ -38,6 +44,7 @@ def main_2(N):
         *_, mhd_mean = analysis(
             base=Setup,
             comb=wells,
+            metric=metric,
             n_training=Setup.HyperParameters.n_training,
             n_obs=Setup.HyperParameters.n_test,
             wipe=True,
