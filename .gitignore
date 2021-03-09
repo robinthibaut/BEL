@@ -3,6 +3,8 @@
 !*.pkl
 !*.eas
 
+bel4ed/storage
+
 *.png
 *.pdf
 *.vtk

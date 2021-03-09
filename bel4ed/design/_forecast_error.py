@@ -8,7 +8,6 @@ from typing import List, Type
 import joblib
 import numpy as np
 import vtk
-from sklearn.neighbors import KernelDensity
 from loguru import logger
 
 from .. import utils
@@ -17,13 +16,11 @@ from ..utils import Root, Function, Combination
 from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
-    binary_polygon,
     contours_vertices,
-    grid_parameters,
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'by_mode', 'scan_roots', 'analysis']
+__all__ = ['UncertaintyQuantification', 'scan_roots', 'analysis']
 
 
 class UncertaintyQuantification:
@@ -163,99 +160,6 @@ class UncertaintyQuantification:
                 writer.Write()
         return x, y
 
-    # %% Kernel density
-    def kernel_density(self):
-        # Scatter plot vertices
-        # nn = sample_n
-        # plt.plot(vertices[nn][:, 0], vertices[nn][:, 1], 'o-')
-        # plt.show()
-
-        # Grid geometry
-        xmin = self.x_lim[0]
-        xmax = self.x_lim[1]
-        ymin = self.y_lim[0]
-        ymax = self.y_lim[1]
-        # Create a structured grid to estimate kernel density
-        # TODO: create a function to copy/paste values on differently refined grids
-        # Prepare the Plot instance with right dimensions
-        grf_kd = 4
-        cell_dim = grf_kd
-        xgrid = np.arange(xmin, xmax, cell_dim)
-        ygrid = np.arange(ymin, ymax, cell_dim)
-        X, Y = np.meshgrid(xgrid, ygrid)
-        # x, y coordinates of the grid cells vertices
-        xy = np.vstack([X.ravel(), Y.ravel()]).T
-
-        # Define a disk within which the KDE will be performed to save time
-        # TODO: Move this to parameter file
-        x0, y0, radius = 1000, 500, 200
-        r = np.sqrt((xy[:, 0] - x0) ** 2 + (xy[:, 1] - y0) ** 2)
-        inside = r < radius
-        xyu = xy[inside]  # Create mask
-
-        # Perform KDE
-        bw = 1.0  # Arbitrary 'smoothing' parameter
-        # Reshape coordinates
-        x_stack = np.hstack([vi[:, 0] for vi in self.vertices])
-        y_stack = np.hstack([vi[:, 1] for vi in self.vertices])
-        # Final array np.array([[x0, y0],...[xn,yn]])
-        xykde = np.vstack([x_stack, y_stack]).T
-        kde = KernelDensity(kernel="gaussian",
-                            bandwidth=bw).fit(  # Fit kernel density
-            xykde)
-        # Sample at the desired grid cells
-        score = np.exp(kde.score_samples(xyu))
-
-        def score_norm(sc, max_score=None):
-            """
-            Normalizes the KDE scores.
-            """
-            sc -= sc.min()
-            sc /= sc.max()
-
-            sc += 1
-            sc = sc ** -1
-
-            sc -= sc.min()
-            sc /= sc.max()
-
-            return sc
-
-        # Normalize
-        score = score_norm(score)
-
-        # Assign the computed scores to the grid
-        z = np.full(inside.shape, 1, dtype=float)  # Create array filled with 1
-        z[inside] = score
-        # Flip to correspond to actual distribution.
-        z = np.flipud(z.reshape(X.shape))
-
-        return z
-
-    # %% New approach : stack binary WHPA
-    def uq_binary_stack(self):
-        """
-        Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
-        """
-        xys, nrow, ncol = grid_parameters(x_lim=self.x_lim,
-                                          y_lim=self.y_lim,
-                                          grf=self.grf)  # Initiate SD object
-        # Create binary images of WHPA stored in bin_whpa
-        bin_whpa = [
-            binary_polygon(xys,
-                           nrow,
-                           ncol,
-                           pzs=p,
-                           inside=1 / self.n_posts,
-                           outside=0) for p in self.vertices
-        ]
-        big_sum = np.sum(bin_whpa, axis=0)  # Stack them
-        b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1
-        b_low = np.flipud(b_low)
-
-        # Save result
-        np.save(jp(self.res_dir, "bin"), b_low)
-
     def objective_function(self):
         """
         Computes the metric between the true WHPA that has been recovered from its n first PCA
@@ -288,42 +192,41 @@ class UncertaintyQuantification:
 
         return np.mean(similarity)
 
+    def by_mode(self, root: Root):
+        """
+        Computes the combined amount of information for n observations.
+        see also
+        https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
+        :param root: list: List containing the roots whose wells contributions will be taken into account.
+        :return:
+        """
 
-def by_mode(root: Root):
-    """
-    Computes the combined amount of information for n observations.
-    see also
-    https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
-    :param root: list: List containing the roots whose wells contributions will be taken into account.
-    :return:
-    """
+        if not isinstance(root, (list, tuple)):
+            root: list = [root]
 
-    if not isinstance(root, (list, tuple)):
-        root: list = [root]
+        # Deals with the fact that only one root might be selected
+        fig_name = "average"
+        an_i = 0  # Annotation index
+        if len(root) == 1:
+            fig_name = root[0]
+            an_i = 2
 
-    # Deals with the fact that only one root might be selected
-    fig_name = "average"
-    an_i = 0  # Annotation index
-    if len(root) == 1:
-        fig_name = root[0]
-        an_i = 2
+        wid = list(map(str, self.base.Wells.combination))  # Well identifiers (n)
+        # Summed MHD when well #i appears
+        wm = np.zeros((len(wid), self.base.HyperParameters.n_posts))
+        colors = self.base.Wells.colors
 
-    wid = list(map(str, Setup.Wells.combination))  # Well identifiers (n)
-    # Summed MHD when well #i appears
-    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
-    colors = Setup.Wells.colors
+        for r in root:  # For each root
+            # Starting point = root folder in forecast directory
+            droot = os.path.join(self.base.Directories.forecasts_dir, r)
+            for e in wid:  # For each subfolder (well) in the main folder
+                # Get the MHD file
+                fmhd = os.path.join(droot, e, "obj", f"{self.metric.__name__}.npy")
+                mhd = np.load(fmhd)  # Load MHD
+                idw = int(e) - 1  # -1 to respect 0 index (Well index)
+                wm[idw] += mhd  # Add MHD at each well
 
-    for r in root:  # For each root
-        # Starting point = root folder in forecast directory
-        droot = os.path.join(Setup.Directories.forecasts_dir, r)
-        for e in wid:  # For each subfolder (well) in the main folder
-            # Get the MHD file
-            fmhd = os.path.join(droot, e, "obj", "haus.npy")
-            mhd = np.load(fmhd)  # Load MHD
-            idw = int(e) - 1  # -1 to respect 0 index (Well index)
-            wm[idw] += mhd  # Add MHD at each well
-
-    mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
+        mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
 
 
 def scan_roots(base: Type[Setup],
@@ -383,6 +286,8 @@ def scan_roots(base: Type[Setup],
             logger.info("Similarity measure")
             mean = uq.objective_function()
             global_mean += mean
+            logger.info("Plotting results")
+            uq.by_mode(r_)
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
