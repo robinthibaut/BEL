@@ -343,9 +343,9 @@ def analysis(
     for r_ in obs:  # For each observation root
         logger.info(f"root {r_}")
         for c in combinations:  # For each wel combination
-            logger.info(f"{c}")
+            logger.info(f"{r_}-{c}")
             # PCA decomposition + CCA
-            base.Wells.combination = c
+            base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")
             sf = bel_fit_transform(base=base,
                                    training_roots=roots_training,
@@ -371,20 +371,20 @@ def analysis(
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
 
-        if len(roots_obs) > 1:
-            logger.info("Saving UQ results")
-            for r in roots_obs:
-                wid = list(map(str, base.Wells.combination))  # Well identifiers (n)
-                wm = np.zeros((len(wid), base.HyperParameters.n_posts))
-                # Starting point = root folder in forecast directory
-                droot = os.path.join(base.Directories.forecasts_dir, r)
-                for e in wid:  # For each sub folder (well) in the main folder
-                    # Get the objective function file
-                    ufp = os.path.join(droot, e, "obj")
-                    fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
-                    mhd = np.load(fmhd)  # Load MHD
-                    idw = int(e) - 1  # -1 to respect 0 index (Well index)
-                    wm[idw] += mhd  # Add MHD at each well
-                    np.save(os.path.join(ufp, f"uq_{metric.__name__}.npy"), wm)
+    if len(roots_obs) > 1:
+        logger.info("Saving UQ results")
+        for r in roots_obs:
+            wid = list(map(str, [_[0] for _ in combinations]))  # Well identifiers (n)
+            wm = np.zeros((len(wid), base.HyperParameters.n_posts))
+            # Starting point = root folder in forecast directory
+            droot = os.path.join(base.Directories.forecasts_dir, r)
+            for e in wid:  # For each sub folder (well) in the main folder
+                # Get the objective function file
+                ufp = os.path.join(droot, e, "obj")
+                fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
+                mhd = np.load(fmhd)  # Load MHD
+                idw = int(e) - 1  # -1 to respect 0 index (Well index)
+                wm[idw] += mhd  # Add MHD at each well
+            np.save(os.path.join(droot, f"uq_{metric.__name__}.npy"), wm)
 
     return global_mean

@@ -14,8 +14,8 @@ def main_1(metric=None):
         metric = modified_hausdorff
     training_r, test_r = get_roots()
 
-    # wells = [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]]
-    wells = [[1, 2, 3, 4, 5, 6]]
+    wells = [[1], [2], [3], [4], [5], [6]]
+    # wells = [[1, 2, 3, 4, 5, 6]]
     base = Setup
     base.Wells.combination = wells
     analysis(
