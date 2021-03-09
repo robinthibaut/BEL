@@ -18,7 +18,8 @@ def test_posterior():
     training_r, test_r = get_roots(training_file=training_file,
                                    test_file=test_file)
 
-    wells = [[1], [2], [3], [4], [5], [6]]
+    # wells = [[1], [2], [3], [4], [5], [6]]
+    wells = [[1, 2, 3, 4, 5, 6]]
 
     test_base = Setup
     # Switch forecast directory to test directory
