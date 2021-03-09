@@ -2,4 +2,5 @@
 from .extmath import *
 from ._cross_decomposition import *
 from ._statistics import *
+from .metrics import *
 from ..spatial import signed_distance, binary_stack, binary_polygon

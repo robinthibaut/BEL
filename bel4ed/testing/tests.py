@@ -7,6 +7,8 @@ from bel4ed import design
 from bel4ed.config import Setup
 from bel4ed.utils import get_roots
 
+from bel4ed.algorithms import modified_hausdorff, structural_similarity
+
 
 def test_posterior():
     """Compare posterior samples with reference default values"""
@@ -28,6 +30,7 @@ def test_posterior():
         comb=wells,
         roots_training=training_r,
         roots_obs=test_r,
+        metric=modified_hausdorff,
         wipe=False,
         flag_base=True,
     )
@@ -40,11 +43,13 @@ def test_posterior():
     test_post = joblib.load(jp(test_dir, test_r[0], "123456", "obj", "post.pkl"))
 
     msg1 = "The posterior means are different"
-    np.testing.assert_array_equal(test_post.posterior_mean,
-                                  ref_mean,
-                                  err_msg=msg1)
+    np.testing.assert_allclose(test_post.posterior_mean,
+                               ref_mean,
+                               atol=1e-6,
+                               err_msg=msg1)
 
     msg2 = "The posterior covariances are different"
-    np.testing.assert_array_equal(test_post.posterior_covariance,
-                                  ref_covariance,
-                                  err_msg=msg2)
+    np.testing.assert_allclose(test_post.posterior_covariance,
+                               ref_covariance,
+                               atol=1e-6,
+                               err_msg=msg2)
