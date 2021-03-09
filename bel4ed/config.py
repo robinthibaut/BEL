@@ -174,3 +174,9 @@ class Setup:
         k_min: float = 1.4
         k_max: float = 2
         k_std: float = 0.4
+
+    @dataclass
+    class ED:
+        """Experimental Design"""
+
+        metric = None

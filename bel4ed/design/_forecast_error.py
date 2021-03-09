@@ -13,7 +13,6 @@ from loguru import logger
 from .. import utils
 from ..config import Setup
 from ..utils import Root, Function
-from ..goggles import mode_histo
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
     contours_vertices,
@@ -29,7 +28,6 @@ class UncertaintyQuantification:
             base: Type[Setup],
             study_folder: str,
             base_dir: str = None,
-            metric: Function = None,
             seed: int = None,
     ):
         """
@@ -82,9 +80,6 @@ class UncertaintyQuantification:
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
         self.h_pco.comp_refresh(hnc0)
-
-        # Metric
-        self.metric = metric
 
         # Sampling
         self.n_training = len(d_pc_training)
@@ -169,7 +164,7 @@ class UncertaintyQuantification:
             self.h_pco.predict_pc, n_cut).reshape(
             (self.shape[1], self.shape[2]))
 
-        method_name = self.metric.__name__
+        method_name = self.base.ED.metric.__name__
         logger.info(f"Quantifying image difference based on {method_name}")
         if method_name == "modified_hausdorff":
             x, y = self.c0()
@@ -181,58 +176,39 @@ class UncertaintyQuantification:
 
         # Compute metric between the 'true image' and the n sampled images or images feature
         similarity = np.array(
-            [self.metric(true_feature, f) for f in to_compare])
+            [self.base.ED.metric(true_feature, f) for f in to_compare])
 
         # Save objective_function result
         np.save(jp(self.res_dir, f"{method_name}"), similarity)
 
         return np.mean(similarity)
 
-    def by_mode(self, root: Root):
-        """
-        Computes the combined amount of information for n observations.
-        see also
-        https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
-        :param root: list: List containing the roots whose wells contributions will be taken into account.
-        :return:
-        """
 
-        if not isinstance(root, (list, tuple)):
-            root: list = [root]
+def _mode(base, roots_obs):
 
-        # Deals with the fact that only one root might be selected
-        fig_name = "average"
-        an_i = 0  # Annotation index
-        if len(root) == 1:
-            fig_name = root[0]
-            an_i = 2
+    logger.info("Computing ED results")
 
-        wid = list(map(str, self.base.Wells.combination))  # Well identifiers (n)
-        # Summed MHD when well #i appears
-        wm = np.zeros((len(wid), self.base.HyperParameters.n_posts))
-        colors = self.base.Wells.colors
+    wid = list(map(str, [_[0] for _ in base.Wells.combinations]))  # Well identifiers (n)
+    wm = np.zeros((len(wid), base.HyperParameters.n_posts))
 
-        for r in root:  # For each root
-            # Starting point = root folder in forecast directory
-            droot = os.path.join(self.base.Directories.forecasts_dir, r)
-            for e in wid:  # For each subfolder (well) in the main folder
-                # Get the MHD file
-                fmhd = os.path.join(droot, e, "obj", f"{self.metric.__name__}.npy")
-                mhd = np.load(fmhd)  # Load MHD
-                idw = int(e) - 1  # -1 to respect 0 index (Well index)
-                wm[idw] += mhd  # Add MHD at each well
-        
-        # np.save()
-        # TODO: Save arrays and move plotting to somewhere it belongs
-        # mode_histo(colors=colors, an_i=an_i, wm=wm, fig_name=fig_name)
+    for r in roots_obs:
+        # Starting point = root folder in forecast directory
+        droot = os.path.join(base.Directories.forecasts_dir, r)
+        for e in wid:  # For each sub folder (well) in the main folder
+            # Get the objective function file
+            ufp = os.path.join(droot, e, "obj")
+            fmhd = os.path.join(ufp, f"{base.ED.metric.__name__}.npy")
+            mhd = np.load(fmhd)  # Load MHD
+            idw = int(e) - 1  # -1 to respect 0 index (Well index)
+            wm[idw] += mhd  # Add MHD at each well
 
+    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{base.ED.__name__}.npy"), wm)
 
 
 def analysis(
         base: Type[Setup],
         n_training: int = 200,
         n_obs: int = 50,
-        metric: Function = None,
         flag_base: bool = False,
         wipe: bool = False,
         roots_training: Root = None,
@@ -250,7 +226,6 @@ def analysis(
     :param wipe: bool: Whether to wipe the 'forecast' folder or not
     :param n_training: int: Index from which training and data are separated
     :param n_obs: int: Number of predictors to take
-    :param metric: Function: Metric method
     :param flag_base: bool: Recompute base PCA on target if True
     :param roots_training: list: List of roots considered as training.
     :param to_swap: list: List of roots to swap from training to observations.
@@ -327,18 +302,17 @@ def analysis(
 
     # --------------------------------------------------------
 
-    if wipe:
-        shutil.rmtree(Setup.Directories.forecasts_dir)
-
     obs = roots_obs
-
     base_dir_path = obj_path
+
     # Resets the target PCA object' predictions to None before starting
     try:
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
     except FileNotFoundError:
         pass
+
     combinations = base.Wells.combination
+
     global_mean = 0
     for r_ in obs:  # For each observation root
         logger.info(f"root {r_}")
@@ -357,34 +331,16 @@ def analysis(
                 base=base,
                 study_folder=sf,
                 base_dir=base_dir_path,
-                metric=metric,
                 seed=123456,
             )
             # Sample posterior
             logger.info("Sample posterior")
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            uq.metric = metric
             logger.info("Similarity measure")
             mean = uq.objective_function()
             global_mean += mean
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
-
-    if len(roots_obs) > 1:
-        logger.info("Saving UQ results")
-        for r in roots_obs:
-            wid = list(map(str, [_[0] for _ in combinations]))  # Well identifiers (n)
-            wm = np.zeros((len(wid), base.HyperParameters.n_posts))
-            # Starting point = root folder in forecast directory
-            droot = os.path.join(base.Directories.forecasts_dir, r)
-            for e in wid:  # For each sub folder (well) in the main folder
-                # Get the objective function file
-                ufp = os.path.join(droot, e, "obj")
-                fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
-                mhd = np.load(fmhd)  # Load MHD
-                idw = int(e) - 1  # -1 to respect 0 index (Well index)
-                wm[idw] += mhd  # Add MHD at each well
-            np.save(os.path.join(droot, f"uq_{metric.__name__}.npy"), wm)
 
     return global_mean

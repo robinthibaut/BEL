@@ -18,10 +18,10 @@ def main_1(metric=None):
     # wells = [[1, 2, 3, 4, 5, 6]]
     base = Setup
     base.Wells.combination = wells
+    base.ED.metric = metric
     analysis(
         base=Setup,
         roots_training=training_r,
-        metric=metric,
         roots_obs=test_r,
         wipe=False,
         flag_base=True,
@@ -35,6 +35,7 @@ def main_2(N, metric=None):
     wells = [[1, 2, 3, 4, 5, 6]]
     base = Setup
     base.Wells.combination = wells
+    base.ED.metric = metric
     for n in N:
         Setup.HyperParameters.n_total = n
         Setup.HyperParameters.n_training = int(n * 0.8)
@@ -44,7 +45,6 @@ def main_2(N, metric=None):
 
         *_, mhd_mean = analysis(
             base=base,
-            metric=metric,
             n_training=Setup.HyperParameters.n_training,
             n_obs=Setup.HyperParameters.n_test,
             wipe=True,
