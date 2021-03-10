@@ -3,7 +3,7 @@
 import os
 import shutil
 from os.path import join as jp
-from typing import List, Type
+from typing import Type
 
 import joblib
 import numpy as np
@@ -12,14 +12,14 @@ from loguru import logger
 
 from .. import utils
 from ..config import Setup
-from ..utils import Root, Function
+from ..utils import Root
 from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
 from ..spatial import (
     contours_vertices,
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode']
+__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode', 'objective_function']
 
 
 class UncertaintyQuantification:
@@ -31,7 +31,6 @@ class UncertaintyQuantification:
             seed: int = None,
     ):
         """
-
         :param base: class: Base object (inventory)
         :param study_folder: str: Name of the root uuid in the 'forecast' directory on which UQ will be performed
         :param base_dir: str: Path to base directory
@@ -151,39 +150,39 @@ class UncertaintyQuantification:
                 writer.Write()
         return x, y
 
-    def objective_function(self):
-        """
-        Computes the metric between the true WHPA that has been recovered from its n first PCA
-        components to allow proper comparison.
-        """
-        # TODO : Extract this function ?
-        # The new idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-        n_cut = self.h_pco.n_pc_cut  # Number of components to keep
-        # Inverse transform and reshape
-        true_image = self.h_pco.custom_inverse_transform(
-            self.h_pco.predict_pc, n_cut).reshape(
-            (self.shape[1], self.shape[2]))
 
-        method_name = self.base.ED.metric.__name__
-        logger.info(f"Quantifying image difference based on {method_name}")
-        if method_name == "modified_hausdorff":
-            x, y = self.c0()
-            to_compare = self.vertices
-            true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
-        else:
-            to_compare = self.forecast_posterior
-            true_feature = true_image
+def objective_function(uq: UncertaintyQuantification, metric):
+    """
+    Computes the metric between the true WHPA that has been recovered from its n first PCA
+    components to allow proper comparison.
+    """
+    # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+    n_cut = uq.h_pco.n_pc_cut  # Number of components to keep
+    # Inverse transform and reshape
+    true_image = uq.h_pco.custom_inverse_transform(
+        uq.h_pco.predict_pc, n_cut).reshape(
+        (uq.shape[1], uq.shape[2]))
 
-        # Compute metric between the 'true image' and the n sampled images or images feature
-        similarity = np.array(
-            [self.base.ED.metric(true_feature, f) for f in to_compare])
+    method_name = metric.__name__
+    logger.info(f"Quantifying image difference based on {method_name}")
+    if method_name == "modified_hausdorff":
+        x, y = uq.c0()
+        to_compare = uq.vertices
+        true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
+    else:
+        to_compare = uq.forecast_posterior
+        true_feature = true_image
 
-        # Save objective_function result
-        np.save(jp(self.res_dir, f"{method_name}"), similarity)
+    # Compute metric between the 'true image' and the n sampled images or images feature
+    similarity = np.array(
+        [metric(true_feature, f) for f in to_compare])
 
-        logger.info(f"Similarity : {np.mean(similarity)}")
+    # Save objective_function result
+    np.save(jp(uq.res_dir, f"{method_name}"), similarity)
 
-        return np.mean(similarity)
+    logger.info(f"Similarity : {np.mean(similarity)}")
+
+    return np.mean(similarity)
 
 
 def measure_info_mode(base: Type[Setup], roots_obs: Root):
@@ -306,20 +305,17 @@ def analysis(
 
     # --------------------------------------------------------
 
-    obs = roots_obs
-    base_dir_path = obj_path
-
     # Resets the target PCA object' predictions to None before starting
     try:
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
+        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
     except FileNotFoundError:
         pass
 
     combinations = base.Wells.combination.copy()
 
     global_mean = 0
-    total = len(obs)
-    for ix, r_ in enumerate(obs):  # For each observation root
+    total = len(roots_obs)
+    for ix, r_ in enumerate(roots_obs):  # For each observation root
         logger.info(f"[{ix+1}/{total}]-{r_}")
         for ixw, c in enumerate(combinations):  # For each wel combination
             logger.info(f"[{ix+1}/{total}]-{r_}-{ixw+1}/{len(combinations)}")
@@ -337,17 +333,17 @@ def analysis(
             uq = UncertaintyQuantification(
                 base=base,
                 study_folder=sf,
-                base_dir=base_dir_path,
+                base_dir=obj_path,
                 seed=123456,
             )
             # Sample posterior
             logger.info("Sample posterior")
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
             logger.info("Similarity measure")
-            mean = uq.objective_function()
+            mean = objective_function(uq)
             global_mean += mean
 
         # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(base_dir_path, "h_pca.pkl")).reset_()
+        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
 
     return global_mean
