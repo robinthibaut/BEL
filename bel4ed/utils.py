@@ -23,6 +23,13 @@ Combination = List[List[int]]
 Function = types.FunctionType
 
 
+def flatten_array(arr):
+    arr_flat = np.array(
+        [item for sublist in arr for item in sublist]
+    ).reshape(len(arr), -1)
+    return arr_flat
+
+
 def _object_dtype_isnan(X):
     return X != X
 

@@ -4,9 +4,6 @@
 Collection of functions to use the PCA class from scikit-learn.
 """
 
-import os
-
-import joblib
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -33,12 +30,18 @@ class PC:
         :param test_df: pd.DataFrame: Test set
         :param directory: str: Path to the folder in which to save the pickle
         """
-
+        logger.info("Initiating dimension reduction")
         self.directory = directory
         self.name = name  # str, name of the object
 
         self.training_df = training_df
+        logger.info(f"Training set {self.training_df.shape}")
         self.test_df = test_df
+
+        try:
+            logger.info(f"Test set {self.test_df.shape}")
+        except AttributeError:
+            logger.info("No test set")
 
         self.training_pc_df = None
         self.test_pc_df = None
@@ -61,6 +64,7 @@ class PC:
         :return: numpy.array: PC training
         """
 
+        logger.info("Fitting and transforming training data")
         self.pipe.fit(self.training_df)
         training_pc = self.pipe.transform(self.training_df.to_numpy())
 
@@ -85,6 +89,7 @@ class PC:
             selection = self.test_df.to_numpy()
             ids = test_roots
 
+        logger.info("Fitting and transforming test data")
         # Transform prediction data into principal components
         pc_prediction = self.pipe.transform(selection)
 

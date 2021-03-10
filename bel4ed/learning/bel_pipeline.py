@@ -25,7 +25,7 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import Root, check_array
+from ..utils import Root, flatten_array
 from ..config import Setup
 
 from ..processing import curve_interpolation
@@ -40,7 +40,6 @@ def base_pca(
     base_dir: str,
     training_roots: Root,
     test_roots: Root,
-    d_pca_obj_path: str = None,
     h_pca_obj_path: str = None,
 ):
     """
@@ -49,28 +48,10 @@ def base_pca(
     :param base_dir: str: Base directory path
     :param training_roots: list:
     :param test_roots: list:
-    :param d_pca_obj_path:
     :param h_pca_obj_path:
     :return:
     """
-    # if d_pca_obj_path is not None:
-    #     # Loads the results:
-    #     tc0, _, _ = utils.data_loader(roots=training_roots, d=True)
-    #     # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
-    #     # pzs = WHPA
-    #     # roots_ = simulation id
-    #     # Subdivide d in an arbitrary number of time steps:
-    #     # tc has shape (n_sim, n_wells, n_time_steps)
-    #     tc = curve_interpolation(tc0=tc0)
-    #     # with n_sim = n_training + n_test
-    #     # PCA on transport curves
-    #     d_pco = PC(
-    #         name="d", training=tc, roots=training_roots, directory=os.path.dirname(d_pca_obj_path)
-    #     )
-    #     d_pco.training_fit_transform()
-    #     # Dump
-    #     joblib.dump(d_pco, d_pca_obj_path)
-    #
+
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
 
     if h_pca_obj_path is not None:
@@ -89,30 +70,33 @@ def base_pca(
         h_training = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training])
         h_test = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test])
 
-        h_training = np.array(
-            [item for sublist in h_training for item in sublist]
-        ).reshape(len(h_training), -1)
+        # Remember original shape
+        physical_shape = h_training.shape
 
-        h_test = np.array(
-            [item for sublist in h_test for item in sublist]
-        ).reshape(len(h_test), -1)
+        # Flatten for dimension reduction
+        h_training = flatten_array(h_training)
+        h_test = flatten_array(h_test)
 
-        training_df = pd.DataFrame(data=h_training)
-        training_df['id'] = training_roots
-        training_df.set_index("id", inplace=True)
+        # Save DataFrames
 
-        test_df = pd.DataFrame(data=h_test)
-        test_df['id'] = training_roots
-        test_df.set_index("id", inplace=True)
+        training_df_target = pd.DataFrame(data=h_training)
+        training_df_target['id'] = training_roots
+        training_df_target.set_index("id", inplace=True)
+        training_df_target.physical_shape = physical_shape
+
+        test_df_target = pd.DataFrame(data=h_test)
+        test_df_target['id'] = test_roots
+        test_df_target.set_index("id", inplace=True)
+        test_df_target.physical_shape = physical_shape
 
         # Initiate h pca object
-        h_pco = PC(name="h", training_df=training_df, test_df=test_df, directory=base_dir)
+        h_pco = PC(name="h", training_df=training_df_target, test_df=test_df_target, directory=base_dir)
         # Transform
         h_pco.training_fit_transform()
         # Define number of components to keep
         h_pco.n_pc_cut = base.HyperParameters.n_pc_target
         # Transform test arrays
-        h_pco.test_transform(test=h_test, test_roots=test_roots)
+        h_pco.test_transform()
 
         # Dump
         joblib.dump(h_pco, h_pca_obj_path)
@@ -197,8 +181,9 @@ def bel_fit_transform(
         # roots_ = simulations id's
         # Subdivide d in an arbitrary number of time steps:
         # tc has shape (n_sim, n_wells, n_time_steps)
-        tc = curve_interpolation(tc0=tc0, n_time_steps=200)
-        # with n_sim = n_training + n_test
+        n_time_steps = base.HyperParameters.n_tstp
+        tc = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
+
         np.save(tsub, tc)
         # Save file roots
     else:
@@ -208,24 +193,24 @@ def bel_fit_transform(
     selection = [wc - 1 for wc in base.Wells.combination]
     tc = tc[:, selection, :]
 
+    tc_flat = np.array(
+        [item for sublist in tc for item in sublist]
+    ).reshape(len(tc), -1)
+
+    training_df_predictor = pd.DataFrame(data=tc_flat)
+    training_df_predictor['id'] = training_roots
+    training_df_predictor.set_index("id", inplace=True)
+
     # %%  PCA
     # PCA is performed with maximum number of components.
     # We choose an appropriate number of components to keep later on.
-
     # PCA on transport curves
-    d_pco = PC(name="d", training=tc, roots=training_roots, directory=obj_dir)
+    d_pco = PC(name="d", training_df=training_df_predictor, directory=obj_dir)
     d_pco.training_fit_transform()
     # PCA on transport curves
     d_pco.n_pc_cut = base.HyperParameters.n_pc_predictor
     ndo = d_pco.n_pc_cut
-    n_time_steps = base.HyperParameters.n_tstp
-    # Load observation (test_root)
-    tc0, *_ = utils.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
-    # Subdivide d in an arbitrary number of time steps:
-    tcp = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
-    tcp = tcp[:, selection, :]  # Extract desired observation
     # Perform transformation on testing curves
-    d_pco.test_transform(tcp, test_roots=test_root)
     d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -237,10 +222,10 @@ def bel_fit_transform(
     # Load whpa to predict
     _, pzs, _ = utils.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
-    if h_pco.predict_pc is None:
+    if h_pco.test_pc_df is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
-        h_pco.test_transform(h, test_roots=test_root)
+        h_pco.test_transform(test_roots=test_root)
         # Cut desired number of components
         h_pc_training, _ = h_pco.comp_refresh(nho)
         # Save updated PCA object in base
@@ -278,7 +263,7 @@ class PosteriorIO:
         self.seed = None
         self.n_posts = None
         self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
-        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
+        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True),
         self.directory = directory
 
     def mvn_inference(
@@ -431,9 +416,11 @@ class PosteriorIO:
             fname = jp(self.directory, "target_pc.npy")
             np.save(fname, h_pca_reverse)
 
+        osx, osy = self.pca_h.training_df.physical_shape[0], self.pca_h.training_df.physical_shape[0]
+
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
-            (n_posts, pca_h.training_shape[1], pca_h.training_shape[2])
+            (n_posts, osx, osy)
         )
 
         return forecast_posterior

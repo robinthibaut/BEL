@@ -79,11 +79,9 @@ class UncertaintyQuantification:
 
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.n_pc_cut
-        hnc0 = self.h_pco.n_pc_cut
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
-        # self.h_pco.comp_refresh(hnc0)
 
         # Sampling
         self.n_training = len(d_pc_training)
@@ -313,14 +311,6 @@ def analysis(
             h_pca_obj_path=obj,
         )
 
-    # --------------------------------------------------------
-    # Resets the target PCA object' predictions to None before starting
-
-    try:
-        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
-    except FileNotFoundError:
-        pass
-
     combinations = base.Wells.combination.copy()
 
     total = len(roots_obs)
@@ -332,9 +322,6 @@ def analysis(
             base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")
             bel_fit_transform(base=base, training_roots=roots_training, test_root=r_)
-
-        # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
 
 
 def compute_metric(
