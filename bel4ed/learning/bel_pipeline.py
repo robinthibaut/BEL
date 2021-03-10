@@ -35,12 +35,12 @@ from ..processing import PC
 
 
 def base_pca(
-        base: Type[Setup],
-        base_dir: str,
-        roots: Root,
-        test_roots: Root,
-        d_pca_obj: str = None,
-        h_pca_obj: str = None,
+    base: Type[Setup],
+    base_dir: str,
+    roots: Root,
+    test_roots: Root,
+    d_pca_obj: str = None,
+    h_pca_obj: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -63,10 +63,9 @@ def base_pca(
         tc = curve_interpolation(tc0=tc0)
         # with n_sim = n_training + n_test
         # PCA on transport curves
-        d_pco = PC(name="d",
-                   training=tc,
-                   roots=roots,
-                   directory=os.path.dirname(d_pca_obj))
+        d_pco = PC(
+            name="d", training=tc, roots=roots, directory=os.path.dirname(d_pca_obj)
+        )
         d_pco.training_fit_transform()
         # Dump
         joblib.dump(d_pco, d_pca_obj)
@@ -77,8 +76,9 @@ def base_pca(
         # Loads the results:
         _, pzs, r = utils.data_loader(roots=roots, h=True)
         # Load parameters:
-        xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim,
-                                          grf=grf)  # Initiate SD instance
+        xys, nrow, ncol = grid_parameters(
+            x_lim=x_lim, y_lim=y_lim, grf=grf
+        )  # Initiate SD instance
 
         # PCA on signed distance
         # Compute signed distance on pzs.
@@ -109,9 +109,9 @@ def base_pca(
 
 
 def bel_fit_transform(
-        base: Type[Setup],
-        training_roots: Root = None,
-        test_root: Root or str = None,
+    base: Type[Setup],
+    training_roots: Root = None,
+    test_root: Root or str = None,
 ) -> str:
     """
     This function loads raw data and perform both PCA and CCA on it.
@@ -125,8 +125,9 @@ def bel_fit_transform(
     # TODO: Separate folder and computation stuff
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim,
-                                      grf=grf)  # Initiate SD instance
+    xys, nrow, ncol = grid_parameters(
+        x_lim=x_lim, y_lim=y_lim, grf=grf
+    )  # Initiate SD instance
 
     # Directories
     md = base.Directories
@@ -137,8 +138,7 @@ def bel_fit_transform(
         if os.path.exists(jp(res_dir, test_root)):
             test_root = [test_root]
         else:
-            warnings.warn("Specified folder {} does not exist".format(
-                test_root[0]))
+            warnings.warn("Specified folder {} does not exist".format(test_root[0]))
 
     # Directory in which to load forecasts
     bel_dir = jp(md.forecasts_dir, test_root[0])
@@ -146,7 +146,9 @@ def bel_fit_transform(
     # Base directory that will contain target objects and processed data
     base_dir = jp(md.forecasts_dir, "base")
 
-    new_dir = "".join(list(map(str, base.Wells.combination)))  # sub-directory for forecasts
+    new_dir = "".join(
+        list(map(str, base.Wells.combination))
+    )  # sub-directory for forecasts
     sub_dir = jp(bel_dir, new_dir)
 
     # %% Folders
@@ -158,8 +160,8 @@ def bel_fit_transform(
 
     # %% Creates directories
     [
-        utils.dirmaker(f) for f in
-        [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]
+        utils.dirmaker(f)
+        for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]
     ]
 
     # Load training data
@@ -167,9 +169,7 @@ def bel_fit_transform(
     tsub = jp(base_dir, "training_curves.npy")
     if not os.path.exists(tsub):
         # Loads the results:
-        tc0, *_ = utils.data_loader(res_dir=res_dir,
-                                    roots=training_roots,
-                                    d=True)
+        tc0, *_ = utils.data_loader(res_dir=res_dir, roots=training_roots, d=True)
         # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
         # pzs = WHPA's
         # roots_ = simulations id's
@@ -198,9 +198,7 @@ def bel_fit_transform(
     ndo = d_pco.n_pc_cut
     n_time_steps = base.HyperParameters.n_tstp
     # Load observation (test_root)
-    tc0, *_ = utils.data_loader(res_dir=res_dir,
-                                test_roots=test_root,
-                                d=True)
+    tc0, *_ = utils.data_loader(res_dir=res_dir, test_roots=test_root, d=True)
     # Subdivide d in an arbitrary number of time steps:
     tcp = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
@@ -238,10 +236,7 @@ def bel_fit_transform(
     n_comp_cca = min(ndo, nho)
     # components between d and h.
     # By default, it scales the data
-    cca = CCA(n_components=n_comp_cca,
-              scale=True,
-              max_iter=500 * 20,
-              tol=1e-06)
+    cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
     cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
     joblib.dump(cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
     msg = f"model trained and saved in {obj_dir}"
@@ -260,19 +255,17 @@ class PosteriorIO:
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.normalize_h = PowerTransformer(method="yeo-johnson",
-                                            standardize=True)
-        self.normalize_d = PowerTransformer(method="yeo-johnson",
-                                            standardize=True)
+        self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
+        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
         self.directory = directory
 
     def mvn_inference(
-            self,
-            h_cca_training_gaussian: np.array,
-            d_cca_training: np.array,
-            d_pc_training: np.array,
-            d_rotations: np.array,
-            d_cca_prediction: np.array,
+        self,
+        h_cca_training_gaussian: np.array,
+        d_cca_training: np.array,
+        d_pc_training: np.array,
+        d_rotations: np.array,
+        d_cca_prediction: np.array,
     ):
         """
         Estimating posterior mean and covariance of the target.
@@ -287,11 +280,15 @@ class PosteriorIO:
         :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
         """
 
-        h_cca_training_gaussian = utils.check_array(h_cca_training_gaussian, copy=True, ensure_2d=False)
+        h_cca_training_gaussian = utils.check_array(
+            h_cca_training_gaussian, copy=True, ensure_2d=False
+        )
         d_cca_training = utils.check_array(d_cca_training, copy=True, ensure_2d=False)
         d_pc_training = utils.check_array(d_pc_training, copy=True, ensure_2d=False)
         d_rotations = utils.check_array(d_rotations, copy=True, ensure_2d=False)
-        d_cca_prediction = utils.check_array(d_cca_prediction, copy=True, ensure_2d=False)
+        d_cca_prediction = utils.check_array(
+            d_cca_prediction, copy=True, ensure_2d=False
+        )
 
         # Size of the set
         n_training = d_cca_training.shape[0]
@@ -318,24 +315,25 @@ class PosteriorIO:
         # Linear modeling h to d (in canonical space) with least-square criterion.
         # Pay attention to the transpose operator.
         # Computes the vector g that approximately solves the equation h @ g = d.
-        g = np.linalg.lstsq(h_cca_training_gaussian,
-                            d_cca_training,
-                            rcond=None)[0].T
+        g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
         # Replace values below threshold by 0.
         g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
         # Modeling error due to deviations from theory
         # (n_components_CCA, n_training)
         d_ls_predicted = h_cca_training_gaussian @ g.T
-        d_modeling_mean_error = np.mean(d_cca_training - d_ls_predicted,
-                                        axis=0)  # (n_comp_CCA, 1)
-        d_modeling_error = (d_cca_training - d_ls_predicted -
-                            np.tile(d_modeling_mean_error, (n_training, 1)))
+        d_modeling_mean_error = np.mean(
+            d_cca_training - d_ls_predicted, axis=0
+        )  # (n_comp_CCA, 1)
+        d_modeling_error = (
+            d_cca_training
+            - d_ls_predicted
+            - np.tile(d_modeling_mean_error, (n_training, 1))
+        )
         # (n_comp_CCA, n_training)
 
         # Information about the covariance of the posterior distribution in Canonical space.
-        d_modeling_covariance = np.cov(
-            d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
+        d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
         # Build block matrix
         s11 = h_cov_operator
@@ -354,21 +352,22 @@ class PosteriorIO:
         h_posterior_covariance = np.linalg.pinv(d11)
         # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
         h_posterior_mean = h_posterior_covariance @ (
-                d11 @ h_mean -
-                d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T))
+            d11 @ h_mean
+            - d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
+        )
 
         self.posterior_mean = h_posterior_mean  # (n_comp_CCA,)
         # (n_comp_CCA, n_comp_CCA)
         self.posterior_covariance = h_posterior_covariance
 
     def back_transform(
-            self,
-            h_posts_gaussian: np.array,
-            cca_obj: CCA,
-            pca_h: PC,
-            n_posts: int,
-            add_comp: bool = False,
-            save_target_pc: bool = False,
+        self,
+        h_posts_gaussian: np.array,
+        cca_obj: CCA,
+        pca_h: PC,
+        n_posts: int,
+        add_comp: bool = False,
+        save_target_pc: bool = False,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
@@ -385,7 +384,8 @@ class PosteriorIO:
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
         h_posts = self.normalize_h.inverse_transform(
-            h_posts_gaussian)  # (n_components, n_samples)
+            h_posts_gaussian
+        )  # (n_components, n_samples)
 
         # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
         # The value of h_pca_reverse are the score of PCA in the forecast space.
@@ -393,26 +393,26 @@ class PosteriorIO:
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
         h_pca_reverse = (
-                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ +
-                cca_obj.y_mean_)
+            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+        )
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
-            rnpc = np.array([pca_h.random_pc(n_posts) for _ in range(n_posts)
-                             ])  # Get the extra components
-            h_pca_reverse = np.array([
-                np.concatenate((h_pca_reverse[i], rnpc[i]))
-                for i in range(n_posts)
-            ])  # Insert it
+            rnpc = np.array(
+                [pca_h.random_pc(n_posts) for _ in range(n_posts)]
+            )  # Get the extra components
+            h_pca_reverse = np.array(
+                [np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)]
+            )  # Insert it
 
         if save_target_pc:
             fname = jp(self.directory, "target_pc.npy")
             np.save(fname, h_pca_reverse)
 
         # Generate forecast in the initial dimension and reshape.
-        forecast_posterior = pca_h.custom_inverse_transform(
-            h_pca_reverse).reshape(
-            (n_posts, pca_h.training_shape[1], pca_h.training_shape[2]))
+        forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
+            (n_posts, pca_h.training_shape[1], pca_h.training_shape[2])
+        )
 
         return forecast_posterior
 
@@ -428,17 +428,13 @@ class PosteriorIO:
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
         h_posts_gaussian = np.random.multivariate_normal(
-            mean=self.posterior_mean,
-            cov=self.posterior_covariance,
-            size=n_posts)
+            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
+        )
         return h_posts_gaussian
 
-    def bel_predict(self,
-                    pca_d: PC,
-                    pca_h: PC,
-                    cca_obj: CCA,
-                    n_posts: int,
-                    add_comp: bool = False) -> np.array:
+    def bel_predict(
+        self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
+    ) -> np.array:
         """
         Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observations.
@@ -459,7 +455,8 @@ class PosteriorIO:
 
             # Transform to canonical space
             d_cca_training, h_cca_training = cca_obj.transform(
-                d_pc_training, h_pc_training)
+                d_pc_training, h_pc_training
+            )
             # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
 
             # Ensure Gaussian distribution in d_cca_training

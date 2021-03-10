@@ -19,16 +19,22 @@ from ..spatial import (
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode', 'objective_function', 'compute_metric']
+__all__ = [
+    "UncertaintyQuantification",
+    "analysis",
+    "measure_info_mode",
+    "objective_function",
+    "compute_metric",
+]
 
 
 class UncertaintyQuantification:
     def __init__(
-            self,
-            base: Type[Setup],
-            study_folder: str,
-            base_dir: str = None,
-            seed: int = None,
+        self,
+        base: Type[Setup],
+        study_folder: str,
+        base_dir: str = None,
+        seed: int = None,
     ):
         """
         :param base: class: Base object (inventory)
@@ -67,8 +73,7 @@ class UncertaintyQuantification:
         self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
-        f_names = list(
-            map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
+        f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
         self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
 
@@ -159,9 +164,9 @@ def objective_function(uq: UncertaintyQuantification, metric):
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
     n_cut = uq.h_pco.n_pc_cut  # Number of components to keep
     # Inverse transform and reshape
-    true_image = uq.h_pco.custom_inverse_transform(
-        uq.h_pco.predict_pc, n_cut).reshape(
-        (uq.shape[1], uq.shape[2]))
+    true_image = uq.h_pco.custom_inverse_transform(uq.h_pco.predict_pc, n_cut).reshape(
+        (uq.shape[1], uq.shape[2])
+    )
 
     method_name = metric.__name__
     logger.info(f"Quantifying image difference based on {method_name}")
@@ -178,8 +183,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
         true_feature = None
 
     # Compute metric between the 'true image' and the n sampled images or images feature
-    similarity = np.array(
-        [metric(true_feature, f) for f in to_compare])
+    similarity = np.array([metric(true_feature, f) for f in to_compare])
 
     # Save objective_function result
     np.save(jp(uq.res_dir, f"{method_name}"), similarity)
@@ -208,18 +212,20 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
             wm[idw] += mhd  # Add MHD at each well
 
     logger.info("Done")
-    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm)
+    np.save(
+        os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
+    )
 
 
 def analysis(
-        base: Type[Setup],
-        n_training: int = 200,
-        n_obs: int = 50,
-        flag_base: bool = False,
-        wipe: bool = False,
-        roots_training: Root = None,
-        to_swap: Root = None,
-        roots_obs: Root = None,
+    base: Type[Setup],
+    n_training: int = 200,
+    n_obs: int = 50,
+    flag_base: bool = False,
+    wipe: bool = False,
+    roots_training: Root = None,
+    to_swap: Root = None,
+    roots_obs: Root = None,
 ):
     """
     I. First, defines the roots for training from simulations in the hydro results directory.
@@ -243,15 +249,13 @@ def analysis(
     md = base.Directories.hydro_res_dir
     listme = os.listdir(md)
     # Filter folders out
-    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)),
-                          listme))
+    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
 
     def swap_root(pres: str):
         """Selects roots from main folder and swap them from training to observation"""
         if pres in roots_training:
             idx = roots_training.index(pres)
-            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[
-                0]
+            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
         elif pres in folders:
             idx = folders.index(pres)
             roots_obs[0] = folders[idx]
@@ -266,7 +270,7 @@ def analysis(
     if roots_obs is None:  # If no observation provided
         if n_training + n_obs <= len(folders):
             # List of m observation roots
-            roots_obs = folders[n_training:(n_training + n_obs)]
+            roots_obs = folders[n_training : (n_training + n_obs)]
         else:
             logger.error("Incompatible training/observation numbers")
             return
@@ -304,12 +308,12 @@ def analysis(
             base_dir=obj_path,
             roots=roots_training,
             test_roots=roots_obs,
-            h_pca_obj=obj
+            h_pca_obj=obj,
         )
 
     # --------------------------------------------------------
-
     # Resets the target PCA object' predictions to None before starting
+
     try:
         joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
     except FileNotFoundError:
@@ -325,16 +329,15 @@ def analysis(
             # PCA decomposition + CCA
             base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")
-            bel_fit_transform(base=base,
-                              training_roots=roots_training,
-                              test_root=r_)
+            bel_fit_transform(base=base, training_roots=roots_training, test_root=r_)
 
         # Resets the target PCA object' predictions to None before moving on to the next root
         joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
 
 
-def compute_metric(base: Type[Setup], roots_obs: Root, combinations: list, metric,
-                   base_dir: str = None):
+def compute_metric(
+    base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
+):
     if base_dir is None:
         base_dir = os.path.join(base.Directories.forecasts_dir, "base")
 
@@ -346,7 +349,9 @@ def compute_metric(base: Type[Setup], roots_obs: Root, combinations: list, metri
             logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
             # Uncertainty analysis
             logger.info("Uncertainty quantification")
-            study_folder = os.path.join(base.Directories.forecasts_dir, f"{r_}", "".join(list(map(str, c))))
+            study_folder = os.path.join(
+                base.Directories.forecasts_dir, f"{r_}", "".join(list(map(str, c)))
+            )
             uq = UncertaintyQuantification(
                 base=base,
                 base_dir=base_dir,

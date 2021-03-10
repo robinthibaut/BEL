@@ -40,14 +40,17 @@ def main(n_sim: int = None):
         folders = list(
             filter(
                 lambda d: os.path.isdir(
-                    os.path.join(Setup.Directories.hydro_res_dir, d)),
+                    os.path.join(Setup.Directories.hydro_res_dir, d)
+                ),
                 listme,
-            ))
+            )
+        )
 
     # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
         training_roots = bel4ed.utils.data_read(
-            os.path.join(Setup.Directories.forecasts_dir, "base", "roots.dat"))
+            os.path.join(Setup.Directories.forecasts_dir, "base", "roots.dat")
+        )
         folders = [item for sublist in training_roots for item in sublist]
 
     # If n_sim is any positive integer, performs the number of selected forward modelling

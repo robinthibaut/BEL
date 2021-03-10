@@ -71,12 +71,7 @@ class CCA(_PLS):
 
     """
 
-    def __init__(self,
-                 n_components=2,
-                 scale=True,
-                 max_iter=500,
-                 tol=1e-06,
-                 copy=True):
+    def __init__(self, n_components=2, scale=True, max_iter=500, tol=1e-06, copy=True):
         super().__init__(
             n_components=n_components,
             scale=scale,

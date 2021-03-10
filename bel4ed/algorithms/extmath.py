@@ -1,6 +1,6 @@
 import numpy as np
 
-__all__ = ['svd_flip', 'safe_accumulator_op']
+__all__ = ["svd_flip", "safe_accumulator_op"]
 
 
 def svd_flip(u, v, u_based_decision=True):

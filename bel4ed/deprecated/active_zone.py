@@ -8,8 +8,7 @@ import numpy as np
 from diavatly import model_map
 
 import experiment.visualization as mplot
-from experiment.spatial import (binary_polygon, get_centroids,
-                                         grid_parameters)
+from experiment.spatial import binary_polygon, get_centroids, grid_parameters
 from experiment.config import Setup
 from experiment.processing.target_handle import travelling_particles
 
@@ -81,19 +80,15 @@ def active_zone(modflowmodel):
     poly_deli = travelling_particles(xyw_scaled)  # Get polygon delineation
     poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
     # Assign 0|1 value
-    icbund = binary_polygon(sdm.xys,
-                            sdm.nrow,
-                            sdm.ncol,
-                            poly_xyw,
-                            outside=0,
-                            inside=1).reshape(nlay, nrow, ncol)
+    icbund = binary_polygon(
+        sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1
+    ).reshape(nlay, nrow, ncol)
 
     mt_icbund_file = jp(Setup.Directories.grid_dir, "mt3d_icbund.npy")
     np.save(mt_icbund_file, icbund)  # Save active zone
 
     # Check what we've done: plot the active zone.
-    val_icbund = [item for sublist in icbund[0]
-                  for item in sublist]  # Flattening
+    val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
     # Define a dummy grid with large cell dimensions to plot on it.
     grf_dummy = 10
     nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1]) / grf_dummy)
@@ -102,8 +97,7 @@ def active_zone(modflowmodel):
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
     inds = experiment.spatial.spatial.matrix_paste(xy_dummy, xy_true)
-    val_dummy = [val_icbund[k]
-                 for k in inds]  # Contains k values for refined grid
+    val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
     # Reshape in n layers x n cells in refined grid.
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))
 
@@ -116,7 +110,7 @@ def active_zone(modflowmodel):
     )
 
     grid1 = experiment.spatial.spatial.blocks_from_rc(
-        np.ones(nrow_dummy) * grf_dummy,
-        np.ones(ncol_dummy) * grf_dummy)
+        np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy
+    )
     model_map(grid1, vals=val_dummy, log=0)
     plt.show()

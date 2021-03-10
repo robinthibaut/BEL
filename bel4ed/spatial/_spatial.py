@@ -7,14 +7,30 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from scipy.spatial import distance_matrix
 
-plt.rcParams.update({'figure.max_open_warning': 0})
+plt.rcParams.update({"figure.max_open_warning": 0})
 
-__all__ = ['grid_parameters', 'signed_distance', 'block_shaped', 'refine_axis', 'rc_from_blocks',
-           'blocks_from_rc', 'blocks_from_rc_3d', 'matrix_paste', 'h_sub', 'get_centroids', 'contours_vertices',
-           'binary_polygon', 'binary_stack', 'get_block', 'refine_machine']
+__all__ = [
+    "grid_parameters",
+    "signed_distance",
+    "block_shaped",
+    "refine_axis",
+    "rc_from_blocks",
+    "blocks_from_rc",
+    "blocks_from_rc_3d",
+    "matrix_paste",
+    "h_sub",
+    "get_centroids",
+    "contours_vertices",
+    "binary_polygon",
+    "binary_stack",
+    "get_block",
+    "refine_machine",
+]
 
 
-def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1) -> (np.array, int, int):
+def grid_parameters(
+    x_lim: list = None, y_lim: list = None, grf: float = 1
+) -> (np.array, int, int):
     """
     Generates grid parameters necessary prior to SD calculation.
     :param x_lim:
@@ -41,8 +57,7 @@ def grid_parameters(x_lim: list = None, y_lim: list = None, grf: float = 1) -> (
     return xys, nrow, ncol
 
 
-def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float,
-                    pzs: np.array):
+def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float, pzs: np.array):
     """
     Given an array of coordinates of polygon vertices, computes its signed distance field.
     :param xys: Centroids of a grid' cells
@@ -69,17 +84,19 @@ def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
     each sub-block preserving the "physical" layout of arr.
     """
     h, w = arr.shape
-    assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(
-        h, nrows)
-    assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(
-        w, ncols)
+    assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
+    assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(w, ncols)
 
-    return (arr.reshape(h // nrows, nrows, -1,
-                        ncols).swapaxes(1, 2).reshape(-1, nrows, ncols))
+    return (
+        arr.reshape(h // nrows, nrows, -1, ncols)
+        .swapaxes(1, 2)
+        .reshape(-1, nrows, ncols)
+    )
 
 
-def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
-                d_dim: float, a_lim: float) -> np.array:
+def refine_axis(
+    widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
+) -> np.array:
     """
     Refines one 1D axis around a point belonging to it.
 
@@ -131,14 +148,15 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
         # Where do we have the default cell size on
         where_left = where_default[np.where(where_default < wherex[0])]
         # the left
-        where_right = where_default[np.where(
-            (where_default >= wherex[0] + len(nwxs)))]  # And on the right
+        where_right = where_default[
+            np.where((where_default >= wherex[0] + len(nwxs)))
+        ]  # And on the right
         lwl = len(where_left)
         lwr = len(where_right)
 
         if lwl > lwr:
             rl = (
-                    lwl / lwr
+                lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
@@ -146,7 +164,7 @@ def refine_axis(widths: List[float], r_pt: float, ext: float, cnd: float,
             dar = difx - dal
         elif lwr > lwl:
             rl = (
-                    lwr / lwl
+                lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
@@ -264,16 +282,15 @@ def get_centroids(array: np.array, grf: float) -> np.array:
     :param array: (m, n) array
     :param grf: float: Cell dimension
     """
-    xys = np.dstack((np.flip((np.indices(array.shape) + 1), 0) * grf -
-                     grf / 2))  # Getting centroids
+    xys = np.dstack(
+        (np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2)
+    )  # Getting centroids
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
-def contours_vertices(x: list,
-                      y: list,
-                      arrays: np.array,
-                      c: float = 0,
-                      ignore_: bool = True) -> np.array:
+def contours_vertices(
+    x: list, y: list, arrays: np.array, c: float = 0, ignore_: bool = True
+) -> np.array:
     """
     Extracts contour vertices from a list of matrices.
     :param x:
@@ -298,22 +315,19 @@ def contours_vertices(x: list,
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     else:
         v = np.array(
-            [
-                c0.allsegs[0][i] for c0 in c0s
-                for i in range(len(c0.allsegs[0]))
-            ],
+            [c0.allsegs[0][i] for c0 in c0s for i in range(len(c0.allsegs[0]))],
             dtype=object,
         )
     return v
 
 
 def binary_polygon(
-        xys: np.array,
-        nrow: int,
-        ncol: int,
-        pzs: np.array,
-        outside: float = -1,
-        inside: float = 1,
+    xys: np.array,
+    nrow: int,
+    ncol: int,
+    pzs: np.array,
+    outside: float = -1,
+    inside: float = 1,
 ) -> np.array:
     """
     Given a polygon whose vertices are given by the array pzs, and a matrix of
@@ -350,8 +364,7 @@ def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.
     """
     # Create binary images of WHPA stored in bin_whpa
     bin_whpa = [
-        binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1)
-        for p in vertices
+        binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices
     ]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     # Scale from 0 to 1
@@ -384,9 +397,12 @@ def get_block(pm: np.array, i: int) -> np.array:
         return 0
 
 
-def refine_machine(xlim: list, ylim: list, new_grf: int or float) -> (int, int, np.array, np.array):
+def refine_machine(
+    xlim: list, ylim: list, new_grf: int or float
+) -> (int, int, np.array, np.array):
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
-    new_x, new_y = np.meshgrid(np.linspace(xlim[0], xlim[1], ncol),
-                               np.linspace(ylim[0], ylim[1], nrow))
+    new_x, new_y = np.meshgrid(
+        np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow)
+    )
     return nrow, ncol, new_x, new_y

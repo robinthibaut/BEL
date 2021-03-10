@@ -72,13 +72,15 @@ def _check_large_sparse(X: np.array, accept_large_sparse: bool = False):
         for key in index_keys:
             indices_datatype = getattr(X, key).dtype
             if indices_datatype not in supported_indices:
-                raise ValueError("Only sparse matrices with 32-bit integer"
-                                 " indices are accepted. Got %s indices." %
-                                 indices_datatype)
+                raise ValueError(
+                    "Only sparse matrices with 32-bit integer"
+                    " indices are accepted. Got %s indices." % indices_datatype
+                )
 
 
-def _ensure_sparse_format(spmatrix, accept_sparse, dtype, copy,
-                          force_all_finite, accept_large_sparse):
+def _ensure_sparse_format(
+    spmatrix, accept_sparse, dtype, copy, force_all_finite, accept_large_sparse
+):
     """Convert a sparse matrix to a given format.
 
     Checks the sparse format of spmatrix and converts if necessary.
@@ -128,14 +130,18 @@ def _ensure_sparse_format(spmatrix, accept_sparse, dtype, copy,
     _check_large_sparse(spmatrix, accept_large_sparse)
 
     if accept_sparse is False:
-        raise TypeError("A sparse matrix was passed, but dense "
-                        "data is required. Use X.toarray() to "
-                        "convert to a dense numpy array.")
+        raise TypeError(
+            "A sparse matrix was passed, but dense "
+            "data is required. Use X.toarray() to "
+            "convert to a dense numpy array."
+        )
     elif isinstance(accept_sparse, (list, tuple)):
         if len(accept_sparse) == 0:
-            raise ValueError("When providing 'accept_sparse' "
-                             "as a tuple or list, it must contain at "
-                             "least one string value.")
+            raise ValueError(
+                "When providing 'accept_sparse' "
+                "as a tuple or list, it must contain at "
+                "least one string value."
+            )
         # ensure correct sparse format
         if spmatrix.format not in accept_sparse:
             # create new with correct sparse
@@ -143,9 +149,11 @@ def _ensure_sparse_format(spmatrix, accept_sparse, dtype, copy,
             changed_format = True
     elif accept_sparse is not True:
         # any other type
-        raise ValueError("Parameter 'accept_sparse' should be a string, "
-                         "boolean or list of strings. You provided "
-                         "'accept_sparse={}'.".format(accept_sparse))
+        raise ValueError(
+            "Parameter 'accept_sparse' should be a string, "
+            "boolean or list of strings. You provided "
+            "'accept_sparse={}'.".format(accept_sparse)
+        )
 
     if dtype != spmatrix.dtype:
         # convert dtype
@@ -157,13 +165,11 @@ def _ensure_sparse_format(spmatrix, accept_sparse, dtype, copy,
     if force_all_finite:
         if not hasattr(spmatrix, "data"):
             warnings.warn(
-                "Can't check %s sparse matrix for nan or inf." %
-                spmatrix.format,
+                "Can't check %s sparse matrix for nan or inf." % spmatrix.format,
                 stacklevel=2,
             )
         else:
-            _assert_all_finite(spmatrix.data,
-                               allow_nan=force_all_finite == "allow-nan")
+            _assert_all_finite(spmatrix.data, allow_nan=force_all_finite == "allow-nan")
 
     return spmatrix
 
@@ -216,8 +222,10 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
     if isclass(estimator):
         raise TypeError("{} is a class, not an instance.".format(estimator))
     if msg is None:
-        msg = ("This %(name)s instance is not fitted yet. Call 'fit' with "
-               "appropriate arguments before using this estimator.")
+        msg = (
+            "This %(name)s instance is not fitted yet. Call 'fit' with "
+            "appropriate arguments before using this estimator."
+        )
 
     if not hasattr(estimator, "fit"):
         raise TypeError("%s is not an estimator instance." % (estimator))
@@ -228,8 +236,7 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
         attrs = all_or_any([hasattr(estimator, attr) for attr in attributes])
     else:
         attrs = [
-            v for v in vars(estimator)
-            if v.endswith("_") and not v.startswith("__")
+            v for v in vars(estimator) if v.endswith("_") and not v.startswith("__")
         ]
 
     if not attrs:
@@ -237,8 +244,12 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
 
 
 def _ensure_no_complex_data(array):
-    if (hasattr(array, "dtype") and array.dtype is not None
-            and hasattr(array.dtype, "kind") and array.dtype.kind == "c"):
+    if (
+        hasattr(array, "dtype")
+        and array.dtype is not None
+        and hasattr(array.dtype, "kind")
+        and array.dtype.kind == "c"
+    ):
         raise ValueError("Complex data not supported\n" "{}\n".format(array))
 
 
@@ -257,12 +268,18 @@ def _assert_all_finite(X, allow_nan=False, msg_dtype=None):
         pass
     elif is_float:
         msg_err = "Input contains {} or a value too large for {!r}."
-        if (allow_nan and np.isinf(X).any()
-                or not allow_nan and not np.isfinite(X).all()):
+        if (
+            allow_nan
+            and np.isinf(X).any()
+            or not allow_nan
+            and not np.isfinite(X).all()
+        ):
             type_err = "infinity" if allow_nan else "NaN, infinity"
             raise ValueError(
                 msg_err.format(
-                    type_err, msg_dtype if msg_dtype is not None else X.dtype))
+                    type_err, msg_dtype if msg_dtype is not None else X.dtype
+                )
+            )
     # for object dtype data, we only check for NaNs (GH-13254)
     elif X.dtype == np.dtype("object") and not allow_nan:
         if _object_dtype_isnan(X).any():
@@ -310,8 +327,9 @@ def as_float_array(X, copy=True, force_all_finite=True):
     XT : {array, sparse matrix}
         An array of type np.float
     """
-    if isinstance(X, np.matrix) or (not isinstance(X, np.ndarray)
-                                    and not sp.issparse(X)):
+    if isinstance(X, np.matrix) or (
+        not isinstance(X, np.ndarray) and not sp.issparse(X)
+    ):
         return check_array(
             X,
             ["csr", "csc", "coo"],
@@ -334,8 +352,7 @@ def as_float_array(X, copy=True, force_all_finite=True):
 
 def _is_arraylike(x):
     """Returns whether the input is array-like"""
-    return hasattr(x, "__len__") or hasattr(x, "shape") or hasattr(
-        x, "__array__")
+    return hasattr(x, "__len__") or hasattr(x, "shape") or hasattr(x, "__array__")
 
 
 def _num_samples(x):
@@ -353,8 +370,9 @@ def _num_samples(x):
 
     if hasattr(x, "shape") and x.shape is not None:
         if len(x.shape) == 0:
-            raise TypeError("Singleton array %r cannot be considered"
-                            " a valid collection." % x)
+            raise TypeError(
+                "Singleton array %r cannot be considered" " a valid collection." % x
+            )
         # Check that shape is returning an integer or default to len
         # Dask dataframes may not return numeric shape[0] value
         if isinstance(x.shape[0], numbers.Integral):
@@ -367,18 +385,18 @@ def _num_samples(x):
 
 
 def check_array(
-        array,
-        accept_sparse=False,
-        accept_large_sparse=True,
-        dtype="numeric",
-        order=None,
-        copy=False,
-        force_all_finite=True,
-        ensure_2d=True,
-        allow_nd=False,
-        ensure_min_samples=1,
-        ensure_min_features=1,
-        estimator=None,
+    array,
+    accept_sparse=False,
+    accept_large_sparse=True,
+    dtype="numeric",
+    order=None,
+    copy=False,
+    force_all_finite=True,
+    ensure_2d=True,
+    allow_nd=False,
+    ensure_min_samples=1,
+    ensure_min_features=1,
+    estimator=None,
 ):
     """Input validation on an array, list, sparse matrix or similar.
 
@@ -500,8 +518,10 @@ def check_array(
             dtype = dtype[0]
 
     if force_all_finite not in (True, False, "allow-nan"):
-        raise ValueError('force_all_finite should be a bool or "allow-nan"'
-                         ". Got {!r} instead".format(force_all_finite))
+        raise ValueError(
+            'force_all_finite should be a bool or "allow-nan"'
+            ". Got {!r} instead".format(force_all_finite)
+        )
 
     if estimator is not None:
         if isinstance(estimator, str):
@@ -537,9 +557,7 @@ def check_array(
                     # then conversion float -> int would be disallowed.
                     array = np.asarray(array, order=order)
                     if array.dtype.kind == "f":
-                        _assert_all_finite(array,
-                                           allow_nan=False,
-                                           msg_dtype=dtype)
+                        _assert_all_finite(array, allow_nan=False, msg_dtype=dtype)
                     array = array.astype(dtype, casting="unsafe", copy=False)
                 else:
                     array = np.asarray(array, order=order, dtype=dtype)
@@ -560,41 +578,46 @@ def check_array(
                     "Expected 2D array, got scalar array instead:\narray={}.\n"
                     "Reshape your data either using array.reshape(-1, 1) if "
                     "your data has a single feature or array.reshape(1, -1) "
-                    "if it contains a single sample.".format(array))
+                    "if it contains a single sample.".format(array)
+                )
             # If input is 1D raise error
             if array.ndim == 1:
                 raise ValueError(
                     "Expected 2D array, got 1D array instead:\narray={}.\n"
                     "Reshape your data either using array.reshape(-1, 1) if "
                     "your data has a single feature or array.reshape(1, -1) "
-                    "if it contains a single sample.".format(array))
+                    "if it contains a single sample.".format(array)
+                )
 
         # make sure we actually converted to numeric:
         if dtype_numeric and array.dtype.kind == "O":
             array = array.astype(np.float64)
         if not allow_nd and array.ndim >= 3:
-            raise ValueError("Found array with dim %d. %s expected <= 2." %
-                             (array.ndim, estimator_name))
+            raise ValueError(
+                "Found array with dim %d. %s expected <= 2."
+                % (array.ndim, estimator_name)
+            )
 
         if force_all_finite:
-            _assert_all_finite(array,
-                               allow_nan=force_all_finite == "allow-nan")
+            _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
 
     if ensure_min_samples > 0:
         n_samples = _num_samples(array)
         if n_samples < ensure_min_samples:
             raise ValueError(
                 "Found array with %d sample(s) (shape=%s) while a"
-                " minimum of %d is required%s." %
-                (n_samples, array.shape, ensure_min_samples, context))
+                " minimum of %d is required%s."
+                % (n_samples, array.shape, ensure_min_samples, context)
+            )
 
     if ensure_min_features > 0 and array.ndim == 2:
         n_features = array.shape[1]
         if n_features < ensure_min_features:
             raise ValueError(
                 "Found array with %d feature(s) (shape=%s) while"
-                " a minimum of %d is required%s." %
-                (n_features, array.shape, ensure_min_features, context))
+                " a minimum of %d is required%s."
+                % (n_features, array.shape, ensure_min_features, context)
+            )
 
     if copy and np.may_share_memory(array, array_orig):
         array = np.array(array, dtype=dtype, order=order)
@@ -616,8 +639,10 @@ def check_consistent_length(*arrays):
     lengths = [_num_samples(X) for X in arrays if X is not None]
     uniques = np.unique(lengths)
     if len(uniques) > 1:
-        raise ValueError("Found input variables with inconsistent numbers of"
-                         " samples: %r" % [int(l) for l in lengths])
+        raise ValueError(
+            "Found input variables with inconsistent numbers of"
+            " samples: %r" % [int(l) for l in lengths]
+        )
 
 
 def data_read(file: str = None, start: int = 0, end: int = None):
@@ -626,8 +651,9 @@ def data_read(file: str = None, start: int = 0, end: int = None):
     with open(file, "r") as fr:
         lines = np.copy(fr.readlines())[start:end]
         try:
-            op = np.array([list(map(float, line.split())) for line in lines],
-                          dtype=object)
+            op = np.array(
+                [list(map(float, line.split())) for line in lines], dtype=object
+            )
         except ValueError:
             op = [line.split() for line in lines]
     return op
@@ -662,8 +688,7 @@ def empty_figs(root: str):
 
     subdir = os.path.join(Setup.Directories.forecasts_dir, root)
     listme = os.listdir(subdir)
-    folders = list(
-        filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+    folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
     for f in folders:
         # pca
@@ -711,12 +736,12 @@ def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
 
 
 def load_transport_model(
-        nam_file: str,
-        modflowmodel,
-        exe_name: str = "",
-        model_ws: str = "",
-        ftl_file: str = "mt3d_link.ftl",
-        version: str = "mt3d-usgs",
+    nam_file: str,
+    modflowmodel,
+    exe_name: str = "",
+    model_ws: str = "",
+    ftl_file: str = "mt3d_link.ftl",
+    version: str = "mt3d-usgs",
 ):
     """
     Loads a transport model.
@@ -763,9 +788,9 @@ def remove_incomplete(res_tree: str, crit: str = None):
     """
 
     if crit is None:
-        ck = np.array([
-            os.path.isfile(jp(res_tree, d)) for d in Setup.Files.output_files
-        ])
+        ck = np.array(
+            [os.path.isfile(jp(res_tree, d)) for d in Setup.Files.output_files]
+        )
     else:
         ck = np.array([os.path.isfile(jp(res_tree, crit))])
 
@@ -784,9 +809,12 @@ def keep_essential(res_dir: str):
     :param res_dir: Path to the folder containing results.
     """
     for the_file in os.listdir(res_dir):
-        if (not the_file.endswith(".npy") and not the_file.endswith(".py")
-                and not the_file.endswith(".xy")
-                and not the_file.endswith(".sgems")):
+        if (
+            not the_file.endswith(".npy")
+            and not the_file.endswith(".py")
+            and not the_file.endswith(".xy")
+            and not the_file.endswith(".sgems")
+        ):
 
             file_path = os.path.join(res_dir, the_file)
             try:
@@ -826,11 +854,11 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(
-        res_dir: str = None,
-        roots: List[str] = None,
-        test_roots: List[str] = None,
-        d: bool = False,
-        h: bool = False,
+    res_dir: str = None,
+    roots: List[str] = None,
+    test_roots: List[str] = None,
+    d: bool = False,
+    h: bool = False,
 ):
     """
     Loads results from main results folder.
@@ -882,8 +910,7 @@ def combinator(combi):
     'None' will indicate to use the original combination.
     """
     cb = [
-        list(itertools.combinations(combi, i))
-        for i in range(1, combi[-1] + 1)
+        list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)
     ]  # Get all possible wel combinations
     # Flatten and reverse to get all combination at index 0.
     cb = [item for sublist in cb for item in sublist][::-1]
@@ -894,8 +921,7 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     base_dir = jp(Setup.Directories.forecasts_dir, "base")
     res_dir = jp(Setup.Directories.forecasts_dir, root, well, "obj")
 
-    f_names = list(
-        map(lambda fn: jp(res_dir, f"{fn}.pkl"), ["cca", "d_pca", "post"]))
+    f_names = list(map(lambda fn: jp(res_dir, f"{fn}.pkl"), ["cca", "d_pca", "post"]))
     cca_operator, d_pco, post = list(map(joblib.load, f_names))
 
     h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
@@ -920,7 +946,8 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
 
     # # Transform to CCA space and transpose
     d_cca_prediction, h_cca_prediction = cca_operator.transform(
-        d_obs.reshape(1, -1), h_obs.reshape(1, -1))
+        d_obs.reshape(1, -1), h_obs.reshape(1, -1)
+    )
 
     #  Watch out for the transpose operator.
     h2 = h.copy()
@@ -940,8 +967,10 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
 
 
-def get_roots(training_file: str = None,
-              test_file: str = None,):
+def get_roots(
+    training_file: str = None,
+    test_file: str = None,
+):
 
     if training_file is None:
         training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
@@ -969,7 +998,7 @@ def cleanup():
     logger.info("Folders cleaned up")
 
 
-def filter_file(crit):
+def filter_file(crit: str):
     res_tree = Setup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:

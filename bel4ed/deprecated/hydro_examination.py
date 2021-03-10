@@ -32,10 +32,9 @@ for i in sample:
         color="black",
         fontsize=11,
         weight="bold",
-        bbox=dict(facecolor="white",
-                  edgecolor="black",
-                  boxstyle="round,pad=.5",
-                  alpha=0.7),
+        bbox=dict(
+            facecolor="white", edgecolor="black", boxstyle="round,pad=.5", alpha=0.7
+        ),
     )
     # plt.annotate(i, (epxy[i, 0] + 4, epxy[i, 1] + 4), fontsize=14, weight='bold', color='r')
 

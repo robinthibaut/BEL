@@ -3,12 +3,10 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-__all__ = ['curve_interpolation']
+__all__ = ["curve_interpolation"]
 
 
-def curve_interpolation(tc0,
-                        n_time_steps: int = 200,
-                        t_max: float = 1.01080e+02):
+def curve_interpolation(tc0, n_time_steps: int = 200, t_max: float = 1.01080e02):
     """
 
     Perform data transformations on the predictor.
@@ -26,7 +24,7 @@ def curve_interpolation(tc0,
     # Preprocess d
     f1d = []  # List of interpolating functions for each curve
     for t in tc0:
-        fs = [interp1d(c[:, 0], c[:, 1], fill_value='extrapolate') for c in t]
+        fs = [interp1d(c[:, 0], c[:, 1], fill_value="extrapolate") for c in t]
         f1d.append(fs)
     f1d = np.array(f1d)
     # Watch out as the two following variables are also defined in the load_data() function:

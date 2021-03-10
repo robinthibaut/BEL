@@ -52,7 +52,8 @@ def forward_modelling(folder=None):
     logger.info(f"fwd {res_dir}")
     # Check if forwards have already been computed
     opt = np.array(
-        [os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files])
+        [os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files]
+    )
 
     if not opt.all():
         # Resets folder

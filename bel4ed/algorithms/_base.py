@@ -30,7 +30,8 @@ class BaseEstimator:
         init_signature = inspect.signature(init)
         # Consider the constructor parameters excluding 'self'
         parameters = [
-            p for p in init_signature.parameters.values()
+            p
+            for p in init_signature.parameters.values()
             if p.name != "self" and p.kind != p.VAR_KEYWORD
         ]
 
@@ -96,10 +97,11 @@ class BaseEstimator:
         for key, value in params.items():
             key, delim, sub_key = key.partition("__")
             if key not in valid_params:
-                raise ValueError("Invalid parameter %s for estimator %s. "
-                                 "Check the list of available parameters "
-                                 "with `estimator.get_params().keys()`." %
-                                 (key, self))
+                raise ValueError(
+                    "Invalid parameter %s for estimator %s. "
+                    "Check the list of available parameters "
+                    "with `estimator.get_params().keys()`." % (key, self)
+                )
 
             if delim:
                 nested_params[key][sub_key] = value
@@ -170,10 +172,9 @@ class RegressorMixin:
         y_pred = self.predict(X)
         # XXX: Remove the check in 0.23
         y_type, _, _, _ = _check_reg_targets(y, y_pred, None)
-        return r2_score(y,
-                        y_pred,
-                        sample_weight=sample_weight,
-                        multioutput="variance_weighted")
+        return r2_score(
+            y, y_pred, sample_weight=sample_weight, multioutput="variance_weighted"
+        )
 
 
 class TransformerMixin:

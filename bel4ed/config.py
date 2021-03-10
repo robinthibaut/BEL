@@ -19,7 +19,6 @@ class Machine(object):
 
 
 class Setup:
-
     @dataclass
     class Directories:
         """Define main directories and file names"""
@@ -72,19 +71,24 @@ class Setup:
         nlay: int = 1  # Number of layers
 
         # Refinement parameters around the pumping well.
-        r_params = np.array([
-            [9, 150],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
-            [8, 100],
-            [7, 90],
-            [6, 80],
-            [5, 70],
-            [4, 60],
-            [3, 50],
-            [2.5, 40],
-            [2, 30],
-            [1.5, 20],
-            [1, 10],
-        ])  # 10 meters from the pumping well coordinates, grid cells will have dimensions 1*1
+        r_params = np.array(
+            [
+                [
+                    9,
+                    150,
+                ],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
+                [8, 100],
+                [7, 90],
+                [6, 80],
+                [5, 70],
+                [4, 60],
+                [3, 50],
+                [2.5, 40],
+                [2, 30],
+                [1.5, 20],
+                [1, 10],
+            ]
+        )  # 10 meters from the pumping well coordinates, grid cells will have dimensions 1*1
 
     @dataclass
     class Focus:

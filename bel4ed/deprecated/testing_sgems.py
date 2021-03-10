@@ -29,9 +29,9 @@ def test_sgems(folder=None):
 
     # Statistical simulation
     wells_values = np.ones(len(MySetup.Wells.combination) + 1) * -9966699
-    hk_array, xy_dummy = sgsim(model_ws=results_dir,
-                               grid_dir=grid_dir,
-                               wells_hk=wells_values)
+    hk_array, xy_dummy = sgsim(
+        model_ws=results_dir, grid_dir=grid_dir, wells_hk=wells_values
+    )
 
 
 if __name__ == "__main__":

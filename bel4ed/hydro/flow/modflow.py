@@ -13,8 +13,9 @@ from ...config import Setup
 from ...spatial import refine_axis
 
 
-def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
-         xy_dummy: np.array):
+def flow(
+    exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array, xy_dummy: np.array
+):
     """
     Builds and run a customized MODFLOW simulation.
     :param exe_name: Path to the executable file.
@@ -79,8 +80,7 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
         """
         Refine X-Y axes.
         """
-        along_c = np.ones(
-            ncol) * dx  # Size of each cell in x-dimension - columns
+        along_c = np.ones(ncol) * dx  # Size of each cell in x-dimension - columns
         along_r = np.ones(nrow) * dy  # Size of each cell in y-dimension - rows
         r_a = refine_axis
         for p in r_params:
@@ -203,8 +203,7 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
     # 2: [[    0 ,    50 ,    80 , -2400. ]]
     # }
 
-    flopy.modflow.ModflowWel(model=model,
-                             stress_period_data=well_stress_period_data)
+    flopy.modflow.ModflowWel(model=model, stress_period_data=well_stress_period_data)
 
     # %% ModflowBas
 
@@ -258,9 +257,9 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
                 "print budget",
             ]
 
-    flopy.modflow.ModflowOc(model=model,
-                            stress_period_data=stress_period_data_oc,
-                            compact=True)
+    flopy.modflow.ModflowOc(
+        model=model, stress_period_data=stress_period_data_oc, compact=True
+    )
 
     # %% ModflowLmt
     # Necessary to create a xxx.ftl file to link modflow simulation to mt3dms transport simulation.
@@ -284,7 +283,7 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
     inds_file = jp(grid_dir, "inds.npy")
     # between differently discretized meshes.
     if (
-            nrow_d != nrow or ncol_d != ncol
+        nrow_d != nrow or ncol_d != ncol
     ):  # if mismatch between nrow and ncol, that is to say, we must copy/paste
         # the new hk array on a new grid.
         if flag_dis == 0:
@@ -381,7 +380,7 @@ def flow(exe_name: str, model_ws: str, grid_dir: str, hk_array: np.array,
     headobj.close()
 
     if (
-            head.max() > np.max(top) + 1
+        head.max() > np.max(top) + 1
     ):  # Quick check - if the maximum computed head is higher than the layer top,
         # it means that an error occurred, and we shouldn't waste time computing the transport on a false solution.
         model = None

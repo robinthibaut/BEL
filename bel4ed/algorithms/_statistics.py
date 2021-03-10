@@ -15,7 +15,7 @@ from scipy import integrate, ndimage, stats
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
 
-__all__ = ['KDE', 'kde_params', 'posterior_conditional', 'sgsim']
+__all__ = ["KDE", "kde_params", "posterior_conditional", "sgsim"]
 
 
 class KDE:
@@ -26,14 +26,14 @@ class KDE:
     """
 
     def __init__(
-            self,
-            *,
-            bw_method: str = None,
-            bw_adjust: float = 1,
-            gridsize: int = 200,
-            cut: float = 3,
-            clip: list = None,
-            cumulative: bool = False,
+        self,
+        *,
+        bw_method: str = None,
+        bw_adjust: float = 1,
+        gridsize: int = 200,
+        cut: float = 3,
+        clip: list = None,
+        cumulative: bool = False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -70,7 +70,9 @@ class KDE:
         self.support = None
 
     @staticmethod
-    def _define_support_grid(x: np.array, bw: float, cut: float, clip: list, gridsize: int):
+    def _define_support_grid(
+        x: np.array, bw: float, cut: float, clip: list, gridsize: int
+    ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
@@ -82,8 +84,7 @@ class KDE:
         """Create a 1D grid of evaluation points."""
         kde = self._fit(x, weights)
         bw = np.sqrt(kde.covariance.squeeze())
-        grid = self._define_support_grid(x, bw, self.cut, self.clip,
-                                         self.gridsize)
+        grid = self._define_support_grid(x, bw, self.cut, self.clip, self.gridsize)
         return grid
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array, weights: np.array):
@@ -95,14 +96,18 @@ class KDE:
         kde = self._fit([x1, x2], weights)
         bw = np.sqrt(np.diag(kde.covariance).squeeze())
 
-        grid1 = self._define_support_grid(x1, bw[0], self.cut, clip[0],
-                                          self.gridsize)
-        grid2 = self._define_support_grid(x2, bw[1], self.cut, clip[1],
-                                          self.gridsize)
+        grid1 = self._define_support_grid(x1, bw[0], self.cut, clip[0], self.gridsize)
+        grid2 = self._define_support_grid(x2, bw[1], self.cut, clip[1], self.gridsize)
 
         return grid1, grid2
 
-    def define_support(self, x1: np.array, x2: np.array = None, weights: np.array = None, cache: bool = True):
+    def define_support(
+        self,
+        x1: np.array,
+        x2: np.array = None,
+        weights: np.array = None,
+        cache: bool = True,
+    ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
             support = self._define_support_univariate(x1, weights)
@@ -135,8 +140,7 @@ class KDE:
 
         if self.cumulative:
             s_0 = support[0]
-            density = np.array(
-                [kde.integrate_box_1d(s_0, s_i) for s_i in support])
+            density = np.array([kde.integrate_box_1d(s_0, s_i) for s_i in support])
         else:
             density = kde(support)
 
@@ -173,8 +177,8 @@ class KDE:
 
 
 def _univariate_density(
-        data_variable: pd.DataFrame,
-        estimate_kws: dict,
+    data_variable: pd.DataFrame,
+    estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -197,8 +201,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-        data: pd.DataFrame,
-        estimate_kws: dict,
+    data: pd.DataFrame,
+    estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -234,15 +238,15 @@ def _bivariate_density(
 
 
 def kde_params(
-        x: np.array = None,
-        y: np.array = None,
-        bw: float = None,
-        gridsize: int = 200,
-        cut: float = 3,
-        clip=None,
-        cumulative: bool = False,
-        bw_method: str = "scott",
-        bw_adjust: int = 1,
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    gridsize: int = 200,
+    cut: float = 3,
+    clip=None,
+    cumulative: bool = False,
+    bw_method: str = "scott",
+    bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -276,8 +280,9 @@ def kde_params(
     )
 
     if y is None:
-        density, support = _univariate_density(data_variable=frame,
-                                               estimate_kws=estimate_kws)
+        density, support = _univariate_density(
+            data_variable=frame, estimate_kws=estimate_kws
+        )
 
     else:
         density, support = _bivariate_density(
@@ -310,11 +315,11 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
 
 
 def _conditional_distribution(
-        kde_array: np.array,
-        x_array: np.array,
-        y_array: np.array,
-        x: float = None,
-        y: float = None,
+    kde_array: np.array,
+    x_array: np.array,
+    y_array: np.array,
+    x: float = None,
+    y: float = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -363,10 +368,9 @@ def _normalize_distribution(post: np.array, support: np.array):
     return post
 
 
-def posterior_conditional(x: np.array,
-                          y: np.array,
-                          x_obs: float = None,
-                          y_obs: float = None):
+def posterior_conditional(
+    x: np.array, y: np.array, x_obs: float = None, y_obs: float = None
+):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
     :param x: Predictor (x-axis)
@@ -385,19 +389,17 @@ def posterior_conditional(x: np.array,
         # Extract the density values along the line, using cubic interpolation
         if type(x_obs) is list or tuple:
             x_obs = x_obs[0]
-        post = _conditional_distribution(x=x_obs,
-                                         x_array=xg,
-                                         y_array=yg,
-                                         kde_array=dens)
+        post = _conditional_distribution(
+            x=x_obs, x_array=xg, y_array=yg, kde_array=dens
+        )
     elif y_obs is not None:
         support = xg
         # Extract the density values along the line, using cubic interpolation
         if type(y_obs) is list or tuple:
             y_obs = x_obs[0]
-        post = _conditional_distribution(y=y_obs,
-                                         x_array=xg,
-                                         y_array=yg,
-                                         kde_array=dens)
+        post = _conditional_distribution(
+            y=y_obs, x_array=xg, y_array=yg, kde_array=dens
+        )
 
     else:
         msg = "No observation point included."
@@ -423,10 +425,7 @@ def _log_transform(f, k_mean: float, k_std: float):
     return 10 ** ff
 
 
-def sgsim(model_ws: str,
-          grid_dir: str,
-          wells_hk: list = None,
-          save: bool = True):
+def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True):
     # TODO: Move this to pysgems package
     """
     Perform sequential gaussian simulation to generate K fields.
@@ -513,8 +512,7 @@ def sgsim(model_ws: str,
     tf = np.vectorize(_log_transform)  # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
-    matrix = matrix.reshape(
-        (pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
+    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
     matrix = np.flipud(matrix)  # Flip to correspond to sgems
 
     if save:

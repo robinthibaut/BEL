@@ -16,14 +16,16 @@ from skimage.metrics import structural_similarity
 from sklearn.neighbors import KernelDensity
 
 from bel4ed.spatial import grid_parameters, binary_polygon
-from bel4ed.utils import (_num_samples, check_array,
-                          check_consistent_length, column_or_1d)
+from bel4ed.utils import (
+    _num_samples,
+    check_array,
+    check_consistent_length,
+    column_or_1d,
+)
 
 from bel4ed.exceptions import UndefinedMetricWarning
 
-__all__ = [
-    "r2_score", "modified_hausdorff", "structural_similarity"
-]
+__all__ = ["r2_score", "modified_hausdorff", "structural_similarity"]
 
 
 def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
@@ -71,35 +73,36 @@ def _check_reg_targets(y_true, y_pred, multioutput, dtype="numeric"):
         y_pred = y_pred.reshape((-1, 1))
 
     if y_true.shape[1] != y_pred.shape[1]:
-        raise ValueError("y_true and y_pred have different number of output "
-                         "({0}!={1})".format(y_true.shape[1], y_pred.shape[1]))
+        raise ValueError(
+            "y_true and y_pred have different number of output "
+            "({0}!={1})".format(y_true.shape[1], y_pred.shape[1])
+        )
 
     n_outputs = y_true.shape[1]
-    allowed_multioutput_str = ("raw_values", "uniform_average",
-                               "variance_weighted")
+    allowed_multioutput_str = ("raw_values", "uniform_average", "variance_weighted")
     if isinstance(multioutput, str):
         if multioutput not in allowed_multioutput_str:
-            raise ValueError("Allowed 'multioutput' string values are {}. "
-                             "You provided multioutput={!r}".format(
-                                 allowed_multioutput_str, multioutput))
+            raise ValueError(
+                "Allowed 'multioutput' string values are {}. "
+                "You provided multioutput={!r}".format(
+                    allowed_multioutput_str, multioutput
+                )
+            )
     elif multioutput is not None:
         multioutput = check_array(multioutput, ensure_2d=False)
         if n_outputs == 1:
-            raise ValueError("Custom weights are useful only in "
-                             "multi-output cases.")
+            raise ValueError("Custom weights are useful only in " "multi-output cases.")
         elif n_outputs != len(multioutput):
             raise ValueError(
-                ("There must be equally many custom weights "
-                 "(%d) as outputs (%d).") % (len(multioutput), n_outputs))
+                ("There must be equally many custom weights " "(%d) as outputs (%d).")
+                % (len(multioutput), n_outputs)
+            )
     y_type = "continuous" if n_outputs == 1 else "continuous-multioutput"
 
     return y_type, y_true, y_pred, multioutput
 
 
-def r2_score(y_true,
-             y_pred,
-             sample_weight=None,
-             multioutput="uniform_average"):
+def r2_score(y_true, y_pred, sample_weight=None, multioutput="uniform_average"):
     """R^2 (coefficient of determination) regression score function.
 
     Best possible score is 1.0 and it can be negative (because the
@@ -162,7 +165,8 @@ def r2_score(y_true,
 
     """
     y_type, y_true, y_pred, multioutput = _check_reg_targets(
-        y_true, y_pred, multioutput)
+        y_true, y_pred, multioutput
+    )
     check_consistent_length(y_true, y_pred, sample_weight)
 
     if _num_samples(y_pred) < 2:
@@ -176,17 +180,15 @@ def r2_score(y_true,
     else:
         weight = 1.0
 
-    numerator = (weight * (y_true - y_pred)**2).sum(axis=0, dtype=np.float64)
+    numerator = (weight * (y_true - y_pred) ** 2).sum(axis=0, dtype=np.float64)
     denominator = (
-        weight *
-        (y_true - np.average(y_true, axis=0, weights=sample_weight))**2).sum(
-            axis=0, dtype=np.float64)
+        weight * (y_true - np.average(y_true, axis=0, weights=sample_weight)) ** 2
+    ).sum(axis=0, dtype=np.float64)
     nonzero_denominator = denominator != 0
     nonzero_numerator = numerator != 0
     valid_score = nonzero_denominator & nonzero_numerator
     output_scores = np.ones([y_true.shape[1]])
-    output_scores[valid_score] = 1 - (numerator[valid_score] /
-                                      denominator[valid_score])
+    output_scores[valid_score] = 1 - (numerator[valid_score] / denominator[valid_score])
     # arbitrary set to zero to avoid -inf scores, having a constant
     # y_true is not interesting for scoring a regression anyway
     output_scores[nonzero_numerator & ~nonzero_denominator] = 0.0
@@ -283,9 +285,9 @@ def kernel_density(x_lim, y_lim, vertices):
     y_stack = np.hstack([vi[:, 1] for vi in vertices])
     # Final array np.array([[x0, y0],...[xn,yn]])
     xykde = np.vstack([x_stack, y_stack]).T
-    kde = KernelDensity(kernel="gaussian",
-                        bandwidth=bw).fit(  # Fit kernel density
-        xykde)
+    kde = KernelDensity(kernel="gaussian", bandwidth=bw).fit(  # Fit kernel density
+        xykde
+    )
     # Sample at the desired grid cells
     score = np.exp(kde.score_samples(xyu))
 
@@ -320,17 +322,13 @@ def uq_binary_stack(x_lim, y_lim, grf, vertices, n_posts, res_dir):
     """
     Takes WHPA vertices and binarizes the image (e.g. 1 inside, 0 outside WHPA).
     """
-    xys, nrow, ncol = grid_parameters(x_lim=x_lim,
-                                      y_lim=y_lim,
-                                      grf=grf)  # Initiate SD object
+    xys, nrow, ncol = grid_parameters(
+        x_lim=x_lim, y_lim=y_lim, grf=grf
+    )  # Initiate SD object
     # Create binary images of WHPA stored in bin_whpa
     bin_whpa = [
-        binary_polygon(xys,
-                       nrow,
-                       ncol,
-                       pzs=p,
-                       inside=1 / n_posts,
-                       outside=0) for p in vertices
+        binary_polygon(xys, nrow, ncol, pzs=p, inside=1 / n_posts, outside=0)
+        for p in vertices
     ]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     b_low = np.where(big_sum == 0, 1, big_sum)  # Replace 0 values by 1

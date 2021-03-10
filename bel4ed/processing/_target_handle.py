@@ -10,12 +10,12 @@ import math
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 
-__all__ = ['travelling_particles']
+__all__ = ["travelling_particles"]
 
 
 def _create_data_model(xy: list):
     """Stores the data for the problem."""
-    data = {'locations': xy, 'num_vehicles': 1, 'depot': 0}
+    data = {"locations": xy, "num_vehicles": 1, "depot": 0}
     # Locations in block units
     return data
 
@@ -31,9 +31,9 @@ def _compute_euclidean_distance_matrix(locations: list):
                 distances[from_counter][to_counter] = 0
             else:
                 # Euclidean distance
-                distances[from_counter][to_counter] = (int(
-                    math.hypot((from_node[0] - to_node[0]),
-                               (from_node[1] - to_node[1]))))
+                distances[from_counter][to_counter] = int(
+                    math.hypot((from_node[0] - to_node[0]), (from_node[1] - to_node[1]))
+                )
     return distances
 
 
@@ -45,16 +45,16 @@ def travelling_particles(xy: list):
     data = _create_data_model(xyt)
 
     # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(data['locations']),
-                                           data['num_vehicles'], data['depot'])
+    manager = pywrapcp.RoutingIndexManager(
+        len(data["locations"]), data["num_vehicles"], data["depot"]
+    )
 
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
-    distance_matrix = _compute_euclidean_distance_matrix(data['locations'])
+    distance_matrix = _compute_euclidean_distance_matrix(data["locations"])
 
-    def distance_callback(from_index: int,
-                          to_index: int):
+    def distance_callback(from_index: int, to_index: int):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
@@ -69,7 +69,8 @@ def travelling_particles(xy: list):
     # Setting first solution heuristic.
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+    )
 
     # search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     # search_parameters.local_search_metaheuristic = (

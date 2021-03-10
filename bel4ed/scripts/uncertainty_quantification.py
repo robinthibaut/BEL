@@ -14,7 +14,7 @@ def main_1(metric=None):
     if metric is None:
         metric = modified_hausdorff
 
-    # Load training dataset ID's
+    # 0 - Load training dataset ID's
     training_r, test_r = get_roots()
 
     wells = [[1], [2], [3], [4], [5], [6]]
@@ -23,20 +23,23 @@ def main_1(metric=None):
     base.Wells.combination = wells
 
     # 1 - Fit / Transform
-    # analysis(
-    #     base=base,
-    #     roots_training=training_r,
-    #     roots_obs=test_r,
-    #     wipe=True,
-    #     flag_base=True,
-    # )
-    # base.Wells.combination = wells
+    analysis(
+        base=base,
+        roots_training=training_r,
+        roots_obs=test_r,
+        wipe=True,
+        flag_base=True,
+    )
+
+    base.Wells.combination = wells
 
     # 2 - Sample and compute dissimilarity
     compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)
 
     # 3 - Process dissimilarity measure
-    measure_info_mode(base=base, roots_obs=test_r, metric=modified_hausdorff)
+    measure_info_mode(base=base, roots_obs=test_r, metric=metric)
+
+    # 4 - Plot
 
 
 def main_2(N, metric=None):
@@ -67,7 +70,8 @@ def main_2(N, metric=None):
 
 
 if __name__ == "__main__":
-    main_1()
+    main_1(metric=modified_hausdorff)
+    # main_1(metric=structural_similarity)
     # n_try = np.linspace(100, 2000, 50)
     # n_try = [100]
     # mv = main_2(N=n_try)

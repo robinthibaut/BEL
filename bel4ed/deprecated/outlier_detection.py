@@ -31,7 +31,8 @@ def svm1(res_dir, d=True, h=False, folders=None):
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(
-            filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
+            filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme)
+        )
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -53,8 +54,7 @@ default = ["123456"]
 
 dpc = svm1(sample, folders=default)[0]
 
-dataset = np.concatenate([dpc.training_pc[:, :2], dpc.predict_pc[:, :2]],
-                         axis=0)
+dataset = np.concatenate([dpc.training_pc[:, :2], dpc.predict_pc[:, :2]], axis=0)
 sc = StandardScaler()
 dataset = sc.fit_transform(dataset)
 # dataset -= np.min(dataset)
@@ -66,8 +66,9 @@ miny = min(dataset.min(axis=1))
 maxx = max(dataset.max(axis=0))
 maxy = max(dataset.max(axis=1))
 
-xx, yy = np.meshgrid(np.linspace(minx - 2, maxx + 2, 200),
-                     np.linspace(miny - 2, maxy + 2, 200))
+xx, yy = np.meshgrid(
+    np.linspace(minx - 2, maxx + 2, 200), np.linspace(miny - 2, maxy + 2, 200)
+)
 
 # 𝜈 is upper bounded by the fraction of outliers and lower bounded by the fraction of support vectors. Just consider
 # that for default value 0.1 0.1 , atmost 10% of the training samples are allowed to be wrongly classified or
@@ -82,12 +83,9 @@ y_pred = algorithm.fit(dataset).predict(dataset)
 Z = algorithm.decision_function(np.c_[xx.ravel(), yy.ravel()])
 Z = Z.reshape(xx.shape)
 a = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="#ff7f00")
-b = plt.contourf(xx,
-                 yy,
-                 Z,
-                 levels=np.linspace(Z.min(), 0, 7),
-                 cmap=plt.cm.PuBu_r,
-                 alpha=0.9)
+b = plt.contourf(
+    xx, yy, Z, levels=np.linspace(Z.min(), 0, 7), cmap=plt.cm.PuBu_r, alpha=0.9
+)
 cbar = plt.colorbar()
 cbar.set_label("Distance to boundary")
 c = plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="darkred")

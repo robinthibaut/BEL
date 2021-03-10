@@ -59,9 +59,9 @@ for i, d in enumerate(my_pcs):
 random_samples = random_samples.reshape(n_samples, nhco)
 
 # Generate forecast in the initial dimension and reshape.
-forecast_posterior = h_pco.custom_inverse_transform(
-    random_samples[:, :15]).reshape(
-        (n_samples, h_pco.shape[1], h_pco.shape[2]))
+forecast_posterior = h_pco.custom_inverse_transform(random_samples[:, :15]).reshape(
+    (n_samples, h_pco.shape[1], h_pco.shape[2])
+)
 mplot.whpa_plot(h=forecast_posterior, show_wells=True, show=True)
 
 # test Mean Squared Error

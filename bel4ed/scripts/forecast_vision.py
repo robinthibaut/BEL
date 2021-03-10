@@ -46,10 +46,7 @@ if __name__ == "__main__":
             else:
                 annotation = alphabet[j - 1]
 
-            myvis.plot_results(root=sample,
-                               folder=w,
-                               annotation=annotation,
-                               d=True)
+            myvis.plot_results(root=sample, folder=w, annotation=annotation, d=True)
 
         myvis.plot_K_field(root=sample)
 

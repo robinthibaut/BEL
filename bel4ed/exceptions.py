@@ -1,7 +1,4 @@
-__all__ = [
-    "NotFittedError",
-    "UndefinedMetricWarning"
-]
+__all__ = ["NotFittedError", "UndefinedMetricWarning"]
 
 
 class NotFittedError(ValueError, AttributeError):
@@ -17,5 +14,4 @@ class NotFittedError(ValueError, AttributeError):
 
 
 class UndefinedMetricWarning(UserWarning):
-    """Warning used when the metric is invalid
-    """
+    """Warning used when the metric is invalid"""

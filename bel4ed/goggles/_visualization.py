@@ -25,13 +25,26 @@ from bel4ed.utils import Root
 from bel4ed.algorithms import KDE, kde_params, posterior_conditional, CCA
 from bel4ed.config import Setup
 from bel4ed.processing import PC
-from bel4ed.spatial import (binary_stack, contours_vertices,
-                            grid_parameters, refine_machine, blocks_from_rc_3d)
+from bel4ed.spatial import (
+    binary_stack,
+    contours_vertices,
+    grid_parameters,
+    refine_machine,
+    blocks_from_rc_3d,
+)
 from bel4ed.utils import reload_trained_model
 
 __all__ = [
-    'plot_results', 'plot_K_field', 'plot_head_field', 'plot_whpa', 'whpa_plot',
-    'cca_vision', 'pca_vision', 'plot_pc_ba', 'mode_histo', 'ModelVTK'
+    "plot_results",
+    "plot_K_field",
+    "plot_head_field",
+    "plot_whpa",
+    "whpa_plot",
+    "cca_vision",
+    "pca_vision",
+    "plot_pc_ba",
+    "mode_histo",
+    "ModelVTK",
 ]
 
 
@@ -42,9 +55,7 @@ def _my_alphabet(az: int):
     :return:
     """
     alphabet = string.ascii_uppercase
-    extended_alphabet = [
-        "".join(i) for i in list(itertools.permutations(alphabet, 2))
-    ]
+    extended_alphabet = ["".join(i) for i in list(itertools.permutations(alphabet, 2))]
 
     if az <= 25:
         sub = alphabet[az]
@@ -56,16 +67,16 @@ def _my_alphabet(az: int):
 
 
 def _proxy_legend(
-        legend1: legend = None,
-        colors: list = None,
-        labels: list = None,
-        loc: int = 4,
-        marker: list = None,
-        pec: list = None,
-        fz: float = 11,
-        fig_file: str = None,
-        extra: list = None,
-        obj=None,
+    legend1: legend = None,
+    colors: list = None,
+    labels: list = None,
+    loc: int = 4,
+    marker: list = None,
+    pec: list = None,
+    fz: float = 11,
+    fig_file: str = None,
+    extra: list = None,
+    obj=None,
 ):
     """
     Add a second legend to a figure @ bottom right (loc=4)
@@ -122,10 +133,7 @@ def _proxy_legend(
         plt.close()
 
 
-def _proxy_annotate(annotation: list = None,
-                    loc: int = 1,
-                    fz: float = 11,
-                    obj=None):
+def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=None):
     """
     Places annotation (or title) within the figure box
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
@@ -150,12 +158,12 @@ def _proxy_annotate(annotation: list = None,
 
 
 def explained_variance(
-        pca: PC,
-        n_comp: int = 0,
-        thr: float = 1.0,
-        annotation: list = None,
-        fig_file: str = None,
-        show: bool = False,
+    pca: PC,
+    n_comp: int = 0,
+    thr: float = 1.0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
 ):
     """
     PCA explained variance plot
@@ -211,13 +219,13 @@ def explained_variance(
 
 
 def pca_scores(
-        training: np.array,
-        prediction: np.array,
-        n_comp: int,
-        annotation: list,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training: np.array,
+    prediction: np.array,
+    n_comp: int,
+    annotation: list,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
@@ -243,10 +251,7 @@ def pca_scores(
         # Choose seaborn cmap
         # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
         # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
-        cmap = sns.cubehelix_palette(as_cmap=True,
-                                     dark=0,
-                                     light=0.15,
-                                     reverse=True)
+        cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=0.15, reverse=True)
         # KDE plot
         sns.kdeplot(
             np.arange(1, n_comp + 1),
@@ -263,9 +268,9 @@ def pca_scores(
         pc_obs = prediction[sample_n]
         # Create beautiful spline to follow prediction scores
         xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        spl = make_interp_spline(np.arange(1, n_comp + 1),
-                                 pc_obs.T[:n_comp],
-                                 k=3)  # type: BSpline
+        spl = make_interp_spline(
+            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
+        )  # type: BSpline
         power_smooth = spl(xnew)
         # I forgot why I had to put '-1'
         plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
@@ -304,12 +309,12 @@ def pca_scores(
 
 
 def cca_plot(
-        cca_operator: CCA,
-        d: np.array,
-        h: np.array,
-        d_pc_prediction: np.array,
-        sdir: str = None,
-        show: bool = False,
+    cca_operator: CCA,
+    d: np.array,
+    h: np.array,
+    d_pc_prediction: np.array,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     CCA plots.
@@ -324,7 +329,8 @@ def cca_plot(
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=cca_operator.n_components)  # Gets correlation coefficient
+        offset=cca_operator.n_components
+    )  # Gets correlation coefficient
 
     # CCA plots for each observation:
     for i in range(cca_operator.n_components):
@@ -360,30 +366,30 @@ def cca_plot(
 
 
 def whpa_plot(
-        grf: float = None,
-        well_comb: list = None,
-        whpa: np.array = None,
-        alpha: float = 0.4,
-        halpha: float = None,
-        lw: float = 0.5,
-        bkg_field_array: np.array = None,
-        vmin: float = None,
-        vmax: float = None,
-        x_lim: list = None,
-        y_lim: list = None,
-        xlabel: str = None,
-        ylabel: str = None,
-        cb_title: str = None,
-        labelsize: float = 5,
-        cmap: str = "coolwarm",
-        color: str = "white",
-        show_wells: bool = False,
-        well_ids: list = None,
-        title: str = None,
-        annotation: list = None,
-        fig_file: str = None,
-        highlight: bool = False,
-        show: bool = False,
+    grf: float = None,
+    well_comb: list = None,
+    whpa: np.array = None,
+    alpha: float = 0.4,
+    halpha: float = None,
+    lw: float = 0.5,
+    bkg_field_array: np.array = None,
+    vmin: float = None,
+    vmax: float = None,
+    x_lim: list = None,
+    y_lim: list = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    cb_title: str = None,
+    labelsize: float = 5,
+    cmap: str = "coolwarm",
+    color: str = "white",
+    show_wells: bool = False,
+    well_ids: list = None,
+    title: str = None,
+    annotation: list = None,
+    fig_file: str = None,
+    highlight: bool = False,
+    show: bool = False,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -458,9 +464,9 @@ def whpa_plot(
     if len(whpa) > 1:  # New approach is to plot filled contours
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(x_lim=focus.x_range,
-                                          y_lim=focus.y_range,
-                                          grf=new_grf)
+        xys, nrow, ncol = grid_parameters(
+            x_lim=focus.x_range, y_lim=focus.y_range, grf=new_grf
+        )
         vertices = contours_vertices(x=x, y=y, arrays=whpa)
         b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
         contour = plt.contourf(
@@ -474,20 +480,14 @@ def whpa_plot(
         )
         if highlight:  # Also display curves
             for z in whpa:
-                contour = plt.contour(x,
-                                      y,
-                                      z, [0],
-                                      colors=color,
-                                      linewidths=lw,
-                                      alpha=halpha)
+                contour = plt.contour(
+                    x, y, z, [0], colors=color, linewidths=lw, alpha=halpha
+                )
 
     else:  # If only one WHPA to display
-        contour = plt.contour(x,
-                              y,
-                              whpa[0], [0],
-                              colors=color,
-                              linewidths=lw,
-                              alpha=halpha)
+        contour = plt.contour(
+            x, y, whpa[0], [0], colors=color, linewidths=lw, alpha=halpha
+        )
 
     # Grid
     plt.grid(color="c", linestyle="-", linewidth=0.5, alpha=0.2)
@@ -532,10 +532,9 @@ def whpa_plot(
     return contour, well_legend
 
 
-def post_examination(root: str,
-                     xlim: list = None,
-                     ylim: list = None,
-                     show: bool = False):
+def post_examination(
+    root: str, xlim: list = None, ylim: list = None, show: bool = False
+):
     focus = Setup.Focus()
     if xlim is None:
         xlim = focus.x_range
@@ -563,19 +562,17 @@ def post_examination(root: str,
     # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
     # plt.gca().add_artist(legend)
 
-    plt.savefig(jp(sdir, f"{root}_SD.pdf"),
-                dpi=300,
-                bbox_inches="tight",
-                transparent=True)
+    plt.savefig(
+        jp(sdir, f"{root}_SD.pdf"), dpi=300, bbox_inches="tight", transparent=True
+    )
     if show:
         plt.show()
     plt.close()
 
 
-def h_pca_inverse_plot(pca_o: PC,
-                       training: bool = True,
-                       fig_dir: str = None,
-                       show: bool = False):
+def h_pca_inverse_plot(
+    pca_o: PC, training: bool = True, fig_dir: str = None, show: bool = False
+):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
     :param pca_o: signed distance PCA operator
@@ -597,11 +594,13 @@ def h_pca_inverse_plot(pca_o: PC,
     for i, r in enumerate(roots):
 
         if training:
-            h_to_plot = np.copy(pca_o.training_physical[i].reshape(
-                1, shape[1], shape[2]))
+            h_to_plot = np.copy(
+                pca_o.training_physical[i].reshape(1, shape[1], shape[2])
+            )
         else:
-            h_to_plot = np.copy(pca_o.predict_physical[i].reshape(
-                1, shape[1], shape[2]))
+            h_to_plot = np.copy(
+                pca_o.predict_physical[i].reshape(1, shape[1], shape[2])
+            )
 
         whpa_plot(whpa=h_to_plot, color="red", alpha=1, lw=2)
 
@@ -642,11 +641,11 @@ def h_pca_inverse_plot(pca_o: PC,
 
 
 def plot_results(
-        d: bool = True,
-        h: bool = True,
-        root: str = None,
-        folder: str = None,
-        annotation: list = None,
+    d: bool = True,
+    h: bool = True,
+    root: str = None,
+    folder: str = None,
+    annotation: list = None,
 ):
     """
     Plots forecasts results in the 'uq' folder
@@ -663,9 +662,7 @@ def plot_results(
     # Wells
     wells = Setup.Wells()
     wells_id = list(wells.wells_data.keys())
-    cols = [
-        wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w
-    ]
+    cols = [wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w]
 
     # CCA pickle
     cca_operator = joblib.load(jp(md, "obj", "cca.pkl"))
@@ -748,10 +745,7 @@ def plot_results(
         colors = ["blue", "red"]
         labels = ["Training", "Test"]
         legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
-        _proxy_legend(legend1=legend,
-                      colors=colors,
-                      labels=labels,
-                      fig_file=ff)
+        _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{cca_operator.n_components}.pdf")
@@ -843,10 +837,7 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
         plt.close()
 
 
-def mode_histo(colors: list,
-               an_i: int,
-               wm: np.array,
-               fig_name: str = "average"):
+def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average"):
     alphabet = string.ascii_uppercase
     wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
 
@@ -868,18 +859,13 @@ def mode_histo(colors: list,
     plt.title("Amount of information of each well")
     plt.xlabel("Well ID")
     plt.ylabel("Opposite deviation from mode's mean")
-    plt.grid(color="#95a5a6",
-             linestyle="-",
-             linewidth=0.5,
-             axis="y",
-             alpha=0.7)
+    plt.grid(color="#95a5a6", linestyle="-", linewidth=0.5, axis="y", alpha=0.7)
 
     legend_a = _proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(Setup.Directories.forecasts_dir,
-                     f"{fig_name}_well_mode.pdf"),
+        os.path.join(Setup.Directories.forecasts_dir, f"{fig_name}_well_mode.pdf"),
         dpi=300,
         transparent=True,
     )
@@ -908,17 +894,17 @@ def mode_histo(colors: list,
 
 
 def curves(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        ghost: bool = False,
-        sdir: str = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        xlabel: str = None,
-        ylabel: str = None,
-        title: str = "curves",
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    ghost: bool = False,
+    sdir: str = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    xlabel: str = None,
+    ylabel: str = None,
+    title: str = "curves",
+    show: bool = False,
 ):
     """
     Shows every breakthrough curve stacked on a plot.
@@ -940,15 +926,9 @@ def curves(
     for i in range(n_sim):
         for t in range(n_wells):
             if i in highlight:
-                plt.plot(tc[i][t] * factor,
-                         color=cols[t],
-                         linewidth=2,
-                         alpha=1)
+                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=2, alpha=1)
             elif not ghost:
-                plt.plot(tc[i][t] * factor,
-                         color=cols[t],
-                         linewidth=0.2,
-                         alpha=0.5)
+                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=0.2, alpha=0.5)
 
     plt.grid(linewidth=0.3, alpha=0.4)
     plt.xlabel(xlabel)
@@ -964,15 +944,15 @@ def curves(
 
 
 def curves_i(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        xlabel: str = None,
-        ylabel: str = None,
-        sdir: str = None,
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    xlabel: str = None,
+    ylabel: str = None,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     Shows every breakthrough individually for each observation point.
@@ -997,19 +977,14 @@ def curves_i(
             if i in highlight:
                 plt.plot(tc[i][t] * factor, color="k", linewidth=2, alpha=1)
             else:
-                plt.plot(tc[i][t] * factor,
-                         color=cols[t],
-                         linewidth=0.2,
-                         alpha=0.5)
+                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=0.2, alpha=0.5)
         colors = [cols[t], "k"]
         plt.grid(linewidth=0.3, alpha=0.4)
         plt.tick_params(labelsize=labelsize)
         # plt.title(f'Well {t + 1}')
 
         alphabet = string.ascii_uppercase
-        legend_a = _proxy_annotate([f"{alphabet[t]}. Well {t + 1}"],
-                                   fz=12,
-                                   loc=2)
+        legend_a = _proxy_annotate([f"{alphabet[t]}. Well {t + 1}"], fz=12, loc=2)
 
         labels = ["Training", "Test"]
         _proxy_legend(legend1=legend_a, colors=colors, labels=labels, loc=1)
@@ -1018,9 +993,7 @@ def curves_i(
         plt.ylabel(ylabel)
         if sdir:
             bel4ed.utils.dirmaker(sdir)
-            plt.savefig(jp(sdir, f"{title}_{t + 1}.pdf"),
-                        dpi=300,
-                        transparent=True)
+            plt.savefig(jp(sdir, f"{title}_{t + 1}.pdf"), dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -1057,8 +1030,7 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
 
 
 def plot_head_field(root: str = None):
-    matrix = np.load(
-        jp(Setup.Directories.hydro_res_dir, root, "whpa_heads.npy"))
+    matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "whpa_heads.npy"))
     grid_dim = Setup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
@@ -1103,21 +1075,21 @@ def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
         hnc0 = h_pco.n_pc_cut
         # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
 
-        h_pred = np.load(os.path.join(base_dir, "roots_whpa",
-                                      f"{root}.npy"))  # Signed Distance
+        h_pred = np.load(
+            os.path.join(base_dir, "roots_whpa", f"{root}.npy")
+        )  # Signed Distance
         # Cut desired number of PC components
         h_pco.test_transform(h_pred, test_root=[root])
         h_pco.comp_refresh(hnc0)
-        h_pca_inverse_plot(pca_o=h_pco,
-                           training=False,
-                           fig_dir=jp(base_dir, "roots_whpa"))
+        h_pca_inverse_plot(
+            pca_o=h_pco, training=False, fig_dir=jp(base_dir, "roots_whpa")
+        )
 
     # d
     if data:
         subdir = os.path.join(Setup.Directories.forecasts_dir, root)
         listme = os.listdir(subdir)
-        folders = list(
-            filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
 
         for f in folders:
             res_dir = os.path.join(subdir, f, "obj")
@@ -1163,12 +1135,9 @@ def plot_whpa(root: str = None):
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.training_shape)
 
-    whpa_plot(whpa=h_training,
-              highlight=True,
-              halpha=0.5,
-              lw=0.1,
-              color="darkblue",
-              alpha=0.5)
+    whpa_plot(
+        whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5
+    )
 
     if root is not None:
         h_pred = np.load(os.path.join(base_dir, "roots_whpa", f"{root}.npy"))
@@ -1189,8 +1158,9 @@ def plot_whpa(root: str = None):
             legend1=legend,
             colors=["darkblue", "darkred"],
             labels=labels,
-            fig_file=os.path.join(Setup.Directories.forecasts_dir, root,
-                                  "whpa_training.pdf"),
+            fig_file=os.path.join(
+                Setup.Directories.forecasts_dir, root, "whpa_training.pdf"
+            ),
         )
 
 
@@ -1213,8 +1183,7 @@ def cca_vision(root: str = None, folders: list = None):
 
     if folders is None:
         listme = os.listdir(subdir)
-        folders = list(
-            filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
+        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -1225,8 +1194,7 @@ def cca_vision(root: str = None, folders: list = None):
         res_dir = os.path.join(subdir, f, "obj")
 
         # Load objects
-        d_cca_training, h_cca_training, *rest = reload_trained_model(root=root,
-                                                                     well=f)
+        d_cca_training, h_cca_training, *rest = reload_trained_model(root=root, well=f)
 
         _kde_cca(root=root, well=f, sdir=os.path.join(subdir, f, "cca"))
 
@@ -1248,9 +1216,9 @@ def cca_vision(root: str = None, folders: list = None):
         cb = plt.colorbar()
         cb.ax.set_title("R")
         plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-        plt.xticks(np.arange(len(cca_coefficient)),
-                   np.arange(1,
-                             len(cca_coefficient) + 1))
+        plt.xticks(
+            np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
+        )
         plt.tick_params(labelsize=5)
         plt.yticks([])
         # plt.title('Decrease of CCA correlation coefficient with component number')
@@ -1270,13 +1238,15 @@ def cca_vision(root: str = None, folders: list = None):
         plt.close()
 
 
-def pca_vision(root: str or Root,
-               d: bool = True,
-               h: bool = False,
-               scores: bool = True,
-               exvar: bool = True,
-               labels: bool = False,
-               folders: list = None):
+def pca_vision(
+    root: str or Root,
+    d: bool = True,
+    h: bool = False,
+    scores: bool = True,
+    exvar: bool = True,
+    labels: bool = False,
+    folders: list = None,
+):
     """
     Loads PCA pickles and plot scores for all folders
     :param labels:
@@ -1300,7 +1270,8 @@ def pca_vision(root: str or Root,
     if folders is None:
         listme = os.listdir(subdir)
         folders = list(
-            filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme))
+            filter(lambda du: os.path.isdir(os.path.join(subdir, du)), listme)
+        )
     else:
         if not isinstance(folders, (list, tuple)):
             folders = [folders]
@@ -1355,8 +1326,7 @@ def pca_vision(root: str or Root,
             )
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(hbase, "roots_whpa",
-                                    f"{root}_pca_exvar.pdf")
+            fig_file = os.path.join(hbase, "roots_whpa", f"{root}_pca_exvar.pdf")
             explained_variance(
                 h_pco.operator,
                 n_comp=h_pco.n_pc_cut,
@@ -1385,14 +1355,14 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        pca_o: PC = None,
-        factor: float = 1.0,
-        xlabel: str = None,
-        ylabel: str = None,
-        labelsize: float = 11.0,
-        training: bool = True,
-        fig_dir: str = None,
-        show: bool = False,
+    pca_o: PC = None,
+    factor: float = 1.0,
+    xlabel: str = None,
+    ylabel: str = None,
+    labelsize: float = 11.0,
+    training: bool = True,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.
@@ -1472,10 +1442,9 @@ def hydro_examination(root: str):
             color="black",
             fontsize=11,
             weight="bold",
-            bbox=dict(facecolor="white",
-                      edgecolor="black",
-                      boxstyle="round,pad=.5",
-                      alpha=0.7),
+            bbox=dict(
+                facecolor="white", edgecolor="black", boxstyle="round,pad=.5", alpha=0.7
+            ),
         )
         # plt.annotate(i, (epxy[i, 0] + 4, epxy[i, 1] + 4), fontsize=14, weight='bold', color='r')
 
@@ -1499,14 +1468,14 @@ def hydro_examination(root: str):
 
 
 def _despine(
-        fig=None,
-        ax=None,
-        top=True,
-        right=True,
-        left=False,
-        bottom=False,
-        offset=None,
-        trim=False,
+    fig=None,
+    ax=None,
+    top=True,
+    right=True,
+    left=False,
+    bottom=False,
+    offset=None,
+    trim=False,
 ):
     """Remove the top and right spines from plot(s).
 
@@ -1554,10 +1523,8 @@ def _despine(
 
         # Potentially move the ticks
         if left and not right:
-            maj_on = any(t.tick1line.get_visible()
-                         for t in ax_i.yaxis.majorTicks)
-            min_on = any(t.tick1line.get_visible()
-                         for t in ax_i.yaxis.minorTicks)
+            maj_on = any(t.tick1line.get_visible() for t in ax_i.yaxis.majorTicks)
+            min_on = any(t.tick1line.get_visible() for t in ax_i.yaxis.minorTicks)
             ax_i.yaxis.set_ticks_position("right")
             for t in ax_i.yaxis.majorTicks:
                 t.tick2line.set_visible(maj_on)
@@ -1565,10 +1532,8 @@ def _despine(
                 t.tick2line.set_visible(min_on)
 
         if bottom and not top:
-            maj_on = any(t.tick1line.get_visible()
-                         for t in ax_i.xaxis.majorTicks)
-            min_on = any(t.tick1line.get_visible()
-                         for t in ax_i.xaxis.minorTicks)
+            maj_on = any(t.tick1line.get_visible() for t in ax_i.xaxis.majorTicks)
+            min_on = any(t.tick1line.get_visible() for t in ax_i.xaxis.minorTicks)
             ax_i.xaxis.set_ticks_position("top")
             for t in ax_i.xaxis.majorTicks:
                 t.tick2line.set_visible(maj_on)
@@ -1579,10 +1544,8 @@ def _despine(
             # clip off the parts of the spines that extend past major ticks
             xticks = np.asarray(ax_i.get_xticks())
             if xticks.size:
-                firsttick = np.compress(xticks >= min(ax_i.get_xlim()),
-                                        xticks)[0]
-                lasttick = np.compress(xticks <= max(ax_i.get_xlim()),
-                                       xticks)[-1]
+                firsttick = np.compress(xticks >= min(ax_i.get_xlim()), xticks)[0]
+                lasttick = np.compress(xticks <= max(ax_i.get_xlim()), xticks)[-1]
                 ax_i.spines["bottom"].set_bounds(firsttick, lasttick)
                 ax_i.spines["top"].set_bounds(firsttick, lasttick)
                 newticks = xticks.compress(xticks <= lasttick)
@@ -1591,10 +1554,8 @@ def _despine(
 
             yticks = np.asarray(ax_i.get_yticks())
             if yticks.size:
-                firsttick = np.compress(yticks >= min(ax_i.get_ylim()),
-                                        yticks)[0]
-                lasttick = np.compress(yticks <= max(ax_i.get_ylim()),
-                                       yticks)[-1]
+                firsttick = np.compress(yticks >= min(ax_i.get_ylim()), yticks)[0]
+                lasttick = np.compress(yticks <= max(ax_i.get_ylim()), yticks)[-1]
                 ax_i.spines["left"].set_bounds(firsttick, lasttick)
                 ax_i.spines["right"].set_bounds(firsttick, lasttick)
                 newticks = yticks.compress(yticks <= lasttick)
@@ -1614,13 +1575,15 @@ def order_vertices(vertices: np.array) -> np.array:
             operator.truediv,
             reduce(lambda x, y: map(operator.add, x, y), vertices),
             [len(vertices)] * 2,
-        ))
+        )
+    )
 
     # Sort vertices according to angle
     so = sorted(
         vertices,
-        key=lambda coord: (math.degrees(
-            math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))),
+        key=lambda coord: (
+            math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))
+        ),
     )
 
     return np.array(so)
@@ -1644,13 +1607,13 @@ class ModelVTK:
         try:
             m_load = jp(self.results_dir, "whpa.nam")
             self.flow_model = bel4ed.utils.load_flow_model(
-                m_load, model_ws=self.results_dir)
+                m_load, model_ws=self.results_dir
+            )
             delr = self.flow_model.modelgrid.delr  # thicknesses along rows
             delc = self.flow_model.modelgrid.delc  # thicknesses along column
             # xyz_vertices = self.flow_model.modelgrid.xyzvertices
             # blocks2d = mops.blocks_from_rc(delc, delr)
-            self.blocks = blocks_from_rc_3d(
-                delc, delr)
+            self.blocks = blocks_from_rc_3d(delc, delr)
             # blocks3d = self.blocks.reshape(-1, 3)
         except Exception as e:
             logger.error(e)
@@ -1659,16 +1622,14 @@ class ModelVTK:
             # Transport model
             mt_load = jp(self.results_dir, "whpa.mtnam")
             self.transport_model = bel4ed.utils.load_transport_model(
-                mt_load, self.flow_model, model_ws=self.results_dir)
+                mt_load, self.flow_model, model_ws=self.results_dir
+            )
             ucn_files = [
-                jp(self.results_dir, f"MT3D00{i}.UCN")
-                for i in Setup.Wells.combination
+                jp(self.results_dir, f"MT3D00{i}.UCN") for i in Setup.Wells.combination
             ]  # Files containing concentration
-            ucn_obj = [flopy.utils.UcnFile(uf)
-                       for uf in ucn_files]  # Load them
+            ucn_obj = [flopy.utils.UcnFile(uf) for uf in ucn_files]  # Load them
             self.times = [uo.get_times() for uo in ucn_obj]  # Get time steps
-            self.concs = np.array([uo.get_alldata()
-                                   for uo in ucn_obj])  # Get all data
+            self.concs = np.array([uo.get_alldata() for uo in ucn_obj])  # Get all data
         except Exception as e:
             logger.error(e)
 
@@ -1708,8 +1669,10 @@ class ModelVTK:
         # First replace 1e+30 value (inactive cells) by 0.
         conc0 = np.abs(np.where(self.concs == 1e30, 0, self.concs))
         # Cells configuration for 3D blocks
-        cells = [("quad", np.array([list(np.arange(i * 4, i * 4 + 4))]))
-                 for i in range(len(self.blocks))]
+        cells = [
+            ("quad", np.array([list(np.arange(i * 4, i * 4 + 4))]))
+            for i in range(len(self.blocks))
+        ]
         for j in range(self.concs.shape[1]):
             # Stack the concentration of each component at each time step to visualize them in one plot.
             array = np.zeros(self.blocks.shape[0])
@@ -1733,16 +1696,17 @@ class ModelVTK:
         for e, b in enumerate(self.blocks):
             # Order vertices in vtkPixel convention
             sb = sorted(b, key=lambda k: [k[1], k[0]])
-            [points.InsertPoint(e * 4 + es, bb) for es, bb in enumerate(sb)
-             ]  # Insert points by giving first their index e*4+es
-            ugrid.InsertNextCell(vtk.VTK_PIXEL, 4, list(range(
-                e * 4, e * 4 + 4)))  # Insert cell in UGrid
+            [
+                points.InsertPoint(e * 4 + es, bb) for es, bb in enumerate(sb)
+            ]  # Insert points by giving first their index e*4+es
+            ugrid.InsertNextCell(
+                vtk.VTK_PIXEL, 4, list(range(e * 4, e * 4 + 4))
+            )  # Insert cell in UGrid
 
         ugrid.SetPoints(points)  # Set points
 
         for i in range(1, 7):  # For eaxh injecting well
-            conc_dir = jp(self.results_dir, "vtk", "transport",
-                          "{}_UCN".format(i))
+            conc_dir = jp(self.results_dir, "vtk", "transport", "{}_UCN".format(i))
             bel4ed.utils.dirmaker(conc_dir)
             # Initiate array and give it a name
             concArray = vtk.vtkDoubleArray()
@@ -1752,7 +1716,8 @@ class ModelVTK:
                 array = np.fliplr(conc0[i - 1, j]).reshape(-1)
                 [concArray.InsertNextValue(s) for s in array]
                 ugrid.GetCellData().AddArray(
-                    concArray)  # Add array to unstructured grid
+                    concArray
+                )  # Add array to unstructured grid
 
                 # Save grid
                 writer = vtk.vtkXMLUnstructuredGridWriter()
@@ -1821,7 +1786,8 @@ class ModelVTK:
                 operator.truediv(
                     tuple(map(np.linalg.norm, xyz_particles_t_i - prev)),
                     time_steps[i] - time_steps[i - 1],
-                ))
+                )
+            )
             prev = xyz_particles_t_i
 
             if speed_array is None:
@@ -1859,11 +1825,13 @@ class ModelVTK:
             # Write path lines
             if i and path:
                 for p in range(n_particles):
-                    short = np.vstack((
-                        points_x[p, :i + 1],
-                        points_y[p, :i + 1],
-                        np.abs(points_z[p, :i + 1] * 0),
-                    )).T
+                    short = np.vstack(
+                        (
+                            points_x[p, : i + 1],
+                            points_y[p, : i + 1],
+                            np.abs(points_z[p, : i + 1] * 0),
+                        )
+                    ).T
                     points = vtk.vtkPoints()
                     [points.InsertNextPoint(c) for c in short]
 
@@ -1880,10 +1848,7 @@ class ModelVTK:
                     # Create value array and assign it to the polydata
                     speed = vtk.vtkDoubleArray()
                     speed.SetName("speed")
-                    [
-                        speed.InsertNextValue(speed_array[k][p])
-                        for k in range(i + 1)
-                    ]
+                    [speed.InsertNextValue(speed_array[k][p]) for k in range(i + 1)]
                     polyData.GetPointData().AddArray(speed)
 
                     # Add the lines to the dataset
@@ -1892,8 +1857,7 @@ class ModelVTK:
                     # Export
                     writer = vtk.vtkXMLPolyDataWriter()
                     writer.SetInputData(polyData)
-                    writer.SetFileName(
-                        jp(back_dir, "path{}_t{}.vtp".format(p, i)))
+                    writer.SetFileName(jp(back_dir, "path{}_t{}.vtp".format(p, i)))
                     writer.Write()
             else:
                 for p in range(n_particles):
@@ -1901,14 +1865,11 @@ class ModelVTK:
                     ys = points_y[p, i]
                     # Replace elevation by 0 to project them in the surface
                     zs = points_z[p, i] * 0
-                    xyz_particles_t_i = np.vstack(
-                        (xs, ys, zs)).T.reshape(-1, 3)
+                    xyz_particles_t_i = np.vstack((xs, ys, zs)).T.reshape(-1, 3)
 
                     # Create points
                     points = vtk.vtkPoints()
-                    ids = [
-                        points.InsertNextPoint(c) for c in xyz_particles_t_i
-                    ]
+                    ids = [points.InsertNextPoint(c) for c in xyz_particles_t_i]
 
                     # Create a cell array to store the points
                     vertices = vtk.vtkCellArray()
@@ -1925,8 +1886,7 @@ class ModelVTK:
                     # Export
                     writer = vtk.vtkXMLPolyDataWriter()
                     writer.SetInputData(polyData)
-                    writer.SetFileName(
-                        jp(back_dir, "path{}_t{}.vtp".format(p, i)))
+                    writer.SetFileName(jp(back_dir, "path{}_t{}.vtp".format(p, i)))
                     writer.Write()
 
     # %% Export wells objects as vtk
@@ -1937,8 +1897,9 @@ class ModelVTK:
         wbd = self.base.Wells().wells_data
 
         wels = np.array([wbd[o]["coordinates"] for o in wbd])
-        wels = np.insert(wels, 2, np.zeros(len(wels)),
-                         axis=1)  # Insert zero array for Z
+        wels = np.insert(
+            wels, 2, np.zeros(len(wels)), axis=1
+        )  # Insert zero array for Z
 
         # Export wells as VTK points
         points = vtk.vtkPoints()  # Points
@@ -2030,23 +1991,24 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        root: str,
-        well: str,
-        sample_n: int = 0,
-        sdir: str = None,
-        show: bool = False,
-        dist_plot: bool = False,
+    root: str,
+    well: str,
+    sample_n: int = 0,
+    sdir: str = None,
+    show: bool = False,
+    dist_plot: bool = False,
 ):
     # Reload model
     d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(
-        root=root, well=well, sample_n=sample_n)
+        root=root, well=well, sample_n=sample_n
+    )
     # Find max kde value
     vmax = 0
     for comp_n in range(cca_operator.n_components):
 
-        hp, sup = posterior_conditional(x=d[comp_n],
-                                        y=h[comp_n],
-                                        x_obs=d_cca_prediction[comp_n])
+        hp, sup = posterior_conditional(
+            x=d[comp_n], y=h[comp_n], x_obs=d_cca_prediction[comp_n]
+        )
 
         # Plot h posterior given d
         density, _ = kde_params(x=d[comp_n], y=h[comp_n])
@@ -2055,16 +2017,17 @@ def _kde_cca(
             vmax = maxloc
 
     cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=cca_operator.n_components)  # Gets correlation coefficient
+        offset=cca_operator.n_components
+    )  # Gets correlation coefficient
 
     for comp_n in range(cca_operator.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
         # Conditional:
-        hp, sup = posterior_conditional(x=d[comp_n],
-                                        y=h[comp_n],
-                                        x_obs=d_cca_prediction[comp_n])
+        hp, sup = posterior_conditional(
+            x=d[comp_n], y=h[comp_n], x_obs=d_cca_prediction[comp_n]
+        )
 
         # load prediction object
         post_test = post.random_sample(Setup.HyperParameters.n_posts).T
@@ -2072,9 +2035,7 @@ def _kde_cca(
         y_samp = post_test_t[comp_n]
 
         # Plot h posterior given d
-        density, support = kde_params(x=d[comp_n],
-                                      y=h[comp_n],
-                                      gridsize=1000)
+        density, support = kde_params(x=d[comp_n], y=h[comp_n], gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = KDE()
@@ -2091,13 +2052,9 @@ def _kde_cca(
         z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
         # Filled contour plot
         # 'BuPu_r' is nice
-        cf = ax_joint.contourf(xx,
-                               yy,
-                               z,
-                               cmap="coolwarm",
-                               levels=100,
-                               vmin=0,
-                               vmax=vmax)
+        cf = ax_joint.contourf(
+            xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
+        )
         cb = plt.colorbar(cf, ax=[ax_cb], location="left")
         cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
         # Vertical line
@@ -2139,30 +2096,22 @@ def _kde_cca(
         #  - Line plot
         ax_marg_x.plot(sup_x, kde_x, color="black", linewidth=0.5, alpha=1)
         #  - Fill to axis
-        ax_marg_x.fill_between(sup_x,
-                               0,
-                               kde_x,
-                               color="royalblue",
-                               alpha=0.5,
-                               label="$p(d^{c})$")
+        ax_marg_x.fill_between(
+            sup_x, 0, kde_x, color="royalblue", alpha=0.5, label="$p(d^{c})$"
+        )
         #  - Notch indicating true value
-        ax_marg_x.axvline(x=d_cca_prediction[comp_n],
-                          ymax=0.25,
-                          color="red",
-                          linewidth=1,
-                          alpha=0.5)
+        ax_marg_x.axvline(
+            x=d_cca_prediction[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+        )
         ax_marg_x.legend(loc=2, fontsize=10)
 
         # Marginal y plot
         #  - Line plot
         ax_marg_y.plot(kde_y, sup_y, color="black", linewidth=0.5, alpha=1)
         #  - Fill to axis
-        ax_marg_y.fill_betweenx(sup_y,
-                                0,
-                                kde_y,
-                                alpha=0.5,
-                                color="darkred",
-                                label="$p(h^{c})$")
+        ax_marg_y.fill_betweenx(
+            sup_y, 0, kde_y, alpha=0.5, color="darkred", label="$p(h^{c})$"
+        )
         #  - Notch indicating true value
         ax_marg_y.axhline(
             y=h_cca_prediction[comp_n],
@@ -2173,11 +2122,7 @@ def _kde_cca(
         )
         # Marginal y plot with BEL
         #  - Line plot
-        ax_marg_y.plot(kde_y_samp,
-                       sup_samp,
-                       color="black",
-                       linewidth=0.5,
-                       alpha=0)
+        ax_marg_y.plot(kde_y_samp, sup_samp, color="black", linewidth=0.5, alpha=0)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(
             sup_samp,
@@ -2239,12 +2184,9 @@ def _kde_cca(
         def posterior_distribution():
             # prior
             plt.plot(sup_y, kde_y, color="black", linewidth=0.5, alpha=1)
-            plt.fill_between(sup_y,
-                             0,
-                             kde_y,
-                             color="mistyrose",
-                             alpha=1,
-                             label="$p(h^{c})$")
+            plt.fill_between(
+                sup_y, 0, kde_y, color="mistyrose", alpha=1, label="$p(h^{c})$"
+            )
             # posterior kde
             plt.plot(sup, hp, color="darkred", linewidth=0.5, alpha=0)
             plt.fill_between(
@@ -2256,11 +2198,7 @@ def _kde_cca(
                 label="$p(h^{c}|d^{c}_{*})$ (KDE)",
             )
             # posterior bel
-            plt.plot(sup_samp,
-                     kde_y_samp,
-                     color="black",
-                     linewidth=0.5,
-                     alpha=1)
+            plt.plot(sup_samp, kde_y_samp, color="black", linewidth=0.5, alpha=1)
             plt.fill_between(
                 sup_samp,
                 0,

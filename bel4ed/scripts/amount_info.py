@@ -12,8 +12,8 @@ if __name__ == "__main__":
     listit = os.listdir(forecast_dir)
     listit.remove("base")
     duq = list(
-        filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)),
-               listit))  # Folders of combinations
+        filter(lambda f: os.path.isdir(os.path.join(forecast_dir, f)), listit)
+    )  # Folders of combinations
 
     # by_mode(duq)
     # UQ.by_mode(["818bf1676c424f76b83bd777ae588a1d"])
