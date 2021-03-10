@@ -23,15 +23,14 @@ def main_1(metric=None):
     base.Wells.combination = wells
 
     # 1 - Fit / Transform
-    analysis(
-        base=base,
-        roots_training=training_r,
-        roots_obs=test_r,
-        wipe=True,
-        flag_base=True,
-    )
-
-    base.Wells.combination = wells
+    # analysis(
+    #     base=base,
+    #     roots_training=training_r,
+    #     roots_obs=test_r,
+    #     wipe=True,
+    #     flag_base=True,
+    # )
+    # base.Wells.combination = wells
 
     # 2 - Sample and compute dissimilarity
     compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)

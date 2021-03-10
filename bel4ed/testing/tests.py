@@ -27,7 +27,7 @@ def test_posterior():
         base=test_base,
         roots_training=training_r,
         roots_obs=test_r,
-        wipe=False,
+        wipe=True,
         flag_base=True,
     )
 

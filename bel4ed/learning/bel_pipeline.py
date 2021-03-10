@@ -138,7 +138,7 @@ def bel_fit_transform(
         if os.path.exists(jp(res_dir, test_root)):
             test_root = [test_root]
         else:
-            warnings.warn("Specified folder {} does not exist".format(test_root[0]))
+            warnings.warn(f"Specified folder {test_root[0]} does not exist")
 
     # Directory in which to load forecasts
     bel_dir = jp(md.forecasts_dir, test_root[0])
@@ -495,7 +495,9 @@ class PosteriorIO:
 
             # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
             # This allows to reload this object later on and resample using the same seed.
-            joblib.dump(self, jp(self.directory, "post.pkl"))
+            post_location = jp(self.directory, "post.pkl")
+            logger.info(f"Saved posterior object to {post_location}")
+            joblib.dump(self, post_location)
 
         # Sample the inferred multivariate gaussian distribution
         h_posts_gaussian = self.random_sample(self.n_posts)

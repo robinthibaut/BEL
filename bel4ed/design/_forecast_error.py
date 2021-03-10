@@ -164,6 +164,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
     n_cut = uq.h_pco.n_pc_cut  # Number of components to keep
     # Inverse transform and reshape
+    # FIXME: Problem is that uq.h_pco_predict_pc is None
     true_image = uq.h_pco.custom_inverse_transform(uq.h_pco.predict_pc, n_cut).reshape(
         (uq.shape[1], uq.shape[2])
     )

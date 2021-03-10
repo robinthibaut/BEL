@@ -133,15 +133,15 @@ class PC:
         pc_training = self.training_pc.copy()
         pc_training = pc_training[:, : self.n_pc_cut]  # Cut
 
+        pc_prediction = self.predict_pc
+
         if self.predict_pc is not None:
             pc_prediction = (
                 self.predict_pc.copy()
             )  # Reloads the original test components
             pc_prediction = pc_prediction[:, : self.n_pc_cut]  # Cut
-            return pc_training, pc_prediction
 
-        else:
-            return pc_training
+        return pc_training, pc_prediction
 
     def random_pc(self, n_rand: int):
         """
@@ -189,6 +189,7 @@ class PC:
         """
         self.predict_pc = None
         self.predict_physical = None
+        self.test_root = None
         # Re-dumps pca object
         joblib.dump(self, os.path.join(self.directory, f"{self.name}_pca.pkl"))
         logger.info(f"Target properties of {self.name} reset to {self.predict_pc}")
