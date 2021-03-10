@@ -19,7 +19,7 @@ from ..spatial import (
     refine_machine,
 )
 
-__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode', 'objective_function']
+__all__ = ['UncertaintyQuantification', 'analysis', 'measure_info_mode', 'objective_function', 'compute_metric']
 
 
 class UncertaintyQuantification:
@@ -189,7 +189,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
     return np.mean(similarity)
 
 
-def measure_info_mode(base: Type[Setup], roots_obs: Root):
+def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
     """Scan the computed metric files and process them based on the mode"""
     logger.info("Computing ED results")
 
@@ -202,13 +202,13 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root):
         for e in wid:  # For each sub folder (well) in the main folder
             # Get the objective function file
             ufp = os.path.join(droot, e, "obj")
-            fmhd = os.path.join(ufp, f"{base.ED.metric.__name__}.npy")
+            fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
             mhd = np.load(fmhd)  # Load MHD
             idw = int(e) - 1  # -1 to respect 0 index (Well index)
             wm[idw] += mhd  # Add MHD at each well
 
     logger.info("Done")
-    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{base.ED.metric.__name__}.npy"), wm)
+    np.save(os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm)
 
 
 def analysis(
@@ -333,9 +333,8 @@ def analysis(
         joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
 
 
-def temp(base: Type[Setup], roots_obs: Root, combinations: list, metric,
-         base_dir: str = None):
-
+def compute_metric(base: Type[Setup], roots_obs: Root, combinations: list, metric,
+                   base_dir: str = None):
     if base_dir is None:
         base_dir = os.path.join(base.Directories.forecasts_dir, "base")
 

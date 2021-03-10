@@ -941,7 +941,8 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
 
 
 def get_roots(training_file: str = None,
-              test_file: str = None):
+              test_file: str = None,):
+
     if training_file is None:
         training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
     if test_file is None:

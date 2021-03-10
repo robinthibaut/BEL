@@ -5,20 +5,24 @@ from loguru import logger
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
-from bel4ed.design import analysis, measure_info_mode
+from bel4ed.design import analysis, compute_metric, measure_info_mode
 from bel4ed.utils import get_roots
 
 
 def main_1(metric=None):
+
     if metric is None:
         metric = modified_hausdorff
+
+    # Load training dataset ID's
     training_r, test_r = get_roots()
 
     wells = [[1], [2], [3], [4], [5], [6]]
     # wells = [[1, 2, 3, 4, 5, 6]]
     base = Setup
     base.Wells.combination = wells
-    base.ED.metric = metric
+
+    # 1 - Fit / Transform
     # analysis(
     #     base=base,
     #     roots_training=training_r,
@@ -26,8 +30,13 @@ def main_1(metric=None):
     #     wipe=True,
     #     flag_base=True,
     # )
-    base.Wells.combination = wells
-    measure_info_mode(base, test_r)
+    # base.Wells.combination = wells
+
+    # 2 - Sample and compute dissimilarity
+    compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)
+
+    # 3 - Process dissimilarity measure
+    measure_info_mode(base=base, roots_obs=test_r, metric=modified_hausdorff)
 
 
 def main_2(N, metric=None):
