@@ -112,7 +112,7 @@ def bel_fit_transform(
         base: Type[Setup],
         training_roots: Root = None,
         test_root: Root or str = None,
-):
+) -> str:
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the _forecast_error.py script to perform predictions.
@@ -120,6 +120,7 @@ def bel_fit_transform(
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
     :param test_root: list: Folder path containing output to be predicted
+    :returns sub_dir: Results directory
     """
 
     # Load parameters:
@@ -237,7 +238,6 @@ def bel_fit_transform(
     n_comp_cca = min(ndo, nho)
     # components between d and h.
     # By default, it scales the data
-    # TODO: Check max_iter & tol
     cca = CCA(n_components=n_comp_cca,
               scale=True,
               max_iter=500 * 20,
@@ -246,6 +246,7 @@ def bel_fit_transform(
     joblib.dump(cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
     msg = f"model trained and saved in {obj_dir}"
     logger.info(msg)
+
     return sub_dir
 
 

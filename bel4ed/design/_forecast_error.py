@@ -68,7 +68,7 @@ class UncertaintyQuantification:
 
         # Load objects
         f_names = list(
-            map(lambda fn: jp(self.res_dir, fn + ".pkl"), ["cca", "d_pca"]))
+            map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
         self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
 
@@ -169,9 +169,13 @@ def objective_function(uq: UncertaintyQuantification, metric):
         x, y = uq.c0()
         to_compare = uq.vertices
         true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
-    else:
+    elif method_name == "structural_similarity":
         to_compare = uq.forecast_posterior
         true_feature = true_image
+    else:
+        logger.error("Metric name not recognized.")
+        to_compare = None
+        true_feature = None
 
     # Compute metric between the 'true image' and the n sampled images or images feature
     similarity = np.array(
@@ -186,7 +190,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
 
 
 def measure_info_mode(base: Type[Setup], roots_obs: Root):
-
+    """Scan the computed metric files and process them based on the mode"""
     logger.info("Computing ED results")
 
     wid = list(map(str, [_[0] for _ in base.Wells.combination]))  # Well identifiers (n)
