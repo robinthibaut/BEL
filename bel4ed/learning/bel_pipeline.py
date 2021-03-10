@@ -82,12 +82,12 @@ def base_pca(
         training_df_target = pd.DataFrame(data=h_training)
         training_df_target['id'] = training_roots
         training_df_target.set_index("id", inplace=True)
-        training_df_target.physical_shape = physical_shape
+        training_df_target.attrs['physical_shape'] = physical_shape
 
         test_df_target = pd.DataFrame(data=h_test)
         test_df_target['id'] = test_roots
         test_df_target.set_index("id", inplace=True)
-        test_df_target.physical_shape = physical_shape
+        test_df_target.attrs['physical_shape'] = physical_shape
 
         # Initiate h pca object
         h_pco = PC(name="h", training_df=training_df_target, test_df=test_df_target, directory=base_dir)
@@ -193,13 +193,14 @@ def bel_fit_transform(
     selection = [wc - 1 for wc in base.Wells.combination]
     tc = tc[:, selection, :]
 
-    tc_flat = np.array(
-        [item for sublist in tc for item in sublist]
-    ).reshape(len(tc), -1)
+    physical_shape = tc.shape
+
+    tc_flat = flatten_array(tc)
 
     training_df_predictor = pd.DataFrame(data=tc_flat)
     training_df_predictor['id'] = training_roots
     training_df_predictor.set_index("id", inplace=True)
+    training_df_predictor.attrs['physical_shape'] = physical_shape
 
     # %%  PCA
     # PCA is performed with maximum number of components.
@@ -416,7 +417,7 @@ class PosteriorIO:
             fname = jp(self.directory, "target_pc.npy")
             np.save(fname, h_pca_reverse)
 
-        osx, osy = self.pca_h.training_df.physical_shape[0], self.pca_h.training_df.physical_shape[0]
+        osx, osy = pca_h.training_df.attrs["physical_shape"][1], pca_h.training_df.attrs["physical_shape"][2]
 
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
