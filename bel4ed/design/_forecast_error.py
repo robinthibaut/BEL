@@ -317,37 +317,48 @@ def analysis(
 
     combinations = base.Wells.combination.copy()
 
-    global_mean = 0
     total = len(roots_obs)
     for ix, r_ in enumerate(roots_obs):  # For each observation root
-        logger.info(f"[{ix+1}/{total}]-{r_}")
+        logger.info(f"[{ix + 1}/{total}]-{r_}")
         for ixw, c in enumerate(combinations):  # For each wel combination
-            logger.info(f"[{ix+1}/{total}]-{r_}-{ixw+1}/{len(combinations)}")
+            logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
             # PCA decomposition + CCA
             base.Wells.combination = c  # This might not be so optimal
             logger.info("Fit - Transform")
-            sf = bel_fit_transform(base=base,
-                                   training_roots=roots_training,
-                                   test_root=r_)
+            bel_fit_transform(base=base,
+                              training_roots=roots_training,
+                              test_root=r_)
 
-            # TODO: Extract this
+        # Resets the target PCA object' predictions to None before moving on to the next root
+        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
+
+
+def temp(base: Type[Setup], roots_obs: Root, combinations: list, metric,
+         base_dir: str = None):
+
+    if base_dir is None:
+        base_dir = os.path.join(base.Directories.forecasts_dir, "base")
+
+    global_mean = 0
+    total = len(roots_obs)
+    for ix, r_ in enumerate(roots_obs):  # For each observation root
+        logger.info(f"[{ix + 1}/{total}]-{r_}")
+        for ixw, c in enumerate(combinations):  # For each wel combination
+            logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
             # Uncertainty analysis
             logger.info("Uncertainty quantification")
-
+            study_folder = os.path.join(base.Directories.forecasts_dir, f"{r_}", "".join(list(map(str, c))))
             uq = UncertaintyQuantification(
                 base=base,
-                study_folder=sf,
-                base_dir=obj_path,
+                base_dir=base_dir,
+                study_folder=study_folder,
                 seed=123456,
             )
             # Sample posterior
             logger.info("Sample posterior")
             uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
             logger.info("Similarity measure")
-            mean = objective_function(uq)
+            mean = objective_function(uq, metric)
             global_mean += mean
-
-        # Resets the target PCA object' predictions to None before moving on to the next root
-        joblib.load(os.path.join(obj_path, "h_pca.pkl")).reset_()
 
     return global_mean

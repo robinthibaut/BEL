@@ -122,7 +122,7 @@ def bel_fit_transform(
     :param test_root: list: Folder path containing output to be predicted
     :returns sub_dir: Results directory
     """
-
+    # TODO: Separate folder and computation stuff
     # Load parameters:
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
     xys, nrow, ncol = grid_parameters(x_lim=x_lim, y_lim=y_lim,
