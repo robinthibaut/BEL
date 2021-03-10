@@ -5,6 +5,7 @@ import numpy as np
 
 from bel4ed import design
 from bel4ed.config import Setup
+from bel4ed.design import UncertaintyQuantification
 from bel4ed.utils import get_roots
 
 
@@ -23,6 +24,7 @@ def test_posterior():
     test_base.Directories.forecasts_dir = test_dir
     test_base.Wells.combination = wells
 
+    # 1 - Fit / Transform
     design.analysis(
         base=test_base,
         roots_training=training_r,
@@ -30,6 +32,18 @@ def test_posterior():
         wipe=False,
         flag_base=True,
     )
+    test_base.Wells.combination = wells
+
+    # 2 - Sample
+    uq = UncertaintyQuantification(
+        base=test_base,
+        base_dir=jp(test_dir, 'base'),
+        study_folder=jp(test_r[0], '123456'),
+        seed=123456,
+    )
+    # Sample posterior
+    uq.d_pco = joblib.load(jp(test_dir, test_r[0], '123456', 'obj', 'd_pca.pkl'))
+    uq.sample_posterior(n_posts=test_base.HyperParameters.n_posts)
 
     ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
