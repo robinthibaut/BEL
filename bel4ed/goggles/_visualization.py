@@ -586,7 +586,7 @@ def h_pca_inverse_plot(
 
     if training:
         v_pc = pca_o.training_pc
-        roots = pca_o.roots
+        roots = pca_o.roots_training
     else:
         v_pc = pca_o.predict_pc
         roots = pca_o.test_root
@@ -1079,7 +1079,7 @@ def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
             os.path.join(base_dir, "roots_whpa", f"{root}.npy")
         )  # Signed Distance
         # Cut desired number of PC components
-        h_pco.test_transform(h_pred, test_root=[root])
+        h_pco.test_transform(h_pred, test_roots=[root])
         h_pco.comp_refresh(hnc0)
         h_pca_inverse_plot(
             pca_o=h_pco, training=False, fig_dir=jp(base_dir, "roots_whpa")
@@ -1310,7 +1310,7 @@ def pca_vision(
         # Load npy whpa prediction
         prediction = np.load(os.path.join(hbase, "roots_whpa", f"{root}.npy"))
         # Transform and split
-        h_pco.test_transform(prediction, test_root=[root])
+        h_pco.test_transform(prediction, test_roots=[root])
         nho = h_pco.n_pc_cut
         h_pc_training, h_pc_prediction = h_pco.comp_refresh(nho)
         # Plot
@@ -1379,7 +1379,7 @@ def d_pca_inverse_plot(
 
     if training:
         v_pc = pca_o.training_pc
-        roots = pca_o.roots
+        roots = pca_o.roots_training
     else:
         v_pc = pca_o.predict_pc
         roots = pca_o.test_root

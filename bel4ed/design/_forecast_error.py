@@ -83,7 +83,7 @@ class UncertaintyQuantification:
 
         # Cut desired number of PC components
         d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
-        self.h_pco.comp_refresh(hnc0)
+        # self.h_pco.comp_refresh(hnc0)
 
         # Sampling
         self.n_training = len(d_pc_training)
@@ -292,6 +292,7 @@ def analysis(
         [swap_root(ts) for ts in to_swap]
 
     # Perform PCA on target (whpa) and store the object in a base folder
+    # /!\ Danger zone /!\
     if wipe:
         try:
             shutil.rmtree(base.Directories.forecasts_dir)
@@ -307,9 +308,9 @@ def analysis(
         base_pca(
             base=base,
             base_dir=obj_path,
-            roots=roots_training,
+            training_roots=roots_training,
             test_roots=roots_obs,
-            h_pca_obj=obj,
+            h_pca_obj_path=obj,
         )
 
     # --------------------------------------------------------

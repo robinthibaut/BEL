@@ -20,11 +20,12 @@ from typing import Type
 
 import joblib
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import Root
+from ..utils import Root, check_array
 from ..config import Setup
 
 from ..processing import curve_interpolation
@@ -37,44 +38,46 @@ from ..processing import PC
 def base_pca(
     base: Type[Setup],
     base_dir: str,
-    roots: Root,
+    training_roots: Root,
     test_roots: Root,
-    d_pca_obj: str = None,
-    h_pca_obj: str = None,
+    d_pca_obj_path: str = None,
+    h_pca_obj_path: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
     :param base: class: Base class object
     :param base_dir: str: Base directory path
-    :param roots: list:
+    :param training_roots: list:
     :param test_roots: list:
-    :param d_pca_obj:
-    :param h_pca_obj:
+    :param d_pca_obj_path:
+    :param h_pca_obj_path:
     :return:
     """
-    if d_pca_obj is not None:
-        # Loads the results:
-        tc0, _, _ = utils.data_loader(roots=roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
-        # pzs = WHPA
-        # roots_ = simulation id
-        # Subdivide d in an arbitrary number of time steps:
-        # tc has shape (n_sim, n_wells, n_time_steps)
-        tc = curve_interpolation(tc0=tc0)
-        # with n_sim = n_training + n_test
-        # PCA on transport curves
-        d_pco = PC(
-            name="d", training=tc, roots=roots, directory=os.path.dirname(d_pca_obj)
-        )
-        d_pco.training_fit_transform()
-        # Dump
-        joblib.dump(d_pco, d_pca_obj)
-
+    # if d_pca_obj_path is not None:
+    #     # Loads the results:
+    #     tc0, _, _ = utils.data_loader(roots=training_roots, d=True)
+    #     # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
+    #     # pzs = WHPA
+    #     # roots_ = simulation id
+    #     # Subdivide d in an arbitrary number of time steps:
+    #     # tc has shape (n_sim, n_wells, n_time_steps)
+    #     tc = curve_interpolation(tc0=tc0)
+    #     # with n_sim = n_training + n_test
+    #     # PCA on transport curves
+    #     d_pco = PC(
+    #         name="d", training=tc, roots=training_roots, directory=os.path.dirname(d_pca_obj_path)
+    #     )
+    #     d_pco.training_fit_transform()
+    #     # Dump
+    #     joblib.dump(d_pco, d_pca_obj_path)
+    #
     x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
 
-    if h_pca_obj is not None:
+    if h_pca_obj_path is not None:
         # Loads the results:
-        _, pzs, r = utils.data_loader(roots=roots, h=True)
+        _, pzs_training, r_training_ids = utils.data_loader(roots=training_roots, h=True)
+        _, pzs_test, r_test_ids = utils.data_loader(roots=test_roots, h=True)
+
         # Load parameters:
         xys, nrow, ncol = grid_parameters(
             x_lim=x_lim, y_lim=y_lim, grf=grf
@@ -83,29 +86,48 @@ def base_pca(
         # PCA on signed distance
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
-        h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
+        h_training = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training])
+        h_test = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test])
+
+        h_training = np.array(
+            [item for sublist in h_training for item in sublist]
+        ).reshape(len(h_training), -1)
+
+        h_test = np.array(
+            [item for sublist in h_test for item in sublist]
+        ).reshape(len(h_test), -1)
+
+        training_df = pd.DataFrame(data=h_training)
+        training_df['id'] = training_roots
+        training_df.set_index("id", inplace=True)
+
+        test_df = pd.DataFrame(data=h_test)
+        test_df['id'] = training_roots
+        test_df.set_index("id", inplace=True)
 
         # Initiate h pca object
-        h_pco = PC(name="h", training=h, roots=roots, directory=base_dir)
+        h_pco = PC(name="h", training_df=training_df, test_df=test_df, directory=base_dir)
         # Transform
         h_pco.training_fit_transform()
         # Define number of components to keep
-        # h_pco.n_pca_components(.98)  # Number of components for signed distance automatically set.
         h_pco.n_pc_cut = base.HyperParameters.n_pc_target
+        # Transform test arrays
+        h_pco.test_transform(test=h_test, test_roots=test_roots)
+
         # Dump
-        joblib.dump(h_pco, h_pca_obj)
+        joblib.dump(h_pco, h_pca_obj_path)
 
         # Save roots id's in a dat file
         if not os.path.exists(jp(base_dir, "roots.dat")):
             with open(jp(base_dir, "roots.dat"), "w") as f:
-                for r in roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r) + "\n")
+                for r_training_ids in training_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r_training_ids) + "\n")
 
         # Save roots id's in a dat file
         if not os.path.exists(jp(base_dir, "test_roots.dat")):
             with open(jp(base_dir, "test_roots.dat"), "w") as f:
-                for r in test_roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r) + "\n")
+                for r_training_ids in test_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r_training_ids) + "\n")
 
 
 def bel_fit_transform(
@@ -203,7 +225,7 @@ def bel_fit_transform(
     tcp = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
     tcp = tcp[:, selection, :]  # Extract desired observation
     # Perform transformation on testing curves
-    d_pco.test_transform(tcp, test_root=test_root)
+    d_pco.test_transform(tcp, test_roots=test_root)
     d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
 
     # Save the d PC object.
@@ -218,7 +240,7 @@ def bel_fit_transform(
     if h_pco.predict_pc is None:
         h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
-        h_pco.test_transform(h, test_root=test_root)
+        h_pco.test_transform(h, test_roots=test_root)
         # Cut desired number of components
         h_pc_training, _ = h_pco.comp_refresh(nho)
         # Save updated PCA object in base
