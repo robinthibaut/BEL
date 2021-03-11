@@ -177,7 +177,6 @@ def bel_fit_transform(
     ]
 
     # Load training dataset
-
     # %% PREDICTOR
 
     # Refined breakthrough curves data file

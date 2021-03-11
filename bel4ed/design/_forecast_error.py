@@ -62,7 +62,7 @@ class UncertaintyQuantification:
         # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
-            self.base_dir = jp(os.path.dirname(self.bel_dir), "base")
+            self.base_dir = jp(md.forecasts_dir, "base")
         else:
             self.base_dir = base_dir
         self.res_dir = jp(self.bel_dir, "obj")
@@ -182,16 +182,14 @@ class UncertaintyQuantification:
             except FileNotFoundError:
                 pass
 
-        obj_path = os.path.join(self.base.Directories.forecasts_dir, "base")
-        utils.dirmaker(obj_path)  # Returns bool according to folder status
         if flag_base:
-            utils.dirmaker(obj_path, erase=flag_base)
+            utils.dirmaker(self.base_dir, erase=flag_base)
             # Creates main target PCA object
-            obj = os.path.join(obj_path, "h_pca.pkl")
+            obj = os.path.join(self.base_dir, "h_pca.pkl")
             logger.info("Performing base PCA")
             self.h_pco = base_pca(
                 base=self.base,
-                base_dir=obj_path,
+                base_dir=self.base_dir,
                 training_roots=roots_training,
                 test_roots=roots_obs,
                 h_pca_obj_path=obj,
