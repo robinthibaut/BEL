@@ -4,7 +4,7 @@ import joblib
 import numpy as np
 
 from bel4ed.config import Setup
-from bel4ed.design import UncertaintyQuantification as UQ
+from bel4ed.design import UncertaintyQuantification
 from bel4ed.utils import i_am_root
 
 
@@ -23,7 +23,7 @@ def test_posterior():
     test_base.Directories.forecasts_dir = test_dir
     test_base.Wells.combination = wells
 
-    uq = UQ(
+    uq = UncertaintyQuantification(
         base=test_base,
         base_dir=jp(test_dir, 'base'),
         study_folder=jp(test_r[0], '123456'),
@@ -33,7 +33,7 @@ def test_posterior():
     uq.analysis(
         roots_training=training_r,
         roots_obs=test_r,
-        wipe=False,
+        wipe=True,
         flag_base=True,
     )
     test_base.Wells.combination = wells
