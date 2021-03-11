@@ -25,8 +25,8 @@ def test_posterior():
 
     uq = UncertaintyQuantification(
         base=test_base,
-        base_dir=jp(test_dir, 'base'),
-        study_folder=jp(test_r[0], '123456'),
+        base_dir=jp(test_dir, "base"),
+        study_folder=jp(test_r[0], "123456"),
         seed=123456,
     )
     # 1 - Fit / Transform

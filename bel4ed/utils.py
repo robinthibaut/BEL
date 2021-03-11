@@ -27,9 +27,9 @@ Function = types.FunctionType
 
 
 def flatten_array(arr: np.array) -> np.array:
-    arr_flat = np.array(
-        [item for sublist in arr for item in sublist]
-    ).reshape(len(arr), -1)
+    arr_flat = np.array([item for sublist in arr for item in sublist]).reshape(
+        len(arr), -1
+    )
     return arr_flat
 
 
@@ -46,21 +46,25 @@ def i_am_framed(array: np.array, ids: Root or pd.Index = None) -> pd.DataFrame:
     # Initiate array
     training_df_target = pd.DataFrame(data=array)
     # Set id's
-    training_df_target['id'] = ids
+    training_df_target["id"] = ids
     training_df_target.set_index("id", inplace=True)
     # Save original shape as a dataframe attribute
-    training_df_target.attrs['physical_shape'] = physical_shape
+    training_df_target.attrs["physical_shape"] = physical_shape
 
     return training_df_target
 
 
-def beautiful_curves(curve_file: str, res_dir: str, ids: Root, n_time_steps: int) -> np.array:
+def beautiful_curves(
+    curve_file: str, res_dir: str, ids: Root, n_time_steps: int
+) -> np.array:
     """Loads and process predictor (tracer curves)"""
     # Raw TC's = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
     if not os.path.exists(curve_file):
         # Training
         tc_training_raw, *_ = data_loader(res_dir=res_dir, roots=ids, d=True)
-        tc_training = curve_interpolation(tc0=tc_training_raw, n_time_steps=n_time_steps)
+        tc_training = curve_interpolation(
+            tc0=tc_training_raw, n_time_steps=n_time_steps
+        )
         np.save(curve_file, tc_training)
     else:
         tc_training = np.load(curve_file)

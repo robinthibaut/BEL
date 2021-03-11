@@ -56,7 +56,9 @@ def base_pca(
 
     if h_pca_obj_path is not None:
         # Loads the results:
-        _, pzs_training, r_training_ids = utils.data_loader(roots=training_roots, h=True)
+        _, pzs_training, r_training_ids = utils.data_loader(
+            roots=training_roots, h=True
+        )
         _, pzs_test, r_test_ids = utils.data_loader(roots=test_roots, h=True)
 
         # Load parameters:
@@ -67,15 +69,24 @@ def base_pca(
         # PCA on signed distance
         # Compute signed distance on pzs.
         # h is the matrix of target feature on which PCA will be performed.
-        h_training = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training])
-        h_test = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test])
+        h_training = np.array(
+            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training]
+        )
+        h_test = np.array(
+            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test]
+        )
 
         # Convert to dataframes
         training_df_target = utils.i_am_framed(array=h_training, ids=training_roots)
         test_df_target = utils.i_am_framed(array=h_test, ids=test_roots)
 
         # Initiate h pca object
-        h_pco = PC(name="h", training_df=training_df_target, test_df=test_df_target, directory=base_dir)
+        h_pco = PC(
+            name="h",
+            training_df=training_df_target,
+            test_df=test_df_target,
+            directory=base_dir,
+        )
         # Transform
         h_pco.training_fit_transform()
         # Define number of components to keep
@@ -89,7 +100,9 @@ def base_pca(
         # Save roots id's in a dat file
         if not os.path.exists(jp(base_dir, "roots.dat")):
             with open(jp(base_dir, "roots.dat"), "w") as f:
-                for r_training_ids in training_roots:  # Saves roots name until test roots
+                for (
+                    r_training_ids
+                ) in training_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r_training_ids) + "\n")
 
         # Save roots id's in a dat file
@@ -172,9 +185,18 @@ def bel_fit_transform(
     n_time_steps = base.HyperParameters.n_tstp
     # Loads the results:
     # tc has shape (n_sim, n_wells, n_time_steps)
-    tc_training = utils.beautiful_curves(curve_file=tc_training_file, res_dir=res_dir, ids=training_roots,
-                                         n_time_steps=n_time_steps)
-    tc_test = utils.beautiful_curves(curve_file=tc_test_file, res_dir=res_dir, ids=test_root, n_time_steps=n_time_steps)
+    tc_training = utils.beautiful_curves(
+        curve_file=tc_training_file,
+        res_dir=res_dir,
+        ids=training_roots,
+        n_time_steps=n_time_steps,
+    )
+    tc_test = utils.beautiful_curves(
+        curve_file=tc_test_file,
+        res_dir=res_dir,
+        ids=test_root,
+        n_time_steps=n_time_steps,
+    )
 
     # %% Select wells:
     selection = [wc - 1 for wc in base.Wells.combination]
@@ -188,7 +210,12 @@ def bel_fit_transform(
     # PCA is performed with maximum number of components.
     # We choose an appropriate number of components to keep later on.
     # PCA on transport curves
-    d_pco = PC(name="d", training_df=training_df_predictor, test_df=test_df_predictor, directory=obj_dir)
+    d_pco = PC(
+        name="d",
+        training_df=training_df_predictor,
+        test_df=test_df_predictor,
+        directory=obj_dir,
+    )
     d_pco.training_fit_transform()
     d_pco.test_transform()
     # PCA on transport curves
@@ -397,7 +424,10 @@ class PosteriorIO:
             fname = jp(self.directory, "target_pc.npy")
             np.save(fname, h_pca_reverse)
 
-        osx, osy = pca_h.training_df.attrs["physical_shape"][1], pca_h.training_df.attrs["physical_shape"][2]
+        osx, osy = (
+            pca_h.training_df.attrs["physical_shape"][1],
+            pca_h.training_df.attrs["physical_shape"][2],
+        )
 
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(

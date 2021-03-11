@@ -101,14 +101,14 @@ class UncertaintyQuantification:
         self.vertices = None
 
     def analysis(
-            self,
-            n_training: int = 200,
-            n_obs: int = 50,
-            flag_base: bool = False,
-            wipe: bool = False,
-            roots_training: Root = None,
-            to_swap: Root = None,
-            roots_obs: Root = None,
+        self,
+        n_training: int = 200,
+        n_obs: int = 50,
+        flag_base: bool = False,
+        wipe: bool = False,
+        roots_training: Root = None,
+        to_swap: Root = None,
+        roots_obs: Root = None,
     ):
         """
         I. First, defines the roots for training from simulations in the hydro results directory.
@@ -154,7 +154,7 @@ class UncertaintyQuantification:
         if roots_obs is None:  # If no observation provided
             if n_training + n_obs <= len(folders):
                 # List of m observation roots
-                roots_obs = folders[n_training: (n_training + n_obs)]
+                roots_obs = folders[n_training : (n_training + n_obs)]
             else:
                 logger.error("Incompatible training/observation numbers")
                 return
@@ -204,7 +204,9 @@ class UncertaintyQuantification:
                 logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
-                bel_fit_transform(base=self.base, training_roots=roots_training, test_root=r_)
+                bel_fit_transform(
+                    base=self.base, training_roots=roots_training, test_root=r_
+                )
 
     # %% Random sample from the posterior
     def sample_posterior(self, n_posts: int = None):

@@ -31,7 +31,7 @@ def main_1(metric=None):
                 study_folder=jp(tr, sub_folder),
                 seed=123456,
             )
-    # 1 - Fit / Transform
+            # 1 - Fit / Transform
             uq.analysis(
                 roots_training=training_r,
                 roots_obs=test_r,

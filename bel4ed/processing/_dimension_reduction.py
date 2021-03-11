@@ -71,7 +71,9 @@ class PC:
         training_pc = self.pipe.transform(self.training_df.to_numpy())
 
         # Store PC dataframe
-        self.training_pc_df = utils.i_am_framed(array=training_pc, ids=self.training_df.index)
+        self.training_pc_df = utils.i_am_framed(
+            array=training_pc, ids=self.training_df.index
+        )
 
         return training_pc
 
@@ -154,7 +156,7 @@ class PC:
             self.n_samples, n_rand
         )  # Selects n_posts rows from the training array
         # Extracts those rows, from the number of
-        score_selection = self.training_pc_df[rand_rows][self.n_pc_cut:]
+        score_selection = self.training_pc_df[rand_rows][self.n_pc_cut :]
         # components used until the end of the array.
 
         # For each column of shape n_samples, n_components, selects a random PC component to add.
