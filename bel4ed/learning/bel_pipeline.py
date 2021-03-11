@@ -209,17 +209,12 @@ def bel_fit_transform(
     _, pzs, _ = utils.data_loader(roots=test_root, h=True)
     # Compute WHPA on the prediction
     if h_pco.test_pc_df is None:
-        h = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs])
         # Perform PCA
         h_pco.test_transform(test_roots=test_root)
         # Cut desired number of components
         h_pc_training, _ = h_pco.comp_refresh(nho)
         # Save updated PCA object in base
         joblib.dump(h_pco, jp(base_dir, "h_pca.pkl"))
-
-        fig_dir = jp(base_dir, "roots_whpa")
-        utils.dirmaker(fig_dir)
-        np.save(jp(fig_dir, test_root[0]), h)  # Save the prediction WHPA
     else:
         # Cut components
         h_pc_training, _ = h_pco.comp_refresh(nho)

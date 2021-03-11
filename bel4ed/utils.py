@@ -33,7 +33,7 @@ def flatten_array(arr: np.array) -> np.array:
     return arr_flat
 
 
-def i_am_framed(array: np.array, ids: Root) -> pd.DataFrame:
+def i_am_framed(array: np.array, ids: Root or pd.Index = None) -> pd.DataFrame:
     """Build a panda's dataframe that contains the flattened samples, their id's and the original shape"""
 
     # Remember original shape

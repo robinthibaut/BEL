@@ -11,6 +11,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from loguru import logger
 
+from bel4ed import utils
+
 __all__ = ["PC"]
 
 
@@ -69,9 +71,7 @@ class PC:
         training_pc = self.pipe.transform(self.training_df.to_numpy())
 
         # Store PC dataframe
-        self.training_pc_df = pd.DataFrame(data=training_pc)
-        self.training_pc_df['id'] = self.training_df.index
-        self.training_pc_df.set_index("id", inplace=True)
+        self.training_pc_df = utils.i_am_framed(array=training_pc, ids=self.training_df.index)
 
         return training_pc
 
@@ -94,9 +94,7 @@ class PC:
         pc_prediction = self.pipe.transform(selection)
 
         # Store PC dataframe
-        self.test_pc_df = pd.DataFrame(data=pc_prediction)
-        self.test_pc_df['id'] = ids
-        self.test_pc_df.set_index("id", inplace=True)
+        self.test_pc_df = utils.i_am_framed(array=pc_prediction, ids=ids)
 
         return pc_prediction
 
