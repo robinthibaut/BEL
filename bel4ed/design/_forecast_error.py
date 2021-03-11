@@ -62,7 +62,7 @@ class UncertaintyQuantification:
         # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
-            self.base_dir = jp(os.path.dirname(self.bel_dir), "base", "obj")
+            self.base_dir = jp(os.path.dirname(self.bel_dir), "base")
         else:
             self.base_dir = base_dir
         self.res_dir = jp(self.bel_dir, "obj")

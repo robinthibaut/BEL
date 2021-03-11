@@ -1,11 +1,12 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+from os.path import join as jp
 
 import numpy as np
 from loguru import logger
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
-from bel4ed.design import compute_metric, measure_info_mode
+from bel4ed.design import UncertaintyQuantification, compute_metric, measure_info_mode
 from bel4ed.utils import get_roots
 
 
@@ -22,9 +23,14 @@ def main_1(metric=None):
     base = Setup
     base.Wells.combination = wells
 
-    # 1 - Fit / Transform
-    analysis(
+    uq = UncertaintyQuantification(
         base=base,
+        base_dir=None,
+        study_folder=jp(test_r[0], '123456'),
+        seed=123456,
+    )
+    # 1 - Fit / Transform
+    uq.analysis(
         roots_training=training_r,
         roots_obs=test_r,
         wipe=True,
