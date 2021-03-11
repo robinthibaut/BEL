@@ -25,7 +25,7 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import Root, i_am_framed
+from ..utils import Root
 from ..config import Setup
 
 from ..processing import curve_interpolation
@@ -71,8 +71,8 @@ def base_pca(
         h_test = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test])
 
         # Convert to dataframes
-        training_df_target = i_am_framed(array=h_training, ids=training_roots)
-        test_df_target = i_am_framed(array=h_test, ids=test_roots)
+        training_df_target = utils.i_am_framed(array=h_training, ids=training_roots)
+        test_df_target = utils.i_am_framed(array=h_test, ids=test_roots)
 
         # Initiate h pca object
         h_pco = PC(name="h", training_df=training_df_target, test_df=test_df_target, directory=base_dir)
@@ -171,35 +171,18 @@ def bel_fit_transform(
     tc_test_file = jp(base_dir, "test_curves.npy")
     n_time_steps = base.HyperParameters.n_tstp
     # Loads the results:
-    # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
-    # pzs = WHPA's
-    # roots_ = simulations id's
-    # Subdivide d in an arbitrary number of time steps:
     # tc has shape (n_sim, n_wells, n_time_steps)
-
-    if not os.path.exists(tc_training_file):
-        # Training
-        tc_training_raw, *_ = utils.data_loader(res_dir=res_dir, roots=training_roots, d=True)
-        tc_training = curve_interpolation(tc0=tc_training_raw, n_time_steps=n_time_steps)
-        np.save(tc_training_file, tc_training)
-    else:
-        tc_training = np.load(tc_training_file)
-
-    if not os.path.exists(tc_test_file):
-        # Test
-        tc_test_raw, *_ = utils.data_loader(res_dir=res_dir, roots=test_root, d=True)
-        tc_test = curve_interpolation(tc0=tc_test_raw, n_time_steps=n_time_steps)
-        np.save(tc_test_file, tc_test)
-    else:
-        tc_test = np.load(tc_test_file)
+    tc_training = utils.beautiful_curves(curve_file=tc_training_file, res_dir=res_dir, ids=training_roots,
+                                         n_time_steps=n_time_steps)
+    tc_test = utils.beautiful_curves(curve_file=tc_test_file, res_dir=res_dir, ids=test_root, n_time_steps=n_time_steps)
 
     # %% Select wells:
     selection = [wc - 1 for wc in base.Wells.combination]
     tc_training = tc_training[:, selection, :]
     tc_test = tc_test[:, selection, :]
     # Convert to dataframes
-    training_df_predictor = i_am_framed(array=tc_training, ids=training_roots)
-    test_df_predictor = i_am_framed(array=tc_test, ids=test_root)
+    training_df_predictor = utils.i_am_framed(array=tc_training, ids=training_roots)
+    test_df_predictor = utils.i_am_framed(array=tc_test, ids=test_root)
 
     # %%  PCA
     # PCA is performed with maximum number of components.
