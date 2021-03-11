@@ -5,7 +5,7 @@ import numpy as np
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification as UQ
-from bel4ed.utils import get_roots
+from bel4ed.utils import i_am_root
 
 
 def test_posterior():
@@ -13,7 +13,7 @@ def test_posterior():
     training_file = jp(Setup.Directories.test_dir, "roots.dat")
     test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
 
-    training_r, test_r = get_roots(training_file=training_file, test_file=test_file)
+    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     wells = [[1, 2, 3, 4, 5, 6]]
 

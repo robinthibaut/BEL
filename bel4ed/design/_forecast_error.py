@@ -204,7 +204,6 @@ class UncertaintyQuantification:
                 logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
-                logger.info("Fit - Transform")
                 bel_fit_transform(base=self.base, training_roots=roots_training, test_root=r_)
 
     # %% Random sample from the posterior

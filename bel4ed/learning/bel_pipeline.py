@@ -25,7 +25,7 @@ from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
-from ..utils import Root, flatten_array
+from ..utils import Root, i_am_framed
 from ..config import Setup
 
 from ..processing import curve_interpolation
@@ -70,24 +70,9 @@ def base_pca(
         h_training = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training])
         h_test = np.array([signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test])
 
-        # Remember original shape
-        physical_shape = h_training.shape
-
-        # Flatten for dimension reduction
-        h_training = flatten_array(h_training)
-        h_test = flatten_array(h_test)
-
-        # Save DataFrames
-
-        training_df_target = pd.DataFrame(data=h_training)
-        training_df_target['id'] = training_roots
-        training_df_target.set_index("id", inplace=True)
-        training_df_target.attrs['physical_shape'] = physical_shape
-
-        test_df_target = pd.DataFrame(data=h_test)
-        test_df_target['id'] = test_roots
-        test_df_target.set_index("id", inplace=True)
-        test_df_target.attrs['physical_shape'] = physical_shape
+        # Convert to dataframes
+        training_df_target = i_am_framed(array=h_training, ids=training_roots)
+        test_df_target = i_am_framed(array=h_test, ids=test_roots)
 
         # Initiate h pca object
         h_pco = PC(name="h", training_df=training_df_target, test_df=test_df_target, directory=base_dir)
@@ -212,21 +197,9 @@ def bel_fit_transform(
     selection = [wc - 1 for wc in base.Wells.combination]
     tc_training = tc_training[:, selection, :]
     tc_test = tc_test[:, selection, :]
-
-    physical_shape = tc_training.shape
-
-    tc_training_flat = flatten_array(tc_training)
-    tc_test_flat = flatten_array(tc_test)
-
-    training_df_predictor = pd.DataFrame(data=tc_training_flat)
-    training_df_predictor['id'] = training_roots
-    training_df_predictor.set_index("id", inplace=True)
-    training_df_predictor.attrs['physical_shape'] = physical_shape
-
-    test_df_predictor = pd.DataFrame(data=tc_test_flat)
-    test_df_predictor['id'] = test_root
-    test_df_predictor.set_index("id", inplace=True)
-    test_df_predictor.attrs['physical_shape'] = physical_shape
+    # Convert to dataframes
+    training_df_predictor = i_am_framed(array=tc_training, ids=training_roots)
+    test_df_predictor = i_am_framed(array=tc_test, ids=test_root)
 
     # %%  PCA
     # PCA is performed with maximum number of components.

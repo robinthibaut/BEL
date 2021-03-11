@@ -7,7 +7,7 @@ from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification, compute_metric, measure_info_mode
-from bel4ed.utils import get_roots
+from bel4ed.utils import i_am_root
 
 
 def main_1(metric=None):
@@ -16,28 +16,28 @@ def main_1(metric=None):
         metric = modified_hausdorff
 
     # 0 - Load training dataset ID's
-    training_r, test_r = get_roots()
+    training_r, test_r = i_am_root()
 
     wells = [[1], [2], [3], [4], [5], [6]]
-    # wells = [[1, 2, 3, 4, 5, 6]]
     base = Setup
     base.Wells.combination = wells
 
     for i, tr in enumerate(test_r):
-        sub_folder = list(map(str, wells[i]))[0]
-        uq = UncertaintyQuantification(
-            base=base,
-            base_dir=None,
-            study_folder=jp(tr, sub_folder),
-            seed=123456,
-        )
-        # 1 - Fit / Transform
-        uq.analysis(
-            roots_training=training_r,
-            roots_obs=test_r,
-            wipe=False,
-            flag_base=False,
-        )
+        for w in wells:
+            sub_folder = list(map(str, w))[0]
+            uq = UncertaintyQuantification(
+                base=base,
+                base_dir=None,
+                study_folder=jp(tr, sub_folder),
+                seed=123456,
+            )
+    # 1 - Fit / Transform
+            uq.analysis(
+                roots_training=training_r,
+                roots_obs=test_r,
+                wipe=False,
+                flag_base=False,
+            )
 
     base.Wells.combination = wells  # Not optimal
 

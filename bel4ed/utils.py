@@ -11,6 +11,7 @@ import flopy
 import joblib
 import types
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 from loguru import logger
 
@@ -23,11 +24,32 @@ Combination = List[List[int]]
 Function = types.FunctionType
 
 
-def flatten_array(arr):
+def flatten_array(arr: np.array) -> np.array:
     arr_flat = np.array(
         [item for sublist in arr for item in sublist]
     ).reshape(len(arr), -1)
     return arr_flat
+
+
+def i_am_framed(array: np.array, ids: Root) -> pd.DataFrame:
+    """Build a panda's dataframe that contains the flattened samples, their id's and the original shape"""
+
+    # Remember original shape
+    physical_shape = array.shape
+
+    # Flatten for dimension reduction
+    array = flatten_array(array)
+
+    # Save DataFrames
+    # Initiate array
+    training_df_target = pd.DataFrame(data=array)
+    # Set id's
+    training_df_target['id'] = ids
+    training_df_target.set_index("id", inplace=True)
+    # Save original shape as a dataframe attribute
+    training_df_target.attrs['physical_shape'] = physical_shape
+
+    return training_df_target
 
 
 def _object_dtype_isnan(X):
@@ -974,7 +996,7 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
 
 
-def get_roots(
+def i_am_root(
     training_file: str = None,
     test_file: str = None,
 ):
