@@ -28,6 +28,7 @@ class Setup:
         storage_dir: str = join(main_dir, "storage")
         hydro_res_dir: str = join(storage_dir, "forwards")
         forecasts_dir: str = join(storage_dir, "forecasts")
+        forecasts_base_dir: str = join(forecasts_dir, "base")
         grid_dir: str = join(main_dir, "spatial", "parameters")
         test_dir: str = join(main_dir, "testing")
         ref_dir: str = join(test_dir, "reference")
@@ -38,7 +39,10 @@ class Setup:
 
         # Output file names
         project_name: str = "whpa"
+        predictor_name: str = "d"
+        target_name: str = "h"
 
+        # Files stored in the raw, forward dataset folder
         hk_file: str = "hk0.npy"
         predictor_file: str = "bkt.npy"
         target_file: str = "pz.npy"
@@ -49,6 +53,15 @@ class Setup:
         command_file: str = "sgsim_commands.py"
 
         sgems_family = [sgems_file, command_file, hk_file]
+
+        # Files that are stored after processing
+        predictor_pickle: str = 'd_pca.pkl'
+        target_pickle: str = 'h_pca.pkl'
+        model_pickle: str = "cca.pkl"
+        target_post_bin: str = "post.npy"
+        target_pc_bin: str = "target_pc.npy"
+        predictor_training_bin: str = "training_curves.npy"
+        predictor_test_bin: str = "test_curves.npy"
 
     @dataclass
     class GridDimensions:
@@ -71,12 +84,10 @@ class Setup:
         nlay: int = 1  # Number of layers
 
         # Refinement parameters around the pumping well.
+        # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9 and so on...
         r_params = np.array(
             [
-                [
-                    9,
-                    150,
-                ],  # 150 meters from the pumping well coordinates, grid cells will have dimensions 9x9
+                [9, 150],
                 [8, 100],
                 [7, 90],
                 [6, 80],
@@ -88,7 +99,7 @@ class Setup:
                 [1.5, 20],
                 [1, 10],
             ]
-        )  # 10 meters from the pumping well coordinates, grid cells will have dimensions 1*1
+        )  # ...10 meters from the pumping well coordinates, grid cells will have dimensions 1x1.
 
     @dataclass
     class Focus:
@@ -164,11 +175,6 @@ class Setup:
         n_test: int = int(n_total * 0.2)
         # Sample size
         n_posts: int = n_training
-        #
-        # def __call__(self, N):
-        #     n_training: int = int(N * .8)
-        #     n_test: int = int(N * .2)
-        #     return n_training, n_test
 
     @dataclass
     class ModelParameters:

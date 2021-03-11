@@ -20,15 +20,12 @@ from typing import Type
 
 import joblib
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import PowerTransformer
 from loguru import logger
 
 from .. import utils
 from ..utils import Root
 from ..config import Setup
-
-from ..processing import curve_interpolation
 
 from ..algorithms import CCA, signed_distance
 from ..spatial import grid_parameters, get_block
@@ -154,7 +151,7 @@ def bel_fit_transform(
     bel_dir = jp(md.forecasts_dir, test_root[0])
 
     # Base directory that will contain target objects and processed data
-    base_dir = jp(md.forecasts_dir, "base")
+    base_dir = md.forecasts_base_dir
 
     new_dir = "".join(
         list(map(str, base.Wells.combination))
@@ -180,8 +177,8 @@ def bel_fit_transform(
     # Refined breakthrough curves data file
     # TODO : Specify this in config file
     # TODO: Remove duplicate code
-    tc_training_file = jp(base_dir, "training_curves.npy")
-    tc_test_file = jp(base_dir, "test_curves.npy")
+    tc_training_file = jp(obj_dir, "training_curves.npy")
+    tc_test_file = jp(obj_dir, "test_curves.npy")
     n_time_steps = base.HyperParameters.n_tstp
     # Loads the results:
     # tc has shape (n_sim, n_wells, n_time_steps)
