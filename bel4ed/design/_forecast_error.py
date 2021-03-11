@@ -21,7 +21,6 @@ from ..spatial import (
 
 __all__ = [
     "UncertaintyQuantification",
-    "analysis",
     "measure_info_mode",
     "objective_function",
     "compute_metric",
@@ -75,7 +74,9 @@ class UncertaintyQuantification:
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
-        self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
+
+        self.h_pco = None
+        # self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
 
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.n_pc_cut
@@ -94,6 +95,115 @@ class UncertaintyQuantification:
 
         # 0 contours of posterior WHPA
         self.vertices = None
+
+    def analysis(
+            self,
+            n_training: int = 200,
+            n_obs: int = 50,
+            flag_base: bool = False,
+            wipe: bool = False,
+            roots_training: Root = None,
+            to_swap: Root = None,
+            roots_obs: Root = None,
+    ):
+        """
+        I. First, defines the roots for training from simulations in the hydro results directory.
+        II. Define one or more 'observation' root(s) (roots_obs in params).
+        III. Perform PCA decomposition on the training targets and store the output in the 'base' folder,
+        to avoid recomputing it every time.
+        IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
+
+        :param wipe: bool: Whether to wipe the 'forecast' folder or not
+        :param n_training: int: Index from which training and data are separated
+        :param n_obs: int: Number of predictors to take
+        :param flag_base: bool: Recompute base PCA on target if True
+        :param roots_training: list: List of roots considered as training.
+        :param to_swap: list: List of roots to swap from training to observations.
+        :param roots_obs: list: List of roots considered as observations.
+        :return: list: List of training roots, list: List of observation roots
+
+        """
+
+        # Results location
+        md = self.base.Directories.hydro_res_dir
+        listme = os.listdir(md)
+
+        # Filter folders out
+        folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
+
+        def swap_root(pres: str):
+            """Selects roots from main folder and swap them from training to observation"""
+            if pres in roots_training:
+                idx = roots_training.index(pres)
+                roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
+            elif pres in folders:
+                idx = folders.index(pres)
+                roots_obs[0] = folders[idx]
+            else:
+                pass
+
+        if roots_training is None:
+            roots_training = folders[:n_training]  # List of n training roots
+        else:
+            n_training = len(roots_training)
+
+        if roots_obs is None:  # If no observation provided
+            if n_training + n_obs <= len(folders):
+                # List of m observation roots
+                roots_obs = folders[n_training: (n_training + n_obs)]
+            else:
+                logger.error("Incompatible training/observation numbers")
+                return
+
+        for i, r in enumerate(roots_training):
+            choices = folders[n_training:].copy()
+            if r in roots_obs:
+                random_root = np.random.choice(choices)
+                roots_training[i] = random_root
+                choices.remove(random_root)
+
+        for r in roots_obs:
+            if r in roots_training:
+                logger.warning(f"obs {r} is located in the training roots")
+                return
+
+        if to_swap is not None:
+            [swap_root(ts) for ts in to_swap]
+
+        # Perform PCA on target (whpa) and store the object in a base folder
+        # /!\ Danger zone /!\
+        if wipe:
+            try:
+                shutil.rmtree(self.base.Directories.forecasts_dir)
+            except FileNotFoundError:
+                pass
+
+        obj_path = os.path.join(self.base.Directories.forecasts_dir, "base")
+        utils.dirmaker(obj_path)  # Returns bool according to folder status
+        if flag_base:
+            utils.dirmaker(obj_path, erase=flag_base)
+            # Creates main target PCA object
+            obj = os.path.join(obj_path, "h_pca.pkl")
+            logger.info("Performing base PCA")
+            base_pca(
+                base=self.base,
+                base_dir=obj_path,
+                training_roots=roots_training,
+                test_roots=roots_obs,
+                h_pca_obj_path=obj,
+            )
+
+        # Fit transform
+        combinations = self.base.Wells.combination.copy()
+        total = len(roots_obs)
+        for ix, r_ in enumerate(roots_obs):  # For each observation root
+            logger.info(f"[{ix + 1}/{total}]-{r_}")
+            for ixw, c in enumerate(combinations):  # For each wel combination
+                logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
+                # PCA decomposition + CCA
+                self.base.Wells.combination = c  # This might not be so optimal
+                logger.info("Fit - Transform")
+                bel_fit_transform(base=self.base, training_roots=roots_training, test_root=r_)
 
     # %% Random sample from the posterior
     def sample_posterior(self, n_posts: int = None):
@@ -214,114 +324,6 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
     np.save(
         os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
     )
-
-
-def analysis(
-    base: Type[Setup],
-    n_training: int = 200,
-    n_obs: int = 50,
-    flag_base: bool = False,
-    wipe: bool = False,
-    roots_training: Root = None,
-    to_swap: Root = None,
-    roots_obs: Root = None,
-):
-    """
-    I. First, defines the roots for training from simulations in the hydro results directory.
-    II. Define one 'observation' root (roots_obs in params).
-    III. Perform PCA decomposition on the training targets and store the output in the 'base' folder,
-    to avoid recomputing it every time.
-    IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
-
-    :param base: class: Base class (inventory)
-    :param wipe: bool: Whether to wipe the 'forecast' folder or not
-    :param n_training: int: Index from which training and data are separated
-    :param n_obs: int: Number of predictors to take
-    :param flag_base: bool: Recompute base PCA on target if True
-    :param roots_training: list: List of roots considered as training.
-    :param to_swap: list: List of roots to swap from training to observations.
-    :param roots_obs: list: List of roots considered as observations.
-    :return: list: List of training roots, list: List of observation roots
-
-    """
-    # Results location
-    md = base.Directories.hydro_res_dir
-    listme = os.listdir(md)
-    # Filter folders out
-    folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-
-    def swap_root(pres: str):
-        """Selects roots from main folder and swap them from training to observation"""
-        if pres in roots_training:
-            idx = roots_training.index(pres)
-            roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
-        elif pres in folders:
-            idx = folders.index(pres)
-            roots_obs[0] = folders[idx]
-        else:
-            pass
-
-    if roots_training is None:
-        roots_training = folders[:n_training]  # List of n training roots
-    else:
-        n_training = len(roots_training)
-
-    if roots_obs is None:  # If no observation provided
-        if n_training + n_obs <= len(folders):
-            # List of m observation roots
-            roots_obs = folders[n_training : (n_training + n_obs)]
-        else:
-            logger.error("Incompatible training/observation numbers")
-            return
-
-    for i, r in enumerate(roots_training):
-        choices = folders[n_training:].copy()
-        if r in roots_obs:
-            random_root = np.random.choice(choices)
-            roots_training[i] = random_root
-            choices.remove(random_root)
-
-    for r in roots_obs:
-        if r in roots_training:
-            logger.warning(f"obs {r} is located in the training roots")
-            return
-
-    if to_swap is not None:
-        [swap_root(ts) for ts in to_swap]
-
-    # Perform PCA on target (whpa) and store the object in a base folder
-    # /!\ Danger zone /!\
-    if wipe:
-        try:
-            shutil.rmtree(base.Directories.forecasts_dir)
-        except FileNotFoundError:
-            pass
-    obj_path = os.path.join(base.Directories.forecasts_dir, "base")
-    utils.dirmaker(obj_path)  # Returns bool according to folder status
-    if flag_base:
-        utils.dirmaker(obj_path, erase=flag_base)
-        # Creates main target PCA object
-        obj = os.path.join(obj_path, "h_pca.pkl")
-        logger.info("Performing base PCA")
-        base_pca(
-            base=base,
-            base_dir=obj_path,
-            training_roots=roots_training,
-            test_roots=roots_obs,
-            h_pca_obj_path=obj,
-        )
-
-    combinations = base.Wells.combination.copy()
-
-    total = len(roots_obs)
-    for ix, r_ in enumerate(roots_obs):  # For each observation root
-        logger.info(f"[{ix + 1}/{total}]-{r_}")
-        for ixw, c in enumerate(combinations):  # For each wel combination
-            logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
-            # PCA decomposition + CCA
-            base.Wells.combination = c  # This might not be so optimal
-            logger.info("Fit - Transform")
-            bel_fit_transform(base=base, training_roots=roots_training, test_root=r_)
 
 
 def compute_metric(

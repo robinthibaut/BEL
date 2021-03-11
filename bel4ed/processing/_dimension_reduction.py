@@ -84,10 +84,10 @@ class PC:
 
         if test_roots:
             selection = self.test_df.loc[test_roots]
-            ids = self.test_df.index
+            ids = test_roots
         else:
             selection = self.test_df.to_numpy()
-            ids = test_roots
+            ids = self.test_df.index
 
         logger.info("Fitting and transforming test data")
         # Transform prediction data into principal components

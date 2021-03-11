@@ -122,6 +122,7 @@ def bel_fit_transform(
     """
     This function loads raw data and perform both PCA and CCA on it.
     It saves results as pkl objects that have to be loaded in the _forecast_error.py script to perform predictions.
+    Expects a single root to be provided.
 
     :param training_roots: list: List containing the uuid's of training roots
     :param base: class: Base class object containing global constants.
@@ -170,44 +171,66 @@ def bel_fit_transform(
         for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]
     ]
 
-    # Load training data
-    # Refined breakthrough curves data file
-    tsub = jp(base_dir, "training_curves.npy")
-    if not os.path.exists(tsub):
-        # Loads the results:
-        tc0, *_ = utils.data_loader(res_dir=res_dir, roots=training_roots, d=True)
-        # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
-        # pzs = WHPA's
-        # roots_ = simulations id's
-        # Subdivide d in an arbitrary number of time steps:
-        # tc has shape (n_sim, n_wells, n_time_steps)
-        n_time_steps = base.HyperParameters.n_tstp
-        tc = curve_interpolation(tc0=tc0, n_time_steps=n_time_steps)
+    # Load training dataset
 
-        np.save(tsub, tc)
-        # Save file roots
+    # %% PREDICTOR
+
+    # Refined breakthrough curves data file
+    # TODO : Specify this in config file
+    # TODO: Remove duplicate code
+    tc_training_file = jp(base_dir, "training_curves.npy")
+    tc_test_file = jp(base_dir, "test_curves.npy")
+    n_time_steps = base.HyperParameters.n_tstp
+    # Loads the results:
+    # tc0 = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
+    # pzs = WHPA's
+    # roots_ = simulations id's
+    # Subdivide d in an arbitrary number of time steps:
+    # tc has shape (n_sim, n_wells, n_time_steps)
+
+    if not os.path.exists(tc_training_file):
+        # Training
+        tc_training_raw, *_ = utils.data_loader(res_dir=res_dir, roots=training_roots, d=True)
+        tc_training = curve_interpolation(tc0=tc_training_raw, n_time_steps=n_time_steps)
+        np.save(tc_training_file, tc_training)
     else:
-        tc = np.load(tsub)
+        tc_training = np.load(tc_training_file)
+
+    if not os.path.exists(tc_test_file):
+        # Test
+        tc_test_raw, *_ = utils.data_loader(res_dir=res_dir, roots=test_root, d=True)
+        tc_test = curve_interpolation(tc0=tc_test_raw, n_time_steps=n_time_steps)
+        np.save(tc_test_file, tc_test)
+    else:
+        tc_test = np.load(tc_test_file)
 
     # %% Select wells:
     selection = [wc - 1 for wc in base.Wells.combination]
-    tc = tc[:, selection, :]
+    tc_training = tc_training[:, selection, :]
+    tc_test = tc_test[:, selection, :]
 
-    physical_shape = tc.shape
+    physical_shape = tc_training.shape
 
-    tc_flat = flatten_array(tc)
+    tc_training_flat = flatten_array(tc_training)
+    tc_test_flat = flatten_array(tc_test)
 
-    training_df_predictor = pd.DataFrame(data=tc_flat)
+    training_df_predictor = pd.DataFrame(data=tc_training_flat)
     training_df_predictor['id'] = training_roots
     training_df_predictor.set_index("id", inplace=True)
     training_df_predictor.attrs['physical_shape'] = physical_shape
+
+    test_df_predictor = pd.DataFrame(data=tc_test_flat)
+    test_df_predictor['id'] = test_root
+    test_df_predictor.set_index("id", inplace=True)
+    test_df_predictor.attrs['physical_shape'] = physical_shape
 
     # %%  PCA
     # PCA is performed with maximum number of components.
     # We choose an appropriate number of components to keep later on.
     # PCA on transport curves
-    d_pco = PC(name="d", training_df=training_df_predictor, directory=obj_dir)
+    d_pco = PC(name="d", training_df=training_df_predictor, test_df=test_df_predictor, directory=obj_dir)
     d_pco.training_fit_transform()
+    d_pco.test_transform()
     # PCA on transport curves
     d_pco.n_pc_cut = base.HyperParameters.n_pc_predictor
     ndo = d_pco.n_pc_cut
@@ -216,6 +239,8 @@ def bel_fit_transform(
 
     # Save the d PC object.
     joblib.dump(d_pco, jp(obj_dir, "d_pca.pkl"))
+
+    # %% TARGET
 
     # PCA on signed distance from base object containing training instances
     h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
@@ -264,7 +289,7 @@ class PosteriorIO:
         self.seed = None
         self.n_posts = None
         self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
-        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True),
+        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
         self.directory = directory
 
     def mvn_inference(

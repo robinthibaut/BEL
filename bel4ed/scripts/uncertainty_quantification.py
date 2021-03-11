@@ -5,7 +5,7 @@ from loguru import logger
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
-from bel4ed.design import analysis, compute_metric, measure_info_mode
+from bel4ed.design import compute_metric, measure_info_mode
 from bel4ed.utils import get_roots
 
 
