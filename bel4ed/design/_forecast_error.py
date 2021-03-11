@@ -75,8 +75,12 @@ class UncertaintyQuantification:
         f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
 
-        self.h_pco = None
-        # self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
+        try:
+            self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
+            logger.info("Base target training object reloaded")
+        except FileNotFoundError:
+            self.h_pco = None
+            logger.info("Base target training object not found")
 
         # Inspect transformation between physical and PC space
         dnc0 = self.d_pco.n_pc_cut
@@ -185,7 +189,7 @@ class UncertaintyQuantification:
             # Creates main target PCA object
             obj = os.path.join(obj_path, "h_pca.pkl")
             logger.info("Performing base PCA")
-            base_pca(
+            self.h_pco = base_pca(
                 base=self.base,
                 base_dir=obj_path,
                 training_roots=roots_training,
@@ -228,7 +232,7 @@ class UncertaintyQuantification:
 
         # Get the true array of the prediction
         # Prediction set - PCA space
-        self.shape = self.h_pco.training_shape
+        self.shape = self.h_pco.training_df.attrs["physical_shape"]
 
     # %% extract 0 contours
     def c0(self, write_vtk: bool = False):

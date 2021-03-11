@@ -113,6 +113,11 @@ def base_pca(
                 for r_training_ids in test_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r_training_ids) + "\n")
 
+        return h_pco
+
+    else:
+        logger.error("No base dimensionality reduction could be performed")
+
 
 def bel_fit_transform(
     base: Type[Setup],
