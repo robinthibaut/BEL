@@ -62,14 +62,14 @@ class UncertaintyQuantification:
         # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
-            self.base_dir = jp(md.forecasts_dir, "base")
+            self.base_dir = md.forecasts_base_dir
         else:
             self.base_dir = base_dir
         self.res_dir = jp(self.bel_dir, "obj")
         self.fig_cca_dir = jp(self.bel_dir, "cca")
         self.fig_pred_dir = jp(self.bel_dir, "uq")
 
-        self.po = PosteriorIO(directory=self.res_dir)
+        # self.po = PosteriorIO(directory=self.res_dir)
 
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
@@ -221,7 +221,7 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        self.forecast_posterior = self.po.bel_predict(
+        self.forecast_posterior = PosteriorIO(directory=self.res_dir).bel_predict(
             pca_d=self.d_pco,
             pca_h=self.h_pco,
             cca_obj=self.cca_operator,
@@ -234,7 +234,7 @@ class UncertaintyQuantification:
         self.shape = self.h_pco.training_df.attrs["physical_shape"]
 
     # %% extract 0 contours
-    def c0(self, write_vtk: bool = False):
+    def contour_extract(self, write_vtk: bool = False):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
@@ -283,7 +283,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
     method_name = metric.__name__
     logger.info(f"Quantifying image difference based on {method_name}")
     if method_name == "modified_hausdorff":
-        x, y = uq.c0()
+        x, y = uq.contour_extract()
         to_compare = uq.vertices
         true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
     elif method_name == "structural_similarity":
@@ -333,7 +333,7 @@ def compute_metric(
     base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
 ):
     if base_dir is None:
-        base_dir = os.path.join(base.Directories.forecasts_dir, "base")
+        base_dir = base.Directories.forecasts_base_dir
 
     global_mean = 0
     total = len(roots_obs)

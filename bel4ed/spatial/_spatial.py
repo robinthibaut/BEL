@@ -309,7 +309,7 @@ def contours_vertices(
     # .allseg[0][0] extracts the vertices of each O contour = WHPA's vertices
 
     # /!\ If more than one contours are present for the same values, possibility to include them or not.
-    # How are the contours sorted in c0.allsegs[0][i] ?
+    # How are the contours sorted in contour_extract.allsegs[0][i] ?
     # It looks like they are sorted by size.
     if ignore_:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
