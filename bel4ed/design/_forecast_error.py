@@ -69,8 +69,6 @@ class UncertaintyQuantification:
         self.fig_cca_dir = jp(self.bel_dir, "cca")
         self.fig_pred_dir = jp(self.bel_dir, "uq")
 
-        # self.po = PosteriorIO(directory=self.res_dir)
-
         # Load objects
         f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
         self.cca_operator, self.d_pco = list(map(joblib.load, f_names))

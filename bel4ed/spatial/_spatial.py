@@ -2,28 +2,22 @@
 from typing import List
 
 import numpy as np
-import skfmm  # Library to compute the signed distance
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
-from scipy.spatial import distance_matrix
 
 plt.rcParams.update({"figure.max_open_warning": 0})
 
 __all__ = [
     "grid_parameters",
-    "signed_distance",
     "block_shaped",
     "refine_axis",
     "rc_from_blocks",
     "blocks_from_rc",
     "blocks_from_rc_3d",
-    "matrix_paste",
-    "h_sub",
     "get_centroids",
     "contours_vertices",
     "binary_polygon",
     "binary_stack",
-    "get_block",
     "refine_machine",
 ]
 
@@ -55,24 +49,6 @@ def grid_parameters(
     xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)
 
     return xys, nrow, ncol
-
-
-def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float, pzs: np.array):
-    """
-    Given an array of coordinates of polygon vertices, computes its signed distance field.
-    :param xys: Centroids of a grid' cells
-    :param nrow: Number of rows
-    :param ncol: Number of columns
-    :param grf: Grid dimension (uniform grid)
-    :param pzs: Array of ordered vertices coordinates of a polygon.
-    :return: Signed distance matrix
-    """
-
-    phi = binary_polygon(xys, nrow, ncol, pzs)
-
-    sd = skfmm.distance(phi, dx=grf)  # Signed distance computation
-
-    return sd
 
 
 def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
@@ -247,34 +223,6 @@ def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
     return blocks
 
 
-def matrix_paste(c_big: np.array, c_small: np.array) -> list:
-    # Compute distance matrix between refined and dummy grid.
-    dm = distance_matrix(c_big, c_small)
-    inds = [
-        np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0]
-        for i in range(dm.shape[0])
-    ]
-    return inds
-
-
-def h_sub(h: np.array, un: int, uc: int, sc: int) -> np.array:
-    """
-    Process signed distance array.
-    :param h: Signed distance array
-    :param un: # rows
-    :param uc: # columns
-    :param sc: New cell dimension in x and y direction (original is 1)
-
-    """
-    h_u = np.zeros((h.shape[0], un, uc))
-    for i in range(h.shape[0]):
-        sim = h[i]
-        sub = block_shaped(arr=sim, nrows=sc, ncols=sc)
-        h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
-
-    return h_u
-
-
 def get_centroids(array: np.array, grf: float) -> np.array:
     """
     Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
@@ -371,30 +319,6 @@ def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.
     big_sum -= np.min(big_sum)
     big_sum /= np.max(big_sum)
     return big_sum
-
-
-def get_block(pm: np.array, i: int) -> np.array:
-    """
-    Extracts block from a 2x2 partitioned matrix.
-    :param pm: Partitioned matrix
-    :param i: Block index
-    1 2
-    3 4
-    :return: Bock #b
-    """
-
-    b = pm.shape[0] // 2
-
-    if i == 1:
-        return pm[:b, :b]
-    if i == 2:
-        return pm[:b, b:]
-    if i == 3:
-        return pm[b:, :b]
-    if i == 4:
-        return pm[b:, b:]
-    else:
-        return 0
 
 
 def refine_machine(

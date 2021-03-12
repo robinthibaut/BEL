@@ -1,6 +1,12 @@
 import numpy as np
 
-__all__ = ["svd_flip", "safe_accumulator_op"]
+__all__ = ["svd_flip", "safe_accumulator_op", "signed_distance", "get_block", "matrix_paste", "h_sub"]
+
+import skfmm
+
+from scipy.spatial import distance_matrix
+
+from bel4ed.spatial import block_shaped, binary_polygon
 
 
 def svd_flip(u, v, u_based_decision=True):
@@ -74,3 +80,73 @@ def safe_accumulator_op(op, x, *args, **kwargs):
     else:
         result = op(x, *args, **kwargs)
     return result
+
+
+def get_block(pm: np.array, i: int) -> np.array:
+    """
+    Extracts block from a 2x2 partitioned matrix.
+    :param pm: Partitioned matrix
+    :param i: Block index
+    1 2
+    3 4
+    :return: Bock #b
+    """
+
+    b = pm.shape[0] // 2
+
+    if i == 1:
+        return pm[:b, :b]
+    if i == 2:
+        return pm[:b, b:]
+    if i == 3:
+        return pm[b:, :b]
+    if i == 4:
+        return pm[b:, b:]
+    else:
+        return 0
+
+
+def matrix_paste(c_big: np.array, c_small: np.array) -> list:
+    # Compute distance matrix between refined and dummy grid.
+    dm = distance_matrix(c_big, c_small)
+    inds = [
+        np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0]
+        for i in range(dm.shape[0])
+    ]
+    return inds
+
+
+def h_sub(h: np.array, un: int, uc: int, sc: int) -> np.array:
+    """
+    Process signed distance array.
+    :param h: Signed distance array
+    :param un: # rows
+    :param uc: # columns
+    :param sc: New cell dimension in x and y direction (original is 1)
+
+    """
+    h_u = np.zeros((h.shape[0], un, uc))
+    for i in range(h.shape[0]):
+        sim = h[i]
+        sub = block_shaped(arr=sim, nrows=sc, ncols=sc)
+        h_u[i] = np.array([s.mean() for s in sub]).reshape(un, uc)
+
+    return h_u
+
+
+def signed_distance(xys: np.array, nrow: int, ncol: int, grf: float, pzs: np.array):
+    """
+    Given an array of coordinates of polygon vertices, computes its signed distance field.
+    :param xys: Centroids of a grid' cells
+    :param nrow: Number of rows
+    :param ncol: Number of columns
+    :param grf: Grid dimension (uniform grid)
+    :param pzs: Array of ordered vertices coordinates of a polygon.
+    :return: Signed distance matrix
+    """
+
+    phi = binary_polygon(xys, nrow, ncol, pzs)
+
+    sd = skfmm.distance(phi, dx=grf)  # Signed distance computation
+
+    return sd

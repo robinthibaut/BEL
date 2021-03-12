@@ -13,9 +13,10 @@ from pysgems.sgems import sg
 from scipy import integrate, ndimage, stats
 
 from bel4ed.config import Setup
-from bel4ed.utils import data_read
+from bel4ed.algorithms.extmath import get_block
+import bel4ed.utils as utils
 
-__all__ = ["KDE", "kde_params", "posterior_conditional", "sgsim"]
+__all__ = ["KDE", "kde_params", "posterior_conditional", "sgsim", "mvn_inference"]
 
 
 class KDE:
@@ -26,14 +27,14 @@ class KDE:
     """
 
     def __init__(
-        self,
-        *,
-        bw_method: str = None,
-        bw_adjust: float = 1,
-        gridsize: int = 200,
-        cut: float = 3,
-        clip: list = None,
-        cumulative: bool = False,
+            self,
+            *,
+            bw_method: str = None,
+            bw_adjust: float = 1,
+            gridsize: int = 200,
+            cut: float = 3,
+            clip: list = None,
+            cumulative: bool = False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -71,7 +72,7 @@ class KDE:
 
     @staticmethod
     def _define_support_grid(
-        x: np.array, bw: float, cut: float, clip: list, gridsize: int
+            x: np.array, bw: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
@@ -102,11 +103,11 @@ class KDE:
         return grid1, grid2
 
     def define_support(
-        self,
-        x1: np.array,
-        x2: np.array = None,
-        weights: np.array = None,
-        cache: bool = True,
+            self,
+            x1: np.array,
+            x2: np.array = None,
+            weights: np.array = None,
+            cache: bool = True,
     ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
@@ -177,8 +178,8 @@ class KDE:
 
 
 def _univariate_density(
-    data_variable: pd.DataFrame,
-    estimate_kws: dict,
+        data_variable: pd.DataFrame,
+        estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -201,8 +202,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-    data: pd.DataFrame,
-    estimate_kws: dict,
+        data: pd.DataFrame,
+        estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -238,15 +239,15 @@ def _bivariate_density(
 
 
 def kde_params(
-    x: np.array = None,
-    y: np.array = None,
-    bw: float = None,
-    gridsize: int = 200,
-    cut: float = 3,
-    clip=None,
-    cumulative: bool = False,
-    bw_method: str = "scott",
-    bw_adjust: int = 1,
+        x: np.array = None,
+        y: np.array = None,
+        bw: float = None,
+        gridsize: int = 200,
+        cut: float = 3,
+        clip=None,
+        cumulative: bool = False,
+        bw_method: str = "scott",
+        bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -315,11 +316,11 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
 
 
 def _conditional_distribution(
-    kde_array: np.array,
-    x_array: np.array,
-    y_array: np.array,
-    x: float = None,
-    y: float = None,
+        kde_array: np.array,
+        x_array: np.array,
+        y_array: np.array,
+        x: float = None,
+        y: float = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -369,7 +370,7 @@ def _normalize_distribution(post: np.array, support: np.array):
 
 
 def posterior_conditional(
-    x: np.array, y: np.array, x_obs: float = None, y_obs: float = None
+        x: np.array, y: np.array, x_obs: float = None, y_obs: float = None
 ):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
@@ -506,7 +507,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     opl = jp(model_ws, "results.grid")  # Output file location.
 
     # Grid information directly derived from the output file.
-    matrix = data_read(opl, start=3)
+    matrix = utils.data_read(opl, start=3)
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     tf = np.vectorize(_log_transform)  # Transform values from log10
@@ -519,3 +520,102 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
         np.save(jp(model_ws, "hk0"), matrix)  # Save the un-discretized hk grid
 
     return matrix, centers
+
+
+def mvn_inference(
+        h_cca_training_gaussian: np.array,
+        d_cca_training: np.array,
+        d_pc_training: np.array,
+        d_rotations: np.array,
+        d_cca_prediction: np.array,
+):
+    """
+        Estimating posterior mean and covariance of the target.
+        .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
+               SIAM, 2005. Pages: 70-71
+        :param h_cca_training_gaussian: Canonical Variate of the training target, gaussian-distributed
+        :param d_cca_training: Canonical Variate of the training data
+        :param d_pc_training: Principal Components of the training data
+        :param d_rotations: CCA rotations of the training data (project original data to canonical space)
+        :param d_cca_prediction: Canonical Variate of the observation
+        :return: h_posterior_mean, h_posterior_covariance
+        :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
+        """
+
+    h_cca_training_gaussian = utils.check_array(
+        h_cca_training_gaussian, copy=True, ensure_2d=False
+    )
+    d_cca_training = utils.check_array(d_cca_training, copy=True, ensure_2d=False)
+    d_pc_training = utils.check_array(d_pc_training, copy=True, ensure_2d=False)
+    d_rotations = utils.check_array(d_rotations, copy=True, ensure_2d=False)
+    d_cca_prediction = utils.check_array(
+        d_cca_prediction, copy=True, ensure_2d=False
+    )
+
+    # Size of the set
+    n_training = d_cca_training.shape[0]
+
+    # Computation of the posterior mean in Canonical space
+    h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
+    # Mean is 0, as expected.
+    h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)
+
+    # Evaluate the covariance in h (in Canonical space)
+    # Very close to the Identity matrix
+    # (n_comp_CCA, n_comp_CCA)
+    h_cov_operator = np.cov(h_cca_training_gaussian.T)
+
+    # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+    # Number of PCA components for the curves
+    x_dim = np.size(d_pc_training, axis=1)
+    noise = 0.01
+    # I matrix. (n_comp_PCA, n_comp_PCA)
+    d_cov_operator = np.eye(x_dim) * noise
+    # (n_comp_CCA, n_comp_CCA)
+    d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations
+
+    # Linear modeling h to d (in canonical space) with least-square criterion.
+    # Pay attention to the transpose operator.
+    # Computes the vector g that approximately solves the equation h @ g = d.
+    g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
+    # Replace values below threshold by 0.
+    g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
+
+    # Modeling error due to deviations from theory
+    # (n_components_CCA, n_training)
+    d_ls_predicted = h_cca_training_gaussian @ g.T
+    d_modeling_mean_error = np.mean(
+        d_cca_training - d_ls_predicted, axis=0
+    )  # (n_comp_CCA, 1)
+    d_modeling_error = (
+            d_cca_training
+            - d_ls_predicted
+            - np.tile(d_modeling_mean_error, (n_training, 1))
+    )
+    # (n_comp_CCA, n_training)
+
+    # Information about the covariance of the posterior distribution in Canonical space.
+    d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
+
+    # Build block matrix
+    s11 = h_cov_operator
+    s12 = h_cov_operator @ g.T
+    s21 = g @ h_cov_operator
+    s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
+    block = np.block([[s11, s12], [s21, s22]])
+
+    # Inverse
+    delta = np.linalg.pinv(block)
+    # Partition block
+    d11 = get_block(delta, 1)
+    d12 = get_block(delta, 2)
+
+    # Observe that posterior covariance does not depend on observed d.
+    h_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
+    # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
+    h_posterior_mean = h_posterior_covariance @ (
+            d11 @ h_mean
+            - d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
+    )  # (n_comp_CCA,)
+
+    return h_posterior_mean, h_posterior_covariance

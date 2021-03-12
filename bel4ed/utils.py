@@ -539,7 +539,6 @@ def check_array(
 
     # check if the object contains several dtypes (typically a pandas
     # DataFrame), and store them. If not, store None.
-    dtypes_orig = None
     if hasattr(array, "dtypes") and hasattr(array.dtypes, "__array__"):
         dtypes_orig = list(array.dtypes)
         # pandas boolean dtype __array__ interface coerces bools to objects
