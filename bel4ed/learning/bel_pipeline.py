@@ -27,7 +27,7 @@ from .. import utils
 from ..utils import Root
 from ..config import Setup
 
-from ..algorithms import BaseEstimator, CCA, signed_distance
+from ..algorithms import CCA, signed_distance
 from ..algorithms import mvn_inference
 from ..spatial import grid_parameters
 from ..processing import PC
@@ -258,12 +258,14 @@ def bel_fit_transform(
     return sub_dir
 
 
-class PosteriorIO(BaseEstimator):
+class PosteriorIO:
     """
     Heart of the framework.
     """
 
     def __init__(self, directory: str = None):
+
+        self.directory = directory
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
@@ -271,6 +273,101 @@ class PosteriorIO(BaseEstimator):
         self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
         self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
         self.directory = directory
+
+    def random_sample(self, n_posts: int = None) -> np.array:
+        """
+        :param n_posts:
+        :return:
+        """
+        if n_posts is None:
+            n_posts = self.n_posts
+        # Draw n_posts random samples from the multivariate normal distribution :
+        # Pay attention to the transpose operator
+        np.random.seed(self.seed)
+        h_posts_gaussian = np.random.multivariate_normal(
+            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
+        )
+        return h_posts_gaussian
+
+    def bel_predict(
+        self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
+    ) -> np.array:
+        """
+        Make predictions, in the BEL fashion.
+        :param pca_d: PCA object for observations.
+        :param pca_h: PCA object for targets.
+        :param cca_obj: CCA object.
+        :param n_posts: Number of posteriors to extract.
+        :param add_comp: Flag to add remaining components.
+        :return: forecast_posterior in original space
+        """
+
+        if self.posterior_mean is None and self.posterior_covariance is None:
+            # Cut desired number of PC components
+            d_pc_training, d_pc_prediction = pca_d.comp_refresh(pca_d.n_pc_cut)
+            h_pc_training, _ = pca_h.comp_refresh(pca_h.n_pc_cut)
+
+            # observation data for prediction sample
+            d_pc_obs = d_pc_prediction[0]
+
+            # Transform to canonical space
+            d_cca_training, h_cca_training = cca_obj.transform(
+                d_pc_training, h_pc_training
+            )
+
+            # Ensure Gaussian distribution in d_cca_training
+            d_cca_training = self.normalize_d.fit_transform(d_cca_training)
+
+            # Ensure Gaussian distribution in h_cca_training
+            # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
+            h_cca_training = self.normalize_h.fit_transform(h_cca_training)
+
+            # Get the rotation matrices
+            d_rotations = cca_obj.x_rotations_
+
+            # Project observed data into canonical space.
+            d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
+
+            d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
+
+            # Estimate the posterior mean and covariance (Tarantola)
+
+            self.posterior_mean, self.posterior_covariance = mvn_inference(
+                h_cca_training,
+                d_cca_training,
+                d_pc_training,
+                d_rotations,
+                d_cca_prediction,
+            )
+
+            # Set the seed for later use
+            if self.seed is None:
+                self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+
+            if n_posts is None:
+                self.n_posts = Setup.HyperParameters.n_posts
+            else:
+                self.n_posts = n_posts
+
+            # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
+            # This allows to reload this object later on and resample using the same seed.
+            post_location = jp(self.directory, "post.pkl")
+            logger.info(f"Saved posterior object to {post_location}")
+            joblib.dump(self, post_location)
+
+        # Sample the inferred multivariate gaussian distribution
+        h_posts_gaussian = self.random_sample(self.n_posts)
+
+        # Back-transform h posterior to the physical space
+        forecast_posterior = self.back_transform(
+            h_posts_gaussian=h_posts_gaussian,
+            cca_obj=cca_obj,
+            pca_h=pca_h,
+            n_posts=self.n_posts,
+            add_comp=add_comp,
+        )
+
+        return forecast_posterior
 
     def back_transform(
         self,
@@ -329,103 +426,6 @@ class PosteriorIO(BaseEstimator):
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
             (n_posts, osx, osy)
-        )
-
-        return forecast_posterior
-
-    def random_sample(self, n_posts: int = None) -> np.array:
-        """
-
-        :param n_posts:
-        :return:
-        """
-        if n_posts is None:
-            n_posts = self.n_posts
-        # Draw n_posts random samples from the multivariate normal distribution :
-        # Pay attention to the transpose operator
-        np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(
-            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
-        )
-        return h_posts_gaussian
-
-    def bel_predict(
-        self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
-    ) -> np.array:
-        """
-        Make predictions, in the BEL fashion.
-        :param pca_d: PCA object for observations.
-        :param pca_h: PCA object for targets.
-        :param cca_obj: CCA object.
-        :param n_posts: Number of posteriors to extract.
-        :param add_comp: Flag to add remaining components.
-        :return: forecast_posterior in original space
-        """
-
-        if self.posterior_mean is None and self.posterior_covariance is None:
-            # Cut desired number of PC components
-            d_pc_training, d_pc_prediction = pca_d.comp_refresh(pca_d.n_pc_cut)
-            h_pc_training, _ = pca_h.comp_refresh(pca_h.n_pc_cut)
-
-            # observation data for prediction sample
-            d_pc_obs = d_pc_prediction[0]
-
-            # Transform to canonical space
-            d_cca_training, h_cca_training = cca_obj.transform(
-                d_pc_training, h_pc_training
-            )
-            # d_cca_training, h_cca_training = d_cca_training.T, h_cca_training.T
-
-            # Ensure Gaussian distribution in d_cca_training
-            d_cca_training = self.normalize_d.fit_transform(d_cca_training)
-
-            # Ensure Gaussian distribution in h_cca_training
-            # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
-            h_cca_training = self.normalize_h.fit_transform(h_cca_training)
-
-            # Get the rotation matrices
-            d_rotations = cca_obj.x_rotations_
-
-            # Project observed data into canonical space.
-            d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-
-            d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
-
-            # Estimate the posterior mean and covariance (Tarantola)
-
-            mvn_inference(
-                h_cca_training,
-                d_cca_training,
-                d_pc_training,
-                d_rotations,
-                d_cca_prediction,
-            )
-
-            # Set the seed for later use
-            if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
-
-            if n_posts is None:
-                self.n_posts = Setup.HyperParameters.n_posts
-            else:
-                self.n_posts = n_posts
-
-            # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
-            # This allows to reload this object later on and resample using the same seed.
-            post_location = jp(self.directory, "post.pkl")
-            logger.info(f"Saved posterior object to {post_location}")
-            joblib.dump(self, post_location)
-
-        # Sample the inferred multivariate gaussian distribution
-        h_posts_gaussian = self.random_sample(self.n_posts)
-
-        # Back-transform h posterior to the physical space
-        forecast_posterior = self.back_transform(
-            h_posts_gaussian=h_posts_gaussian,
-            cca_obj=cca_obj,
-            pca_h=pca_h,
-            n_posts=self.n_posts,
-            add_comp=add_comp,
         )
 
         return forecast_posterior

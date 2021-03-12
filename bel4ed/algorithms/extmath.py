@@ -1,6 +1,13 @@
 import numpy as np
 
-__all__ = ["svd_flip", "safe_accumulator_op", "signed_distance", "get_block", "matrix_paste", "h_sub"]
+__all__ = [
+    "svd_flip",
+    "safe_accumulator_op",
+    "signed_distance",
+    "get_block",
+    "matrix_paste",
+    "h_sub",
+]
 
 import skfmm
 

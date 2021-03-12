@@ -69,10 +69,6 @@ class UncertaintyQuantification:
         self.fig_cca_dir = jp(self.bel_dir, "cca")
         self.fig_pred_dir = jp(self.bel_dir, "uq")
 
-        # Load objects
-        f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
-        self.cca_operator, self.d_pco = list(map(joblib.load, f_names))
-
         try:
             self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
             logger.info("Base target training object reloaded")
@@ -80,14 +76,7 @@ class UncertaintyQuantification:
             self.h_pco = None
             logger.info("Base target training object not found")
 
-        # Inspect transformation between physical and PC space
-        dnc0 = self.d_pco.n_pc_cut
-
-        # Cut desired number of PC components
-        d_pc_training, self.d_pc_prediction = self.d_pco.comp_refresh(dnc0)
-
         # Sampling
-        self.n_training = len(d_pc_training)
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
         self.h_true_obs = None  # True h in physical space
@@ -217,12 +206,16 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
+        # Load objects
+        f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
+        cca_operator, d_pco = list(map(joblib.load, f_names))
+
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
         self.forecast_posterior = PosteriorIO(directory=self.res_dir).bel_predict(
-            pca_d=self.d_pco,
+            pca_d=d_pco,
             pca_h=self.h_pco,
-            cca_obj=self.cca_operator,
+            cca_obj=cca_operator,
             n_posts=self.n_posts,
             add_comp=False,
         )
