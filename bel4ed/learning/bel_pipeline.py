@@ -131,12 +131,6 @@ def bel_fit_transform(
     :returns sub_dir: Results directory
     """
     # TODO: Separate folder and computation stuff
-    # Load parameters:
-    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-    xys, nrow, ncol = grid_parameters(
-        x_lim=x_lim, y_lim=y_lim, grf=grf
-    )  # Initiate SD instance
-
     # Directories
     md = base.Directories
     res_dir = md.hydro_res_dir  # Results folders of the hydro simulations

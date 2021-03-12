@@ -219,7 +219,6 @@ class UncertaintyQuantification:
             n_posts=self.n_posts,
             add_comp=False,
         )
-
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_df.attrs["physical_shape"]
