@@ -35,11 +35,11 @@ from ..processing import PC
 
 
 def base_pca(
-        base: Type[Setup],
-        base_dir: str,
-        training_roots: Root,
-        test_roots: Root,
-        h_pca_obj_path: str = None,
+    base: Type[Setup],
+    base_dir: str,
+    training_roots: Root,
+    test_roots: Root,
+    h_pca_obj_path: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -100,7 +100,7 @@ def base_pca(
         if not os.path.exists(jp(base_dir, "roots.dat")):
             with open(jp(base_dir, "roots.dat"), "w") as f:
                 for (
-                        r_training_ids
+                    r_training_ids
                 ) in training_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r_training_ids) + "\n")
 
@@ -133,11 +133,12 @@ class BEL:
         self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
         self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
 
-    def fit(self,
-            base: Type[Setup],
-            training_roots: Root = None,
-            test_root: Root or str = None,
-            ) -> str:
+    def fit(
+        self,
+        base: Type[Setup],
+        training_roots: Root = None,
+        test_root: Root or str = None,
+    ) -> str:
         """
         This function loads raw data and perform both PCA and CCA on it.
         It saves results as pkl objects that have to be loaded in the _forecast_error.py script to perform predictions.
@@ -294,9 +295,7 @@ class BEL:
             x_scores = self.learner.transform(X)
             return x_scores
 
-    def predict(
-            self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int
-    ) -> np.array:
+    def predict(self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int) -> np.array:
         """
         Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observations.
@@ -339,18 +338,16 @@ class BEL:
             # Get the rotation matrices
             d_rotations = cca_obj.x_rotations_
             x_cov = d_rotations.T @ x_cov @ d_rotations
-
             dict_args = {"x_cov": x_cov}
 
             # Estimate the posterior mean and covariance
             if self.mode == "mvn":
-                self.posterior_mean, self.posterior_covariance = \
-                    mvn_inference(
-                        h_cca_training,
-                        d_cca_training,
-                        d_cca_prediction,
-                        **dict_args,
-                    )
+                self.posterior_mean, self.posterior_covariance = mvn_inference(
+                    X=d_cca_training,
+                    Y=h_cca_training,
+                    X_obs=d_cca_prediction,
+                    **dict_args,
+                )
             else:
                 warnings.warn("KDE not implemented yet")
 
@@ -375,12 +372,12 @@ class BEL:
         return random_samples
 
     def inverse_transform(
-            self,
-            h_posts_gaussian: np.array,
-            cca_obj: CCA,
-            pca_h: PC,
-            add_comp: bool = False,
-            save_target_pc: bool = False,
+        self,
+        h_posts_gaussian: np.array,
+        cca_obj: CCA,
+        pca_h: PC,
+        add_comp: bool = False,
+        save_target_pc: bool = False,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
@@ -405,7 +402,7 @@ class BEL:
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
         h_pca_reverse = (
-                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
         )
 
         # Whether to add or not the rest of PC components
@@ -414,7 +411,10 @@ class BEL:
                 [pca_h.random_pc(self.n_posts) for _ in range(self.n_posts)]
             )  # Get the extra components
             h_pca_reverse = np.array(
-                [np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(self.n_posts)]
+                [
+                    np.concatenate((h_pca_reverse[i], rnpc[i]))
+                    for i in range(self.n_posts)
+                ]
             )  # Insert it
 
         if save_target_pc:

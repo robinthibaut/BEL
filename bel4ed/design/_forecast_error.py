@@ -29,11 +29,11 @@ __all__ = [
 
 class UncertaintyQuantification:
     def __init__(
-            self,
-            base: Type[Setup],
-            study_folder: str,
-            base_dir: str = None,
-            seed: int = None,
+        self,
+        base: Type[Setup],
+        study_folder: str,
+        base_dir: str = None,
+        seed: int = None,
     ):
         """
         :param base: class: Base object (inventory)
@@ -89,14 +89,14 @@ class UncertaintyQuantification:
         self.vertices = None
 
     def analysis(
-            self,
-            n_training: int = 200,
-            n_obs: int = 50,
-            flag_base: bool = False,
-            wipe: bool = False,
-            roots_training: Root = None,
-            to_swap: Root = None,
-            roots_obs: Root = None,
+        self,
+        n_training: int = 200,
+        n_obs: int = 50,
+        flag_base: bool = False,
+        wipe: bool = False,
+        roots_training: Root = None,
+        to_swap: Root = None,
+        roots_obs: Root = None,
     ):
         """
         I. First, defines the roots for training from simulations in the hydro results directory.
@@ -142,7 +142,7 @@ class UncertaintyQuantification:
         if roots_obs is None:  # If no observation provided
             if n_training + n_obs <= len(folders):
                 # List of m observation roots
-                roots_obs = folders[n_training: (n_training + n_obs)]
+                roots_obs = folders[n_training : (n_training + n_obs)]
             else:
                 logger.error("Incompatible training/observation numbers")
                 return
@@ -213,20 +213,18 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        h_posts_gaussian = \
-            self.bel.predict(
-                pca_d=d_pco,
-                pca_h=self.h_pco,
-                cca_obj=cca_operator,
-                n_posts=self.n_posts,
-            )
+        h_posts_gaussian = self.bel.predict(
+            pca_d=d_pco,
+            pca_h=self.h_pco,
+            cca_obj=cca_operator,
+            n_posts=self.n_posts,
+        )
 
-        self.forecast_posterior = \
-            self.bel.inverse_transform(
-                h_posts_gaussian=h_posts_gaussian,
-                cca_obj=cca_operator,
-                pca_h=self.h_pco,
-            )
+        self.forecast_posterior = self.bel.inverse_transform(
+            h_posts_gaussian=h_posts_gaussian,
+            cca_obj=cca_operator,
+            pca_h=self.h_pco,
+        )
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_df.attrs["physical_shape"]
@@ -328,7 +326,7 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
 
 def compute_metric(
-        base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
+    base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
 ):
     if base_dir is None:
         base_dir = base.Directories.forecasts_base_dir

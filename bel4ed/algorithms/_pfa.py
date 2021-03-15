@@ -15,10 +15,10 @@ from sklearn.utils.validation import check_is_fitted, FLOAT_DTYPES
 __all__ = ["_PFA"]
 
 
-class _PFA(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator,
-           metaclass=ABCMeta):
-    """Prediction Focused Approach (PFA)
-    """
+class _PFA(
+    TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator, metaclass=ABCMeta
+):
+    """Prediction Focused Approach (PFA)"""
 
     @abstractmethod
     def __init__(self, learner, mode="mvn"):
@@ -146,5 +146,4 @@ class _PFA(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator,
         return self.fit(X, y).transform(X, y)
 
     def _more_tags(self):
-        return {'poor_score': True,
-                'requires_y': False}
+        return {"poor_score": True, "requires_y": False}

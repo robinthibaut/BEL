@@ -523,12 +523,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     return matrix, centers
 
 
-def mvn_inference(
-    X: np.array,
-    Y: np.array,
-    X_obs: np.array,
-    **kwargs
-):
+def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs):
     """
     Estimating posterior mean and covariance of the target.
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
@@ -540,9 +535,7 @@ def mvn_inference(
     :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
     """
 
-    Y = check_array(
-        Y, copy=True, ensure_2d=False
-    )
+    Y = check_array(Y, copy=True, ensure_2d=False)
     X = check_array(X, copy=True, ensure_2d=False)
 
     X_obs = check_array(X_obs, copy=True, ensure_2d=False)
@@ -574,14 +567,10 @@ def mvn_inference(
 
     # Modeling error due to deviations from theory
     # (n_components_CCA, n_training)
-    x_ls_predicted = Y @ g.T
-    x_modeling_mean_error = np.mean(
-        X - x_ls_predicted, axis=0
-    )  # (n_comp_CCA, 1)
+    x_ls_predicted = np.matmul(Y, g.T)
+    x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
     x_modeling_error = (
-            X
-            - x_ls_predicted
-            - np.tile(x_modeling_mean_error, (n_training, 1))
+        X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
     )
     # (n_comp_CCA, n_training)
 
@@ -605,8 +594,7 @@ def mvn_inference(
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (
-        d11 @ y_mean
-        - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
+        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
     )  # (n_comp_CCA,)
 
     return y_posterior_mean, y_posterior_covariance
