@@ -523,15 +523,15 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     return matrix, centers
 
 
-def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs):
+def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.array, np.array):
     """
     Estimating posterior mean and covariance of the target.
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
-    :param Y: Canonical Variate of the training target, gaussian-distributed
     :param X: Canonical Variate of the training data
+    :param Y: Canonical Variate of the training target, gaussian-distributed
     :param X_obs: Canonical Variate of the observation
-    :return: h_posterior_mean, h_posterior_covariance
+    :return: y_posterior_mean, y_posterior_covariance
     :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
     """
 
