@@ -295,7 +295,7 @@ class BEL:
             return x_scores
 
     def predict(
-            self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
+            self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -303,7 +303,6 @@ class BEL:
         :param pca_h: PCA object for targets.
         :param cca_obj: CCA object.
         :param n_posts: Number of posteriors to extract.
-        :param add_comp: Flag to add remaining components.
         :return: forecast_posterior in original space
         """
 
@@ -364,25 +363,15 @@ class BEL:
             joblib.dump(self, post_location)
 
         # Sample the inferred multivariate gaussian distribution
-        h_posts_gaussian = self.random_sample(self.n_posts)
+        random_samples = self.random_sample(self.n_posts)
 
-        # Back-transform h posterior to the physical space
-        forecast_posterior = self.inverse_transform(
-            h_posts_gaussian=h_posts_gaussian,
-            cca_obj=cca_obj,
-            pca_h=pca_h,
-            n_posts=self.n_posts,
-            add_comp=add_comp,
-        )
-
-        return forecast_posterior
+        return random_samples
 
     def inverse_transform(
             self,
             h_posts_gaussian: np.array,
             cca_obj: CCA,
             pca_h: PC,
-            n_posts: int,
             add_comp: bool = False,
             save_target_pc: bool = False,
     ) -> np.array:
@@ -391,7 +380,6 @@ class BEL:
         :param h_posts_gaussian:
         :param cca_obj:
         :param pca_h:
-        :param n_posts:
         :param add_comp:
         :param save_target_pc:
         :return: forecast_posterior
@@ -416,10 +404,10 @@ class BEL:
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
             rnpc = np.array(
-                [pca_h.random_pc(n_posts) for _ in range(n_posts)]
+                [pca_h.random_pc(self.n_posts) for _ in range(self.n_posts)]
             )  # Get the extra components
             h_pca_reverse = np.array(
-                [np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(n_posts)]
+                [np.concatenate((h_pca_reverse[i], rnpc[i])) for i in range(self.n_posts)]
             )  # Insert it
 
         if save_target_pc:
@@ -433,7 +421,7 @@ class BEL:
 
         # Generate forecast in the initial dimension and reshape.
         forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
-            (n_posts, osx, osy)
+            (self.n_posts, osx, osy)
         )
 
         return forecast_posterior
