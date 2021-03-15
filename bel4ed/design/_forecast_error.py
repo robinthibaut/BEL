@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import warnings
 from os.path import join as jp
 from typing import Type
 
@@ -9,9 +10,11 @@ import joblib
 import numpy as np
 import vtk
 from loguru import logger
+from sklearn.cross_decomposition import CCA
 
 from .. import utils
 from ..config import Setup
+from ..processing import PC
 from ..utils import Root
 from ..learning.bel_pipeline import base_pca, BEL
 from ..spatial import (
@@ -59,7 +62,6 @@ class UncertaintyQuantification:
 
         self.grid_dir = md.grid_dir
 
-        # TODO: get folders from base model
         self.bel_dir = jp(md.forecasts_dir, study_folder)
         if base_dir is None:
             self.base_dir = md.forecasts_base_dir
@@ -76,7 +78,10 @@ class UncertaintyQuantification:
             self.h_pco = None
             logger.info("Base target training object not found")
 
-        self.bel = BEL(directory=self.res_dir)
+        # Number of CCA components is chosen as the min number of PC
+        n_comp_cca = min(base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target)
+        learner = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
+        self.bel = BEL(directory=self.res_dir, learner=learner)
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
@@ -183,18 +188,124 @@ class UncertaintyQuantification:
                 h_pca_obj_path=obj,
             )
 
-        # Fit transform
+        # TODO: Separate folder and computation stuff
+        # Directories
+        base = Setup
+        md = base.Directories
+        res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
+
         combinations = self.base.Wells.combination.copy()
         total = len(roots_obs)
-        for ix, r_ in enumerate(roots_obs):  # For each observation root
-            logger.info(f"[{ix + 1}/{total}]-{r_}")
+        for ix, test_root in enumerate(roots_obs):  # For each observation root
+            logger.info(f"[{ix + 1}/{total}]-{test_root}")
             for ixw, c in enumerate(combinations):  # For each wel combination
-                logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
+                logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
+
+                # Directory in which to load forecasts
+                bel_dir = jp(md.forecasts_dir, test_root)
+
+                # Base directory that will contain target objects and processed data
+                base_dir = md.forecasts_base_dir
+
+                new_dir = "".join(
+                    list(map(str, base.Wells.combination))
+                )  # sub-directory for forecasts
+                sub_dir = jp(bel_dir, new_dir)
+
+                # %% Folders
+                obj_dir = jp(sub_dir, "obj")
+                fig_data_dir = jp(sub_dir, "data")
+                fig_pca_dir = jp(sub_dir, "pca")
+                fig_cca_dir = jp(sub_dir, "cca")
+                fig_pred_dir = jp(sub_dir, "uq")
+
+                # %% Creates directories
+                [
+                    utils.dirmaker(f)
+                    for f in [obj_dir, fig_data_dir, fig_pca_dir, fig_cca_dir, fig_pred_dir]
+                ]
+
+                # Load training dataset
+                # %% PREDICTOR
+
+                # Refined breakthrough curves data file
+                # TODO : Specify this in config file
+                # TODO: Remove duplicate code
+                tc_training_file = jp(obj_dir, "training_curves.npy")
+                tc_test_file = jp(obj_dir, "test_curves.npy")
+                n_time_steps = base.HyperParameters.n_tstp
+                # Loads the results:
+                # tc has shape (n_sim, n_wells, n_time_steps)
+                tc_training = utils.beautiful_curves(
+                    curve_file=tc_training_file,
+                    res_dir=res_dir,
+                    ids=roots_training,
+                    n_time_steps=n_time_steps,
+                )
+                tc_test = utils.beautiful_curves(
+                    curve_file=tc_test_file,
+                    res_dir=res_dir,
+                    ids=[test_root],
+                    n_time_steps=n_time_steps,
+                )
+
+                # %% Select wells:
+                selection = [wc - 1 for wc in base.Wells.combination]
+                tc_training = tc_training[:, selection, :]
+                tc_test = tc_test[:, selection, :]
+                # Convert to dataframes
+                training_df_predictor = utils.i_am_framed(array=tc_training, ids=roots_training)
+                test_df_predictor = utils.i_am_framed(array=tc_test, ids=test_root)
+
+                # %%  PCA
+                # PCA is performed with maximum number of components.
+                # We choose an appropriate number of components to keep later on.
+                # PCA on transport curves
+                d_pco = PC(
+                    name="d",
+                    training_df=training_df_predictor,
+                    test_df=test_df_predictor,
+                    directory=obj_dir,
+                )
+                d_pco.training_fit_transform()
+                d_pco.test_transform()
+                # PCA on transport curves
+                d_pco.n_pc_cut = base.HyperParameters.n_pc_predictor
+                ndo = d_pco.n_pc_cut
+                # Perform transformation on testing curves
+                d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
+
+                # Save the d PC object.
+                joblib.dump(d_pco, jp(obj_dir, "d_pca.pkl"))
+
+                # %% TARGET
+
+                # PCA on signed distance from base object containing training instances
+                h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
+                nho = h_pco.n_pc_cut  # Number of components to keep
+                # Load whpa to predict
+                _, pzs, _ = utils.data_loader(roots=[test_root], h=True)
+                # Compute WHPA on the prediction
+                if h_pco.test_pc_df is None:
+                    # Perform PCA
+                    h_pco.test_transform(test_roots=test_root)
+                    # Cut desired number of components
+                    h_pc_training, _ = h_pco.comp_refresh(nho)
+                    # Save updated PCA object in base
+                    joblib.dump(h_pco, jp(base_dir, "h_pca.pkl"))
+                else:
+                    # Cut components
+                    h_pc_training, _ = h_pco.comp_refresh(nho)
+
+                # %% Fit transform
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
                 self.bel.fit(
-                    base=self.base, training_roots=roots_training, test_root=r_
+                    X=d_pc_training, Y=h_pc_training
                 )
+                joblib.dump(self.bel.learner, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
+                msg = f"model trained and saved in {obj_dir}"
+                logger.info(msg)
 
     # %% Random sample from the posterior
     def sample_posterior(self, n_posts: int = None):
