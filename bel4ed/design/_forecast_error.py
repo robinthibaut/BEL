@@ -190,25 +190,23 @@ class UncertaintyQuantification:
 
         # TODO: Separate folder and computation stuff
         # Directories
-        base = Setup
-        md = base.Directories
+        md = self.base.Directories
         res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
+        # Base directory that will contain target objects and processed data
+        base_dir = md.forecasts_base_dir
 
-        combinations = self.base.Wells.combination.copy()
+        combinations = [self.base.Wells.combination.copy()]
         total = len(roots_obs)
         for ix, test_root in enumerate(roots_obs):  # For each observation root
             logger.info(f"[{ix + 1}/{total}]-{test_root}")
+            # Directory in which to load forecasts
+            bel_dir = jp(md.forecasts_dir, test_root)
+
             for ixw, c in enumerate(combinations):  # For each wel combination
                 logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
 
-                # Directory in which to load forecasts
-                bel_dir = jp(md.forecasts_dir, test_root)
-
-                # Base directory that will contain target objects and processed data
-                base_dir = md.forecasts_base_dir
-
                 new_dir = "".join(
-                    list(map(str, base.Wells.combination))
+                    list(map(str, self.base.Wells.combination))
                 )  # sub-directory for forecasts
                 sub_dir = jp(bel_dir, new_dir)
 
@@ -233,7 +231,7 @@ class UncertaintyQuantification:
                 # TODO: Remove duplicate code
                 tc_training_file = jp(obj_dir, "training_curves.npy")
                 tc_test_file = jp(obj_dir, "test_curves.npy")
-                n_time_steps = base.HyperParameters.n_tstp
+                n_time_steps = self.base.HyperParameters.n_tstp
                 # Loads the results:
                 # tc has shape (n_sim, n_wells, n_time_steps)
                 tc_training = utils.beautiful_curves(
@@ -250,7 +248,7 @@ class UncertaintyQuantification:
                 )
 
                 # %% Select wells:
-                selection = [wc - 1 for wc in base.Wells.combination]
+                selection = [wc - 1 for wc in self.base.Wells.combination]
                 tc_training = tc_training[:, selection, :]
                 tc_test = tc_test[:, selection, :]
                 # Convert to dataframes
@@ -270,7 +268,7 @@ class UncertaintyQuantification:
                 d_pco.training_fit_transform()
                 d_pco.test_transform()
                 # PCA on transport curves
-                d_pco.n_pc_cut = base.HyperParameters.n_pc_predictor
+                d_pco.n_pc_cut = self.base.HyperParameters.n_pc_predictor
                 ndo = d_pco.n_pc_cut
                 # Perform transformation on testing curves
                 d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split

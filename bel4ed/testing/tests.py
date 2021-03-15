@@ -15,7 +15,7 @@ def test_posterior():
 
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
-    wells = [[1, 2, 3, 4, 5, 6]]
+    wells = np.array([1, 2, 3, 4, 5, 6])
 
     test_base = Setup
     # Switch forecast directory to test directory
