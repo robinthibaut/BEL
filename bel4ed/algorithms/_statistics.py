@@ -371,36 +371,36 @@ def _normalize_distribution(post: np.array, support: np.array):
 
 
 def posterior_conditional(
-    x: np.array, y: np.array, x_obs: float = None, y_obs: float = None
+    X: np.array, Y: np.array, X_obs: float = None, Y_obs: float = None
 ):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
-    :param x: Predictor (x-axis)
-    :param y: Target (y-axis)
-    :param x_obs: Observation (predictor, x-axis)
-    :param y_obs: Observation (target, y-axis)
+    :param X: Predictor (x-axis)
+    :param Y: Target (y-axis)
+    :param X_obs: Observation (predictor, x-axis)
+    :param Y_obs: Observation (target, y-axis)
     :return:
     """
     # Compute KDE
-    dens, support = kde_params(x=x, y=y)
+    dens, support = kde_params(x=X, y=Y)
     # Grid parameters
     xg, yg = support
 
-    if x_obs is not None:
+    if X_obs is not None:
         support = yg
         # Extract the density values along the line, using cubic interpolation
-        if type(x_obs) is list or tuple:
-            x_obs = x_obs[0]
+        if type(X_obs) is list or tuple:
+            X_obs = X_obs[0]
         post = _conditional_distribution(
-            x=x_obs, x_array=xg, y_array=yg, kde_array=dens
+            x=X_obs, x_array=xg, y_array=yg, kde_array=dens
         )
-    elif y_obs is not None:
+    elif Y_obs is not None:
         support = xg
         # Extract the density values along the line, using cubic interpolation
-        if type(y_obs) is list or tuple:
-            y_obs = x_obs[0]
+        if type(Y_obs) is list or tuple:
+            Y_obs = X_obs[0]
         post = _conditional_distribution(
-            y=y_obs, x_array=xg, y_array=yg, kde_array=dens
+            y=Y_obs, x_array=xg, y_array=yg, kde_array=dens
         )
 
     else:
@@ -532,12 +532,10 @@ def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.ar
     :param Y: Canonical Variate of the training target, gaussian-distributed
     :param X_obs: Canonical Variate of the observation
     :return: y_posterior_mean, y_posterior_covariance
-    :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
     """
 
     Y = check_array(Y, copy=True, ensure_2d=False)
     X = check_array(X, copy=True, ensure_2d=False)
-
     X_obs = check_array(X_obs, copy=True, ensure_2d=False)
 
     # Size of the set
@@ -560,7 +558,7 @@ def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.ar
 
     # Linear modeling h to d (in canonical space) with least-square criterion.
     # Pay attention to the transpose operator.
-    # Computes the vector g that approximately solves the equation h @ g = d.
+    # Computes the vector g that approximately solves the equation y @ g = x.
     g = np.linalg.lstsq(Y, X, rcond=None)[0].T
     # Replace values below threshold by 0.
     g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
@@ -590,7 +588,7 @@ def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.ar
     d11 = get_block(delta, 1)
     d12 = get_block(delta, 2)
 
-    # Observe that posterior covariance does not depend on observed d.
+    # Observe that posterior covariance does not depend on observed x.
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (

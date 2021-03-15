@@ -2007,7 +2007,7 @@ def _kde_cca(
     for comp_n in range(cca_operator.n_components):
 
         hp, sup = posterior_conditional(
-            x=d[comp_n], y=h[comp_n], x_obs=d_cca_prediction[comp_n]
+            X=d[comp_n], Y=h[comp_n], X_obs=d_cca_prediction[comp_n]
         )
 
         # Plot h posterior given d
@@ -2026,7 +2026,7 @@ def _kde_cca(
 
         # Conditional:
         hp, sup = posterior_conditional(
-            x=d[comp_n], y=h[comp_n], x_obs=d_cca_prediction[comp_n]
+            X=d[comp_n], Y=h[comp_n], X_obs=d_cca_prediction[comp_n]
         )
 
         # load prediction object
