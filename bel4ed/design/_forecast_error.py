@@ -219,7 +219,6 @@ class UncertaintyQuantification:
                 pca_h=self.h_pco,
                 cca_obj=cca_operator,
                 n_posts=self.n_posts,
-                add_comp=False,
             )
 
         self.forecast_posterior = \

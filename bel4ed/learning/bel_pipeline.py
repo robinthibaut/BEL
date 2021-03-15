@@ -323,16 +323,24 @@ class BEL:
             d_cca_training = self.normalize_d.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
-            # h_cca_training_gaussian = self.processing.gaussian_distribution(h_cca_training)
             h_cca_training = self.normalize_h.fit_transform(h_cca_training)
-
-            # Get the rotation matrices
-            d_rotations = cca_obj.x_rotations_
 
             # Project observed data into canonical space.
             d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-
             d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
+
+            # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+            # Number of PCA components for the curves
+            x_dim = np.size(d_pc_training, axis=1)
+            noise = 0.01
+            # I matrix. (n_comp_PCA, n_comp_PCA)
+            x_cov = np.eye(x_dim) * noise
+            # (n_comp_CCA, n_comp_CCA)
+            # Get the rotation matrices
+            d_rotations = cca_obj.x_rotations_
+            x_cov = d_rotations.T @ x_cov @ d_rotations
+
+            dict_args = {"x_cov": x_cov}
 
             # Estimate the posterior mean and covariance
             if self.mode == "mvn":
@@ -340,9 +348,8 @@ class BEL:
                     mvn_inference(
                         h_cca_training,
                         d_cca_training,
-                        d_pc_training,
-                        d_rotations,
                         d_cca_prediction,
+                        **dict_args,
                     )
             else:
                 warnings.warn("KDE not implemented yet")

@@ -11,6 +11,7 @@ from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 from scipy import integrate, ndimage, stats
+from sklearn.utils import check_array
 
 from bel4ed.config import Setup
 from bel4ed.algorithms.extmath import get_block
@@ -523,83 +524,75 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
 
 
 def mvn_inference(
-    h_cca_training_gaussian: np.array,
-    d_cca_training: np.array,
-    d_pc_training: np.array,
-    d_rotations: np.array,
-    d_cca_prediction: np.array,
+    X: np.array,
+    Y: np.array,
+    X_obs: np.array,
+    **kwargs
 ):
     """
     Estimating posterior mean and covariance of the target.
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
-    :param h_cca_training_gaussian: Canonical Variate of the training target, gaussian-distributed
-    :param d_cca_training: Canonical Variate of the training data
-    :param d_pc_training: Principal Components of the training data
-    :param d_rotations: CCA rotations of the training data (project original data to canonical space)
-    :param d_cca_prediction: Canonical Variate of the observation
+    :param Y: Canonical Variate of the training target, gaussian-distributed
+    :param X: Canonical Variate of the training data
+    :param X_obs: Canonical Variate of the observation
     :return: h_posterior_mean, h_posterior_covariance
     :raise ValueError: An exception is thrown if the shape of input arrays are not consistent.
     """
 
-    h_cca_training_gaussian = utils.check_array(
-        h_cca_training_gaussian, copy=True, ensure_2d=False
+    Y = check_array(
+        Y, copy=True, ensure_2d=False
     )
-    d_cca_training = utils.check_array(d_cca_training, copy=True, ensure_2d=False)
-    d_pc_training = utils.check_array(d_pc_training, copy=True, ensure_2d=False)
-    d_rotations = utils.check_array(d_rotations, copy=True, ensure_2d=False)
-    d_cca_prediction = utils.check_array(d_cca_prediction, copy=True, ensure_2d=False)
+    X = check_array(X, copy=True, ensure_2d=False)
+
+    X_obs = check_array(X_obs, copy=True, ensure_2d=False)
 
     # Size of the set
-    n_training = d_cca_training.shape[0]
+    n_training = X.shape[0]
 
     # Computation of the posterior mean in Canonical space
-    h_mean = np.mean(h_cca_training_gaussian, axis=0)  # (n_comp_CCA, 1)
+    y_mean = np.mean(Y, axis=0)  # (n_comp_CCA, 1)
     # Mean is 0, as expected.
-    h_mean = np.where(np.abs(h_mean) < 1e-12, 0, h_mean)
+    y_mean = np.where(np.abs(y_mean) < 1e-12, 0, y_mean)
 
     # Evaluate the covariance in h (in Canonical space)
     # Very close to the Identity matrix
     # (n_comp_CCA, n_comp_CCA)
-    h_cov_operator = np.cov(h_cca_training_gaussian.T)
+    y_cov = np.cov(Y.T)
 
-    # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-    # Number of PCA components for the curves
-    x_dim = np.size(d_pc_training, axis=1)
-    noise = 0.01
-    # I matrix. (n_comp_PCA, n_comp_PCA)
-    d_cov_operator = np.eye(x_dim) * noise
-    # (n_comp_CCA, n_comp_CCA)
-    d_noise_covariance = d_rotations.T @ d_cov_operator @ d_rotations
+    if "x_cov" in kwargs.keys():
+        x_cov = kwargs["x_cov"]
+    else:
+        x_cov = np.zeros(shape=y_cov.shape)
 
     # Linear modeling h to d (in canonical space) with least-square criterion.
     # Pay attention to the transpose operator.
     # Computes the vector g that approximately solves the equation h @ g = d.
-    g = np.linalg.lstsq(h_cca_training_gaussian, d_cca_training, rcond=None)[0].T
+    g = np.linalg.lstsq(Y, X, rcond=None)[0].T
     # Replace values below threshold by 0.
     g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
     # Modeling error due to deviations from theory
     # (n_components_CCA, n_training)
-    d_ls_predicted = h_cca_training_gaussian @ g.T
-    d_modeling_mean_error = np.mean(
-        d_cca_training - d_ls_predicted, axis=0
+    x_ls_predicted = Y @ g.T
+    x_modeling_mean_error = np.mean(
+        X - x_ls_predicted, axis=0
     )  # (n_comp_CCA, 1)
-    d_modeling_error = (
-        d_cca_training
-        - d_ls_predicted
-        - np.tile(d_modeling_mean_error, (n_training, 1))
+    x_modeling_error = (
+            X
+            - x_ls_predicted
+            - np.tile(x_modeling_mean_error, (n_training, 1))
     )
     # (n_comp_CCA, n_training)
 
     # Information about the covariance of the posterior distribution in Canonical space.
-    d_modeling_covariance = np.cov(d_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
+    x_modeling_covariance = np.cov(x_modeling_error.T)  # (n_comp_CCA, n_comp_CCA)
 
     # Build block matrix
-    s11 = h_cov_operator
-    s12 = h_cov_operator @ g.T
-    s21 = g @ h_cov_operator
-    s22 = g @ h_cov_operator @ g.T + d_noise_covariance + d_modeling_covariance
+    s11 = y_cov
+    s12 = y_cov @ g.T
+    s21 = g @ y_cov
+    s22 = g @ y_cov @ g.T + x_cov + x_modeling_covariance
     block = np.block([[s11, s12], [s21, s22]])
 
     # Inverse
@@ -609,11 +602,11 @@ def mvn_inference(
     d12 = get_block(delta, 2)
 
     # Observe that posterior covariance does not depend on observed d.
-    h_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
+    y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
-    h_posterior_mean = h_posterior_covariance @ (
-        d11 @ h_mean
-        - d12 @ (d_cca_prediction[0] - d_modeling_mean_error - h_mean @ g.T)
+    y_posterior_mean = y_posterior_covariance @ (
+        d11 @ y_mean
+        - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
     )  # (n_comp_CCA,)
 
-    return h_posterior_mean, h_posterior_covariance
+    return y_posterior_mean, y_posterior_covariance
