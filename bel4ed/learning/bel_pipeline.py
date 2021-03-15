@@ -35,11 +35,11 @@ from ..processing import PC
 
 
 def base_pca(
-    base: Type[Setup],
-    base_dir: str,
-    training_roots: Root,
-    test_roots: Root,
-    h_pca_obj_path: str = None,
+        base: Type[Setup],
+        base_dir: str,
+        training_roots: Root,
+        test_roots: Root,
+        h_pca_obj_path: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -100,7 +100,7 @@ def base_pca(
         if not os.path.exists(jp(base_dir, "roots.dat")):
             with open(jp(base_dir, "roots.dat"), "w") as f:
                 for (
-                    r_training_ids
+                        r_training_ids
                 ) in training_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r_training_ids) + "\n")
 
@@ -121,9 +121,11 @@ class BEL:
     Heart of the framework.
     """
 
-    def __init__(self, directory: str = None):
+    def __init__(self, directory: str = None, mode: str = "mvn"):
 
         self.directory = directory
+        self.mode = mode
+        self.learner = None
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
@@ -135,7 +137,7 @@ class BEL:
             base: Type[Setup],
             training_roots: Root = None,
             test_root: Root or str = None,
-    ) -> str:
+            ) -> str:
         """
         This function loads raw data and perform both PCA and CCA on it.
         It saves results as pkl objects that have to be loaded in the _forecast_error.py script to perform predictions.
@@ -261,6 +263,7 @@ class BEL:
         # By default, it scales the data
         cca = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
         cca.fit(X=d_pc_training, Y=h_pc_training)  # Fit
+        self.learner = cca
         joblib.dump(cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
         msg = f"model trained and saved in {obj_dir}"
         logger.info(msg)
@@ -282,8 +285,17 @@ class BEL:
         )
         return h_posts_gaussian
 
+    def transform(self, X, Y=None):
+
+        if Y is not None:
+            x_scores, y_scores = self.learner.transform(X, Y)
+            return x_scores, y_scores
+        else:
+            x_scores = self.learner.transform(X)
+            return x_scores
+
     def predict(
-        self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
+            self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int, add_comp: bool = False
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -323,15 +335,18 @@ class BEL:
 
             d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
 
-            # Estimate the posterior mean and covariance (Tarantola)
-
-            self.posterior_mean, self.posterior_covariance = mvn_inference(
-                h_cca_training,
-                d_cca_training,
-                d_pc_training,
-                d_rotations,
-                d_cca_prediction,
-            )
+            # Estimate the posterior mean and covariance
+            if self.mode == "mvn":
+                self.posterior_mean, self.posterior_covariance = \
+                    mvn_inference(
+                        h_cca_training,
+                        d_cca_training,
+                        d_pc_training,
+                        d_rotations,
+                        d_cca_prediction,
+                    )
+            else:
+                warnings.warn("KDE not implemented yet")
 
             # Set the seed for later use
             if self.seed is None:
@@ -342,7 +357,7 @@ class BEL:
             else:
                 self.n_posts = n_posts
 
-            # Saves this postio object to avoid saving large amounts of 'forecast_posterior'
+            # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
             # This allows to reload this object later on and resample using the same seed.
             post_location = jp(self.directory, "post.pkl")
             logger.info(f"Saved posterior object to {post_location}")
@@ -363,13 +378,13 @@ class BEL:
         return forecast_posterior
 
     def inverse_transform(
-        self,
-        h_posts_gaussian: np.array,
-        cca_obj: CCA,
-        pca_h: PC,
-        n_posts: int,
-        add_comp: bool = False,
-        save_target_pc: bool = False,
+            self,
+            h_posts_gaussian: np.array,
+            cca_obj: CCA,
+            pca_h: PC,
+            n_posts: int,
+            add_comp: bool = False,
+            save_target_pc: bool = False,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
@@ -395,7 +410,7 @@ class BEL:
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
         h_pca_reverse = (
-            np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
+                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
         )
 
         # Whether to add or not the rest of PC components
@@ -422,5 +437,3 @@ class BEL:
         )
 
         return forecast_posterior
-
-
