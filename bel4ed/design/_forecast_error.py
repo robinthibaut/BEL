@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import warnings
 from os.path import join as jp
 from typing import Type
 
@@ -10,6 +9,8 @@ import joblib
 import numpy as np
 import vtk
 from loguru import logger
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
 from sklearn.pipeline import Pipeline
 
@@ -80,8 +81,11 @@ class UncertaintyQuantification:
             logger.info("Base target training object not found")
 
         # Number of CCA components is chosen as the min number of PC
-        n_comp_cca = min(base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target)
-        pipeline = Pipeline([('cca', CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06))])
+        n_pc_pred, n_pc_targ = base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target
+        n_comp_cca = min(n_pc_pred, n_pc_targ)
+        pipeline = Pipeline([('scaler', StandardScaler(with_mean=False)),
+                             ('pca', PCA()),
+                             ('cca', CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06))])
         self.bel = BEL(directory=self.res_dir, pipeline=pipeline)
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
@@ -302,7 +306,7 @@ class UncertaintyQuantification:
                 self.bel.fit(
                     X=d_pc_training, Y=h_pc_training
                 )
-                joblib.dump(self.bel.pipeline, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
+                joblib.dump(self.bel.pipeline['cca'], jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 

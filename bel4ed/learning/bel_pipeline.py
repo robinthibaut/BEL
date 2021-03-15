@@ -163,75 +163,47 @@ class BEL(BaseEstimator):
         x_scores, y_scores = self.pipeline.fit_transform(X, Y)
         return x_scores, y_scores
 
-    def predict(self, pca_d: PC, pca_h: PC, n_posts: int) -> np.array:
+    def predict(self, X_obs) -> np.array:
         """
         Make predictions, in the BEL fashion.
-        :param pca_d: PCA object for observations.
-        :param pca_h: PCA object for targets.
-        :param n_posts: Number of posteriors to extract.
-        :return: forecast_posterior in original space
         """
+        X_obs = check_array(X_obs)
+        # Project observed data into canonical space.
+        d_cca_prediction = self.pipeline.transform(X_obs)
+        d_cca_prediction = self.Y_normalizer.transform(d_cca_prediction)
 
-        if self.posterior_mean is None and self.posterior_covariance is None:
-            # Cut desired number of PC components
-            d_pc_training, d_pc_prediction = pca_d.comp_refresh(pca_d.n_pc_cut)
-            h_pc_training, _ = pca_h.comp_refresh(pca_h.n_pc_cut)
+        # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+        # Number of PCA components for the curves
+        x_dim = Setup.HyperParameters.n_pc_predictor
+        noise = 0.01
+        # I matrix. (n_comp_PCA, n_comp_PCA)
+        x_cov = np.eye(x_dim) * noise
+        # (n_comp_CCA, n_comp_CCA)
+        # Get the rotation matrices
+        d_rotations = self.pipeline['cca'].x_rotations_
+        x_cov = d_rotations.T @ x_cov @ d_rotations
+        dict_args = {"x_cov": x_cov}
 
-            # observation data for prediction sample
-            d_pc_obs = d_pc_prediction[0]
-
-            # Transform to canonical space
-            d_cca_training, h_cca_training = self.fit_transform(
-                d_pc_training, h_pc_training
+        # Estimate the posterior mean and covariance
+        if self.mode == "mvn":
+            self.posterior_mean, self.posterior_covariance = mvn_inference(
+                X=d_cca_training,
+                Y=h_cca_training,
+                X_obs=d_cca_prediction,
+                **dict_args,
             )
+        else:
+            warnings.warn("KDE not implemented yet")
 
-            # Ensure Gaussian distribution in d_cca_training
-            d_cca_training = self.Y_normalizer.fit_transform(d_cca_training)
+        # Set the seed for later use
+        if self.seed is None:
+            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
 
-            # Ensure Gaussian distribution in h_cca_training
-            h_cca_training = self.X_normalizer.fit_transform(h_cca_training)
-
-            # Project observed data into canonical space.
-            d_cca_prediction = self.pipeline.transform(d_pc_obs.reshape(1, -1))
-            d_cca_prediction = self.Y_normalizer.transform(d_cca_prediction)
-
-            # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-            # Number of PCA components for the curves
-            x_dim = np.size(d_pc_training, axis=1)
-            noise = 0.01
-            # I matrix. (n_comp_PCA, n_comp_PCA)
-            x_cov = np.eye(x_dim) * noise
-            # (n_comp_CCA, n_comp_CCA)
-            # Get the rotation matrices
-            d_rotations = self.pipeline['cca'].x_rotations_
-            x_cov = d_rotations.T @ x_cov @ d_rotations
-            dict_args = {"x_cov": x_cov}
-
-            # Estimate the posterior mean and covariance
-            if self.mode == "mvn":
-                self.posterior_mean, self.posterior_covariance = mvn_inference(
-                    X=d_cca_training,
-                    Y=h_cca_training,
-                    X_obs=d_cca_prediction,
-                    **dict_args,
-                )
-            else:
-                warnings.warn("KDE not implemented yet")
-
-            # Set the seed for later use
-            if self.seed is None:
-                self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
-
-            if n_posts is None:
-                self.n_posts = Setup.HyperParameters.n_posts
-            else:
-                self.n_posts = n_posts
-
-            # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
-            # This allows to reload this object later on and resample using the same seed.
-            post_location = jp(self.directory, "post.pkl")
-            logger.info(f"Saved posterior object to {post_location}")
-            joblib.dump(self, post_location)
+        # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
+        # This allows to reload this object later on and resample using the same seed.
+        post_location = jp(self.directory, "post.pkl")
+        logger.info(f"Saved posterior object to {post_location}")
+        joblib.dump(self, post_location)
 
         # Sample the inferred multivariate gaussian distribution
         random_samples = self.random_sample(self.n_posts)
