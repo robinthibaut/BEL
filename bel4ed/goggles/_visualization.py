@@ -751,7 +751,7 @@ def plot_results(
         ff = jp(md, "uq", f"{root}_cca_{cca_operator.n_components}.pdf")
         h_training = h_pco.training_physical.reshape(h_pco.training_shape)
         post_obj = joblib.load(jp(md, "obj", "post.pkl"))
-        forecast_posterior = post_obj.bel_predict(
+        forecast_posterior = post_obj.predict(
             pca_d=d_pco,
             pca_h=h_pco,
             cca_obj=cca_operator,

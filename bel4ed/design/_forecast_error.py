@@ -13,7 +13,7 @@ from loguru import logger
 from .. import utils
 from ..config import Setup
 from ..utils import Root
-from ..learning.bel_pipeline import bel_fit_transform, base_pca, PosteriorIO
+from ..learning.bel_pipeline import base_pca, BEL
 from ..spatial import (
     contours_vertices,
     refine_machine,
@@ -191,7 +191,7 @@ class UncertaintyQuantification:
                 logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
-                bel_fit_transform(
+                BEL().fit(
                     base=self.base, training_roots=roots_training, test_root=r_
                 )
 
@@ -212,7 +212,7 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        self.forecast_posterior = PosteriorIO(directory=self.res_dir).bel_predict(
+        self.forecast_posterior = BEL(directory=self.res_dir).predict(
             pca_d=d_pco,
             pca_h=self.h_pco,
             cca_obj=cca_operator,
