@@ -123,17 +123,17 @@ class BEL(BaseEstimator):
     Heart of the framework.
     """
 
-    def __init__(self, directory: str = None, mode: str = "mvn", learner=None):
+    def __init__(self, directory: str = None, mode: str = "mvn", pipeline=None):
 
         self.directory = directory
         self.mode = mode
-        self.learner = learner
+        self.pipeline = pipeline
         self.posterior_mean = None
         self.posterior_covariance = None
         self.seed = None
         self.n_posts = None
-        self.normalize_h = PowerTransformer(method="yeo-johnson", standardize=True)
-        self.normalize_d = PowerTransformer(method="yeo-johnson", standardize=True)
+        self.X_normalizer = PowerTransformer(method="yeo-johnson", standardize=True)
+        self.Y_normalizer = PowerTransformer(method="yeo-johnson", standardize=True)
 
     def fit(self, X, Y):
         """
@@ -141,7 +141,7 @@ class BEL(BaseEstimator):
         X = check_array(X, copy=True, ensure_2d=False)
         Y = check_array(Y, copy=True, ensure_2d=False)
 
-        self.learner.fit(X, Y)  # Fit
+        self.pipeline.fit(X, Y)  # Fit
 
     def random_sample(self, n_posts: int = None) -> np.array:
         """
@@ -153,26 +153,21 @@ class BEL(BaseEstimator):
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
-        h_posts_gaussian = np.random.multivariate_normal(
+        Y_samples = np.random.multivariate_normal(
             mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
         )
-        return h_posts_gaussian
+        return Y_samples
 
-    def transform(self, X, Y=None):
+    def fit_transform(self, X, Y):
 
-        if Y is not None:
-            x_scores, y_scores = self.learner.transform(X, Y)
-            return x_scores, y_scores
-        else:
-            x_scores = self.learner.transform(X)
-            return x_scores
+        x_scores, y_scores = self.pipeline.fit_transform(X, Y)
+        return x_scores, y_scores
 
-    def predict(self, pca_d: PC, pca_h: PC, cca_obj: CCA, n_posts: int) -> np.array:
+    def predict(self, pca_d: PC, pca_h: PC, n_posts: int) -> np.array:
         """
         Make predictions, in the BEL fashion.
         :param pca_d: PCA object for observations.
         :param pca_h: PCA object for targets.
-        :param cca_obj: CCA object.
         :param n_posts: Number of posteriors to extract.
         :return: forecast_posterior in original space
         """
@@ -186,19 +181,19 @@ class BEL(BaseEstimator):
             d_pc_obs = d_pc_prediction[0]
 
             # Transform to canonical space
-            d_cca_training, h_cca_training = cca_obj.transform(
+            d_cca_training, h_cca_training = self.fit_transform(
                 d_pc_training, h_pc_training
             )
 
             # Ensure Gaussian distribution in d_cca_training
-            d_cca_training = self.normalize_d.fit_transform(d_cca_training)
+            d_cca_training = self.Y_normalizer.fit_transform(d_cca_training)
 
             # Ensure Gaussian distribution in h_cca_training
-            h_cca_training = self.normalize_h.fit_transform(h_cca_training)
+            h_cca_training = self.X_normalizer.fit_transform(h_cca_training)
 
             # Project observed data into canonical space.
-            d_cca_prediction = cca_obj.transform(d_pc_obs.reshape(1, -1))
-            d_cca_prediction = self.normalize_d.transform(d_cca_prediction)
+            d_cca_prediction = self.pipeline.transform(d_pc_obs.reshape(1, -1))
+            d_cca_prediction = self.Y_normalizer.transform(d_cca_prediction)
 
             # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
             # Number of PCA components for the curves
@@ -208,7 +203,7 @@ class BEL(BaseEstimator):
             x_cov = np.eye(x_dim) * noise
             # (n_comp_CCA, n_comp_CCA)
             # Get the rotation matrices
-            d_rotations = cca_obj.x_rotations_
+            d_rotations = self.pipeline['cca'].x_rotations_
             x_cov = d_rotations.T @ x_cov @ d_rotations
             dict_args = {"x_cov": x_cov}
 
@@ -264,7 +259,7 @@ class BEL(BaseEstimator):
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.normalize_h.inverse_transform(
+        h_posts = self.X_normalizer.inverse_transform(
             h_posts_gaussian
         )  # (n_components, n_samples)
 
@@ -273,6 +268,7 @@ class BEL(BaseEstimator):
         # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
         # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
         # and add the y_mean.
+        cca_obj = self.pipeline['cca']
         h_pca_reverse = (
                 np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
         )

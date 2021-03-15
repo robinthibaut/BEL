@@ -169,10 +169,10 @@ class PC:
 
     def custom_inverse_transform(self, pc_to_invert: np.array, n_comp: int = None):
         """
-        Inverse transform PC based on the desired number of PC (stored in the shape of the argument).
+        Inverse fit_transform PC based on the desired number of PC (stored in the shape of the argument).
         The self.operator.components contains all components.
-        :param pc_to_invert: np.array: (n_samples, n_components) PC array to back-transform to physical space
-        :param n_comp: int: Number of components to back-transform with
+        :param pc_to_invert: np.array: (n_samples, n_components) PC array to back-fit_transform to physical space
+        :param n_comp: int: Number of components to back-fit_transform with
         :return: numpy.array: Back transformed array
         """
         if n_comp is None:

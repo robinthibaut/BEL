@@ -231,7 +231,7 @@ def check_is_fitted(estimator, attributes=None, msg=None, all_or_any=all):
     raises a NotFittedError with the given message.
 
     This utility is meant to be used internally by estimators themselves,
-    typically in their own predict / transform methods.
+    typically in their own predict / fit_transform methods.
 
     Parameters
     ----------
@@ -993,23 +993,23 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     h_obs = h_pc_prediction[sample_n]
 
     # # Transform to CCA space and transpose
-    d_cca_prediction, h_cca_prediction = cca_operator.transform(
+    d_cca_prediction, h_cca_prediction = cca_operator.fit_transform(
         d_obs.reshape(1, -1), h_obs.reshape(1, -1)
     )
 
     #  Watch out for the transpose operator.
     h2 = h.copy()
     d2 = d.copy()
-    tfm1 = post.normalize_h
-    h = tfm1.transform(h2.T)
+    tfm1 = post.X_normalizer
+    h = tfm1.fit_transform(h2.T)
     h = h.T
-    h_cca_prediction = tfm1.transform(h_cca_prediction)
+    h_cca_prediction = tfm1.fit_transform(h_cca_prediction)
     h_cca_prediction = h_cca_prediction.T
 
-    tfm2 = post.normalize_d
-    d = tfm2.transform(d2.T)
+    tfm2 = post.Y_normalizer
+    d = tfm2.fit_transform(d2.T)
     d = d.T
-    d_cca_prediction = tfm2.transform(d_cca_prediction)
+    d_cca_prediction = tfm2.fit_transform(d_cca_prediction)
     d_cca_prediction = d_cca_prediction.T
 
     return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator

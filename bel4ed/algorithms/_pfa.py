@@ -68,10 +68,10 @@ class _PFA(
         x_scores if Y is not given, (x_scores, y_scores) otherwise.
         """
         if Y is not None:
-            x_scores, y_scores = self.learner.transform(X, Y)
+            x_scores, y_scores = self.learner.fit_transform(X, Y)
             return x_scores, y_scores
         else:
-            x_scores = self.learner.transform(X)
+            x_scores = self.learner.fit_transform(X)
             return x_scores
 
     def inverse_transform(self, X):

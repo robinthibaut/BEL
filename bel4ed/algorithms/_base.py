@@ -184,7 +184,7 @@ class TransformerMixin:
 
     def fit_transform(self, X, y=None, **fit_params):
         """
-        Fit to data, then transform it.
+        Fit to data, then fit_transform it.
 
         Fits transformer to X and y with optional parameters fit_params
         and returns a transformed version of X.
@@ -209,7 +209,7 @@ class TransformerMixin:
         # method is possible for a given clustering algorithm
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
-            return self.fit(X, **fit_params).transform(X)
+            return self.fit(X, **fit_params).fit_transform(X)
         else:
             # fit method of arity 2 (supervised transformation)
-            return self.fit(X, y, **fit_params).transform(X)
+            return self.fit(X, y, **fit_params).fit_transform(X)

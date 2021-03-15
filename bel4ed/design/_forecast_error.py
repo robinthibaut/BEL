@@ -11,6 +11,7 @@ import numpy as np
 import vtk
 from loguru import logger
 from sklearn.cross_decomposition import CCA
+from sklearn.pipeline import Pipeline
 
 from .. import utils
 from ..config import Setup
@@ -80,8 +81,8 @@ class UncertaintyQuantification:
 
         # Number of CCA components is chosen as the min number of PC
         n_comp_cca = min(base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target)
-        learner = CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06)
-        self.bel = BEL(directory=self.res_dir, learner=learner)
+        pipeline = Pipeline([('cca', CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06))])
+        self.bel = BEL(directory=self.res_dir, pipeline=pipeline)
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
@@ -295,13 +296,13 @@ class UncertaintyQuantification:
                     # Cut components
                     h_pc_training, _ = h_pco.comp_refresh(nho)
 
-                # %% Fit transform
+                # %% Fit fit_transform
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
                 self.bel.fit(
                     X=d_pc_training, Y=h_pc_training
                 )
-                joblib.dump(self.bel.learner, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
+                joblib.dump(self.bel.pipeline, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 
@@ -325,7 +326,6 @@ class UncertaintyQuantification:
         h_posts_gaussian = self.bel.predict(
             pca_d=d_pco,
             pca_h=self.h_pco,
-            cca_obj=cca_operator,
             n_posts=self.n_posts,
         )
 
@@ -379,7 +379,7 @@ def objective_function(uq: UncertaintyQuantification, metric):
     """
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
     n_cut = uq.h_pco.n_pc_cut  # Number of components to keep
-    # Inverse transform and reshape
+    # Inverse fit_transform and reshape
     # FIXME: Problem is that uq.h_pco_predict_pc is None
     true_image = uq.h_pco.custom_inverse_transform(uq.h_pco.predict_pc, n_cut).reshape(
         (uq.shape[1], uq.shape[2])

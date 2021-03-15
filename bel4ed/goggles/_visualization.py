@@ -2031,7 +2031,7 @@ def _kde_cca(
 
         # load prediction object
         post_test = post.random_sample(Setup.HyperParameters.n_posts).T
-        post_test_t = post.normalize_h.transform(post_test.T).T
+        post_test_t = post.X_normalizer.fit_transform(post_test.T).T
         y_samp = post_test_t[comp_n]
 
         # Plot h posterior given d
