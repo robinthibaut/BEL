@@ -523,7 +523,9 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     return matrix, centers
 
 
-def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.array, np.array):
+def mvn_inference(
+    X: np.array, Y: np.array, X_obs: np.array, **kwargs
+) -> (np.array, np.array):
     """
     Estimating posterior mean and covariance of the target.
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.

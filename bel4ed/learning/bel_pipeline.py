@@ -36,11 +36,11 @@ from ..processing import PC
 
 
 def base_pca(
-        base: Type[Setup],
-        base_dir: str,
-        training_roots: Root,
-        test_roots: Root,
-        h_pca_obj_path: str = None,
+    base: Type[Setup],
+    base_dir: str,
+    training_roots: Root,
+    test_roots: Root,
+    h_pca_obj_path: str = None,
 ):
     """
     Initiate BEL by performing PCA on the training targets or features.
@@ -101,7 +101,7 @@ def base_pca(
         if not os.path.exists(jp(base_dir, "roots.dat")):
             with open(jp(base_dir, "roots.dat"), "w") as f:
                 for (
-                        r_training_ids
+                    r_training_ids
                 ) in training_roots:  # Saves roots name until test roots
                     f.write(os.path.basename(r_training_ids) + "\n")
 
@@ -122,15 +122,16 @@ class BEL(BaseEstimator):
     Heart of the framework.
     """
 
-    def __init__(self,
-                 directory: str = None,
-                 mode: str = "mvn",
-                 X_pre_processing=None,
-                 Y_pre_processing=None,
-                 X_post_processing=None,
-                 Y_post_processing=None,
-                 cca=None
-                 ):
+    def __init__(
+        self,
+        directory: str = None,
+        mode: str = "mvn",
+        X_pre_processing=None,
+        Y_pre_processing=None,
+        X_post_processing=None,
+        Y_post_processing=None,
+        cca=None,
+    ):
 
         self.directory = directory
 
@@ -160,7 +161,10 @@ class BEL(BaseEstimator):
         if self._x is None and self._y is None:
             self._x, self._y = X, Y
 
-        _xt, _yt = self.X_pre_processing.fit_transform(self._x), self.Y_pre_processing.fit_transform(self._y)
+        _xt, _yt = (
+            self.X_pre_processing.fit_transform(self._x),
+            self.Y_pre_processing.fit_transform(self._y),
+        )
 
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
@@ -184,17 +188,26 @@ class BEL(BaseEstimator):
             return _xp
         elif Y is not None and X is None:
             Y = check_array(Y, copy=True, ensure_2d=False)
-            _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(Y)
+            _xt, _yt = (
+                self.X_pre_processing.transform(self._x),
+                self.Y_pre_processing.transform(Y),
+            )
             _, _yc = self.cca.transform(X=_xt, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
         else:
-            _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(self._y)
+            _xt, _yt = (
+                self.X_pre_processing.transform(self._x),
+                self.Y_pre_processing.transform(self._y),
+            )
 
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
-            _xp, _yp = self.X_post_processing.transform(_xc), self.Y_post_processing.transform(_yc)
+            _xp, _yp = (
+                self.X_post_processing.transform(_xc),
+                self.Y_post_processing.transform(_yc),
+            )
 
             return _xp, _yp
 
@@ -224,7 +237,10 @@ class BEL(BaseEstimator):
         X = check_array(X, copy=True, ensure_2d=False)
         Y = check_array(Y, copy=True, ensure_2d=False)
 
-        _xt, _yt = self.X_pre_processing.fit_transform(X), self.Y_pre_processing.fit_transform(Y)
+        _xt, _yt = (
+            self.X_pre_processing.fit_transform(X),
+            self.Y_pre_processing.fit_transform(Y),
+        )
 
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
@@ -282,52 +298,23 @@ class BEL(BaseEstimator):
         return random_samples
 
     def inverse_transform(
-            self,
-            h_posts_gaussian: np.array,
-            pca_h: PC,
-            add_comp: bool = False,
-            save_target_pc: bool = False,
+        self,
+        Y,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
-        :param h_posts_gaussian:
-        :param pca_h:
-        :param add_comp:
-        :param save_target_pc:
+        :param Y:
         :return: forecast_posterior
         """
         # This h_posts gaussian need to be inverse-transformed to the original distribution.
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        y_post = self.Y_post_processing.inverse_transform(h_posts_gaussian)
-        y_post = np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_ + self.cca.y_mean_
-        y_post = self.Y_pre_processing.inverse_transform(y_post)
-
-        # Whether to add or not the rest of PC components
-        if add_comp:  # TODO: double check
-            rnpc = np.array(
-                [pca_h.random_pc(self.n_posts) for _ in range(self.n_posts)]
-            )  # Get the extra components
-            h_pca_reverse = np.array(
-                [
-                    np.concatenate((y_post[i], rnpc[i]))
-                    for i in range(self.n_posts)
-                ]
-            )  # Insert it
-
-        if save_target_pc:
-            fname = jp(self.directory, "target_pc.npy")
-            np.save(fname, y_post)
-
-        osx, osy = (
-            pca_h.training_df.attrs["physical_shape"][1],
-            pca_h.training_df.attrs["physical_shape"][2],
+        y_post = self.Y_post_processing.inverse_transform(Y)
+        y_post = (
+            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
+            + self.cca.y_mean_
         )
-
-        # Generate forecast in the initial dimension and reshape.
-        # forecast_posterior = pca_h.custom_inverse_transform(y_post).reshape(
-        #     (self.n_posts, osx, osy)
-        # )
+        y_post = self.Y_pre_processing.inverse_transform(y_post)
 
         return y_post
