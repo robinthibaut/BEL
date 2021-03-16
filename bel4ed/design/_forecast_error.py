@@ -9,10 +9,11 @@ import joblib
 import numpy as np
 import vtk
 from loguru import logger
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PowerTransformer
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
-from sklearn.pipeline import Pipeline
+from sklearn.base import clone
+from sklearn.pipeline import Pipeline, FeatureUnion
 
 from .. import utils
 from ..config import Setup
@@ -82,11 +83,14 @@ class UncertaintyQuantification:
 
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target
-        n_comp_cca = min(n_pc_pred, n_pc_targ)
-        pipeline = Pipeline([('scaler', StandardScaler(with_mean=False)),
-                             ('pca', PCA()),
-                             ('cca', CCA(n_components=n_comp_cca, scale=True, max_iter=500 * 20, tol=1e-06))])
-        self.bel = BEL(directory=self.res_dir, pipeline=pipeline)
+        pre_pipeline = Pipeline([('scaler', StandardScaler(with_mean=False)),
+                             ('pca', PCA())])
+        # Pipeline after CCA
+        self.X_pipeline = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
+        self.Y_pipeline = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
+        self.bel = BEL(directory=self.res_dir, pipeline=pre_pipeline)
+        self.x_obs = None
+
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
@@ -259,7 +263,6 @@ class UncertaintyQuantification:
                 # Convert to dataframes
                 training_df_predictor = utils.i_am_framed(array=tc_training, ids=roots_training)
                 test_df_predictor = utils.i_am_framed(array=tc_test, ids=test_root)
-
                 # %%  PCA
                 # PCA is performed with maximum number of components.
                 # We choose an appropriate number of components to keep later on.
@@ -276,7 +279,9 @@ class UncertaintyQuantification:
                 d_pco.n_pc_cut = self.base.HyperParameters.n_pc_predictor
                 ndo = d_pco.n_pc_cut
                 # Perform transformation on testing curves
-                d_pc_training, _ = d_pco.comp_refresh(ndo)  # Split
+                d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
+
+                self.x_obs = d_pc_prediction
 
                 # Save the d PC object.
                 joblib.dump(d_pco, jp(obj_dir, "d_pca.pkl"))
@@ -306,7 +311,7 @@ class UncertaintyQuantification:
                 self.bel.fit(
                     X=d_pc_training, Y=h_pc_training
                 )
-                joblib.dump(self.bel.pipeline['cca'], jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
+                joblib.dump(self.bel.cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 
@@ -321,21 +326,12 @@ class UncertaintyQuantification:
         if n_posts is not None:
             self.n_posts = n_posts
 
-        # Load objects
-        f_names = list(map(lambda fn: jp(self.res_dir, f"{fn}.pkl"), ["cca", "d_pca"]))
-        cca_operator, d_pco = list(map(joblib.load, f_names))
-
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        h_posts_gaussian = self.bel.predict(
-            pca_d=d_pco,
-            pca_h=self.h_pco,
-            n_posts=self.n_posts,
-        )
+        h_posts_gaussian = self.bel.predict(self.x_obs)
 
         self.forecast_posterior = self.bel.inverse_transform(
             h_posts_gaussian=h_posts_gaussian,
-            cca_obj=cca_operator,
             pca_h=self.h_pco,
         )
         # Get the true array of the prediction

@@ -20,17 +20,15 @@ from typing import Type
 
 import joblib
 import numpy as np
-from sklearn.utils import check_array
-from sklearn.preprocessing import PowerTransformer
+from sklearn.utils import check_array, validation
 from sklearn.base import BaseEstimator
-from sklearn.cross_decomposition import CCA  # As of version 0.24.1, CCA doesn't work
 from loguru import logger
 
 from .. import utils
 from ..utils import Root
 from ..config import Setup
 
-from ..algorithms import signed_distance  # , CCA
+from ..algorithms import signed_distance
 from ..algorithms import mvn_inference
 from ..spatial import grid_parameters
 from ..processing import PC
@@ -123,25 +121,93 @@ class BEL(BaseEstimator):
     Heart of the framework.
     """
 
-    def __init__(self, directory: str = None, mode: str = "mvn", pipeline=None):
+    def __init__(self,
+                 directory: str = None,
+                 mode: str = "mvn",
+                 X_pre_processing=None,
+                 Y_pre_processing=None,
+                 X_post_processing=None,
+                 Y_post_processing=None,
+                 cca=None
+                 ):
 
         self.directory = directory
+
         self.mode = mode
-        self.pipeline = pipeline
+
+        self.X_pre_processing = X_pre_processing
+        self.Y_pre_processing = Y_pre_processing
+        self.X_post_processing = X_post_processing
+        self.Y_post_processing = Y_post_processing
+        self.cca = cca
+
         self.posterior_mean = None
         self.posterior_covariance = None
+
         self.seed = None
         self.n_posts = None
-        self.X_normalizer = PowerTransformer(method="yeo-johnson", standardize=True)
-        self.Y_normalizer = PowerTransformer(method="yeo-johnson", standardize=True)
+
+        self._x, self._y = None, None
 
     def fit(self, X, Y):
         """
+        Fit all pipelines
         """
         X = check_array(X, copy=True, ensure_2d=False)
         Y = check_array(Y, copy=True, ensure_2d=False)
 
-        self.pipeline.fit(X, Y)  # Fit
+        if self._x is None and self._y is None:
+            self._x, self._y = X, Y
+
+        _xt, _yt = self.X_pre_processing.fit_transform(self._x), self.Y_pre_processing.fit_transform(self._y)
+
+        _xc, _yc = self.cca.fit_transform(X=_xt, Y=_yt)
+
+        self.X_post_processing.fit(X), self.Y_post_processing.fit(Y)
+
+    def transform(self, X=None, Y=None):
+        """
+        Transform all pipelines
+        :param X:
+        :param Y:
+        :return:
+        """
+
+        validation.check_is_fitted(self.cca)
+
+        if X is not None and Y is None:
+            X = check_array(X, copy=True, ensure_2d=False)
+            validation.check_is_fitted(self.X_pre_processing)
+            validation.check_is_fitted(self.X_post_processing)
+            _xt = self.X_pre_processing.transform(X)
+            _xc = self.cca.transform(X=_xt)
+            _xp = self.X_post_processing.transform(X)
+            return _xp
+        elif Y is not None and X is None:
+            Y = check_array(Y, copy=True, ensure_2d=False)
+            validation.check_is_fitted(self.Y_pre_processing)
+            validation.check_is_fitted(self.Y_post_processing)
+            _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(Y)
+            _, _yc = self.cca.transform(X=_xt, Y=_yt)
+            _yp = self.Y_post_processing.transform(Y)
+
+            return _yp
+        else:
+            X = check_array(X, copy=True, ensure_2d=False)
+            Y = check_array(Y, copy=True, ensure_2d=False)
+            validation.check_is_fitted(self.X_pre_processing)
+            validation.check_is_fitted(self.Y_pre_processing)
+            validation.check_is_fitted(self.cca)
+            validation.check_is_fitted(self.X_post_processing)
+            validation.check_is_fitted(self.Y_post_processing)
+
+            _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(self._y)
+
+            _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
+
+            _xp, _yp = self.X_post_processing.transform(X), self.Y_post_processing.transform(Y)
+
+            return _xp, _yp
 
     def random_sample(self, n_posts: int = None) -> np.array:
         """
@@ -159,18 +225,44 @@ class BEL(BaseEstimator):
         return Y_samples
 
     def fit_transform(self, X, Y):
+        """
+        Fit-Transform all pipelines
+        :param X:
+        :param Y:
+        :return:
+        """
 
-        x_scores, y_scores = self.pipeline.fit_transform(X, Y)
-        return x_scores, y_scores
+        X = check_array(X, copy=True, ensure_2d=False)
+        Y = check_array(Y, copy=True, ensure_2d=False)
+
+        validation.check_is_fitted(self.X_pre_processing)
+        validation.check_is_fitted(self.Y_pre_processing)
+        validation.check_is_fitted(self.cca)
+        validation.check_is_fitted(self.X_post_processing)
+        validation.check_is_fitted(self.Y_post_processing)
+
+        _xt, _yt = self.X_pre_processing.fit_transform(X), self.Y_pre_processing.fit_transform(Y)
+
+        _xc, _yc = self.cca.fit_transform(X=_xt, Y=_yt)
+
+        _xp, _yp = self.X_post_processing.fit(X), self.Y_post_processing.fit(Y)
+
+        return _xp, _yp
 
     def predict(self, X_obs) -> np.array:
         """
         Make predictions, in the BEL fashion.
         """
         X_obs = check_array(X_obs)
+        validation.check_is_fitted(self.X_pre_processing)
+        validation.check_is_fitted(self.Y_pre_processing)
+        validation.check_is_fitted(self.cca)
+        validation.check_is_fitted(self.X_post_processing)
+        validation.check_is_fitted(self.X_post_processing)
         # Project observed data into canonical space.
-        d_cca_prediction = self.pipeline.transform(X_obs)
-        d_cca_prediction = self.Y_normalizer.transform(d_cca_prediction)
+        X_obs = self.X_pre_processing.transform(X_obs)
+        X_obs = self.cca.transform(X_obs)
+        X_obs = self.X_post_processing.transform(X_obs)
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         # Number of PCA components for the curves
@@ -180,16 +272,17 @@ class BEL(BaseEstimator):
         x_cov = np.eye(x_dim) * noise
         # (n_comp_CCA, n_comp_CCA)
         # Get the rotation matrices
-        d_rotations = self.pipeline['cca'].x_rotations_
-        x_cov = d_rotations.T @ x_cov @ d_rotations
+        x_rotations = self.cca.x_rotations_
+        x_cov = x_rotations.T @ x_cov @ x_rotations
         dict_args = {"x_cov": x_cov}
 
+        X, Y = self.transform()
         # Estimate the posterior mean and covariance
         if self.mode == "mvn":
             self.posterior_mean, self.posterior_covariance = mvn_inference(
-                X=d_cca_training,
-                Y=h_cca_training,
-                X_obs=d_cca_prediction,
+                X=X,
+                Y=Y,
+                X_obs=X_obs,
                 **dict_args,
             )
         else:
@@ -213,7 +306,6 @@ class BEL(BaseEstimator):
     def inverse_transform(
             self,
             h_posts_gaussian: np.array,
-            cca_obj: CCA,
             pca_h: PC,
             add_comp: bool = False,
             save_target_pc: bool = False,
@@ -221,7 +313,6 @@ class BEL(BaseEstimator):
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
         :param h_posts_gaussian:
-        :param cca_obj:
         :param pca_h:
         :param add_comp:
         :param save_target_pc:
@@ -231,19 +322,9 @@ class BEL(BaseEstimator):
         # We get the CCA scores.
 
         # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        h_posts = self.X_normalizer.inverse_transform(
-            h_posts_gaussian
-        )  # (n_components, n_samples)
-
-        # Calculate the values of hf, i.e. reverse the canonical correlation, it always works if dimf > dimh
-        # The value of h_pca_reverse are the score of PCA in the forecast space.
-        # To reverse data in the original space, perform the matrix multiplication between the data in the CCA space
-        # with the y_loadings matrix. Because CCA scales the input, we must multiply the output by the y_std dev
-        # and add the y_mean.
-        cca_obj = self.pipeline['cca']
-        h_pca_reverse = (
-                np.matmul(h_posts, cca_obj.y_loadings_.T) * cca_obj.y_std_ + cca_obj.y_mean_
-        )
+        y_post = self.Y_post_processing.inverse_transform(h_posts_gaussian)
+        y_post = np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_ + self.cca.y_mean_
+        y_post = self.Y_pre_processing.inverse_transform(y_post)
 
         # Whether to add or not the rest of PC components
         if add_comp:  # TODO: double check
@@ -252,14 +333,14 @@ class BEL(BaseEstimator):
             )  # Get the extra components
             h_pca_reverse = np.array(
                 [
-                    np.concatenate((h_pca_reverse[i], rnpc[i]))
+                    np.concatenate((y_post[i], rnpc[i]))
                     for i in range(self.n_posts)
                 ]
             )  # Insert it
 
         if save_target_pc:
             fname = jp(self.directory, "target_pc.npy")
-            np.save(fname, h_pca_reverse)
+            np.save(fname, y_post)
 
         osx, osy = (
             pca_h.training_df.attrs["physical_shape"][1],
@@ -267,8 +348,8 @@ class BEL(BaseEstimator):
         )
 
         # Generate forecast in the initial dimension and reshape.
-        forecast_posterior = pca_h.custom_inverse_transform(h_pca_reverse).reshape(
+        forecast_posterior = pca_h.custom_inverse_transform(y_post).reshape(
             (self.n_posts, osx, osy)
         )
 
-        return forecast_posterior
+        return y_post

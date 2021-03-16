@@ -1000,13 +1000,13 @@ def reload_trained_model(root: str, well: str, sample_n: int = 0):
     #  Watch out for the transpose operator.
     h2 = h.copy()
     d2 = d.copy()
-    tfm1 = post.X_normalizer
+    tfm1 = post.X_pipeline
     h = tfm1.fit_transform(h2.T)
     h = h.T
     h_cca_prediction = tfm1.fit_transform(h_cca_prediction)
     h_cca_prediction = h_cca_prediction.T
 
-    tfm2 = post.Y_normalizer
+    tfm2 = post.Y_pipeline
     d = tfm2.fit_transform(d2.T)
     d = d.T
     d_cca_prediction = tfm2.fit_transform(d_cca_prediction)
