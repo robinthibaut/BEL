@@ -9,13 +9,14 @@ from os.path import join as jp
 import numpy as np
 from loguru import logger
 
+import bel4ed.datasets._base
 import bel4ed.utils
 from bel4ed.algorithms import sgsim
 from bel4ed.config import Setup, Machine
 from bel4ed.hydro.backtracking.modpath import backtrack
 from bel4ed.hydro.flow.modflow import flow
 from bel4ed.hydro.transport.mt3d import transport
-from bel4ed.processing import travelling_particles
+from bel4ed.preprocessing import travelling_particles
 
 __all__ = ["forward_modelling"]
 
@@ -91,7 +92,7 @@ def forward_modelling(folder=None):
             hl = (time.time() - start_fwd) // 60
             logger.info(f"done in {hl} min")
             if not folder:
-                bel4ed.utils.keep_essential(results_dir)
+                bel4ed.datasets._base.keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
             logger.info(f"terminated f{res_dir}")

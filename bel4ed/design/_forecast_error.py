@@ -16,12 +16,14 @@ from sklearn.pipeline import Pipeline
 
 from .. import utils
 from ..config import Setup
-from ..processing import PC
+from ..datasets import data_loader
+from ..preprocessing import PC, beautiful_curves, signed_distance
 from ..utils import Root
-from ..learning.bel import base_pca, BEL
+from ..learning.bel import BEL
 from ..spatial import (
     contours_vertices,
     refine_machine,
+    grid_parameters,
 )
 
 __all__ = [
@@ -76,9 +78,9 @@ class UncertaintyQuantification:
         try:
             self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
             logger.info("Base target training object reloaded")
-        except FileNotFoundError:
+        except Exception as e:
             self.h_pco = None
-            logger.info("Base target training object not found")
+            logger.info(e)
 
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = (
@@ -227,7 +229,6 @@ class UncertaintyQuantification:
                 h_pca_obj_path=obj,
             )
 
-        # TODO: Separate folder and computation stuff
         # Directories
         md = self.base.Directories
         res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
@@ -274,20 +275,18 @@ class UncertaintyQuantification:
                 # %% PREDICTOR
 
                 # Refined breakthrough curves data file
-                # TODO : Specify this in config file
-                # TODO: Remove duplicate code
                 tc_training_file = jp(obj_dir, "training_curves.npy")
                 tc_test_file = jp(obj_dir, "test_curves.npy")
                 n_time_steps = self.base.HyperParameters.n_tstp
                 # Loads the results:
                 # tc has shape (n_sim, n_wells, n_time_steps)
-                tc_training = utils.beautiful_curves(
+                tc_training = beautiful_curves(
                     curve_file=tc_training_file,
                     res_dir=res_dir,
                     ids=roots_training,
                     n_time_steps=n_time_steps,
                 )
-                tc_test = utils.beautiful_curves(
+                tc_test = beautiful_curves(
                     curve_file=tc_test_file,
                     res_dir=res_dir,
                     ids=[test_root],
@@ -329,7 +328,7 @@ class UncertaintyQuantification:
                 h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
                 nho = h_pco.n_pc_cut  # Number of components to keep
                 # Load whpa to predict
-                _, pzs, _ = utils.data_loader(roots=[test_root], h=True)
+                _, pzs, _ = data_loader(roots=[test_root], h=True)
                 # Compute WHPA on the prediction
                 if h_pco.test_pc_df is None:
                     # Perform PCA
@@ -503,3 +502,87 @@ def compute_metric(
             global_mean += mean
 
     return global_mean
+
+
+def base_pca(
+    base: Type[Setup],
+    base_dir: str,
+    training_roots: Root,
+    test_roots: Root,
+    h_pca_obj_path: str = None,
+):
+    """
+    Initiate BEL by performing PCA on the training targets or features.
+    :param base: class: Base class object
+    :param base_dir: str: Base directory path
+    :param training_roots: list:
+    :param test_roots: list:
+    :param h_pca_obj_path:
+    :return:
+    """
+
+    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
+
+    if h_pca_obj_path is not None:
+        # Loads the results:
+        _, pzs_training, r_training_ids = data_loader(
+            roots=training_roots, h=True
+        )
+        _, pzs_test, r_test_ids = data_loader(
+            roots=test_roots, h=True
+        )
+
+        # Load parameters:
+        xys, nrow, ncol = grid_parameters(
+            x_lim=x_lim, y_lim=y_lim, grf=grf
+        )  # Initiate SD instance
+
+        # PCA on signed distance
+        # Compute signed distance on pzs.
+        # h is the matrix of target feature on which PCA will be performed.
+        h_training = np.array(
+            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training]
+        )
+        h_test = np.array(
+            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test]
+        )
+
+        # Convert to dataframes
+        training_df_target = utils.i_am_framed(array=h_training, ids=training_roots)
+        test_df_target = utils.i_am_framed(array=h_test, ids=test_roots)
+
+        # Initiate h pca object
+        h_pco = PC(
+            name="h",
+            training_df=training_df_target,
+            test_df=test_df_target,
+            directory=base_dir,
+        )
+        # Transform
+        h_pco.training_fit_transform()
+        # Define number of components to keep
+        h_pco.n_pc_cut = base.HyperParameters.n_pc_target
+        # Transform test arrays
+        h_pco.test_transform()
+
+        # Dump
+        joblib.dump(h_pco, h_pca_obj_path)
+
+        # Save roots id's in a dat file
+        if not os.path.exists(jp(base_dir, "roots.dat")):
+            with open(jp(base_dir, "roots.dat"), "w") as f:
+                for (
+                    r_training_ids
+                ) in training_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r_training_ids) + "\n")
+
+        # Save roots id's in a dat file
+        if not os.path.exists(jp(base_dir, "test_roots.dat")):
+            with open(jp(base_dir, "test_roots.dat"), "w") as f:
+                for r_training_ids in test_roots:  # Saves roots name until test roots
+                    f.write(os.path.basename(r_training_ids) + "\n")
+
+        return h_pco
+
+    else:
+        logger.error("No base dimensionality reduction could be performed")

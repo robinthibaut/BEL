@@ -4,6 +4,7 @@
 !*.eas
 
 bel4ed/storage
+bel4ed/datasets/forwards
 
 *.png
 *.pdf
@@ -165,4 +166,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-

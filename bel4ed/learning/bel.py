@@ -1,107 +1,15 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import os
 import warnings
-from os.path import join as jp
-from typing import Type
 
-import joblib
 import numpy as np
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator
-from loguru import logger
 
-from .. import utils
-from ..utils import Root
 from ..config import Setup
 
-from ..algorithms import signed_distance
 from ..algorithms import mvn_inference
-from ..spatial import grid_parameters
-from ..processing import PC
-
-
-def base_pca(
-    base: Type[Setup],
-    base_dir: str,
-    training_roots: Root,
-    test_roots: Root,
-    h_pca_obj_path: str = None,
-):
-    """
-    Initiate BEL by performing PCA on the training targets or features.
-    :param base: class: Base class object
-    :param base_dir: str: Base directory path
-    :param training_roots: list:
-    :param test_roots: list:
-    :param h_pca_obj_path:
-    :return:
-    """
-
-    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-
-    if h_pca_obj_path is not None:
-        # Loads the results:
-        _, pzs_training, r_training_ids = utils.data_loader(
-            roots=training_roots, h=True
-        )
-        _, pzs_test, r_test_ids = utils.data_loader(roots=test_roots, h=True)
-
-        # Load parameters:
-        xys, nrow, ncol = grid_parameters(
-            x_lim=x_lim, y_lim=y_lim, grf=grf
-        )  # Initiate SD instance
-
-        # PCA on signed distance
-        # Compute signed distance on pzs.
-        # h is the matrix of target feature on which PCA will be performed.
-        h_training = np.array(
-            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training]
-        )
-        h_test = np.array(
-            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test]
-        )
-
-        # Convert to dataframes
-        training_df_target = utils.i_am_framed(array=h_training, ids=training_roots)
-        test_df_target = utils.i_am_framed(array=h_test, ids=test_roots)
-
-        # Initiate h pca object
-        h_pco = PC(
-            name="h",
-            training_df=training_df_target,
-            test_df=test_df_target,
-            directory=base_dir,
-        )
-        # Transform
-        h_pco.training_fit_transform()
-        # Define number of components to keep
-        h_pco.n_pc_cut = base.HyperParameters.n_pc_target
-        # Transform test arrays
-        h_pco.test_transform()
-
-        # Dump
-        joblib.dump(h_pco, h_pca_obj_path)
-
-        # Save roots id's in a dat file
-        if not os.path.exists(jp(base_dir, "roots.dat")):
-            with open(jp(base_dir, "roots.dat"), "w") as f:
-                for (
-                    r_training_ids
-                ) in training_roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r_training_ids) + "\n")
-
-        # Save roots id's in a dat file
-        if not os.path.exists(jp(base_dir, "test_roots.dat")):
-            with open(jp(base_dir, "test_roots.dat"), "w") as f:
-                for r_training_ids in test_roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r_training_ids) + "\n")
-
-        return h_pco
-
-    else:
-        logger.error("No base dimensionality reduction could be performed")
 
 
 class BEL(BaseEstimator):
@@ -162,7 +70,7 @@ class BEL(BaseEstimator):
 
         self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
 
-    def transform(self, X=None, Y=None):
+    def transform(self, X=None, Y=None) -> (np.array, np.array):
         """
         Transform all pipelines
         :param X:

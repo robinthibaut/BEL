@@ -4,7 +4,7 @@ import numpy as np
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification
-from bel4ed.utils import i_am_root
+from bel4ed.datasets import i_am_root
 
 
 def test_posterior():

@@ -54,7 +54,7 @@ class Setup:
 
         sgems_family = [sgems_file, command_file, hk_file]
 
-        # Files that are stored after processing
+        # Files that are stored after preprocessing
         predictor_pickle: str = "d_pca.pkl"
         target_pickle: str = "h_pca.pkl"
         model_pickle: str = "cca.pkl"

@@ -22,13 +22,12 @@ logger.debug(f"Beginning logging session for {source}!")
 
 __all__ = [
     "config",
-    "exceptions",
     "utils",
     "goggles",
     "algorithms",
     "design",
     "hydro",
     "learning",
-    "processing",
+    "preprocessing",
     "spatial",
 ]

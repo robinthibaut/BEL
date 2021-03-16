@@ -20,11 +20,12 @@ from loguru import logger
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
+import bel4ed.datasets._base
 import bel4ed.utils
 from bel4ed.utils import Root
 from bel4ed.algorithms import KDE, kde_params, posterior_conditional, CCA
 from bel4ed.config import Setup
-from bel4ed.processing import PC
+from bel4ed.preprocessing import PC
 from bel4ed.spatial import (
     binary_stack,
     contours_vertices,
@@ -1344,7 +1345,7 @@ def check_root(xlim: list, ylim: list, root: list):
     :param root:
     :return:
     """
-    bkt, whpa, _ = bel4ed.utils.data_loader(roots=root)
+    bkt, whpa, _ = bel4ed.datasets._base.data_loader(roots=root)
     whpa = whpa.squeeze()
     # self.curves_i(bkt, show=True)  # This function will not work
 
@@ -1606,7 +1607,7 @@ class ModelVTK:
         # Load flow model
         try:
             m_load = jp(self.results_dir, "whpa.nam")
-            self.flow_model = bel4ed.utils.load_flow_model(
+            self.flow_model = bel4ed.datasets._base.load_flow_model(
                 m_load, model_ws=self.results_dir
             )
             delr = self.flow_model.modelgrid.delr  # thicknesses along rows
@@ -1621,7 +1622,7 @@ class ModelVTK:
         try:
             # Transport model
             mt_load = jp(self.results_dir, "whpa.mtnam")
-            self.transport_model = bel4ed.utils.load_transport_model(
+            self.transport_model = bel4ed.datasets._base.load_transport_model(
                 mt_load, self.flow_model, model_ws=self.results_dir
             )
             ucn_files = [
