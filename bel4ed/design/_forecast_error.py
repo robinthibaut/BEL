@@ -368,6 +368,12 @@ class UncertaintyQuantification:
         # The posterior distribution is computed within the method below.
         h_posts_gaussian = self.bel.predict(self.x_obs)
 
+        # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
+        # This allows to reload this object later on and resample using the same seed.
+        post_location = jp(self.bel.directory, "post.pkl")
+        logger.info(f"Saved posterior object to {post_location}")
+        joblib.dump(self.bel, post_location)
+
         self.forecast_posterior = self.bel.inverse_transform(
             Y_pred=h_posts_gaussian.reshape(1, -1),
         )

@@ -124,7 +124,6 @@ class BEL(BaseEstimator):
 
     def __init__(
         self,
-        directory: str = None,
         mode: str = "mvn",
         X_pre_processing=None,
         Y_pre_processing=None,
@@ -132,8 +131,6 @@ class BEL(BaseEstimator):
         Y_post_processing=None,
         cca=None,
     ):
-
-        self.directory = directory
 
         self.mode = mode
 
@@ -232,6 +229,7 @@ class BEL(BaseEstimator):
         :param n_posts:
         :return:
         """
+        check_is_fitted(self.cca)
         if n_posts is None:
             n_posts = self.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
@@ -242,7 +240,7 @@ class BEL(BaseEstimator):
         )
         return Y_samples
 
-    def fit_transform(self, X, Y):
+    def fit_transform(self, X, Y) -> (np.array, np.array):
         """
         Fit-Transform all pipelines
         :param X:
@@ -307,12 +305,6 @@ class BEL(BaseEstimator):
         # Set the seed for later use
         if self.seed is None:
             self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
-
-        # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
-        # This allows to reload this object later on and resample using the same seed.
-        post_location = jp(self.directory, "post.pkl")
-        logger.info(f"Saved posterior object to {post_location}")
-        joblib.dump(self, post_location)
 
         # Sample the inferred multivariate gaussian distribution
         random_samples = self.random_sample(self.n_posts)
