@@ -26,7 +26,8 @@ class Setup:
         # Content directory
         main_dir: str = dirname(os.path.abspath(__file__))
         storage_dir: str = join(main_dir, "storage")
-        hydro_res_dir: str = join(storage_dir, "forwards")
+        data_dir: str = join(main_dir, "datasets")
+        hydro_res_dir: str = join(data_dir, "forwards")
         forecasts_dir: str = join(storage_dir, "forecasts")
         forecasts_base_dir: str = join(forecasts_dir, "base")
         grid_dir: str = join(main_dir, "spatial", "parameters")
