@@ -100,7 +100,9 @@ class UncertaintyQuantification:
             ]
         )
 
-        self.cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500*20, tol=1e-6)
+        self.cca = CCA(
+            n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6
+        )
 
         self.X_post_processing = Pipeline(
             [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
