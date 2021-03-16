@@ -12,8 +12,7 @@ from loguru import logger
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
-from sklearn.base import clone
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline
 
 from .. import utils
 from ..config import Setup
@@ -91,17 +90,17 @@ class UncertaintyQuantification:
         self.X_pre_processing = Pipeline(
             [
                 ("scaler", StandardScaler(with_mean=False)),
-                ("pca", PCA(n_components=n_pc_pred)),
+                ("pca", PCA()),
             ]
         )
         self.Y_pre_processing = Pipeline(
             [
                 ("scaler", StandardScaler(with_mean=False)),
-                ("pca", PCA(n_components=n_pc_targ)),
+                ("pca", PCA()),
             ]
         )
 
-        self.cca = CCA(n_components=min(n_pc_targ, n_pc_pred))
+        self.cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500*20, tol=1e-6)
 
         self.X_post_processing = Pipeline(
             [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
@@ -317,9 +316,6 @@ class UncertaintyQuantification:
                 d_pco.test_transform()
                 # PCA on transport curves
                 d_pco.n_pc_cut = self.base.HyperParameters.n_pc_predictor
-                ndo = d_pco.n_pc_cut
-                # Perform transformation on testing curves
-                d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
 
                 self.x_obs = test_df_predictor
 
@@ -371,8 +367,7 @@ class UncertaintyQuantification:
         h_posts_gaussian = self.bel.predict(self.x_obs)
 
         self.forecast_posterior = self.bel.inverse_transform(
-            Y=h_posts_gaussian.reshape(1, -1),
-            pca_h=self.h_pco,
+            Y_pred=h_posts_gaussian.reshape(1, -1),
         )
         # Get the true array of the prediction
         # Prediction set - PCA space

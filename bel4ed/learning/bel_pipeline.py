@@ -149,11 +149,14 @@ class BEL(BaseEstimator):
         self.seed = None
         self.n_posts = None
 
-        self._x, self._y = None, None
+        self._x, self._y = None, None  # Original dataset
 
     def fit(self, X, Y):
         """
         Fit all pipelines
+        :param X:
+        :param Y:
+        :return:
         """
         X = check_array(X, copy=True, ensure_2d=False)
         Y = check_array(Y, copy=True, ensure_2d=False)
@@ -165,6 +168,8 @@ class BEL(BaseEstimator):
             self.X_pre_processing.fit_transform(self._x),
             self.Y_pre_processing.fit_transform(self._y),
         )
+
+        _xt, _yt = _xt[:, :Setup.HyperParameters.n_pc_predictor], _yt[:, :Setup.HyperParameters.n_pc_target]
 
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
@@ -183,6 +188,7 @@ class BEL(BaseEstimator):
         if X is not None and Y is None:
             X = check_array(X, copy=True, ensure_2d=False)
             _xt = self.X_pre_processing.transform(X)
+            _xt = _xt[:Setup.HyperParameters.n_pc_predictor]
             _xc = self.cca.transform(X=_xt)
             _xp = self.X_post_processing.transform(_xc)
             return _xp
@@ -192,6 +198,7 @@ class BEL(BaseEstimator):
                 self.X_pre_processing.transform(self._x),
                 self.Y_pre_processing.transform(Y),
             )
+            _xt, _yt = _xt[:Setup.HyperParameters.n_pc_predictor], _yt[:, :Setup.HyperParameters.n_pc_target]
             _, _yc = self.cca.transform(X=_xt, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -201,7 +208,7 @@ class BEL(BaseEstimator):
                 self.X_pre_processing.transform(self._x),
                 self.Y_pre_processing.transform(self._y),
             )
-
+            _xt, _yt = _xt[:Setup.HyperParameters.n_pc_predictor], _yt[:, :Setup.HyperParameters.n_pc_target]
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
             _xp, _yp = (
@@ -242,6 +249,8 @@ class BEL(BaseEstimator):
             self.Y_pre_processing.fit_transform(Y),
         )
 
+        _xt, _yt = _xt[:, Setup.HyperParameters.n_pc_predictor], _yt[:, :Setup.HyperParameters.n_pc_target]
+
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
         _xp, _yp = self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
@@ -255,6 +264,7 @@ class BEL(BaseEstimator):
         X_obs = check_array(X_obs)
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
+        X_obs = X_obs[:, Setup.HyperParameters.n_pc_predictor]
         X_obs = self.cca.transform(X_obs)
         X_obs = self.X_post_processing.transform(X_obs)
 
@@ -299,18 +309,14 @@ class BEL(BaseEstimator):
 
     def inverse_transform(
         self,
-        Y,
+        Y_pred,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior h to their physical space.
-        :param Y:
+        :param Y_pred:
         :return: forecast_posterior
         """
-        # This h_posts gaussian need to be inverse-transformed to the original distribution.
-        # We get the CCA scores.
-
-        # h_posts = self.processing.gaussian_inverse(h_posts_gaussian)  # (n_components, n_samples)
-        y_post = self.Y_post_processing.inverse_transform(Y)
+        y_post = self.Y_post_processing.inverse_transform(Y_pred)
         y_post = (
             np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
             + self.cca.y_mean_
