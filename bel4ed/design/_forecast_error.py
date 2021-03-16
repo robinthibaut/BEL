@@ -86,7 +86,7 @@ class UncertaintyQuantification:
             base.HyperParameters.n_pc_target,
         )
 
-        # Pipeline after CCA
+        # Pipeline before CCA
         self.X_pre_processing = Pipeline(
             [
                 ("scaler", StandardScaler(with_mean=False)),
@@ -112,9 +112,8 @@ class UncertaintyQuantification:
         )
 
         self.bel = BEL(
-            directory=self.res_dir,
             X_pre_processing=self.X_pre_processing,
-            X_post_processing=self.Y_post_processing,
+            X_post_processing=self.X_post_processing,
             Y_pre_processing=self.Y_pre_processing,
             Y_post_processing=self.Y_post_processing,
             cca=self.cca,
@@ -368,18 +367,14 @@ class UncertaintyQuantification:
         # The posterior distribution is computed within the method below.
         h_posts_gaussian = self.bel.predict(self.x_obs)
 
-        # Saves this BEL object to avoid saving large amounts of 'forecast_posterior'
-        # This allows to reload this object later on and resample using the same seed.
-        post_location = jp(self.bel.directory, "post.pkl")
-        logger.info(f"Saved posterior object to {post_location}")
-        joblib.dump(self.bel, post_location)
-
         self.forecast_posterior = self.bel.inverse_transform(
             Y_pred=h_posts_gaussian.reshape(1, -1),
         )
         # Get the true array of the prediction
         # Prediction set - PCA space
         self.shape = self.h_pco.training_df.attrs["physical_shape"]
+
+        return self.bel.posterior_mean, self.bel.posterior_covariance
 
     # %% extract 0 contours
     def contour_extract(self, write_vtk: bool = False):

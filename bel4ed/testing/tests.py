@@ -38,21 +38,19 @@ def test_posterior():
     )
     test_base.Wells.combination = wells
 
-    uq.sample_posterior(n_posts=test_base.HyperParameters.n_posts)
+    post_mean, post_cov = uq.sample_posterior(n_posts=test_base.HyperParameters.n_posts)
 
     ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
     ref_mean = np.load(jp(ref_dir, test_r[0], "123456", "ref_mean.npy"))
     ref_covariance = np.load(jp(ref_dir, test_r[0], "123456", "ref_covariance.npy"))
 
-    test_post = joblib.load(jp(test_dir, test_r[0], "123456", "obj", "post.pkl"))
-
     msg1 = "The posterior means are different"
     np.testing.assert_allclose(
-        test_post.posterior_mean, ref_mean, atol=1e-6, err_msg=msg1
+        post_mean, ref_mean, atol=1e-6, err_msg=msg1
     )
 
     msg2 = "The posterior covariances are different"
     np.testing.assert_allclose(
-        test_post.posterior_covariance, ref_covariance, atol=1e-6, err_msg=msg2
+        post_cov, ref_covariance, atol=1e-6, err_msg=msg2
     )

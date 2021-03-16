@@ -1,17 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-"""
-This script pre-processes the data.
-
-- It subdivides the breakthrough curves into an arbitrary number of steps, as the mt3dms results
-do not necessarily share the same time steps - d
-
-- It computes the signed distance field for each particles endpoints file - h
-It then perform PCA keeping all components on both d and h.
-
-- Finally, CCA is performed after selecting an appropriate number of PC to keep.
-
-It saves 2 pca objects (d, h) and 1 cca object, according to the project ecosystem.
-"""
 
 import os
 import warnings
@@ -191,7 +178,9 @@ class BEL(BaseEstimator):
             _xt = _xt[:, : Setup.HyperParameters.n_pc_predictor]
             _xc = self.cca.transform(X=_xt)
             _xp = self.X_post_processing.transform(_xc)
+
             return _xp
+
         elif Y is not None and X is None:
             Y = check_array(Y, copy=True, ensure_2d=False)
             _xt, _yt = (
@@ -206,6 +195,7 @@ class BEL(BaseEstimator):
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
+
         else:
             _xt, _yt = (
                 self.X_pre_processing.transform(self._x),
@@ -224,7 +214,7 @@ class BEL(BaseEstimator):
 
             return _xp, _yp
 
-    def random_sample(self, n_posts: int = None) -> np.array:
+    def _random_sample(self, n_posts: int = None) -> np.array:
         """
         :param n_posts:
         :return:
@@ -238,6 +228,7 @@ class BEL(BaseEstimator):
         Y_samples = np.random.multivariate_normal(
             mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
         )
+
         return Y_samples
 
     def fit_transform(self, X, Y) -> (np.array, np.array):
@@ -307,7 +298,7 @@ class BEL(BaseEstimator):
             self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
 
         # Sample the inferred multivariate gaussian distribution
-        random_samples = self.random_sample(self.n_posts)
+        random_samples = self._random_sample(self.n_posts)
 
         return random_samples
 
@@ -316,7 +307,7 @@ class BEL(BaseEstimator):
         Y_pred,
     ) -> np.array:
         """
-        Back-transforms the sampled gaussian distributed posterior h to their physical space.
+        Back-transforms the sampled gaussian distributed posterior Y to their physical space.
         :param Y_pred:
         :return: forecast_posterior
         """
