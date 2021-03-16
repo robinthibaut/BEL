@@ -323,4 +323,3 @@ class BEL(BaseEstimator):
         y_post = self.Y_pre_processing.inverse_transform(dummy)
 
         return y_post
-
