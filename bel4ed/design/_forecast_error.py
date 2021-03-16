@@ -18,7 +18,7 @@ from .. import utils
 from ..config import Setup
 from ..processing import PC
 from ..utils import Root
-from ..learning.bel_pipeline import base_pca, BEL
+from ..learning.bel import base_pca, BEL
 from ..spatial import (
     contours_vertices,
     refine_machine,

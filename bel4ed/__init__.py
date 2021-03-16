@@ -6,7 +6,7 @@ from os.path import join as jp
 from loguru import logger
 
 from .hydro import forward_modelling
-from .learning import bel_pipeline
+from .learning import bel
 
 __version__ = "1.0.dev0"
 

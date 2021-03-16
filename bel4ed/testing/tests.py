@@ -1,6 +1,5 @@
 from os.path import join as jp
 
-import joblib
 import numpy as np
 
 from bel4ed.config import Setup
