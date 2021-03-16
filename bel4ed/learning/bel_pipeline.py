@@ -20,7 +20,8 @@ from typing import Type
 
 import joblib
 import numpy as np
-from sklearn.utils import check_array, validation
+from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
 from sklearn.base import BaseEstimator
 from loguru import logger
 
@@ -161,9 +162,9 @@ class BEL(BaseEstimator):
 
         _xt, _yt = self.X_pre_processing.fit_transform(self._x), self.Y_pre_processing.fit_transform(self._y)
 
-        _xc, _yc = self.cca.fit_transform(X=_xt, Y=_yt)
+        _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
-        self.X_post_processing.fit(X), self.Y_post_processing.fit(Y)
+        self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
 
     def transform(self, X=None, Y=None):
         """
@@ -173,39 +174,27 @@ class BEL(BaseEstimator):
         :return:
         """
 
-        validation.check_is_fitted(self.cca)
+        check_is_fitted(self.cca)
 
         if X is not None and Y is None:
             X = check_array(X, copy=True, ensure_2d=False)
-            validation.check_is_fitted(self.X_pre_processing)
-            validation.check_is_fitted(self.X_post_processing)
             _xt = self.X_pre_processing.transform(X)
             _xc = self.cca.transform(X=_xt)
-            _xp = self.X_post_processing.transform(X)
+            _xp = self.X_post_processing.transform(_xc)
             return _xp
         elif Y is not None and X is None:
             Y = check_array(Y, copy=True, ensure_2d=False)
-            validation.check_is_fitted(self.Y_pre_processing)
-            validation.check_is_fitted(self.Y_post_processing)
             _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(Y)
             _, _yc = self.cca.transform(X=_xt, Y=_yt)
-            _yp = self.Y_post_processing.transform(Y)
+            _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
         else:
-            X = check_array(X, copy=True, ensure_2d=False)
-            Y = check_array(Y, copy=True, ensure_2d=False)
-            validation.check_is_fitted(self.X_pre_processing)
-            validation.check_is_fitted(self.Y_pre_processing)
-            validation.check_is_fitted(self.cca)
-            validation.check_is_fitted(self.X_post_processing)
-            validation.check_is_fitted(self.Y_post_processing)
-
             _xt, _yt = self.X_pre_processing.transform(self._x), self.Y_pre_processing.transform(self._y)
 
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
-            _xp, _yp = self.X_post_processing.transform(X), self.Y_post_processing.transform(Y)
+            _xp, _yp = self.X_post_processing.transform(_xc), self.Y_post_processing.transform(_yc)
 
             return _xp, _yp
 
@@ -235,17 +224,11 @@ class BEL(BaseEstimator):
         X = check_array(X, copy=True, ensure_2d=False)
         Y = check_array(Y, copy=True, ensure_2d=False)
 
-        validation.check_is_fitted(self.X_pre_processing)
-        validation.check_is_fitted(self.Y_pre_processing)
-        validation.check_is_fitted(self.cca)
-        validation.check_is_fitted(self.X_post_processing)
-        validation.check_is_fitted(self.Y_post_processing)
-
         _xt, _yt = self.X_pre_processing.fit_transform(X), self.Y_pre_processing.fit_transform(Y)
 
-        _xc, _yc = self.cca.fit_transform(X=_xt, Y=_yt)
+        _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
-        _xp, _yp = self.X_post_processing.fit(X), self.Y_post_processing.fit(Y)
+        _xp, _yp = self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
 
         return _xp, _yp
 
@@ -254,11 +237,6 @@ class BEL(BaseEstimator):
         Make predictions, in the BEL fashion.
         """
         X_obs = check_array(X_obs)
-        validation.check_is_fitted(self.X_pre_processing)
-        validation.check_is_fitted(self.Y_pre_processing)
-        validation.check_is_fitted(self.cca)
-        validation.check_is_fitted(self.X_post_processing)
-        validation.check_is_fitted(self.X_post_processing)
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = self.cca.transform(X_obs)

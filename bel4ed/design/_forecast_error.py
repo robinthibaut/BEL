@@ -35,11 +35,11 @@ __all__ = [
 
 class UncertaintyQuantification:
     def __init__(
-        self,
-        base: Type[Setup],
-        study_folder: str,
-        base_dir: str = None,
-        seed: int = None,
+            self,
+            base: Type[Setup],
+            study_folder: str,
+            base_dir: str = None,
+            seed: int = None,
     ):
         """
         :param base: class: Base object (inventory)
@@ -83,12 +83,25 @@ class UncertaintyQuantification:
 
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = base.HyperParameters.n_pc_predictor, base.HyperParameters.n_pc_target
-        pre_pipeline = Pipeline([('scaler', StandardScaler(with_mean=False)),
-                             ('pca', PCA())])
+
         # Pipeline after CCA
-        self.X_pipeline = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
-        self.Y_pipeline = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
-        self.bel = BEL(directory=self.res_dir, pipeline=pre_pipeline)
+        self.X_pre_processing = Pipeline([("scaler", StandardScaler(with_mean=False)),
+                                          ("pca", PCA(n_components=n_pc_pred))])
+        self.Y_pre_processing = Pipeline([("scaler", StandardScaler(with_mean=False)),
+                                          ("pca", PCA(n_components=n_pc_targ))])
+
+        self.cca = CCA(n_components=min(n_pc_targ, n_pc_pred))
+
+        self.X_post_processing = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
+        self.Y_post_processing = Pipeline([("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))])
+
+        self.bel = BEL(directory=self.res_dir,
+                       X_pre_processing=self.X_pre_processing,
+                       X_post_processing=self.Y_post_processing,
+                       Y_pre_processing=self.Y_pre_processing,
+                       Y_post_processing=self.Y_post_processing,
+                       cca=self.cca)
+
         self.x_obs = None
 
         # Sampling
@@ -103,14 +116,14 @@ class UncertaintyQuantification:
         self.vertices = None
 
     def analysis(
-        self,
-        n_training: int = 200,
-        n_obs: int = 50,
-        flag_base: bool = False,
-        wipe: bool = False,
-        roots_training: Root = None,
-        to_swap: Root = None,
-        roots_obs: Root = None,
+            self,
+            n_training: int = 200,
+            n_obs: int = 50,
+            flag_base: bool = False,
+            wipe: bool = False,
+            roots_training: Root = None,
+            to_swap: Root = None,
+            roots_obs: Root = None,
     ):
         """
         I. First, defines the roots for training from simulations in the hydro results directory.
@@ -156,7 +169,7 @@ class UncertaintyQuantification:
         if roots_obs is None:  # If no observation provided
             if n_training + n_obs <= len(folders):
                 # List of m observation roots
-                roots_obs = folders[n_training : (n_training + n_obs)]
+                roots_obs = folders[n_training: (n_training + n_obs)]
             else:
                 logger.error("Incompatible training/observation numbers")
                 return
@@ -309,7 +322,7 @@ class UncertaintyQuantification:
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
                 self.bel.fit(
-                    X=d_pc_training, Y=h_pc_training
+                    X=training_df_predictor, Y=h_pco.training_df
                 )
                 joblib.dump(self.bel.cca, jp(obj_dir, "cca.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
@@ -435,7 +448,7 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
 
 def compute_metric(
-    base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
+        base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
 ):
     if base_dir is None:
         base_dir = base.Directories.forecasts_base_dir
