@@ -326,8 +326,8 @@ class BEL(BaseEstimator):
         )
 
         # Generate forecast in the initial dimension and reshape.
-        forecast_posterior = pca_h.custom_inverse_transform(y_post).reshape(
-            (self.n_posts, osx, osy)
-        )
+        # forecast_posterior = pca_h.custom_inverse_transform(y_post).reshape(
+        #     (self.n_posts, osx, osy)
+        # )
 
         return y_post

@@ -294,7 +294,7 @@ class UncertaintyQuantification:
                 # Perform transformation on testing curves
                 d_pc_training, d_pc_prediction = d_pco.comp_refresh(ndo)  # Split
 
-                self.x_obs = d_pc_prediction
+                self.x_obs = test_df_predictor
 
                 # Save the d PC object.
                 joblib.dump(d_pco, jp(obj_dir, "d_pca.pkl"))
@@ -344,7 +344,7 @@ class UncertaintyQuantification:
         h_posts_gaussian = self.bel.predict(self.x_obs)
 
         self.forecast_posterior = self.bel.inverse_transform(
-            h_posts_gaussian=h_posts_gaussian,
+            h_posts_gaussian=h_posts_gaussian.reshape(1, -1),
             pca_h=self.h_pco,
         )
         # Get the true array of the prediction
