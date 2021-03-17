@@ -21,7 +21,7 @@ from ..config import Setup
 from ..algorithms import mvn_inference
 
 
-class BEL(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
+class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
     Heart of the framework.
     """

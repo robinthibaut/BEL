@@ -183,7 +183,6 @@ class UncertaintyQuantification:
     def contour_extract(self):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
-        :param write_vtk: bool: Flag to export VTK files
         """
         *_, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         self.vertices = contours_vertices(x, y, self.forecast_posterior)

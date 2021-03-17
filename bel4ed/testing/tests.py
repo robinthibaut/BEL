@@ -16,11 +16,11 @@ def test_posterior():
 
     X, Y = load_dataset()
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, Y, train_size=200, test_size=50, shuffle=False
-    )
-
     wells = np.array([1, 2, 3, 4, 5, 6])
+
+    X_train = X.loc[training_r]
+    X_test = X.loc[test_r]
+    y_train = Y.loc[training_r]
 
     test_base = Setup
     # Switch forecast directory to test directory
@@ -33,11 +33,7 @@ def test_posterior():
         seed=123456,
     )
     # 1 - Fit / Transform
-    uq.analysis(X_train, X_test, y_train, y_test)
-
-    test_base.Wells.combination = wells
-
-    post_mean, post_cov = uq.sample_posterior(n_posts=test_base.HyperParameters.n_posts)
+    post_mean, post_cov = uq.analysis(X_train, X_test, y_train)
 
     ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
