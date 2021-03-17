@@ -29,7 +29,7 @@ __all__ = [
 
 
 def load_dataset():
-    module_path = os.path.dirname(__file__)
+    module_path = dirname(__file__)
     predictor = pd.read_pickle(join(module_path, "data", "predictor.pkl"))
     target = pd.read_pickle(join(module_path, "data", "target.pkl"))
 
@@ -50,12 +50,12 @@ def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
 
 
 def load_transport_model(
-        nam_file: str,
-        modflowmodel,
-        exe_name: str = "",
-        model_ws: str = "",
-        ftl_file: str = "mt3d_link.ftl",
-        version: str = "mt3d-usgs",
+    nam_file: str,
+    modflowmodel,
+    exe_name: str = "",
+    model_ws: str = "",
+    ftl_file: str = "mt3d_link.ftl",
+    version: str = "mt3d-usgs",
 ):
     """
     Loads a transport model.
@@ -124,10 +124,10 @@ def keep_essential(res_dir: str):
     """
     for the_file in os.listdir(res_dir):
         if (
-                not the_file.endswith(".npy")
-                and not the_file.endswith(".py")
-                and not the_file.endswith(".xy")
-                and not the_file.endswith(".sgems")
+            not the_file.endswith(".npy")
+            and not the_file.endswith(".py")
+            and not the_file.endswith(".xy")
+            and not the_file.endswith(".sgems")
         ):
 
             file_path = os.path.join(res_dir, the_file)
@@ -168,11 +168,11 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(
-        res_dir: str = None,
-        roots: List[str] = None,
-        test_roots: List[str] = None,
-        d: bool = False,
-        h: bool = False,
+    res_dir: str = None,
+    roots: List[str] = None,
+    test_roots: List[str] = None,
+    d: bool = False,
+    h: bool = False,
 ):
     """
     Loads results from main results folder.
@@ -220,8 +220,8 @@ def data_loader(
 
 
 def i_am_root(
-        training_file: str = None,
-        test_file: str = None,
+    training_file: str = None,
+    test_file: str = None,
 ):
     if training_file is None:
         training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")

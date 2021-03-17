@@ -14,7 +14,11 @@ def test_posterior():
     test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
-    dataset = load_dataset()
+    X, Y = load_dataset()
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, Y, train_size=200, test_size=50, shuffle=False
+    )
 
     wells = np.array([1, 2, 3, 4, 5, 6])
 
@@ -29,8 +33,8 @@ def test_posterior():
         seed=123456,
     )
     # 1 - Fit / Transform
-    uq.analysis(
-    )
+    uq.analysis(X_train, X_test, y_train, y_test)
+
     test_base.Wells.combination = wells
 
     post_mean, post_cov = uq.sample_posterior(n_posts=test_base.HyperParameters.n_posts)

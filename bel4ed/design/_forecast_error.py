@@ -98,18 +98,14 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-    def analysis(
-        self,
-        X_train, X_test, y_train, y_test
-    ):
-        """
-        """
+    def analysis(self, X_train, X_test, y_train, y_test):
+        """"""
 
         # Directories
         md = self.base.Directories
         combinations = [self.base.Wells.combination.copy()]
-        total = len(roots_obs)
-        for ix, test_root in enumerate(roots_obs):  # For each observation root
+        total = len(X_test)
+        for ix, test_root in enumerate(X_train.index):  # For each observation root
             logger.info(f"[{ix + 1}/{total}]-{test_root}")
             # Directory in which to load forecasts
             bel_dir = jp(md.forecasts_dir, test_root)
@@ -146,17 +142,14 @@ class UncertaintyQuantification:
                 # Load training dataset
                 # %% Select wells:
                 selection = [wc - 1 for wc in self.base.Wells.combination]
-                tc_training = tc_training[:, selection, :]
-                tc_test = tc_test[:, selection, :]
-                # Convert to dataframes
-                training_df_predictor = utils.i_am_framed(
-                    array=tc_training, ids=roots_training
-                )
+                tc_training = X_train.to_numpy().reshape((-1,) + (X_train.attrs["physical_shape"]))
+
+                X_train = tc_training[:, selection, :]
 
                 # %% Fit fit_transform
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
-                bel = self.bel.fit(X=training_df_predictor, Y=h_pco.training_df)
+                bel = self.bel.fit(X=X_train, Y=Y_train)
                 joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)

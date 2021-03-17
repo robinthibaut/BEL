@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from sklearn.model_selection import train_test_split
-
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader
 from bel4ed.spatial import grid_parameters
@@ -45,7 +43,12 @@ for i, f in enumerate(folders):
 
 file_name = jp(Setup.Directories.data_dir, "data", "predictor.pkl")
 logger.info(f"Saving full predictor to {file_name}")
+shape = df_predictor.attrs["physical_shape"]
+# Get original shape
 predictor.attrs = df_predictor.attrs
+# Set columns names corresponding to source number (curves are flattened)
+columns = np.concatenate([np.ones(shape[1])*i for i in range(1, shape[0]+1)])
+predictor.columns = columns
 predictor.to_pickle(file_name)
 
 # %% Target
