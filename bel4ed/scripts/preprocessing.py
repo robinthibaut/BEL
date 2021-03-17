@@ -4,6 +4,9 @@ from os.path import join as jp
 
 import numpy as np
 import pandas as pd
+from loguru import logger
+
+from sklearn.model_selection import train_test_split
 
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader
@@ -22,6 +25,7 @@ folders = list(filter(lambda fo: os.path.isdir(os.path.join(md, fo)), listme))
 n_time_steps = Setup.HyperParameters.n_tstp
 # Loads the results:
 # tc has shape (n_sim, n_wells, n_time_steps)
+logger.info(f"Preprocessing predictor for {len(folders)} samples")
 predictor = pd.DataFrame()
 for f in folders:
     tc_training = beautiful_curves(
@@ -32,13 +36,16 @@ for f in folders:
 
     ids = {"root": f, "id": [f"well_{i}" for i in range(tc_training.shape[1])]}
 
-    df_predictor = i_am_framed(array=tc_training[0], ids=ids, flat=False)
+    df_predictor = i_am_framed(array=tc_training[0], ids=ids, flat=True)
     predictor = predictor.append(df_predictor)
 
     df_predictor.to_pickle(jp(md, f, f"predictor.pkl"))
-predictor.to_pickle(jp(Setup.Directories.data_dir, "predictor.pkl"))
+file_name = jp(Setup.Directories.data_dir, "predictor.pkl")
+logger.info(f"Saving full predictor to {file_name}")
+predictor.to_pickle(file_name)
 
 # %% Target
+logger.info(f"Preprocessing target for {len(folders)} samples")
 target = pd.DataFrame()
 for f in folders:
 
@@ -64,4 +71,7 @@ for f in folders:
     target = target.append(df_target)
 
     df_target.to_pickle(jp(md, f, f"target.pkl"))
-target.to_pickle(jp(Setup.Directories.data_dir, "target.pkl"))
+
+file_name = jp(Setup.Directories.data_dir, "target.pkl")
+logger.info(f"Saving full target to {file_name}")
+target.to_pickle(file_name)
