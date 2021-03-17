@@ -1,6 +1,7 @@
 from os.path import join as jp
 
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification
@@ -24,16 +25,12 @@ def test_posterior():
 
     uq = UncertaintyQuantification(
         base=test_base,
-        base_dir=jp(test_dir, "base"),
-        study_folder=jp(test_r[0], "123456"),
         seed=123456,
     )
     # 1 - Fit / Transform
     uq.analysis(
         roots_training=training_r,
         roots_obs=test_r,
-        wipe=True,
-        flag_base=True,
     )
     test_base.Wells.combination = wells
 

@@ -1,12 +1,12 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
-import shutil
 from os.path import join as jp
 from typing import Type
 
 import joblib
 import numpy as np
+import pandas as pd
 import vtk
 from loguru import logger
 from sklearn.preprocessing import StandardScaler, PowerTransformer
@@ -16,14 +16,11 @@ from sklearn.pipeline import Pipeline
 
 from .. import utils
 from ..config import Setup
-from ..datasets import data_loader
-from ..preprocessing import PC, beautiful_curves, signed_distance
 from ..utils import Root
 from ..learning.bel import BEL
 from ..spatial import (
     contours_vertices,
     refine_machine,
-    grid_parameters,
 )
 
 __all__ = [
@@ -38,14 +35,10 @@ class UncertaintyQuantification:
     def __init__(
         self,
         base: Type[Setup],
-        study_folder: str,
-        base_dir: str = None,
         seed: int = None,
     ):
         """
         :param base: class: Base object (inventory)
-        :param study_folder: str: Name of the root uuid in the 'forecast' directory on which UQ will be performed
-        :param base_dir: str: Path to base directory
         :param seed: int: Seed
         """
 
@@ -65,22 +58,6 @@ class UncertaintyQuantification:
         self.main_dir = md.main_dir
 
         self.grid_dir = md.grid_dir
-
-        self.bel_dir = jp(md.forecasts_dir, study_folder)
-        if base_dir is None:
-            self.base_dir = md.forecasts_base_dir
-        else:
-            self.base_dir = base_dir
-        self.res_dir = jp(self.bel_dir, "obj")
-        self.fig_cca_dir = jp(self.bel_dir, "cca")
-        self.fig_pred_dir = jp(self.bel_dir, "uq")
-
-        try:
-            self.h_pco = joblib.load(jp(self.base_dir, "h_pca.pkl"))
-            logger.info("Base target training object reloaded")
-        except Exception as e:
-            self.h_pco = None
-            logger.info(e)
 
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = (
@@ -121,27 +98,22 @@ class UncertaintyQuantification:
             cca=self.cca,
         )
 
-        self.x_obs = None
+        self.X_obs = None
 
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
-        self.h_true_obs = None  # True h in physical space
+        self.Y_true_obs = None  # True h in physical space
         self.shape = None
-        self.h_pc_true_pred = None  # CCA predicted 'true' h PC
-        self.h_pred = None  # 'true' h in physical space
+        self.Y_pc_true_pred = None  # CCA predicted 'true' h PC
+        self.Y_pred = None  # 'true' h in physical space
 
         # 0 contours of posterior WHPA
         self.vertices = None
 
     def analysis(
         self,
-        n_training: int = 200,
-        n_obs: int = 50,
-        flag_base: bool = False,
-        wipe: bool = False,
         roots_training: Root = None,
-        to_swap: Root = None,
         roots_obs: Root = None,
     ):
         """
@@ -151,90 +123,14 @@ class UncertaintyQuantification:
         to avoid recomputing it every time.
         IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
 
-        :param wipe: bool: Whether to wipe the 'forecast' folder or not
-        :param n_training: int: Index from which training and data are separated
-        :param n_obs: int: Number of predictors to take
-        :param flag_base: bool: Recompute base PCA on target if True
         :param roots_training: list: List of roots considered as training.
-        :param to_swap: list: List of roots to swap from training to observations.
         :param roots_obs: list: List of roots considered as observations.
         :return: list: List of training roots, list: List of observation roots
 
         """
 
-        # Results location
-        md = self.base.Directories.hydro_res_dir
-        listme = os.listdir(md)
-
-        # Filter folders out
-        folders = list(filter(lambda f: os.path.isdir(os.path.join(md, f)), listme))
-
-        def swap_root(pres: str):
-            """Selects roots from main folder and swap them from training to observation"""
-            if pres in roots_training:
-                idx = roots_training.index(pres)
-                roots_obs[0], roots_training[idx] = roots_training[idx], roots_obs[0]
-            elif pres in folders:
-                idx = folders.index(pres)
-                roots_obs[0] = folders[idx]
-            else:
-                pass
-
-        if roots_training is None:
-            roots_training = folders[:n_training]  # List of n training roots
-        else:
-            n_training = len(roots_training)
-
-        if roots_obs is None:  # If no observation provided
-            if n_training + n_obs <= len(folders):
-                # List of m observation roots
-                roots_obs = folders[n_training : (n_training + n_obs)]
-            else:
-                logger.error("Incompatible training/observation numbers")
-                return
-
-        for i, r in enumerate(roots_training):
-            choices = folders[n_training:].copy()
-            if r in roots_obs:
-                random_root = np.random.choice(choices)
-                roots_training[i] = random_root
-                choices.remove(random_root)
-
-        for r in roots_obs:
-            if r in roots_training:
-                logger.warning(f"obs {r} is located in the training roots")
-                return
-
-        if to_swap is not None:
-            [swap_root(ts) for ts in to_swap]
-
-        # Perform PCA on target (whpa) and store the object in a base folder
-        # /!\ Danger zone /!\
-        if wipe:
-            try:
-                shutil.rmtree(self.base.Directories.forecasts_dir)
-            except FileNotFoundError:
-                pass
-
-        if flag_base:
-            utils.dirmaker(self.base_dir, erase=flag_base)
-            # Creates main target PCA object
-            obj = os.path.join(self.base_dir, "h_pca.pkl")
-            logger.info("Performing base PCA")
-            self.h_pco = base_pca(
-                base=self.base,
-                base_dir=self.base_dir,
-                training_roots=roots_training,
-                test_roots=roots_obs,
-                h_pca_obj_path=obj,
-            )
-
         # Directories
         md = self.base.Directories
-        res_dir = md.hydro_res_dir  # Results folders of the hydro simulations
-        # Base directory that will contain target objects and processed data
-        base_dir = md.forecasts_base_dir
-
         combinations = [self.base.Wells.combination.copy()]
         total = len(roots_obs)
         for ix, test_root in enumerate(roots_obs):  # For each observation root
@@ -280,52 +176,13 @@ class UncertaintyQuantification:
                 training_df_predictor = utils.i_am_framed(
                     array=tc_training, ids=roots_training
                 )
-                test_df_predictor = utils.i_am_framed(array=tc_test, ids=test_root)
-                # %%  PCA
-                # PCA is performed with maximum number of components.
-                # We choose an appropriate number of components to keep later on.
-                # PCA on transport curves
-                d_pco = PC(
-                    name="d",
-                    training_df=training_df_predictor,
-                    test_df=test_df_predictor,
-                    directory=obj_dir,
-                )
-                d_pco.training_fit_transform()
-                d_pco.test_transform()
-                # PCA on transport curves
-                d_pco.n_pc_cut = self.base.HyperParameters.n_pc_predictor
-
-                self.x_obs = test_df_predictor
-
-                # Save the d PC object.
-                joblib.dump(d_pco, jp(obj_dir, "d_pca.pkl"))
-
-                # %% TARGET
-
-                # PCA on signed distance from base object containing training instances
-                h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
-                nho = h_pco.n_pc_cut  # Number of components to keep
-                # Load whpa to predict
-                _, pzs, _ = data_loader(roots=[test_root], h=True)
-                # Compute WHPA on the prediction
-                if h_pco.test_pc_df is None:
-                    # Perform PCA
-                    h_pco.test_transform(test_roots=test_root)
-                    # Cut desired number of components
-                    h_pc_training, _ = h_pco.comp_refresh(nho)
-                    # Save updated PCA object in base
-                    joblib.dump(h_pco, jp(base_dir, "h_pca.pkl"))
-                else:
-                    # Cut components
-                    h_pc_training, _ = h_pco.comp_refresh(nho)
 
                 # %% Fit fit_transform
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
                 self.bel.fit(X=training_df_predictor, Y=h_pco.training_df)
                 joblib.dump(
-                    self.bel.cca, jp(obj_dir, "cca.pkl")
+                    self.bel.cca, jp(obj_dir, "bel.pkl")
                 )  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
@@ -343,10 +200,10 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        h_posts_gaussian = self.bel.predict(self.x_obs)
+        Y_posts_gaussian = self.bel.predict(self.X_obs)
 
         self.forecast_posterior = self.bel.inverse_transform(
-            Y_pred=h_posts_gaussian.reshape(1, -1),
+            Y_pred=Y_posts_gaussian.reshape(1, -1),
         )
         # Get the true array of the prediction
         # Prediction set - PCA space
@@ -481,83 +338,3 @@ def compute_metric(
             global_mean += mean
 
     return global_mean
-
-
-def base_pca(
-    base: Type[Setup],
-    base_dir: str,
-    training_roots: Root,
-    test_roots: Root,
-    h_pca_obj_path: str = None,
-):
-    """
-    Initiate BEL by performing PCA on the training targets or features.
-    :param base: class: Base class object
-    :param base_dir: str: Base directory path
-    :param training_roots: list:
-    :param test_roots: list:
-    :param h_pca_obj_path:
-    :return:
-    """
-
-    x_lim, y_lim, grf = base.Focus.x_range, base.Focus.y_range, base.Focus.cell_dim
-
-    if h_pca_obj_path is not None:
-        # Loads the results:
-        _, pzs_training, r_training_ids = data_loader(roots=training_roots, h=True)
-        _, pzs_test, r_test_ids = data_loader(roots=test_roots, h=True)
-
-        # Load parameters:
-        xys, nrow, ncol = grid_parameters(
-            x_lim=x_lim, y_lim=y_lim, grf=grf
-        )  # Initiate SD instance
-
-        # PCA on signed distance
-        # Compute signed distance on pzs.
-        # h is the matrix of target feature on which PCA will be performed.
-        h_training = np.array(
-            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_training]
-        )
-        h_test = np.array(
-            [signed_distance(xys, nrow, ncol, grf, pp) for pp in pzs_test]
-        )
-
-        # Convert to dataframes
-        training_df_target = utils.i_am_framed(array=h_training, ids=training_roots)
-        test_df_target = utils.i_am_framed(array=h_test, ids=test_roots)
-
-        # Initiate h pca object
-        h_pco = PC(
-            name="h",
-            training_df=training_df_target,
-            test_df=test_df_target,
-            directory=base_dir,
-        )
-        # Transform
-        h_pco.training_fit_transform()
-        # Define number of components to keep
-        h_pco.n_pc_cut = base.HyperParameters.n_pc_target
-        # Transform test arrays
-        h_pco.test_transform()
-
-        # Dump
-        joblib.dump(h_pco, h_pca_obj_path)
-
-        # Save roots id's in a dat file
-        if not os.path.exists(jp(base_dir, "roots.dat")):
-            with open(jp(base_dir, "roots.dat"), "w") as f:
-                for (
-                    r_training_ids
-                ) in training_roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r_training_ids) + "\n")
-
-        # Save roots id's in a dat file
-        if not os.path.exists(jp(base_dir, "test_roots.dat")):
-            with open(jp(base_dir, "test_roots.dat"), "w") as f:
-                for r_training_ids in test_roots:  # Saves roots name until test roots
-                    f.write(os.path.basename(r_training_ids) + "\n")
-
-        return h_pco
-
-    else:
-        logger.error("No base dimensionality reduction could be performed")

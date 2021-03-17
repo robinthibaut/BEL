@@ -4,15 +4,15 @@ import warnings
 
 import numpy as np
 from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
-from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_is_fitted, check_consistent_length, FLOAT_DTYPES
+from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, MultiOutputMixin
 
 from ..config import Setup
 
 from ..algorithms import mvn_inference
 
 
-class BEL(BaseEstimator):
+class BEL(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
     """
     Heart of the framework.
     """
@@ -25,23 +25,35 @@ class BEL(BaseEstimator):
         X_post_processing=None,
         Y_post_processing=None,
         cca=None,
+        copy=True,
     ):
-
+        self.copy = copy
+        # How to infer the posterior parameters
         self.mode = mode
 
+        # Processing pipelines
         self.X_pre_processing = X_pre_processing
         self.Y_pre_processing = Y_pre_processing
         self.X_post_processing = X_post_processing
         self.Y_post_processing = Y_post_processing
         self.cca = cca
 
+        # Posterior parameters
         self.posterior_mean = None
         self.posterior_covariance = None
 
+        # Parameters for sampling
         self.seed = None
         self.n_posts = None
 
-        self._x, self._y = None, None  # Original dataset
+        # Original dataset
+        self._x, self._y = None, None
+        # Dataset after preprocessing
+        self._x_pc, self._y_pc = None, None
+        # Dataset after learning
+        self._x_c, self._y_c = None, None
+        # Dataset after postprocessing
+        self._x_f, self._y_f = None, None
 
     def fit(self, X, Y):
         """
@@ -50,8 +62,10 @@ class BEL(BaseEstimator):
         :param Y:
         :return:
         """
-        X = check_array(X, copy=True, ensure_2d=False)
-        Y = check_array(Y, copy=True, ensure_2d=False)
+        check_consistent_length(X, Y)
+        X = self._validate_data(X, dtype=np.float64, copy=self.copy,
+                                ensure_min_samples=2)
+        Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
 
         if self._x is None and self._y is None:
             self._x, self._y = X, Y
@@ -66,9 +80,18 @@ class BEL(BaseEstimator):
             _yt[:, : Setup.HyperParameters.n_pc_target],
         )
 
+        # Dataset after preprocessing
+        self._x_pc, self._y_pc = _xt, _yt
+
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
-        self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
+        self._x_c, self._y_c = _xc, _yc
+
+        _xf, _yf = self.X_post_processing.fit_transform(_xc), self.Y_post_processing.fit_transform(_yc)
+
+        self._x_f, self._y_f = _xf, _yf
+
+        return self
 
     def transform(self, X=None, Y=None) -> (np.array, np.array):
         """
@@ -79,9 +102,10 @@ class BEL(BaseEstimator):
         """
 
         check_is_fitted(self.cca)
+        X = check_array(X, copy=True, dtype=FLOAT_DTYPES)
 
         if X is not None and Y is None:
-            X = check_array(X, copy=True, ensure_2d=False)
+            X = check_array(X, copy=True)
             _xt = self.X_pre_processing.transform(X)
             _xt = _xt[:, : Setup.HyperParameters.n_pc_predictor]
             _xc = self.cca.transform(X=_xt)
@@ -139,32 +163,34 @@ class BEL(BaseEstimator):
 
         return Y_samples
 
-    def fit_transform(self, X, Y) -> (np.array, np.array):
+    def fit_transform(self, X, y=None, **fit_params):
         """
         Fit-Transform all pipelines
         :param X:
-        :param Y:
+        :param y:
         :return:
         """
 
-        X = check_array(X, copy=True, ensure_2d=False)
-        Y = check_array(Y, copy=True, ensure_2d=False)
+        # X = check_array(X, copy=True, ensure_2d=False)
+        # Y = check_array(Y, copy=True, ensure_2d=False)
+        #
+        # _xt, _yt = (
+        #     self.X_pre_processing.fit_transform(X),
+        #     self.Y_pre_processing.fit_transform(Y),
+        # )
+        #
+        # _xt, _yt = (
+        #     _xt[:, : Setup.HyperParameters.n_pc_predictor],
+        #     _yt[:, : Setup.HyperParameters.n_pc_target],
+        # )
+        #
+        # _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
+        #
+        # _xp, _yp = self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
 
-        _xt, _yt = (
-            self.X_pre_processing.fit_transform(X),
-            self.Y_pre_processing.fit_transform(Y),
-        )
+        return self.fit(X, y).transform(X, y)
 
-        _xt, _yt = (
-            _xt[:, : Setup.HyperParameters.n_pc_predictor],
-            _yt[:, : Setup.HyperParameters.n_pc_target],
-        )
-
-        _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
-
-        _xp, _yp = self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
-
-        return _xp, _yp
+        # return _xp, _yp
 
     def predict(self, X_obs) -> np.array:
         """
@@ -219,6 +245,9 @@ class BEL(BaseEstimator):
         :param Y_pred:
         :return: forecast_posterior
         """
+        check_is_fitted(self.cca)
+        Y_pred = check_array(Y_pred, dtype=FLOAT_DTYPES)
+
         y_post = self.Y_post_processing.inverse_transform(Y_pred)
         y_post = (
             np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
