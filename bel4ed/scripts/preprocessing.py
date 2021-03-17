@@ -27,31 +27,35 @@ n_time_steps = Setup.HyperParameters.n_tstp
 # tc has shape (n_sim, n_wells, n_time_steps)
 logger.info(f"Preprocessing predictor for {len(folders)} samples")
 predictor = pd.DataFrame()
-for f in folders:
+for i, f in enumerate(folders):
+    logger.info(f"[{i+1}/{len(folders)}] | {f}")
     tc_training = beautiful_curves(
         res_dir=md,
         ids=[f],
         n_time_steps=n_time_steps,
     )
 
-    ids = {"root": f, "id": [f"well_{i}" for i in range(tc_training.shape[1])]}
+    ids = {"root": f}
+    # ids = {"root": f, "id": [f"well_{i}" for i in range(tc_training.shape[1])]}
 
     df_predictor = i_am_framed(array=tc_training[0], ids=ids, flat=True)
     predictor = predictor.append(df_predictor)
 
     df_predictor.to_pickle(jp(md, f, f"predictor.pkl"))
+
 file_name = jp(Setup.Directories.data_dir, "predictor.pkl")
 logger.info(f"Saving full predictor to {file_name}")
+predictor.attrs = df_predictor.attrs
 predictor.to_pickle(file_name)
 
 # %% Target
 logger.info(f"Preprocessing target for {len(folders)} samples")
 target = pd.DataFrame()
-for f in folders:
-
+for i, f in enumerate(folders):
+    logger.info(f"[{i+1}/{len(folders)}] | {f}")
     x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 
-    _, pzs_training, r_training_ids = data_loader(roots=[f], h=True)
+    _, pzs_training, _ = data_loader(roots=[f], h=True)
 
     # Load parameters:
     xys, nrow, ncol = grid_parameters(
@@ -74,4 +78,5 @@ for f in folders:
 
 file_name = jp(Setup.Directories.data_dir, "target.pkl")
 logger.info(f"Saving full target to {file_name}")
+target.attrs = df_target.attrs
 target.to_pickle(file_name)

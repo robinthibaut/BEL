@@ -19,9 +19,7 @@ Function = types.FunctionType
 
 
 def flatten_array(arr: np.array) -> np.array:
-    arr_flat = np.array([item for sublist in arr for item in sublist]).reshape(
-        len(arr), -1
-    )
+    arr_flat = np.array([item for sublist in arr for item in sublist])
     return arr_flat
 
 
