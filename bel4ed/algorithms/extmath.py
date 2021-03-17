@@ -40,5 +40,3 @@ def matrix_paste(c_big: np.array, c_small: np.array) -> list:
         for i in range(dm.shape[0])
     ]
     return inds
-
-

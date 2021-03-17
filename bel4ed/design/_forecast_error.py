@@ -272,27 +272,6 @@ class UncertaintyQuantification:
                 ]
 
                 # Load training dataset
-                # %% PREDICTOR
-
-                # Refined breakthrough curves data file
-                tc_training_file = jp(obj_dir, "training_curves.npy")
-                tc_test_file = jp(obj_dir, "test_curves.npy")
-                n_time_steps = self.base.HyperParameters.n_tstp
-                # Loads the results:
-                # tc has shape (n_sim, n_wells, n_time_steps)
-                tc_training = beautiful_curves(
-                    curve_file=tc_training_file,
-                    res_dir=res_dir,
-                    ids=roots_training,
-                    n_time_steps=n_time_steps,
-                )
-                tc_test = beautiful_curves(
-                    curve_file=tc_test_file,
-                    res_dir=res_dir,
-                    ids=[test_root],
-                    n_time_steps=n_time_steps,
-                )
-
                 # %% Select wells:
                 selection = [wc - 1 for wc in self.base.Wells.combination]
                 tc_training = tc_training[:, selection, :]
@@ -525,12 +504,8 @@ def base_pca(
 
     if h_pca_obj_path is not None:
         # Loads the results:
-        _, pzs_training, r_training_ids = data_loader(
-            roots=training_roots, h=True
-        )
-        _, pzs_test, r_test_ids = data_loader(
-            roots=test_roots, h=True
-        )
+        _, pzs_training, r_training_ids = data_loader(roots=training_roots, h=True)
+        _, pzs_test, r_test_ids = data_loader(roots=test_roots, h=True)
 
         # Load parameters:
         xys, nrow, ncol = grid_parameters(

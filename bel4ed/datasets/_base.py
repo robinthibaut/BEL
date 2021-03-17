@@ -11,8 +11,19 @@ from loguru import logger
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
 
-__all__ = ["load_flow_model", "load_transport_model", "remove_sd", "remove_incomplete", "keep_essential",
-           "remove_bad_bkt", "data_loader", "i_am_root", "cleanup", "filter_file", "spare_me"]
+__all__ = [
+    "load_flow_model",
+    "load_transport_model",
+    "remove_sd",
+    "remove_incomplete",
+    "keep_essential",
+    "remove_bad_bkt",
+    "data_loader",
+    "i_am_root",
+    "cleanup",
+    "filter_file",
+    "spare_me",
+]
 
 
 def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
