@@ -41,6 +41,8 @@ class UncertaintyQuantification:
         :param base: class: Base object (inventory)
         :param seed: int: Seed
         """
+        fc = self.base.Focus
+        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         if seed is not None:
             np.random.seed(seed)
@@ -141,10 +143,12 @@ class UncertaintyQuantification:
 
                 # Load training dataset
                 # %% Select wells:
-                selection = [wc - 1 for wc in self.base.Wells.combination]
-                tc_training = X_train.to_numpy().reshape((-1,) + (X_train.attrs["physical_shape"]))
-
-                X_train = tc_training[:, selection, :]
+                selection = list(map(str, [wc for wc in self.base.Wells.combination]))
+                # tc_training = X_train.to_numpy().reshape((-1,) + (X_train.attrs["physical_shape"]))
+                # X_train = tc_training[:, selection, :]
+                X_train = X_train.loc[:, selection]
+                X_test = X_test.loc[:, selection]
+                Y_train = y_train.loc[:, selection]
 
                 # %% Fit fit_transform
                 # PCA decomposition + CCA
@@ -154,10 +158,14 @@ class UncertaintyQuantification:
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 
+                # %% Sample
+                return self.sample_posterior(X_test)
+
     # %% Random sample from the posterior
-    def sample_posterior(self, n_posts: int = None):
+    def sample_posterior(self, X_test, n_posts: int = None):
         """
         Extracts n_posts random samples from the posterior.
+        :param X_test:
         :param n_posts: int: Desired number of samples
         :return:
         """
@@ -167,7 +175,7 @@ class UncertaintyQuantification:
 
         # Extract n random sample (target pc's).
         # The posterior distribution is computed within the method below.
-        Y_posts_gaussian = self.bel.predict(self.X_obs)
+        Y_posts_gaussian = self.bel.predict(X_test)
 
         self.forecast_posterior = self.bel.inverse_transform(
             Y_pred=Y_posts_gaussian.reshape(1, -1),
@@ -183,29 +191,7 @@ class UncertaintyQuantification:
         """
         *_, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
         self.vertices = contours_vertices(x, y, self.forecast_posterior)
-        if write_vtk:
-            vdir = jp(self.fig_pred_dir, "vtk")
-            utils.dirmaker(vdir)
-            for i, v in enumerate(self.vertices):
-                nv = len(v)
-                points = vtk.vtkPoints()
-                [points.InsertNextPoint(np.insert(c, 2, 0)) for c in v]
-                # Create a polydata to store everything in
-                poly_data = vtk.vtkPolyData()
-                # Add the points to the dataset
-                poly_data.SetPoints(points)
-                # Create a cell array to store the lines in and add the lines to it
-                cells = vtk.vtkCellArray()
-                cells.InsertNextCell(nv)
-                [cells.InsertCellPoint(k) for k in range(nv)]
-                # Add the lines to the dataset
-                poly_data.SetLines(cells)
-                # Export
-                writer = vtk.vtkXMLPolyDataWriter()
-                writer.SetInputData(poly_data)
 
-                writer.SetFileName(jp(vdir, f"forecast_posterior_{i}.vtp"))
-                writer.Write()
         return x, y
 
 
