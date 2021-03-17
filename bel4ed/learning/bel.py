@@ -77,8 +77,7 @@ class BEL(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
         )
         Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
 
-        if self._x is None and self._y is None:
-            self._x, self._y = X, Y
+        self._x, self._y = X, Y
 
         _xt, _yt = (
             self.X_pre_processing.fit_transform(self._x),

@@ -6,8 +6,7 @@ from typing import Type
 
 import joblib
 import numpy as np
-import pandas as pd
-import vtk
+
 from loguru import logger
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 from sklearn.decomposition import PCA
@@ -41,8 +40,6 @@ class UncertaintyQuantification:
         :param base: class: Base object (inventory)
         :param seed: int: Seed
         """
-        fc = self.base.Focus
-        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         if seed is not None:
             np.random.seed(seed)
@@ -51,6 +48,8 @@ class UncertaintyQuantification:
             self.seed = None
 
         self.base = base
+        fc = self.base.Focus
+        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
 
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = (
@@ -100,14 +99,14 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-    def analysis(self, X_train, X_test, y_train, y_test):
+    def analysis(self, X_train, X_test, y_train):
         """"""
 
         # Directories
         md = self.base.Directories
         combinations = [self.base.Wells.combination.copy()]
         total = len(X_test)
-        for ix, test_root in enumerate(X_train.index):  # For each observation root
+        for ix, test_root in enumerate(X_test.index):  # For each observation root
             logger.info(f"[{ix + 1}/{total}]-{test_root}")
             # Directory in which to load forecasts
             bel_dir = jp(md.forecasts_dir, test_root)
@@ -144,22 +143,19 @@ class UncertaintyQuantification:
                 # Load training dataset
                 # %% Select wells:
                 selection = list(map(str, [wc for wc in self.base.Wells.combination]))
-                # tc_training = X_train.to_numpy().reshape((-1,) + (X_train.attrs["physical_shape"]))
-                # X_train = tc_training[:, selection, :]
                 X_train = X_train.loc[:, selection]
                 X_test = X_test.loc[:, selection]
-                Y_train = y_train.loc[:, selection]
 
-                # %% Fit fit_transform
-                # PCA decomposition + CCA
-                self.base.Wells.combination = c  # This might not be so optimal
-                bel = self.bel.fit(X=X_train, Y=Y_train)
+                # BEL fit
+                bel = self.bel.fit(X=X_train, Y=y_train)
                 joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 
                 # %% Sample
-                return self.sample_posterior(X_test)
+                self.sample_posterior(X_test)
+
+                return self.bel.posterior_mean, self.bel.posterior_covariance
 
     # %% Random sample from the posterior
     def sample_posterior(self, X_test, n_posts: int = None):
@@ -181,10 +177,10 @@ class UncertaintyQuantification:
             Y_pred=Y_posts_gaussian.reshape(1, -1),
         )
 
-        return self.bel.posterior_mean, self.bel.posterior_covariance
+        return self.forecast_posterior
 
     # %% extract 0 contours
-    def contour_extract(self, write_vtk: bool = False):
+    def contour_extract(self):
         """
         Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
         :param write_vtk: bool: Flag to export VTK files
