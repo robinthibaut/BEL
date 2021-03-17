@@ -31,8 +31,7 @@ for i, f in enumerate(folders):
     logger.info(f"[{i+1}/{len(folders)}] | {f}")
     tc_training = beautiful_curves(
         res_dir=md,
-        ids=[f],
-        n_time_steps=n_time_steps,
+        ids=[f], n_time_steps=n_time_steps,
     )
 
     ids = {"root": f}

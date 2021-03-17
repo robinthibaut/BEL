@@ -20,12 +20,11 @@ Function = types.FunctionType
 
 def flatten_array(arr: np.array) -> np.array:
     arr_flat = np.array([item for sublist in arr for item in sublist])
-    return arr_flat
+    return arr_flat.reshape(1, -1)
 
 
 def i_am_framed(array: np.array, ids: dict = None, flat: bool = True) -> pd.DataFrame:
     """Build a panda's dataframe that contains the flattened samples, their id's and the original shape"""
-
     # Remember original shape
     physical_shape = array.shape
 
@@ -37,9 +36,10 @@ def i_am_framed(array: np.array, ids: dict = None, flat: bool = True) -> pd.Data
     # Initiate array
     training_df_target = pd.DataFrame(data=array)
     # Set id's
-    for key in ids:
-        training_df_target[key] = ids[key]
-    training_df_target.set_index([k for k in ids], inplace=True)
+    if ids is not None:
+        for key in ids:
+            training_df_target[key] = ids[key]
+        training_df_target.set_index([k for k in ids], inplace=True)
     # Save original shape as a dataframe attribute
     training_df_target.attrs["physical_shape"] = physical_shape
 
