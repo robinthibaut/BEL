@@ -47,7 +47,9 @@ shape = df_predictor.attrs["physical_shape"]
 # Get original shape
 predictor.attrs = df_predictor.attrs
 # Set columns names corresponding to source number (curves are flattened)
-columns = np.concatenate([np.ones(shape[1], dtype=int)*i for i in range(1, shape[0]+1)])
+columns = np.concatenate(
+    [np.ones(shape[1], dtype=int) * i for i in range(1, shape[0] + 1)]
+)
 predictor.columns = list(map(str, columns))
 predictor.to_pickle(file_name)
 
