@@ -25,21 +25,23 @@ def flatten_array(arr: np.array) -> np.array:
     return arr_flat
 
 
-def i_am_framed(array: np.array, ids: Root or pd.Index = None) -> pd.DataFrame:
+def i_am_framed(array: np.array, ids: dict = None, flat: bool = True) -> pd.DataFrame:
     """Build a panda's dataframe that contains the flattened samples, their id's and the original shape"""
 
     # Remember original shape
     physical_shape = array.shape
 
     # Flatten for dimension reduction
-    array = flatten_array(array)
+    if flat:
+        array = flatten_array(array)
 
     # Save DataFrames
     # Initiate array
     training_df_target = pd.DataFrame(data=array)
     # Set id's
-    training_df_target["id"] = ids
-    training_df_target.set_index("id", inplace=True)
+    for key in ids:
+        training_df_target[key] = ids[key]
+    training_df_target.set_index([k for k in ids], inplace=True)
     # Save original shape as a dataframe attribute
     training_df_target.attrs["physical_shape"] = physical_shape
 

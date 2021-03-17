@@ -44,19 +44,13 @@ def curve_interpolation(tc0, n_time_steps: int = 200, t_max: float = 1.01080e02)
 
 
 def beautiful_curves(
-    curve_file: str, res_dir: str, ids: Root, n_time_steps: int
+    res_dir: str, ids: Root, n_time_steps: int
 ) -> np.array:
     """Loads and process predictor (tracer curves)"""
-    # Raw TC's = breakthrough curves with shape (n_sim, n_wells, n_time_steps)
-    if not os.path.exists(curve_file):
-        # Training
 
-        tc_training_raw, *_ = data_loader(res_dir=res_dir, roots=ids, d=True)
-        tc_training = curve_interpolation(
-            tc0=tc_training_raw, n_time_steps=n_time_steps
-        )
-        np.save(curve_file, tc_training)
-    else:
-        tc_training = np.load(curve_file)
+    tc_training_raw, *_ = data_loader(res_dir=res_dir, roots=ids, d=True)
+    tc_training = curve_interpolation(
+        tc0=tc_training_raw, n_time_steps=n_time_steps
+    )
 
     return tc_training

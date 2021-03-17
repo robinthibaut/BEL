@@ -7,7 +7,7 @@ from bel4ed.algorithms import modified_hausdorff, structural_similarity
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification, compute_metric, measure_info_mode
-from bel4ed.datasets._base import i_am_root
+from bel4ed.datasets import i_am_root
 
 
 def main_1(metric=None):
