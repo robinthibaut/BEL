@@ -227,7 +227,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         x_cov = x_rotations.T @ x_cov @ x_rotations
         dict_args = {"x_cov": x_cov}
 
-        X, Y = self.transform()
+        X, Y = self._x_f, self._y_f
         # Estimate the posterior mean and covariance
         if self.mode == "mvn":
             self.posterior_mean, self.posterior_covariance = mvn_inference(
