@@ -1,17 +1,19 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import os
 import shutil
-from os.path import join as jp
+from os.path import dirname, join
 from typing import List
 
 import flopy
 import numpy as np
+import pandas as pd
 from loguru import logger
 
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
 
 __all__ = [
+    "load_dataset",
     "load_flow_model",
     "load_transport_model",
     "remove_sd",
@@ -24,6 +26,14 @@ __all__ = [
     "filter_file",
     "spare_me",
 ]
+
+
+def load_dataset():
+    module_path = os.path.dirname(__file__)
+    predictor = pd.read_pickle(join(module_path, "data", "predictor.pkl"))
+    target = pd.read_pickle(join(module_path, "data", "target.pkl"))
+
+    return predictor, target
 
 
 def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
@@ -40,12 +50,12 @@ def load_flow_model(nam_file: str, exe_name: str = "", model_ws: str = ""):
 
 
 def load_transport_model(
-    nam_file: str,
-    modflowmodel,
-    exe_name: str = "",
-    model_ws: str = "",
-    ftl_file: str = "mt3d_link.ftl",
-    version: str = "mt3d-usgs",
+        nam_file: str,
+        modflowmodel,
+        exe_name: str = "",
+        model_ws: str = "",
+        ftl_file: str = "mt3d_link.ftl",
+        version: str = "mt3d-usgs",
 ):
     """
     Loads a transport model.
@@ -80,7 +90,7 @@ def remove_sd(res_tree: str):
     for r, d, f in os.walk(res_tree, topdown=False):
         # Adds the data files to the lists, which will be loaded later
         if "sd.npy" in f:
-            os.remove(jp(r, "sd.npy"))
+            os.remove(join(r, "sd.npy"))
 
 
 def remove_incomplete(res_tree: str, crit: str = None):
@@ -93,10 +103,10 @@ def remove_incomplete(res_tree: str, crit: str = None):
 
     if crit is None:
         ck = np.array(
-            [os.path.isfile(jp(res_tree, d)) for d in Setup.Files.output_files]
+            [os.path.isfile(join(res_tree, d)) for d in Setup.Files.output_files]
         )
     else:
-        ck = np.array([os.path.isfile(jp(res_tree, crit))])
+        ck = np.array([os.path.isfile(join(res_tree, crit))])
 
     opt = ck.all()
 
@@ -114,10 +124,10 @@ def keep_essential(res_dir: str):
     """
     for the_file in os.listdir(res_dir):
         if (
-            not the_file.endswith(".npy")
-            and not the_file.endswith(".py")
-            and not the_file.endswith(".xy")
-            and not the_file.endswith(".sgems")
+                not the_file.endswith(".npy")
+                and not the_file.endswith(".py")
+                and not the_file.endswith(".xy")
+                and not the_file.endswith(".sgems")
         ):
 
             file_path = os.path.join(res_dir, the_file)
@@ -142,7 +152,7 @@ def remove_bad_bkt(res_dir: str):
     for r, d, f in os.walk(res_dir, topdown=False):
         # Adds the data files to the lists, which will be loaded later
         if "bkt.npy" in f:
-            bkt_files.append(jp(r, "bkt.npy"))
+            bkt_files.append(join(r, "bkt.npy"))
             roots.append(r)
     if bkt_files:
         tpt = list(map(np.load, bkt_files))
@@ -158,11 +168,11 @@ def remove_bad_bkt(res_dir: str):
 
 
 def data_loader(
-    res_dir: str = None,
-    roots: List[str] = None,
-    test_roots: List[str] = None,
-    d: bool = False,
-    h: bool = False,
+        res_dir: str = None,
+        roots: List[str] = None,
+        test_roots: List[str] = None,
+        d: bool = False,
+        h: bool = False,
 ):
     """
     Loads results from main results folder.
@@ -193,9 +203,9 @@ def data_loader(
         if not isinstance(roots, (list, tuple)):
             roots: list = [roots]
 
-    [bkt_files.append(jp(res_dir, r, "bkt.npy")) for r in roots]
-    [sd_files.append(jp(res_dir, r, "pz.npy")) for r in roots]
-    [hk_files.append(jp(res_dir, r, "hk0.npy")) for r in roots]
+    [bkt_files.append(join(res_dir, r, "bkt.npy")) for r in roots]
+    [sd_files.append(join(res_dir, r, "pz.npy")) for r in roots]
+    [hk_files.append(join(res_dir, r, "hk0.npy")) for r in roots]
 
     if d:
         tpt = list(map(np.load, bkt_files))  # Re-load transport curves
@@ -210,10 +220,9 @@ def data_loader(
 
 
 def i_am_root(
-    training_file: str = None,
-    test_file: str = None,
+        training_file: str = None,
+        test_file: str = None,
 ):
-
     if training_file is None:
         training_file = os.path.join(Setup.Directories.storage_dir, "roots.dat")
     if test_file is None:

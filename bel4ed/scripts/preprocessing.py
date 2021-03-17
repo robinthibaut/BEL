@@ -31,7 +31,8 @@ for i, f in enumerate(folders):
     logger.info(f"[{i+1}/{len(folders)}] | {f}")
     tc_training = beautiful_curves(
         res_dir=md,
-        ids=[f], n_time_steps=n_time_steps,
+        ids=[f],
+        n_time_steps=n_time_steps,
     )
 
     ids = {"root": f}
@@ -42,7 +43,7 @@ for i, f in enumerate(folders):
 
     df_predictor.to_pickle(jp(md, f, f"predictor.pkl"))
 
-file_name = jp(Setup.Directories.data_dir, "predictor.pkl")
+file_name = jp(Setup.Directories.data_dir, "data", "predictor.pkl")
 logger.info(f"Saving full predictor to {file_name}")
 predictor.attrs = df_predictor.attrs
 predictor.to_pickle(file_name)
@@ -75,7 +76,7 @@ for i, f in enumerate(folders):
 
     df_target.to_pickle(jp(md, f, f"target.pkl"))
 
-file_name = jp(Setup.Directories.data_dir, "target.pkl")
+file_name = jp(Setup.Directories.data_dir, "data", "target.pkl")
 logger.info(f"Saving full target to {file_name}")
 target.attrs = df_target.attrs
 target.to_pickle(file_name)

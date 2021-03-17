@@ -5,15 +5,16 @@ from sklearn.model_selection import train_test_split
 
 from bel4ed.config import Setup
 from bel4ed.design import UncertaintyQuantification
-from bel4ed.datasets import i_am_root
+from bel4ed.datasets import i_am_root, load_dataset
 
 
 def test_posterior():
     """Compare posterior samples with reference default values"""
     training_file = jp(Setup.Directories.test_dir, "roots.dat")
     test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
-
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
+
+    dataset = load_dataset()
 
     wells = np.array([1, 2, 3, 4, 5, 6])
 
@@ -29,8 +30,6 @@ def test_posterior():
     )
     # 1 - Fit / Transform
     uq.analysis(
-        roots_training=training_r,
-        roots_obs=test_r,
     )
     test_base.Wells.combination = wells
 

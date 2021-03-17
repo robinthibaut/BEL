@@ -4,8 +4,17 @@ import warnings
 
 import numpy as np
 from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted, check_consistent_length, FLOAT_DTYPES
-from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, MultiOutputMixin
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_consistent_length,
+    FLOAT_DTYPES,
+)
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+    RegressorMixin,
+    MultiOutputMixin,
+)
 
 from ..config import Setup
 
@@ -63,8 +72,9 @@ class BEL(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
         :return:
         """
         check_consistent_length(X, Y)
-        X = self._validate_data(X, dtype=np.float64, copy=self.copy,
-                                ensure_min_samples=2)
+        X = self._validate_data(
+            X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
+        )
         Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
 
         if self._x is None and self._y is None:
@@ -87,7 +97,10 @@ class BEL(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
 
         self._x_c, self._y_c = _xc, _yc
 
-        _xf, _yf = self.X_post_processing.fit_transform(_xc), self.Y_post_processing.fit_transform(_yc)
+        _xf, _yf = (
+            self.X_post_processing.fit_transform(_xc),
+            self.Y_post_processing.fit_transform(_yc),
+        )
 
         self._x_f, self._y_f = _xf, _yf
 

@@ -50,15 +50,6 @@ class UncertaintyQuantification:
 
         self.base = base
 
-        fc = self.base.Focus
-        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
-
-        # Directories & files paths
-        md = self.base.Directories
-        self.main_dir = md.main_dir
-
-        self.grid_dir = md.grid_dir
-
         # Number of CCA components is chosen as the min number of PC
         n_pc_pred, n_pc_targ = (
             base.HyperParameters.n_pc_predictor,
@@ -103,30 +94,15 @@ class UncertaintyQuantification:
         # Sampling
         self.n_posts = self.base.HyperParameters.n_posts
         self.forecast_posterior = None
-        self.Y_true_obs = None  # True h in physical space
-        self.shape = None
-        self.Y_pc_true_pred = None  # CCA predicted 'true' h PC
-        self.Y_pred = None  # 'true' h in physical space
 
         # 0 contours of posterior WHPA
         self.vertices = None
 
     def analysis(
         self,
-        roots_training: Root = None,
-        roots_obs: Root = None,
+        X_train, X_test, y_train, y_test
     ):
         """
-        I. First, defines the roots for training from simulations in the hydro results directory.
-        II. Define one or more 'observation' root(s) (roots_obs in params).
-        III. Perform PCA decomposition on the training targets and store the output in the 'base' folder,
-        to avoid recomputing it every time.
-        IV. Given n combinations of data source, apply BEL approach n times and perform uncertainty quantification.
-
-        :param roots_training: list: List of roots considered as training.
-        :param roots_obs: list: List of roots considered as observations.
-        :return: list: List of training roots, list: List of observation roots
-
         """
 
         # Directories
@@ -180,10 +156,8 @@ class UncertaintyQuantification:
                 # %% Fit fit_transform
                 # PCA decomposition + CCA
                 self.base.Wells.combination = c  # This might not be so optimal
-                self.bel.fit(X=training_df_predictor, Y=h_pco.training_df)
-                joblib.dump(
-                    self.bel.cca, jp(obj_dir, "bel.pkl")
-                )  # Save the fitted CCA operator
+                bel = self.bel.fit(X=training_df_predictor, Y=h_pco.training_df)
+                joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
                 msg = f"model trained and saved in {obj_dir}"
                 logger.info(msg)
 
@@ -205,9 +179,6 @@ class UncertaintyQuantification:
         self.forecast_posterior = self.bel.inverse_transform(
             Y_pred=Y_posts_gaussian.reshape(1, -1),
         )
-        # Get the true array of the prediction
-        # Prediction set - PCA space
-        self.shape = self.h_pco.training_df.attrs["physical_shape"]
 
         return self.bel.posterior_mean, self.bel.posterior_covariance
 
@@ -326,8 +297,6 @@ def compute_metric(
             )
             uq = UncertaintyQuantification(
                 base=base,
-                base_dir=base_dir,
-                study_folder=study_folder,
                 seed=123456,
             )
             # Sample posterior
