@@ -12,7 +12,6 @@ from sklearn.utils.validation import (
 from sklearn.base import (
     BaseEstimator,
     TransformerMixin,
-    RegressorMixin,
     MultiOutputMixin,
 )
 
@@ -187,26 +186,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return:
         """
 
-        # X = check_array(X, copy=True, ensure_2d=False)
-        # Y = check_array(Y, copy=True, ensure_2d=False)
-        #
-        # _xt, _yt = (
-        #     self.X_pre_processing.fit_transform(X),
-        #     self.Y_pre_processing.fit_transform(Y),
-        # )
-        #
-        # _xt, _yt = (
-        #     _xt[:, : Setup.HyperParameters.n_pc_predictor],
-        #     _yt[:, : Setup.HyperParameters.n_pc_target],
-        # )
-        #
-        # _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
-        #
-        # _xp, _yp = self.X_post_processing.fit(_xc), self.Y_post_processing.fit(_yc)
-
         return self.fit(X, y).transform(X, y)
-
-        # return _xp, _yp
 
     def predict(self, X_obs) -> (np.array, np.array):
         """

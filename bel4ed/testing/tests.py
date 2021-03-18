@@ -82,6 +82,7 @@ def test_posterior():
 
     # 1 - Fit / Transform
     bel.fit(X=X_train, Y=y_train)
+    post_mean, post_cov = bel.predict(X_test)
 
     ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
