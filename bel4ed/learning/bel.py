@@ -172,12 +172,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         check_is_fitted(self.cca)
         if n_posts is None:
-            n_posts = self.n_posts
+            self.n_posts = Setup.HyperParameters.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
         Y_samples = np.random.multivariate_normal(
-            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
+            mean=self.posterior_mean, cov=self.posterior_covariance, size=self.n_posts
         )
 
         return Y_samples

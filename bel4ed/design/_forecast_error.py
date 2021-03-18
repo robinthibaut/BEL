@@ -37,7 +37,7 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
     """
 
     # Directories
-    combinations = [source_ids]
+    combinations = source_ids
     total = len(X_test)
     for ix, test_root in enumerate(X_test.index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
@@ -47,7 +47,7 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
         for ixw, c in enumerate(combinations):  # For each wel combination
             logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
 
-            new_dir = "".join(list(map(str, source_ids)))  # sub-directory for forecasts
+            new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
             sub_dir = jp(bel_dir, new_dir)
 
             # %% Folders
@@ -70,7 +70,7 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             ]
 
             # %% Select wells:
-            selection = list(map(str, [wc for wc in source_ids]))
+            selection = list(map(str, [wc for wc in c]))
             X_train = X_train.loc[:, selection]
             X_test = X_test.loc[:, selection]
 
@@ -83,7 +83,8 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             # %% Sample
             # Extract n random sample (target pc's).
             # The posterior distribution is computed within the method below.
-            Y_posts_gaussian = bel.predict(X_test)
+            bel.predict(X_test)
+            Y_posts_gaussian = bel.random_sample()
 
             Y_posterior = bel.inverse_transform(
                 Y_pred=Y_posts_gaussian.reshape(1, -1),

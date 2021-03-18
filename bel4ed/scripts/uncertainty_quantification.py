@@ -21,35 +21,28 @@ def main_1(metric=None):
         metric = modified_hausdorff
 
     # Get roots used for testing
-    training_file = jp(Setup.Directories.test_dir, "roots.dat")
-    test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
+    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # Load datasets
     X, Y = load_dataset()
 
     # Source IDs
-    wells = np.array([1, 2, 3, 4, 5, 6])
+    wells = np.array([[1], [2], [3], [4], [5], [6]])
+    base = Setup
+    base.Wells.combination = wells
 
     # Select roots for testing
     X_train = X.loc[training_r]
     X_test = X.loc[test_r]
     y_train = Y.loc[training_r]
 
-    wells = [[1], [2], [3], [4], [5], [6]]
-    base = Setup
-    base.Wells.combination = wells
-
-    # Pipelines
     # Set seed
     seed = 123456
     np.random.seed(seed)
 
-    # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = (
-        Setup.HyperParameters.n_pc_predictor,
-        Setup.HyperParameters.n_pc_target,
-    )
+    # Pipelines
 
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -66,6 +59,11 @@ def main_1(metric=None):
     )
 
     # Canonical Correlation Analysis
+    # Number of CCA components is chosen as the min number of PC
+    n_pc_pred, n_pc_targ = (
+        Setup.HyperParameters.n_pc_predictor,
+        Setup.HyperParameters.n_pc_target,
+    )
     cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
 
     # Pipeline after CCA
@@ -85,13 +83,14 @@ def main_1(metric=None):
         cca=cca,
     )
 
-    analysis(bel=bel,
-             X_train=X_train,
-             X_test=X_test,
-             y_train=y_train,
-             directory=base.Directories.forecasts_dir,
-             source_ids=wells,
-             )
+    analysis(
+        bel=bel,
+        X_train=X_train,
+        X_test=X_test,
+        y_train=y_train,
+        directory=base.Directories.forecasts_dir,
+        source_ids=wells,
+    )
 
     # base.Wells.combination = wells  # Not optimal
 
