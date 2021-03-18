@@ -15,6 +15,7 @@ __all__ = [
     "blocks_from_rc",
     "blocks_from_rc_3d",
     "get_centroids",
+    "contour_extract",
     "contours_vertices",
     "binary_polygon",
     "binary_stack",

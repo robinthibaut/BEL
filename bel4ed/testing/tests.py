@@ -38,6 +38,7 @@ def test_posterior():
     test_base.Directories.forecasts_dir = test_dir
     test_base.Wells.combination = wells
 
+    # Set seed
     seed = 123456
     np.random.seed(seed)
 
@@ -61,10 +62,10 @@ def test_posterior():
         ]
     )
 
-    cca = CCA(
-        n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6
-    )
+    # Canonical Correlation Analysis
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
 
+    # Pipeline after CCA
     X_post_processing = Pipeline(
         [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
     )
@@ -72,6 +73,7 @@ def test_posterior():
         [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
     )
 
+    # Initiate BEL object
     bel = BEL(
         X_pre_processing=X_pre_processing,
         X_post_processing=X_post_processing,
@@ -80,10 +82,12 @@ def test_posterior():
         cca=cca,
     )
 
-    # 1 - Fit / Transform
+    # Fit
     bel.fit(X=X_train, Y=y_train)
+    # Predict posterior mean and covariance
     post_mean, post_cov = bel.predict(X_test)
 
+    # Compare with reference
     ref_dir = jp(test_base.Directories.ref_dir, "forecast")
 
     ref_mean = np.load(jp(ref_dir, test_r[0], "123456", "ref_mean.npy"))

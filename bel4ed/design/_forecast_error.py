@@ -13,6 +13,7 @@ from ..config import Setup
 from ..spatial import (
     contours_vertices,
 )
+from ..spatial import contour_extract
 from ..utils import Root
 
 __all__ = [
@@ -43,13 +44,9 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
         bel_dir = jp(directory, test_root)
 
         for ixw, c in enumerate(combinations):  # For each wel combination
-            logger.info(
-                f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}"
-            )
+            logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
 
-            new_dir = "".join(
-                list(map(str, source_ids))
-            )  # sub-directory for forecasts
+            new_dir = "".join(list(map(str, source_ids)))  # sub-directory for forecasts
             sub_dir = jp(bel_dir, new_dir)
 
             # %% Folders
@@ -63,12 +60,12 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             [
                 utils.dirmaker(f)
                 for f in [
-                obj_dir,
-                fig_data_dir,
-                fig_pca_dir,
-                fig_cca_dir,
-                fig_pred_dir,
-            ]
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
+                ]
             ]
 
             # %% Select wells:
@@ -96,27 +93,27 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             return bel.posterior_mean, bel.posterior_covariance
 
 
-def objective_function(uq: UncertaintyQuantification, metric):
+def objective_function(bel, metric):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
     components to allow proper comparison.
     """
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-    n_cut = uq.h_pco.n_pc_cut  # Number of components to keep
+    n_cut = bel.h_pco.n_pc_cut  # Number of components to keep
     # Inverse fit_transform and reshape
-    # FIXME: Problem is that uq.h_pco_predict_pc is None
-    true_image = uq.h_pco.custom_inverse_transform(uq.h_pco.predict_pc, n_cut).reshape(
-        (uq.shape[1], uq.shape[2])
-    )
+    # FIXME: Problem is that bel.h_pco_predict_pc is None
+    true_image = bel.h_pco.custom_inverse_transform(
+        bel.h_pco.predict_pc, n_cut
+    ).reshape((bel.shape[1], bel.shape[2]))
 
     method_name = metric.__name__
     logger.info(f"Quantifying image difference based on {method_name}")
     if method_name == "modified_hausdorff":
-        x, y = uq.contour_extract()
-        to_compare = uq.vertices
+        x, y, vertices = contour_extract()
+        to_compare = vertices
         true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
     elif method_name == "structural_similarity":
-        to_compare = uq.forecast_posterior
+        to_compare = bel.random_sample()
         true_feature = true_image
     else:
         logger.error("Metric name not recognized.")
@@ -159,7 +156,10 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
 
 def compute_metric(
-        base: Type[Setup], roots_obs: Root, combinations: list, metric,
+    base: Type[Setup],
+    roots_obs: Root,
+    combinations: list,
+    metric,
 ):
     global_mean = 0
     total = len(roots_obs)

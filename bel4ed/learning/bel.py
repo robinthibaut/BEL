@@ -91,10 +91,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Dataset after preprocessing
         self._x_pc, self._y_pc = _xt, _yt
 
+        # Canonical variates
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
         self._x_c, self._y_c = _xc, _yc
 
+        # CV Normalized
         _xf, _yf = (
             self.X_post_processing.fit_transform(_xc),
             self.Y_post_processing.fit_transform(_yc),
@@ -114,6 +116,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         check_is_fitted(self.cca)
         X = check_array(X, copy=True, dtype=FLOAT_DTYPES)
+
+        # The key here is to cut PC's based on the number defined in configuration file
 
         if X is not None and Y is None:
             X = check_array(X, copy=True)
