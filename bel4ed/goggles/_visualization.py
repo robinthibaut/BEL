@@ -513,8 +513,9 @@ def whpa_plot(
 
     else:  # If only one WHPA to display
         contour = plt.contour(
-            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha, zorder=zorder
+            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha,
         )
+
 
     # Grid
     plt.grid(color="c", linestyle="-", linewidth=0.5, alpha=0.2)
@@ -810,6 +811,7 @@ def plot_results(
             ylabel="Y(m)",
             labelsize=11,
             zorder=1,
+            show=False,
         )
 
         # Other tricky operation to add annotation

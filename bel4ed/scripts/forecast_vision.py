@@ -53,16 +53,16 @@ if __name__ == "__main__":
 
         # myvis.plot_whpa(root=sample)
         #
-        myvis.pca_vision(
-            root=sample,
-            d=True,
-            h=True,
-            exvar=True,
-            labels=True,
-            scores=True,
-            folders=wells,
-        )
-
-        myvis.plot_pc_ba(root=sample, data=True, target=True)
-
-        myvis.cca_vision(root=sample, folders=wells)
+        # myvis.pca_vision(
+        #     root=sample,
+        #     d=True,
+        #     h=True,
+        #     exvar=True,
+        #     labels=True,
+        #     scores=True,
+        #     folders=wells,
+        # )
+        #
+        # myvis.plot_pc_ba(root=sample, data=True, target=True)
+        #
+        # myvis.cca_vision(root=sample, folders=wells)
