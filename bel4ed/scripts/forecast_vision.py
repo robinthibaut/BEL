@@ -3,7 +3,9 @@
 import os
 import string
 
+import joblib
 from loguru import logger
+from os.path import join as jp
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
@@ -34,7 +36,7 @@ if __name__ == "__main__":
     for i, sample in enumerate(roots):
         logger.info(f"Plotting root {sample}")
 
-        wells = ['123456', '1', '2', '3', '4', '5', '6']
+        wells = ['123456']
 
         for j, w in enumerate(wells):
 
@@ -45,23 +47,28 @@ if __name__ == "__main__":
             else:
                 annotation = alphabet[j - 1]
 
-            myvis.plot_results(root=sample, folder=w, annotation=annotation, d=True)
+            # BEL pickle
+            md = jp(Setup.Directories.forecasts_dir, sample, w)
+            bel = joblib.load(jp(md, "obj", "bel.pkl"))
+
+            myvis.plot_results(bel, root=sample, folder=w, annotation=annotation, d=True)
+
+            myvis.pca_vision(
+                bel,
+                root=sample,
+                d=True,
+                h=True,
+                exvar=True,
+                labels=True,
+                scores=True,
+                folders=wells,
+            )
 
         myvis.plot_K_field(root=sample)
 
         myvis.plot_head_field(root=sample)
 
-        # myvis.plot_whpa(root=sample)
-        #
-        # myvis.pca_vision(
-        #     root=sample,
-        #     d=True,
-        #     h=True,
-        #     exvar=True,
-        #     labels=True,
-        #     scores=True,
-        #     folders=wells,
-        # )
+
         #
         # myvis.plot_pc_ba(root=sample, data=True, target=True)
         #

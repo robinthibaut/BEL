@@ -57,15 +57,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Original dataset
         self._x_shape, self._y_shape = None, None
         self._x, self._y = None, None
+        self._x_obs, self._y_obs = None, None  # Observation data
+
         # Dataset after preprocessing
         self._x_pc, self._y_pc = None, None
+        self._x_obs_pc, self._y_obs_pc = None, None
         # Dataset after learning
         self._x_c, self._y_c = None, None
+        self._x_obs_c, self._y_obs_c = None, None
         # Dataset after postprocessing
         self._x_f, self._y_f = None, None
-        # Observation data
-        self._x_obs = None
-        self._y_obs = None
+        self._x_obs_f, self._y_obs_f = None, None
 
     def fit(self, X, Y):
         """
@@ -207,8 +209,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : Setup.HyperParameters.n_pc_predictor]
+        self._x_obs_pc = X_obs
         X_obs = self.cca.transform(X_obs)
+        self._x_obs_c = X_obs
         X_obs = self.X_post_processing.transform(X_obs)
+        self._x_obs_f = X_obs
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         # Number of PCA components for the curves
