@@ -72,13 +72,10 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
-            X_test_select = X_test.copy().loc[:, selection]
+            X_test_select = X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)  # Only one sample
 
             # BEL fit
             bel.fit(X=X_train_select, Y=y_train)
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
-            msg = f"model trained and saved in {obj_dir}"
-            logger.info(msg)
 
             # %% Sample
             # Extract n random sample (target pc's).
@@ -90,6 +87,9 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
                 Y_pred=Y_posts_gaussian,
             )
 
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
+            msg = f"model trained and saved in {obj_dir}"
+            logger.info(msg)
             np.save(jp(obj_dir, "post.npy"), Y_posterior)
 
 

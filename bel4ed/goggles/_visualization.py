@@ -698,8 +698,8 @@ def plot_results(
         # Plot curves
         sdir = jp(md, "data")
 
-        tc = bel._x.reshape(bel._x.attrs["physical_shape"])
-        tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
+        tc = bel._x.reshape((bel.n_posts,)+bel._x_shape)
+        tcp = bel._x_obs.reshape((-1,)+bel._x_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 
         # Plot parameters for predictor
