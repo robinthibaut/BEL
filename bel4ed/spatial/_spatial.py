@@ -236,6 +236,17 @@ def get_centroids(array: np.array, grf: float) -> np.array:
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
+# %% extract 0 contours
+def contour_extract(x_lim, y_lim, grf, Z):
+    """
+    Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
+    """
+    *_, x, y = refine_machine(x_lim, y_lim, grf)
+    vertices = contours_vertices(x, y, Z)
+
+    return x, y, vertices
+
+
 def contours_vertices(
     x: list, y: list, arrays: np.array, c: float = 0, ignore_: bool = True
 ) -> np.array:

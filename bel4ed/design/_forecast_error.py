@@ -19,7 +19,6 @@ from ..utils import Root
 from ..learning.bel import BEL
 from ..spatial import (
     contours_vertices,
-    refine_machine,
 )
 
 __all__ = [
@@ -99,95 +98,79 @@ class UncertaintyQuantification:
         # 0 contours of posterior WHPA
         self.vertices = None
 
-    def analysis(self, X_train, X_test, y_train):
-        """"""
 
-        # Directories
-        md = self.base.Directories
-        combinations = [self.base.Wells.combination.copy()]
-        total = len(X_test)
-        for ix, test_root in enumerate(X_test.index):  # For each observation root
-            logger.info(f"[{ix + 1}/{total}]-{test_root}")
-            # Directory in which to load forecasts
-            bel_dir = jp(md.forecasts_dir, test_root)
+def analysis(bel, X_train, X_test, y_train, directory, source_ids):
+    """
 
-            for ixw, c in enumerate(combinations):  # For each wel combination
-                logger.info(
-                    f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}"
-                )
+    :param bel:
+    :param X_train:
+    :param X_test:
+    :param y_train:
+    :param directory:
+    :param source_ids:
+    :return:
+    """
 
-                new_dir = "".join(
-                    list(map(str, self.base.Wells.combination))
-                )  # sub-directory for forecasts
-                sub_dir = jp(bel_dir, new_dir)
+    # Directories
+    combinations = [source_ids]
+    total = len(X_test)
+    for ix, test_root in enumerate(X_test.index):  # For each observation root
+        logger.info(f"[{ix + 1}/{total}]-{test_root}")
+        # Directory in which to load forecasts
+        bel_dir = jp(directory, test_root)
 
-                # %% Folders
-                obj_dir = jp(sub_dir, "obj")
-                fig_data_dir = jp(sub_dir, "data")
-                fig_pca_dir = jp(sub_dir, "pca")
-                fig_cca_dir = jp(sub_dir, "cca")
-                fig_pred_dir = jp(sub_dir, "uq")
+        for ixw, c in enumerate(combinations):  # For each wel combination
+            logger.info(
+                f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}"
+            )
 
-                # %% Creates directories
-                [
-                    utils.dirmaker(f)
-                    for f in [
-                        obj_dir,
-                        fig_data_dir,
-                        fig_pca_dir,
-                        fig_cca_dir,
-                        fig_pred_dir,
-                    ]
+            new_dir = "".join(
+                list(map(str, source_ids))
+            )  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, new_dir)
+
+            # %% Folders
+            obj_dir = jp(sub_dir, "obj")
+            fig_data_dir = jp(sub_dir, "data")
+            fig_pca_dir = jp(sub_dir, "pca")
+            fig_cca_dir = jp(sub_dir, "cca")
+            fig_pred_dir = jp(sub_dir, "uq")
+
+            # %% Creates directories
+            [
+                utils.dirmaker(f)
+                for f in [
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
                 ]
+            ]
 
-                # Load training dataset
-                # %% Select wells:
-                selection = list(map(str, [wc for wc in self.base.Wells.combination]))
-                X_train = X_train.loc[:, selection]
-                X_test = X_test.loc[:, selection]
+            # %% Select wells:
+            selection = list(map(str, [wc for wc in source_ids]))
+            X_train = X_train.loc[:, selection]
+            X_test = X_test.loc[:, selection]
 
-                # BEL fit
-                bel = self.bel.fit(X=X_train, Y=y_train)
-                joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
-                msg = f"model trained and saved in {obj_dir}"
-                logger.info(msg)
+            # BEL fit
+            bel.fit(X=X_train, Y=y_train)
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
+            msg = f"model trained and saved in {obj_dir}"
+            logger.info(msg)
 
-                # %% Sample
-                self.sample_posterior(X_test)
+            # %% Sample
+            # Extract n random sample (target pc's).
+            # The posterior distribution is computed within the method below.
+            Y_posts_gaussian = bel.predict(X_test)
 
-                return self.bel.posterior_mean, self.bel.posterior_covariance
+            Y_posterior = bel.inverse_transform(
+                Y_pred=Y_posts_gaussian.reshape(1, -1),
+            )
 
-    # %% Random sample from the posterior
-    def sample_posterior(self, X_test, n_posts: int = None):
-        """
-        Extracts n_posts random samples from the posterior.
-        :param X_test:
-        :param n_posts: int: Desired number of samples
-        :return:
-        """
+            np.save(jp(obj_dir, "post.npy"), Y_posterior)
 
-        if n_posts is not None:
-            self.n_posts = n_posts
-
-        # Extract n random sample (target pc's).
-        # The posterior distribution is computed within the method below.
-        Y_posts_gaussian = self.bel.predict(X_test)
-
-        self.forecast_posterior = self.bel.inverse_transform(
-            Y_pred=Y_posts_gaussian.reshape(1, -1),
-        )
-
-        return self.forecast_posterior
-
-    # %% extract 0 contours
-    def contour_extract(self):
-        """
-        Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
-        """
-        *_, x, y = refine_machine(self.x_lim, self.y_lim, self.grf)
-        self.vertices = contours_vertices(x, y, self.forecast_posterior)
-
-        return x, y
+            return bel.posterior_mean, bel.posterior_covariance
 
 
 def objective_function(uq: UncertaintyQuantification, metric):
