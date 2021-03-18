@@ -62,6 +62,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self._x_c, self._y_c = None, None
         # Dataset after postprocessing
         self._x_f, self._y_f = None, None
+        # Observation data
+        self._x_obs = None
 
     def fit(self, X, Y):
         """
@@ -197,6 +199,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Make predictions, in the BEL fashion.
         """
         X_obs = check_array(X_obs)
+        self._x_obs = X_obs
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : Setup.HyperParameters.n_pc_predictor]

@@ -690,23 +690,15 @@ def plot_results(
     wells_id = list(wells.wells_data.keys())
     cols = [wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w]
 
-    # CCA pickle
-    cca_operator = joblib.load(jp(md, "obj", "cca.pkl"))
-
-    # d pca pickle
-    d_pco = joblib.load(jp(md, "obj", "d_pca.pkl"))
-
-    # h PCA pickle
-    hbase = jp(Setup.Directories.forecasts_dir, "base")
-    pcaf = jp(hbase, "h_pca.pkl")
-    h_pco = joblib.load(pcaf)
+    # BEL pickle
+    bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
     if d:
         # Curves - d
         # Plot curves
         sdir = jp(md, "data")
 
-        tc = d_pco.training_physical.reshape(d_pco.training_shape)
+        tc = bel._x.reshape(d_pco.training_shape)
         tcp = d_pco.predict_physical.reshape(d_pco.obs_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 

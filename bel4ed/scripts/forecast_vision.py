@@ -35,7 +35,7 @@ if __name__ == "__main__":
     for i, sample in enumerate(roots):
         logger.info(f"Plotting root {sample}")
 
-        wells = ["123456"]
+        wells = ['1', '2', '3', '4', '5', '6']
 
         for j, w in enumerate(wells):
 
