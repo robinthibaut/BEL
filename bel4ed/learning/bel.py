@@ -55,6 +55,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.n_posts = None
 
         # Original dataset
+        self._x_shape, self._y_shape = None, None
         self._x, self._y = None, None
         # Dataset after preprocessing
         self._x_pc, self._y_pc = None, None
@@ -73,6 +74,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return:
         """
         check_consistent_length(X, Y)
+        # Store original shape
+        self._x_shape, self._y_shape = X.attrs["physical_shape"], Y.attrs["physical_shape"]
         X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
         )
