@@ -65,6 +65,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self._x_f, self._y_f = None, None
         # Observation data
         self._x_obs = None
+        self._y_obs = None
 
     def fit(self, X, Y):
         """

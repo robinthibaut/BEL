@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-def analysis(bel, X_train, X_test, y_train, directory, source_ids):
+def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
     """
 
     :param bel:
@@ -73,7 +73,8 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
             X_test_select = X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)  # Only one sample
-
+            y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
+            bel._y_obs = y_test_select
             # BEL fit
             bel.fit(X=X_train_select, Y=y_train)
 

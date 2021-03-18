@@ -37,6 +37,7 @@ def main_1(metric=None):
     X_train = X.loc[training_r]
     X_test = X.loc[test_r]
     y_train = Y.loc[training_r]
+    y_test = Y.loc[test_r]
 
     # Set seed
     seed = 123456
@@ -88,6 +89,7 @@ def main_1(metric=None):
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
+        y_test=y_test,
         directory=base.Directories.forecasts_dir,
         source_ids=wells,
     )

@@ -709,7 +709,7 @@ def plot_results(
         labelsize = 11
 
         curves(
-            cols,
+            cols=cols,
             tc=tc,
             sdir=sdir,
             xlabel=xlabel,
@@ -720,7 +720,7 @@ def plot_results(
         )
 
         curves(
-            cols,
+            cols=cols,
             tc=tc,
             sdir=sdir,
             xlabel=xlabel,
@@ -733,7 +733,7 @@ def plot_results(
         )
 
         curves_i(
-            cols,
+            cols=cols,
             tc=tc,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -745,10 +745,10 @@ def plot_results(
 
     if h:
         # WHP - h test + training
-        fig_dir = jp(hbase, "roots_whpa")
+        fig_dir = jp(Setup.Directories.forecasts_dir, root, "roots_whpa")
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        h_test = np.load(jp(fig_dir, f"{root}.npy")).reshape(h_pco.obs_shape)
-        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+        h_test = bel._y_obs
+        h_training = bel._y.reshape((-1,)+bel._x_shape)
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -766,16 +766,10 @@ def plot_results(
         _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
 
         # WHPs
-        ff = jp(md, "uq", f"{root}_cca_{cca_operator.n_components}.pdf")
-        h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        post_obj = joblib.load(jp(md, "obj", "post.pkl"))
-        forecast_posterior = post_obj.predict(
-            pca_d=d_pco,
-            pca_h=h_pco,
-            cca_obj=cca_operator,
-            n_posts=Setup.HyperParameters.n_posts,
-            add_comp=False,
-        )
+        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
+        # h_training = h_pco.training_physical.reshape(h_pco.training_shape)
+        # post_obj = joblib.load(jp(md, "obj", "post.pkl"))
+        forecast_posterior = bel.random_sample()
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
