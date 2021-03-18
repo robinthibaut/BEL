@@ -3,49 +3,103 @@ from os.path import join as jp
 
 import numpy as np
 from loguru import logger
-from bel4ed.algorithms import modified_hausdorff, structural_similarity
+from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.decomposition import PCA
+from sklearn.cross_decomposition import CCA
+from sklearn.pipeline import Pipeline
 
+from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
-from bel4ed.design import UncertaintyQuantification, compute_metric, measure_info_mode
-from bel4ed.datasets import i_am_root
+from bel4ed.design import compute_metric, measure_info_mode
+from bel4ed.datasets import i_am_root, load_dataset
+from bel4ed.design import analysis
+from bel4ed.learning.bel import BEL
 
 
 def main_1(metric=None):
-
     if metric is None:
         metric = modified_hausdorff
 
-    # 0 - Load training dataset ID's
-    training_r, test_r = i_am_root()
+    # Get roots used for testing
+    training_file = jp(Setup.Directories.test_dir, "roots.dat")
+    test_file = jp(Setup.Directories.test_dir, "test_roots.dat")
+    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
+
+    # Load datasets
+    X, Y = load_dataset()
+
+    # Source IDs
+    wells = np.array([1, 2, 3, 4, 5, 6])
+
+    # Select roots for testing
+    X_train = X.loc[training_r]
+    X_test = X.loc[test_r]
+    y_train = Y.loc[training_r]
 
     wells = [[1], [2], [3], [4], [5], [6]]
     base = Setup
     base.Wells.combination = wells
 
-    for i, tr in enumerate(test_r):
-        for w in wells:
-            sub_folder = list(map(str, w))[0]
-            uq = UncertaintyQuantification(
-                base=base,
-                base_dir=None,
-                study_folder=jp(tr, sub_folder),
-                seed=123456,
-            )
-            # 1 - Fit / Transform
-            uq.analysis(
-                roots_training=training_r,
-                roots_obs=test_r,
-                wipe=False,
-                flag_base=False,
-            )
+    # Pipelines
+    # Set seed
+    seed = 123456
+    np.random.seed(seed)
 
-    base.Wells.combination = wells  # Not optimal
+    # Number of CCA components is chosen as the min number of PC
+    n_pc_pred, n_pc_targ = (
+        Setup.HyperParameters.n_pc_predictor,
+        Setup.HyperParameters.n_pc_target,
+    )
 
-    # 2 - Sample and compute dissimilarity
-    compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
 
-    # 3 - Process dissimilarity measure
-    measure_info_mode(base=base, roots_obs=test_r, metric=metric)
+    # Canonical Correlation Analysis
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
+
+    # Pipeline after CCA
+    X_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+    Y_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+
+    # Initiate BEL object
+    bel = BEL(
+        X_pre_processing=X_pre_processing,
+        X_post_processing=X_post_processing,
+        Y_pre_processing=Y_pre_processing,
+        Y_post_processing=Y_post_processing,
+        cca=cca,
+    )
+
+    analysis(bel=bel,
+             X_train=X_train,
+             X_test=X_test,
+             y_train=y_train,
+             directory=base.Directories.forecasts_dir,
+             source_ids=wells,
+             )
+
+    # base.Wells.combination = wells  # Not optimal
+
+    # # 2 - Sample and compute dissimilarity
+    # compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)
+    #
+    # # 3 - Process dissimilarity measure
+    # measure_info_mode(base=base, roots_obs=test_r, metric=metric)
 
 
 if __name__ == "__main__":

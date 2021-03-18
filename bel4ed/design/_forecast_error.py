@@ -17,6 +17,7 @@ from ..spatial import contour_extract
 from ..utils import Root
 
 __all__ = [
+    "analysis",
     "measure_info_mode",
     "objective_function",
     "compute_metric",
