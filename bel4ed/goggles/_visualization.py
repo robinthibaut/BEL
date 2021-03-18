@@ -416,6 +416,7 @@ def whpa_plot(
     fig_file: str = None,
     highlight: bool = False,
     show: bool = False,
+    zorder: int = None,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -487,7 +488,7 @@ def whpa_plot(
     if whpa is None:
         whpa = []
 
-    if len(whpa) > 1:  # New approach is to plot filled contours
+    if whpa.ndim > 2:  # New approach is to plot filled contours
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
         xys, nrow, ncol = grid_parameters(
@@ -512,7 +513,7 @@ def whpa_plot(
 
     else:  # If only one WHPA to display
         contour = plt.contour(
-            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha
+            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha, zorder=zorder
         )
 
     # Grid
@@ -808,6 +809,7 @@ def plot_results(
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
+            zorder=1,
         )
 
         # Other tricky operation to add annotation

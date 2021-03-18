@@ -23,7 +23,6 @@ if __name__ == "__main__":
     #          '9a389395bfbe4cd883dfa3e452752978']
 
     roots = ["818bf1676c424f76b83bd777ae588a1d"]
-    # roots = ["27ec76adab2e406794584fc993188c24"]
 
     alphabet = string.ascii_uppercase
 
