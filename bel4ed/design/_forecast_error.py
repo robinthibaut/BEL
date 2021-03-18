@@ -87,12 +87,10 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             Y_posts_gaussian = bel.random_sample()
 
             Y_posterior = bel.inverse_transform(
-                Y_pred=Y_posts_gaussian.reshape(1, -1),
+                Y_pred=Y_posts_gaussian,
             )
 
             np.save(jp(obj_dir, "post.npy"), Y_posterior)
-
-            return bel.posterior_mean, bel.posterior_covariance
 
 
 def objective_function(bel, metric):

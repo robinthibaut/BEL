@@ -248,8 +248,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )
 
         nc = self.Y_pre_processing["pca"].n_components_
-        dummy = np.zeros(nc)
-        dummy[: y_post.shape[1]] = y_post
+        dummy = np.zeros((nc, nc))
+        dummy[:, : y_post.shape[1]] = y_post
         y_post = self.Y_pre_processing.inverse_transform(dummy)
 
         return y_post
