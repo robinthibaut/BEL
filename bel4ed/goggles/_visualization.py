@@ -20,7 +20,7 @@ from loguru import logger
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
-from bel4ed.datasets import data_loader
+from bel4ed.datasets import data_loader, load_transport_model
 import bel4ed.utils
 from bel4ed.utils import Root
 from bel4ed.algorithms import KDE, kde_params, posterior_conditional
@@ -335,7 +335,7 @@ def pca_scores(
 
 
 def cca_plot(
-        cca_operator,
+        bel,
         d: np.array,
         h: np.array,
         d_pc_prediction: np.array,
@@ -345,7 +345,7 @@ def cca_plot(
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-    :param cca_operator: CCA operator (pickle)
+    :param bel
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
@@ -355,11 +355,11 @@ def cca_plot(
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=cca_operator.n_components
+        offset=bel.cca.n_components
     )  # Gets correlation coefficient
 
     # CCA plots for each observation:
-    for i in range(cca_operator.n_components):
+    for i in range(bel.cca.n_components):
         for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
             pass
 
@@ -416,7 +416,6 @@ def whpa_plot(
         fig_file: str = None,
         highlight: bool = False,
         show: bool = False,
-        zorder: int = None,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -598,25 +597,25 @@ def post_examination(
 
 
 def h_pca_inverse_plot(
-        pca_o: PC, training: bool = True, fig_dir: str = None, show: bool = False
+        bel, training: bool = True, fig_dir: str = None, show: bool = False
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
-    :param pca_o: signed distance PCA operator
+    :param bel
     :param training: bool:
     :param fig_dir: str:
     :param show: bool:
     :return:
     """
 
-    shape = pca_o.training_shape
+    shape = bel._y_shape
 
     if training:
-        v_pc = pca_o.training_pc
-        roots = pca_o.roots_training
+        v_pc = bel._y_pc
+        # roots = pca_o.roots_training
     else:
-        v_pc = pca_o.predict_pc
-        roots = pca_o.test_root
+        v_pc = bel._y_obs_pc
+        # roots = pca_o.test_root
 
     for i, r in enumerate(roots):
 
@@ -806,7 +805,6 @@ def plot_results(
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
-            zorder=1,
             show=False,
         )
 
@@ -1340,7 +1338,8 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        pca_o: PC = None,
+        bel,
+        roots,
         factor: float = 1.0,
         xlabel: str = None,
         ylabel: str = None,
@@ -1355,7 +1354,6 @@ def d_pca_inverse_plot(
     :param ylabel:
     :param labelsize:
     :param factor:
-    :param pca_o: data PCA operator
     :param training: bool:
     :param fig_dir: str:
     :param show: bool:
@@ -1363,22 +1361,23 @@ def d_pca_inverse_plot(
     """
 
     if training:
-        v_pc = pca_o.training_pc
-        roots = pca_o.roots_training
+        v_pc = bel._x_pc
     else:
-        v_pc = pca_o.predict_pc
-        roots = pca_o.test_root
+        v_pc = bel._x_obs_pc
 
     for i, r in enumerate(roots):
 
         # v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
         # The trick is to use [0]
-        v_pred = pca_o.custom_inverse_transform(v_pc)[0]
+        nc = bel.X_pre_processing["pca"].n_components_
+        dummy = np.zeros((nc, nc))
+        dummy[:, : v_pc.shape[1]] = v_pc
+        v_pred = bel.X_pre_processing.inverse_transform(dummy)
 
         if training:
-            to_plot = np.copy(pca_o.training_physical[i])
+            to_plot = np.copy(bel._x[i])
         else:
-            to_plot = np.copy(pca_o.predict_physical[i])
+            to_plot = np.copy(bel._x_obs[i])
 
         plt.plot(to_plot * factor, "r", alpha=0.8)
         plt.plot(v_pred * factor, "b", alpha=0.8)
@@ -1606,7 +1605,7 @@ class ModelVTK:
         try:
             # Transport model
             mt_load = jp(self.results_dir, "whpa.mtnam")
-            self.transport_model = bel4ed.datasets._base.load_transport_model(
+            self.transport_model = load_transport_model(
                 mt_load, self.flow_model, model_ws=self.results_dir
             )
             ucn_files = [
