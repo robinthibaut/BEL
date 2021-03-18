@@ -158,11 +158,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             return _xp, _yp
 
-    def _random_sample(self, n_posts: int = None) -> np.array:
+    def random_sample(self, n_posts: int = None) -> np.array:
         """
         :param n_posts:
         :return:
         """
+        # Set the seed for later use
+        if self.seed is None:
+            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+
         check_is_fitted(self.cca)
         if n_posts is None:
             n_posts = self.n_posts
@@ -204,7 +208,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # return _xp, _yp
 
-    def predict(self, X_obs) -> np.array:
+    def predict(self, X_obs) -> (np.array, np.array):
         """
         Make predictions, in the BEL fashion.
         """
@@ -239,14 +243,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             warnings.warn("KDE not implemented yet")
 
-        # Set the seed for later use
-        if self.seed is None:
-            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
-
-        # Sample the inferred multivariate gaussian distribution
-        random_samples = self._random_sample(self.n_posts)
-
-        return random_samples
+        return self.posterior_mean, self.posterior_covariance
 
     def inverse_transform(
         self,

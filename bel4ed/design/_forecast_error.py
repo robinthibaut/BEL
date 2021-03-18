@@ -6,97 +6,20 @@ from typing import Type
 
 import joblib
 import numpy as np
-
 from loguru import logger
-from sklearn.preprocessing import StandardScaler, PowerTransformer
-from sklearn.decomposition import PCA
-from sklearn.cross_decomposition import CCA
-from sklearn.pipeline import Pipeline
 
 from .. import utils
 from ..config import Setup
-from ..utils import Root
-from ..learning.bel import BEL
 from ..spatial import (
     contours_vertices,
 )
+from ..utils import Root
 
 __all__ = [
-    "UncertaintyQuantification",
     "measure_info_mode",
     "objective_function",
     "compute_metric",
 ]
-
-
-class UncertaintyQuantification:
-    def __init__(
-        self,
-        base: Type[Setup],
-        seed: int = None,
-    ):
-        """
-        :param base: class: Base object (inventory)
-        :param seed: int: Seed
-        """
-
-        if seed is not None:
-            np.random.seed(seed)
-            self.seed = seed
-        else:
-            self.seed = None
-
-        self.base = base
-        fc = self.base.Focus
-        self.x_lim, self.y_lim, self.grf = fc.x_range, fc.y_range, fc.cell_dim
-
-        # Number of CCA components is chosen as the min number of PC
-        n_pc_pred, n_pc_targ = (
-            base.HyperParameters.n_pc_predictor,
-            base.HyperParameters.n_pc_target,
-        )
-
-        # Pipeline before CCA
-        self.X_pre_processing = Pipeline(
-            [
-                ("scaler", StandardScaler(with_mean=False)),
-                ("pca", PCA()),
-            ]
-        )
-        self.Y_pre_processing = Pipeline(
-            [
-                ("scaler", StandardScaler(with_mean=False)),
-                ("pca", PCA()),
-            ]
-        )
-
-        self.cca = CCA(
-            n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6
-        )
-
-        self.X_post_processing = Pipeline(
-            [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-        )
-        self.Y_post_processing = Pipeline(
-            [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-        )
-
-        self.bel = BEL(
-            X_pre_processing=self.X_pre_processing,
-            X_post_processing=self.X_post_processing,
-            Y_pre_processing=self.Y_pre_processing,
-            Y_post_processing=self.Y_post_processing,
-            cca=self.cca,
-        )
-
-        self.X_obs = None
-
-        # Sampling
-        self.n_posts = self.base.HyperParameters.n_posts
-        self.forecast_posterior = None
-
-        # 0 contours of posterior WHPA
-        self.vertices = None
 
 
 def analysis(bel, X_train, X_test, y_train, directory, source_ids):
@@ -140,12 +63,12 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             [
                 utils.dirmaker(f)
                 for f in [
-                    obj_dir,
-                    fig_data_dir,
-                    fig_pca_dir,
-                    fig_cca_dir,
-                    fig_pred_dir,
-                ]
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
             ]
 
             # %% Select wells:
@@ -236,11 +159,8 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
 
 def compute_metric(
-    base: Type[Setup], roots_obs: Root, combinations: list, metric, base_dir: str = None
+        base: Type[Setup], roots_obs: Root, combinations: list, metric,
 ):
-    if base_dir is None:
-        base_dir = base.Directories.forecasts_base_dir
-
     global_mean = 0
     total = len(roots_obs)
     for ix, r_ in enumerate(roots_obs):  # For each observation root

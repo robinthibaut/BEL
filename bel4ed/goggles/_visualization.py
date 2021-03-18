@@ -2056,7 +2056,7 @@ def _kde_cca(
         )
 
         # load prediction object
-        post_test = post._random_sample(Setup.HyperParameters.n_posts).T
+        post_test = post.random_sample(Setup.HyperParameters.n_posts).T
         post_test_t = post.X_pipeline.fit_transform(post_test.T).T
         y_samp = post_test_t[comp_n]
 
