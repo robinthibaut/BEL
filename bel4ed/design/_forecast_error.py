@@ -71,11 +71,11 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
 
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
-            X_train = X_train.loc[:, selection]
-            X_test = X_test.loc[:, selection]
+            X_train_select = X_train.copy().loc[:, selection]
+            X_test_select = X_test.copy().loc[:, selection]
 
             # BEL fit
-            bel.fit(X=X_train, Y=y_train)
+            bel.fit(X=X_train_select, Y=y_train)
             joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
@@ -83,7 +83,7 @@ def analysis(bel, X_train, X_test, y_train, directory, source_ids):
             # %% Sample
             # Extract n random sample (target pc's).
             # The posterior distribution is computed within the method below.
-            bel.predict(X_test)
+            bel.predict(X_test_select)
             Y_posts_gaussian = bel.random_sample()
 
             Y_posterior = bel.inverse_transform(
