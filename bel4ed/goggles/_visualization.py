@@ -447,8 +447,8 @@ def whpa_plot(
     """
 
     # Get basic settings
-    focus = Setup.Focus()
-    wells = Setup.Wells()
+    focus = Setup.Focus
+    wells = Setup.Wells
 
     if well_comb is not None:
         wells.combination = well_comb
@@ -491,7 +491,7 @@ def whpa_plot(
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
         xys, nrow, ncol = grid_parameters(
-            x_lim=focus.x_range, y_lim=focus.y_range, grf=new_grf
+            x_lim=xlim, y_lim=ylim, grf=new_grf
         )
         vertices = contours_vertices(x=x, y=y, arrays=whpa)
         b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
@@ -512,7 +512,7 @@ def whpa_plot(
 
     else:  # If only one WHPA to display
         contour = plt.contour(
-            x, y, whpa[0], [0], colors=color, linewidths=lw, alpha=halpha
+            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha
         )
 
     # Grid
@@ -745,10 +745,10 @@ def plot_results(
 
     if h:
         # WHP - h test + training
-        fig_dir = jp(Setup.Directories.forecasts_dir, root, "roots_whpa")
+        fig_dir = jp(Setup.Directories.forecasts_dir, root)
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        h_test = bel._y_obs
-        h_training = bel._y.reshape((-1,)+bel._x_shape)
+        h_test = bel._y_obs.reshape((bel._y_shape[1], bel._y_shape[2]))
+        h_training = bel._y.reshape((-1,)+(bel._y_shape[1], bel._y_shape[2]))
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -764,12 +764,13 @@ def plot_results(
         labels = ["Training", "Test"]
         legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
         _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+        plt.close()
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
-        # h_training = h_pco.training_physical.reshape(h_pco.training_shape)
-        # post_obj = joblib.load(jp(md, "obj", "post.pkl"))
         forecast_posterior = bel.random_sample()
+        forecast_posterior = bel.inverse_transform(forecast_posterior)
+        forecast_posterior = forecast_posterior.reshape((-1,)+(bel._y_shape[1], bel._y_shape[2]))
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
@@ -1142,7 +1143,7 @@ def plot_whpa(root: str = None):
         else:
             root = root[0]
 
-    base_dir = os.path.join(Setup.Directories.forecasts_dir, "base")
+    base_dir = os.path.join(Setup.Directories.forecasts_dir, root)
     fobj = os.path.join(Setup.Directories.forecasts_dir, "base", "h_pca.pkl")
     h = joblib.load(fobj)
     h_training = h.training_physical.reshape(h.training_shape)

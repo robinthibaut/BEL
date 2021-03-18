@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
         myvis.plot_head_field(root=sample)
 
-        myvis.plot_whpa(root=sample)
+        # myvis.plot_whpa(root=sample)
         #
         myvis.pca_vision(
             root=sample,
