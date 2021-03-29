@@ -79,7 +79,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_consistent_length(X, Y)
         self.X, self.Y = X, Y  # Save dataframe with names
         # Store original shape
-        self.X_shape, self.Y_shape = X.attrs["physical_shape"], Y.attrs["physical_shape"]
+        self.X_shape, self.Y_shape = (
+            X.attrs["physical_shape"],
+            Y.attrs["physical_shape"],
+        )
         _X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
         )

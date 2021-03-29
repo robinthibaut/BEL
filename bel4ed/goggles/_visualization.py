@@ -68,16 +68,16 @@ def _my_alphabet(az: int):
 
 
 def _proxy_legend(
-        legend1: legend = None,
-        colors: list = None,
-        labels: list = None,
-        loc: int = 4,
-        marker: list = None,
-        pec: list = None,
-        fz: float = 11,
-        fig_file: str = None,
-        extra: list = None,
-        obj=None,
+    legend1: legend = None,
+    colors: list = None,
+    labels: list = None,
+    loc: int = 4,
+    marker: list = None,
+    pec: list = None,
+    fz: float = 11,
+    fig_file: str = None,
+    extra: list = None,
+    obj=None,
 ):
     """
     Add a second legend to a figure @ bottom right (loc=4)
@@ -159,12 +159,12 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
 
 
 def explained_variance(
-        bel,
-        n_comp: int = 0,
-        thr: float = 1.0,
-        annotation: list = None,
-        fig_file: str = None,
-        show: bool = False,
+    bel,
+    n_comp: int = 0,
+    thr: float = 1.0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
 ):
     """
     PCA explained variance plot
@@ -181,9 +181,15 @@ def explained_variance(
         n_comp = bel.X_pre_processing["pca"].n_components_
 
     # Index where explained variance is below threshold:
-    ny = len(np.where(np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_) < thr)[0])
+    ny = len(
+        np.where(
+            np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_) < thr
+        )[0]
+    )
     # Explained variance vector:
-    cum = np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
+    cum = (
+        np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
+    )
     # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks, fontsize=8.5)
@@ -245,13 +251,13 @@ def vertices_vtp(folder, vertices):
 
 
 def pca_scores(
-        training: np.array,
-        prediction: np.array,
-        n_comp: int,
-        annotation: list,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training: np.array,
+    prediction: np.array,
+    n_comp: int,
+    annotation: list,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
@@ -320,12 +326,12 @@ def pca_scores(
 
 
 def cca_plot(
-        bel,
-        d: np.array,
-        h: np.array,
-        d_pc_prediction: np.array,
-        sdir: str = None,
-        show: bool = False,
+    bel,
+    d: np.array,
+    h: np.array,
+    d_pc_prediction: np.array,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     CCA plots.
@@ -377,30 +383,30 @@ def cca_plot(
 
 
 def whpa_plot(
-        grf: float = None,
-        well_comb: list = None,
-        whpa: np.array = None,
-        alpha: float = 0.4,
-        halpha: float = None,
-        lw: float = 0.5,
-        bkg_field_array: np.array = None,
-        vmin: float = None,
-        vmax: float = None,
-        x_lim: list = None,
-        y_lim: list = None,
-        xlabel: str = None,
-        ylabel: str = None,
-        cb_title: str = None,
-        labelsize: float = 5,
-        cmap: str = "coolwarm",
-        color: str = "white",
-        show_wells: bool = False,
-        well_ids: list = None,
-        title: str = None,
-        annotation: list = None,
-        fig_file: str = None,
-        highlight: bool = False,
-        show: bool = False,
+    grf: float = None,
+    well_comb: list = None,
+    whpa: np.array = None,
+    alpha: float = 0.4,
+    halpha: float = None,
+    lw: float = 0.5,
+    bkg_field_array: np.array = None,
+    vmin: float = None,
+    vmax: float = None,
+    x_lim: list = None,
+    y_lim: list = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    cb_title: str = None,
+    labelsize: float = 5,
+    cmap: str = "coolwarm",
+    color: str = "white",
+    show_wells: bool = False,
+    well_ids: list = None,
+    title: str = None,
+    annotation: list = None,
+    fig_file: str = None,
+    highlight: bool = False,
+    show: bool = False,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -475,9 +481,7 @@ def whpa_plot(
     if whpa.ndim > 2:  # New approach is to plot filled contours
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(
-            x_lim=xlim, y_lim=ylim, grf=new_grf
-        )
+        xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
         vertices = contours_vertices(x=x, y=y, arrays=whpa)
         b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
         contour = plt.contourf(
@@ -497,7 +501,13 @@ def whpa_plot(
 
     else:  # If only one WHPA to display
         contour = plt.contour(
-            x, y, whpa, [0], colors=color, linewidths=lw, alpha=halpha,
+            x,
+            y,
+            whpa,
+            [0],
+            colors=color,
+            linewidths=lw,
+            alpha=halpha,
         )
 
     # Grid
@@ -544,7 +554,7 @@ def whpa_plot(
 
 
 def post_examination(
-        root: str, xlim: list = None, ylim: list = None, show: bool = False
+    root: str, xlim: list = None, ylim: list = None, show: bool = False
 ):
     focus = Setup.Focus()
     if xlim is None:
@@ -581,9 +591,7 @@ def post_examination(
     plt.close()
 
 
-def h_pca_inverse_plot(
-        bel, fig_dir: str = None, show: bool = False
-):
+def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
     :param bel
@@ -598,16 +606,16 @@ def h_pca_inverse_plot(
         v_pc = check_array(bel.Y_obs_pc.reshape(1, -1))
     else:
         Y_obs = check_array(bel.Y_obs)
-        v_pc = bel.Y_pre_processing.transform(Y_obs)[:, : Setup.HyperParameters.n_pc_target]
+        v_pc = bel.Y_pre_processing.transform(Y_obs)[
+            :, : Setup.HyperParameters.n_pc_target
+        ]
 
     nc = bel.Y_pre_processing["pca"].n_components_
     dummy = np.zeros((1, nc))
     dummy[:, : v_pc.shape[1]] = v_pc
     v_pred = bel.Y_pre_processing.inverse_transform(dummy)
 
-    h_to_plot = np.copy(
-        Y_obs.reshape(1, shape[1], shape[2])
-    )
+    h_to_plot = np.copy(Y_obs.reshape(1, shape[1], shape[2]))
 
     whpa_plot(whpa=h_to_plot, color="red", alpha=1, lw=2)
 
@@ -637,7 +645,9 @@ def h_pca_inverse_plot(
 
     if fig_dir is not None:
         bel4ed.utils.dirmaker(fig_dir)
-        plt.savefig(jp(fig_dir, f"h_pca_inverse_transform.pdf"), dpi=300, transparent=True)
+        plt.savefig(
+            jp(fig_dir, f"h_pca_inverse_transform.pdf"), dpi=300, transparent=True
+        )
         plt.close()
 
     if show:
@@ -646,12 +656,12 @@ def h_pca_inverse_plot(
 
 
 def plot_results(
-        bel,
-        d: bool = True,
-        h: bool = True,
-        root: str = None,
-        folder: str = None,
-        annotation: list = None,
+    bel,
+    d: bool = True,
+    h: bool = True,
+    root: str = None,
+    folder: str = None,
+    annotation: list = None,
 ):
     """
     Plots forecasts results in the 'uq' folder
@@ -750,7 +760,9 @@ def plot_results(
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
         forecast_posterior = bel.random_sample()
         forecast_posterior = bel.inverse_transform(forecast_posterior)
-        forecast_posterior = forecast_posterior.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
+        forecast_posterior = forecast_posterior.reshape(
+            (-1,) + (bel.Y_shape[1], bel.Y_shape[2])
+        )
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
@@ -888,17 +900,17 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
 
 
 def curves(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        ghost: bool = False,
-        sdir: str = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        xlabel: str = None,
-        ylabel: str = None,
-        title: str = "curves",
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    ghost: bool = False,
+    sdir: str = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    xlabel: str = None,
+    ylabel: str = None,
+    title: str = "curves",
+    show: bool = False,
 ):
     """
     Shows every breakthrough curve stacked on a plot.
@@ -938,15 +950,15 @@ def curves(
 
 
 def curves_i(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        xlabel: str = None,
-        ylabel: str = None,
-        sdir: str = None,
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    xlabel: str = None,
+    ylabel: str = None,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     Shows every breakthrough individually for each observation point.
@@ -1046,7 +1058,9 @@ def plot_head_field(root: str = None):
     plt.close()
 
 
-def plot_pc_ba(bel, root: str = None, w: str = None, data: bool = False, target: bool = False):
+def plot_pc_ba(
+    bel, root: str = None, w: str = None, data: bool = False, target: bool = False
+):
     """
     Comparison between original variables and the same variables back-transformed with n PCA components.
     :param root:
@@ -1080,10 +1094,7 @@ def plot_pc_ba(bel, root: str = None, w: str = None, data: bool = False, target:
             fig_dir=os.path.join(subdir, w, "pca"),
         )
     if target:
-        h_pca_inverse_plot(
-            bel,
-            fig_dir=os.path.join(subdir, w, "pca")
-        )
+        h_pca_inverse_plot(bel, fig_dir=os.path.join(subdir, w, "pca"))
 
 
 def plot_whpa(bel, root):
@@ -1158,12 +1169,9 @@ def cca_vision(root: str = None, folders: list = None):
         _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
 
         d_c, h_c = bel.cca.transform(bel.X_pc, bel.Y_pc)
-        
+
         # CCA coefficient plot
-        cca_coefficient = np.corrcoef(
-            d_c,
-            h_c
-        ).diagonal(offset=d_c.shape[0])
+        cca_coefficient = np.corrcoef(d_c, h_c).diagonal(offset=d_c.shape[0])
         plt.plot(cca_coefficient, "lightblue", zorder=1)
         plt.scatter(
             x=np.arange(len(cca_coefficient)),
@@ -1200,15 +1208,15 @@ def cca_vision(root: str = None, folders: list = None):
 
 
 def pca_vision(
-        bel,
-        root: str or Root,
-        w: str,
-        d: bool = True,
-        h: bool = False,
-        scores: bool = True,
-        exvar: bool = True,
-        before_after=True,
-        labels: bool = False,
+    bel,
+    root: str or Root,
+    w: str,
+    d: bool = True,
+    h: bool = False,
+    scores: bool = True,
+    exvar: bool = True,
+    before_after=True,
+    labels: bool = False,
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -1302,14 +1310,14 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        bel,
-        root,
-        factor: float = 1.0,
-        xlabel: str = None,
-        ylabel: str = None,
-        labelsize: float = 11.0,
-        fig_dir: str = None,
-        show: bool = False,
+    bel,
+    root,
+    factor: float = 1.0,
+    xlabel: str = None,
+    ylabel: str = None,
+    labelsize: float = 11.0,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.
@@ -1329,15 +1337,15 @@ def d_pca_inverse_plot(
     dummy = np.zeros((1, nc))
     dummy[:, : v_pc.shape[1]] = v_pc
 
-    v_pred = bel.X_pre_processing.inverse_transform(dummy).reshape((-1,)+shape)
-    to_plot = np.copy(bel.X_obs).reshape((-1,)+shape)
+    v_pred = bel.X_pre_processing.inverse_transform(dummy).reshape((-1,) + shape)
+    to_plot = np.copy(bel.X_obs).reshape((-1,) + shape)
 
     cols = ["r" for _ in range(shape[1])]
     highlights = [i for i in range(shape[1])]
-    curves(cols=cols, tc=to_plot*factor, highlight=highlights)
+    curves(cols=cols, tc=to_plot * factor, highlight=highlights)
 
     cols = ["b" for _ in range(shape[1])]
-    curves(cols=cols, tc=v_pred*factor, highlight=highlights)
+    curves(cols=cols, tc=v_pred * factor, highlight=highlights)
 
     # Add title inside the box
     an = ["A"]
@@ -1410,14 +1418,14 @@ def hydro_examination(root: str):
 
 
 def _despine(
-        fig=None,
-        ax=None,
-        top=True,
-        right=True,
-        left=False,
-        bottom=False,
-        offset=None,
-        trim=False,
+    fig=None,
+    ax=None,
+    top=True,
+    right=True,
+    left=False,
+    bottom=False,
+    offset=None,
+    trim=False,
 ):
     """Remove the top and right spines from plot(s).
 
@@ -1933,10 +1941,10 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        bel,
-        sdir: str = None,
-        show: bool = False,
-        dist_plot: bool = False,
+    bel,
+    sdir: str = None,
+    show: bool = False,
+    dist_plot: bool = False,
 ):
 
     # Find max kde value
@@ -1973,7 +1981,9 @@ def _kde_cca(
         )
 
         # Plot h posterior given d
-        density, support = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=1000)
+        density, support = kde_params(
+            x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=1000
+        )
         xx, yy = support
 
         marginal_eval_x = KDE()

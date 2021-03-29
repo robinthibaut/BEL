@@ -74,8 +74,13 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
             # Update physical shape
-            X_train_select.attrs["physical_shape"] = (len(selection), X_train.attrs["physical_shape"][1])
-            X_test_select = X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)  # Only one sample
+            X_train_select.attrs["physical_shape"] = (
+                len(selection),
+                X_train.attrs["physical_shape"][1],
+            )
+            X_test_select = (
+                X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)
+            )  # Only one sample
             y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
             bel.Y_obs = y_test_select
             # BEL fit
