@@ -272,22 +272,7 @@ def pca_scores(
     # Plot all training scores
     plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.05)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
-    kde = False
-    if kde:  # Option to plot KDE
-        # Choose seaborn cmap
-        # cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=.69, reverse=True)
-        # cmap = sns.cubehelix_palette(start=6, rot=0, dark=0, light=.69, reverse=True, as_cmap=True)
-        cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=0.15, reverse=True)
-        # KDE plot
-        sns.kdeplot(
-            np.arange(1, n_comp + 1),
-            training.T[:n_comp][:, 1],
-            cmap=cmap,
-            n_levels=60,
-            shade=True,
-            vertical=True,
-        )
-        plt.xlim(0.5, n_comp)  # Define x limits [start, end]
+
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
         # Select observation
@@ -617,53 +602,51 @@ def h_pca_inverse_plot(
         v_pc = bel.Y_obs_pc
         # roots = pca_o.test_root
 
-    for i, r in enumerate(roots):
-
-        if training:
-            h_to_plot = np.copy(
-                pca_o.training_physical[i].reshape(1, shape[1], shape[2])
-            )
-        else:
-            h_to_plot = np.copy(
-                pca_o.predict_physical[i].reshape(1, shape[1], shape[2])
-            )
-
-        whpa_plot(whpa=h_to_plot, color="red", alpha=1, lw=2)
-
-        v_pred = pca_o.custom_inverse_transform(v_pc)
-
-        whpa_plot(
-            whpa=v_pred.reshape(1, shape[1], shape[2]),
-            color="blue",
-            alpha=1,
-            lw=2,
-            labelsize=11,
-            xlabel="X(m)",
-            ylabel="Y(m)",
-            x_lim=[850, 1100],
-            y_lim=[350, 650],
+    if training:
+        h_to_plot = np.copy(
+            bel.X.reshape(1, shape[1], shape[2])
+        )
+    else:
+        h_to_plot = np.copy(
+            bel.X_obs.reshape(1, shape[1], shape[2])
         )
 
-        # Add title inside the box
-        an = ["B"]
+    whpa_plot(whpa=h_to_plot, color="red", alpha=1, lw=2)
 
-        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
+    v_pred = bel.inverse_transform(v_pc)
 
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["red", "blue"],
-            labels=["Physical", "Back transformed"],
-            marker=["-", "-"],
-        )
+    whpa_plot(
+        whpa=v_pred.reshape(1, shape[1], shape[2]),
+        color="blue",
+        alpha=1,
+        lw=2,
+        labelsize=11,
+        xlabel="X(m)",
+        ylabel="Y(m)",
+        x_lim=[850, 1100],
+        y_lim=[350, 650],
+    )
 
-        if fig_dir is not None:
-            bel4ed.utils.dirmaker(fig_dir)
-            plt.savefig(jp(fig_dir, f"{r}_h.pdf"), dpi=300, transparent=True)
-            plt.close()
+    # Add title inside the box
+    an = ["B"]
 
-        if show:
-            plt.show()
-            plt.close()
+    legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
+
+    _proxy_legend(
+        legend1=legend_a,
+        colors=["red", "blue"],
+        labels=["Physical", "Back transformed"],
+        marker=["-", "-"],
+    )
+
+    if fig_dir is not None:
+        bel4ed.utils.dirmaker(fig_dir)
+        plt.savefig(jp(fig_dir, f"h_pca_inverse_transform.pdf"), dpi=300, transparent=True)
+        plt.close()
+
+    if show:
+        plt.show()
+        plt.close()
 
 
 def plot_results(
@@ -1247,7 +1230,6 @@ def pca_vision(
         scores: bool = True,
         exvar: bool = True,
         labels: bool = False,
-        folders: list = None,
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -1258,7 +1240,6 @@ def pca_vision(
     :param h: bool:
     :param scores: bool:
     :param exvar: bool:
-    :param folders: list:
     :return:
     """
 
@@ -1277,7 +1258,7 @@ def pca_vision(
             pca_scores(
                 training=bel.X_pc,
                 prediction=bel.X_obs_pc,
-                n_comp=bel.n_components_x,
+                n_comp=Setup.HyperParameters.n_pc_predictor,
                 annotation=["E"],
                 labels=labels,
                 fig_file=fig_file,

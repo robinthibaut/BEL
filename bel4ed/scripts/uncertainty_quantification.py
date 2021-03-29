@@ -35,9 +35,9 @@ def main_1(metric=None):
 
     # Select roots for testing
     X_train = X.loc[training_r]
-    X_test = X.loc[["6a4d614c838442629d7a826cc1f498a8"]]
+    X_test = X.loc[["818bf1676c424f76b83bd777ae588a1d"]]
     y_train = Y.loc[training_r]
-    y_test = Y.loc[["6a4d614c838442629d7a826cc1f498a8"]]
+    y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
 
     # Set seed
     seed = 123456

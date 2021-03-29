@@ -24,7 +24,7 @@ if __name__ == "__main__":
     #          '27ec76adab2e406794584fc993188c24',
     #          '9a389395bfbe4cd883dfa3e452752978']
 
-    roots = ["6a4d614c838442629d7a826cc1f498a8"]
+    roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
     alphabet = string.ascii_uppercase
 
@@ -62,7 +62,6 @@ if __name__ == "__main__":
                 exvar=True,
                 labels=True,
                 scores=True,
-                folders=wells,
             )
 
         myvis.plot_K_field(root=sample)
