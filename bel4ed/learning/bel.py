@@ -77,18 +77,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return:
         """
         check_consistent_length(X, Y)
+        self.X, self.Y = X, Y  # Save dataframe with names
         # Store original shape
         self.X_shape, self.Y_shape = X.attrs["physical_shape"], Y.attrs["physical_shape"]
-        X = self._validate_data(
+        _X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
         )
-        Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
-
-        self.X, self.Y = X, Y
+        _Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
 
         _xt, _yt = (
-            self.X_pre_processing.fit_transform(self.X),
-            self.Y_pre_processing.fit_transform(self.Y),
+            self.X_pre_processing.fit_transform(_X),
+            self.Y_pre_processing.fit_transform(_Y),
         )
 
         _xt, _yt = (
@@ -204,8 +203,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         Make predictions, in the BEL fashion.
         """
-        X_obs = check_array(X_obs)
-        self.X_obs = X_obs
+        self.X_obs = X_obs  # Save dataframe with name
+        X_obs = check_array(self.X_obs)
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : Setup.HyperParameters.n_pc_predictor]

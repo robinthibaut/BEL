@@ -581,7 +581,7 @@ def post_examination(
 
 
 def h_pca_inverse_plot(
-        bel, training: bool = True, fig_dir: str = None, show: bool = False
+        bel, root, training: bool = True, fig_dir: str = None, show: bool = False
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
@@ -595,7 +595,7 @@ def h_pca_inverse_plot(
     shape = bel.Y_shape
 
     if training:
-        v_pc = bel.Y_pc
+        v_pc = bel.Y_pc[root]
         # roots = pca_o.roots_training
     else:
         v_pc = bel.Y_obs_pc
@@ -1045,7 +1045,7 @@ def plot_head_field(root: str = None):
     plt.close()
 
 
-def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
+def plot_pc_ba(bel, root: str = None, w: str = None, data: bool = False, target: bool = False):
     """
     Comparison between original variables and the same variables back-transformed with n PCA components.
     :param root:
@@ -1061,52 +1061,31 @@ def plot_pc_ba(root: str = None, data: bool = False, target: bool = False):
         else:
             root = root[0]
 
-    base_dir = os.path.join(Setup.Directories.forecasts_dir, "base")
-    if target:
-        fobj = os.path.join(base_dir, "h_pca.pkl")
-        h_pco = joblib.load(fobj)
-        hnc0 = h_pco.n_pc_cut
-        # mplot.h_pca_inverse_plot(h_pco, hnc0, training=True, fig_dir=os.path.join(base_dir, 'control'))
+    subdir = os.path.join(Setup.Directories.forecasts_dir, root)
 
-        h_pred = np.load(
-            os.path.join(base_dir, "roots_whpa", f"{root}.npy")
-        )  # Signed Distance
-        # Cut desired number of PC components
-        h_pco.test_transform(h_pred, test_roots=[root])
-        h_pco.comp_refresh(hnc0)
-        h_pca_inverse_plot(
-            pca_o=h_pco, training=False, fig_dir=jp(base_dir, "roots_whpa")
-        )
-
-    # d
     if data:
-        subdir = os.path.join(Setup.Directories.forecasts_dir, root)
-        listme = os.listdir(subdir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
-
-        for f in folders:
-            res_dir = os.path.join(subdir, f, "obj")
-            # Load objects
-            d_pco = joblib.load(os.path.join(res_dir, "d_pca.pkl"))
-            dnc0 = d_pco.n_pc_cut  # Number of PC components
-            d_pco.comp_refresh(dnc0)  # refresh based on dnc0
-            setattr(d_pco, "test_root", [root])
-            # mplot.d_pca_inverse_plot(d_pco, dnc0, training=True,
-            #                          fig_dir=os.path.join(os.path.dirname(res_dir), 'pca'))
-            # Plot parameters for predictor
-            xlabel = "Observation index number"
-            ylabel = "Concentration ($g/m^{3})$"
-            factor = 1000
-            labelsize = 11
-            d_pca_inverse_plot(
-                d_pco,
-                xlabel=xlabel,
-                ylabel=ylabel,
-                labelsize=labelsize,
-                factor=factor,
-                training=False,
-                fig_dir=os.path.join(os.path.dirname(res_dir), "pca"),
-            )
+        # Plot parameters for predictor
+        xlabel = "Observation index number"
+        ylabel = "Concentration ($g/m^{3})$"
+        factor = 1000
+        labelsize = 11
+        d_pca_inverse_plot(
+            bel,
+            root=root,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            labelsize=labelsize,
+            factor=factor,
+            training=False,
+            fig_dir=os.path.join(subdir, w, "pca"),
+        )
+    if target:
+        h_pca_inverse_plot(
+            bel,
+            root=root,
+            training=False,
+            fig_dir=os.path.join(subdir, w, "pca")
+        )
 
 
 def plot_whpa(bel, root):
@@ -1228,6 +1207,7 @@ def pca_vision(
         h: bool = False,
         scores: bool = True,
         exvar: bool = True,
+        before_after=True,
         labels: bool = False,
 ):
     """
@@ -1272,10 +1252,12 @@ def pca_vision(
                 annotation=["C"],
                 fig_file=fig_file,
             )
+        if before_after:
+            plot_pc_ba(bel, root=root, data=True, target=False)
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
-        h_pc_prediction = bel.Y_pre_processing.transform(Y=bel.Y_obs)
+        h_pc_prediction = bel.Y_pre_processing.transform(bel.Y_obs)
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.pdf")
         if scores:
@@ -1319,7 +1301,7 @@ def check_root(xlim: list, ylim: list, root: list):
 
 def d_pca_inverse_plot(
         bel,
-        roots,
+        root,
         factor: float = 1.0,
         xlabel: str = None,
         ylabel: str = None,
@@ -1345,47 +1327,43 @@ def d_pca_inverse_plot(
     else:
         v_pc = bel.X_obs_pc
 
-    for i, r in enumerate(roots):
+    nc = bel.X_pre_processing["pca"].n_components_
+    dummy = np.zeros((nc, nc))
+    dummy[:, : v_pc.shape[1]] = v_pc
+    v_pred = bel.X_pre_processing.inverse_transform(dummy)
 
-        # v_pred = np.dot(v_pc[i, :vn], pca_o.operator.components_[:vn, :]) + pca_o.operator.mean_
-        # The trick is to use [0]
-        nc = bel.X_pre_processing["pca"].n_components_
-        dummy = np.zeros((nc, nc))
-        dummy[:, : v_pc.shape[1]] = v_pc
-        v_pred = bel.X_pre_processing.inverse_transform(dummy)
+    if training:
+        to_plot = np.copy(bel.X[root])
+    else:
+        to_plot = np.copy(bel.X_obs)
 
-        if training:
-            to_plot = np.copy(bel.X[i])
-        else:
-            to_plot = np.copy(bel.X_obs[i])
+    plt.plot(to_plot * factor, "r", alpha=0.8)
+    plt.plot(v_pred * factor, "b", alpha=0.8)
+    # Add title inside the box
+    an = ["A"]
+    legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
+    _proxy_legend(
+        legend1=legend_a,
+        colors=["red", "blue"],
+        labels=["Physical", "Back transformed"],
+        marker=["-", "-"],
+        loc=1,
+    )
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.tick_params(labelsize=labelsize)
 
-        plt.plot(to_plot * factor, "r", alpha=0.8)
-        plt.plot(v_pred * factor, "b", alpha=0.8)
-        # Add title inside the box
-        an = ["A"]
-        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["red", "blue"],
-            labels=["Physical", "Back transformed"],
-            marker=["-", "-"],
-            loc=1,
-        )
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.tick_params(labelsize=labelsize)
+    # Increase y axis by a small percentage for annotation in upper left corner
+    yrange = np.max(to_plot * factor) * 1.15
+    plt.ylim([0, yrange])
 
-        # Increase y axis by a small percentage for annotation in upper left corner
-        yrange = np.max(to_plot * factor) * 1.15
-        plt.ylim([0, yrange])
-
-        if fig_dir is not None:
-            bel4ed.utils.dirmaker(fig_dir)
-            plt.savefig(jp(fig_dir, f"{r}_d.pdf"), dpi=300, transparent=True)
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
+    if fig_dir is not None:
+        bel4ed.utils.dirmaker(fig_dir)
+        plt.savefig(jp(fig_dir, f"{root}_d.pdf"), dpi=300, transparent=True)
+        plt.close()
+    if show:
+        plt.show()
+        plt.close()
 
 
 def hydro_examination(root: str):

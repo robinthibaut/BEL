@@ -60,6 +60,7 @@ if __name__ == "__main__":
                 d=True,
                 h=True,
                 exvar=True,
+                before_after=True,
                 labels=True,
                 scores=True,
             )
@@ -69,6 +70,5 @@ if __name__ == "__main__":
         myvis.plot_head_field(root=sample)
 
         #
-        # myvis.plot_pc_ba(root=sample, data=True, target=True)
         #
-        # myvis.cca_vision(root=sample, folders=wells)
+        myvis.cca_vision(bel, root=sample, folders=wells)
