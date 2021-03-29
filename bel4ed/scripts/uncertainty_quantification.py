@@ -29,15 +29,15 @@ def main_1(metric=None):
     X, Y = load_dataset()
 
     # Source IDs
-    wells = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]])
+    wells = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object)
     base = Setup
     base.Wells.combination = wells
 
     # Select roots for testing
     X_train = X.loc[training_r]
-    X_test = X.loc[["818bf1676c424f76b83bd777ae588a1d"]]
+    X_test = X.loc[["6a4d614c838442629d7a826cc1f498a8"]]
     y_train = Y.loc[training_r]
-    y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
+    y_test = Y.loc[["6a4d614c838442629d7a826cc1f498a8"]]
 
     # Set seed
     seed = 123456

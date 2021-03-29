@@ -608,13 +608,13 @@ def h_pca_inverse_plot(
     :return:
     """
 
-    shape = bel._y_shape
+    shape = bel.Y_shape
 
     if training:
-        v_pc = bel._y_pc
+        v_pc = bel.Y_pc
         # roots = pca_o.roots_training
     else:
-        v_pc = bel._y_obs_pc
+        v_pc = bel.Y_obs_pc
         # roots = pca_o.test_root
 
     for i, r in enumerate(roots):
@@ -695,8 +695,8 @@ def plot_results(
         # Plot curves
         sdir = jp(md, "data")
 
-        tc = bel._x.reshape((bel.n_posts,) + bel._x_shape)
-        tcp = bel._x_obs.reshape((-1,) + bel._x_shape)
+        tc = bel.X.reshape((bel.n_posts,) + bel.X_shape)
+        tcp = bel.X_obs.reshape((-1,) + bel.X_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 
         # Plot parameters for predictor
@@ -744,8 +744,8 @@ def plot_results(
         # WHP - h test + training
         fig_dir = jp(Setup.Directories.forecasts_dir, root)
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        h_test = bel._y_obs.reshape((bel._y_shape[1], bel._y_shape[2]))
-        h_training = bel._y.reshape((-1,) + (bel._y_shape[1], bel._y_shape[2]))
+        h_test = bel.Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
+        h_training = bel.Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -767,7 +767,7 @@ def plot_results(
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
         forecast_posterior = bel.random_sample()
         forecast_posterior = bel.inverse_transform(forecast_posterior)
-        forecast_posterior = forecast_posterior.reshape((-1,) + (bel._y_shape[1], bel._y_shape[2]))
+        forecast_posterior = forecast_posterior.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
@@ -1133,14 +1133,14 @@ def plot_whpa(bel, root):
     :return:
     """
 
-    h_training = bel._y.reshape(bel._y_shape)
+    h_training = bel.Y.reshape(bel.Y_shape)
 
     whpa_plot(
         whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5
     )
 
     if root is not None:
-        h_pred = bel._y_obs.reshape(bel._y_shape)
+        h_pred = bel.Y_obs.reshape(bel.Y_shape)
         whpa_plot(
             whpa=h_pred,
             color="darkred",
@@ -1275,8 +1275,8 @@ def pca_vision(
         fig_file = os.path.join(subdir, "d_scores.pdf")
         if scores:
             pca_scores(
-                training=bel._x_pc,
-                prediction=bel._x_obs_pc,
+                training=bel.X_pc,
+                prediction=bel.X_obs_pc,
                 n_comp=bel.n_components_x,
                 annotation=["E"],
                 labels=labels,
@@ -1294,8 +1294,8 @@ def pca_vision(
             )
     if h:
         # Transform and split
-        h_pc_training = bel._y_pc
-        h_pc_prediction = bel.X_pre_processing.transform(Y=bel._y_obs)
+        h_pc_training = bel.Y_pc
+        h_pc_prediction = bel.X_pre_processing.transform(Y=bel.Y_obs)
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.pdf")
         if scores:
@@ -1361,9 +1361,9 @@ def d_pca_inverse_plot(
     """
 
     if training:
-        v_pc = bel._x_pc
+        v_pc = bel.X_pc
     else:
-        v_pc = bel._x_obs_pc
+        v_pc = bel.X_obs_pc
 
     for i, r in enumerate(roots):
 
@@ -1375,9 +1375,9 @@ def d_pca_inverse_plot(
         v_pred = bel.X_pre_processing.inverse_transform(dummy)
 
         if training:
-            to_plot = np.copy(bel._x[i])
+            to_plot = np.copy(bel.X[i])
         else:
-            to_plot = np.copy(bel._x_obs[i])
+            to_plot = np.copy(bel.X_obs[i])
 
         plt.plot(to_plot * factor, "r", alpha=0.8)
         plt.plot(v_pred * factor, "b", alpha=0.8)
@@ -1745,8 +1745,8 @@ class ModelVTK:
         n_t_stp = ts[0].shape[0]
         time_steps = ts[0].time
 
-        points_x = np.array([ts[i].x for i in range(len(ts))])
-        points_y = np.array([ts[i].y for i in range(len(ts))])
+        points_x = np.array([ts[i].X for i in range(len(ts))])
+        points_y = np.array([ts[i].Y for i in range(len(ts))])
         points_z = np.array([ts[i].z for i in range(len(ts))])
 
         xs = points_x[:, 0]  # Data at first time step

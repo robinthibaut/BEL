@@ -55,19 +55,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.n_posts = None
 
         # Original dataset
-        self._x_shape, self._y_shape = None, None
-        self._x, self._y = None, None
-        self._x_obs, self._y_obs = None, None  # Observation data
+        self.X_shape, self.Y_shape = None, None
+        self.X, self.Y = None, None
+        self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing
-        self._x_pc, self._y_pc = None, None
-        self._x_obs_pc, self._y_obs_pc = None, None
+        self.X_pc, self.Y_pc = None, None
+        self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
-        self._x_c, self._y_c = None, None
-        self._x_obs_c, self._y_obs_c = None, None
+        self.X_c, self.Y_c = None, None
+        self.X_obs_c, self.Y_obs_c = None, None
         # Dataset after postprocessing
-        self._x_f, self._y_f = None, None
-        self._x_obs_f, self._y_obs_f = None, None
+        self.X_f, self.Y_f = None, None
+        self.X_obs_f, self.Y_obs_f = None, None
 
     def fit(self, X, Y):
         """
@@ -78,17 +78,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         check_consistent_length(X, Y)
         # Store original shape
-        self._x_shape, self._y_shape = X.attrs["physical_shape"], Y.attrs["physical_shape"]
+        self.X_shape, self.Y_shape = X.attrs["physical_shape"], Y.attrs["physical_shape"]
         X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
         )
         Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
 
-        self._x, self._y = X, Y
+        self.X, self.Y = X, Y
 
         _xt, _yt = (
-            self.X_pre_processing.fit_transform(self._x),
-            self.Y_pre_processing.fit_transform(self._y),
+            self.X_pre_processing.fit_transform(self.X),
+            self.Y_pre_processing.fit_transform(self.Y),
         )
 
         _xt, _yt = (
@@ -97,12 +97,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )
 
         # Dataset after preprocessing
-        self._x_pc, self._y_pc = _xt, _yt
+        self.X_pc, self.Y_pc = _xt, _yt
 
         # Canonical variates
         _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
 
-        self._x_c, self._y_c = _xc, _yc
+        self.X_c, self.Y_c = _xc, _yc
 
         # CV Normalized
         _xf, _yf = (
@@ -110,7 +110,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.Y_post_processing.fit_transform(_yc),
         )
 
-        self._x_f, self._y_f = _xf, _yf
+        self.X_f, self.Y_f = _xf, _yf
 
         return self
 
@@ -139,7 +139,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=True, ensure_2d=False)
             _xt, _yt = (
-                self.X_pre_processing.transform(self._x),
+                self.X_pre_processing.transform(self.X),
                 self.Y_pre_processing.transform(Y),
             )
             _xt, _yt = (
@@ -153,8 +153,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         else:
             _xt, _yt = (
-                self.X_pre_processing.transform(self._x),
-                self.Y_pre_processing.transform(self._y),
+                self.X_pre_processing.transform(self.X),
+                self.Y_pre_processing.transform(self.Y),
             )
             _xt, _yt = (
                 _xt[:, : Setup.HyperParameters.n_pc_predictor],
@@ -205,15 +205,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Make predictions, in the BEL fashion.
         """
         X_obs = check_array(X_obs)
-        self._x_obs = X_obs
+        self.X_obs = X_obs
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : Setup.HyperParameters.n_pc_predictor]
-        self._x_obs_pc = X_obs
+        self.X_obs_pc = X_obs
         X_obs = self.cca.transform(X_obs)
-        self._x_obs_c = X_obs
+        self.X_obs_c = X_obs
         X_obs = self.X_post_processing.transform(X_obs)
-        self._x_obs_f = X_obs
+        self.X_obs_f = X_obs
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         # Number of PCA components for the curves
@@ -227,7 +227,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         x_cov = x_rotations.T @ x_cov @ x_rotations
         dict_args = {"x_cov": x_cov}
 
-        X, Y = self._x_f, self._y_f
+        X, Y = self.X_f, self.Y_f
         # Estimate the posterior mean and covariance
         if self.mode == "mvn":
             self.posterior_mean, self.posterior_covariance = mvn_inference(
