@@ -31,8 +31,7 @@ from bel4ed.spatial import (
     refine_machine,
     blocks_from_rc_3d,
 )
-from bel4ed.utils import Root
-from bel4ed.utils import reload_trained_model
+from bel4ed.utils import Root, reload_trained_model
 
 __all__ = [
     "plot_results",

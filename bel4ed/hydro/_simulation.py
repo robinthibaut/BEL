@@ -9,8 +9,8 @@ from os.path import join as jp
 import numpy as np
 from loguru import logger
 
-import bel4ed.datasets._base
-import bel4ed.utils
+from bel4ed.datasets import keep_essential
+from bel4ed.utils import dirmaker
 from bel4ed.algorithms import sgsim
 from bel4ed.config import Setup, Machine
 from bel4ed.hydro.backtracking.modpath import backtrack
@@ -48,7 +48,7 @@ def forward_modelling(folder=None):
 
     grid_dir = Setup.Directories.grid_dir
     # Generates the result directory
-    bel4ed.utils.dirmaker(results_dir)
+    dirmaker(results_dir)
 
     logger.info(f"fwd {res_dir}")
     # Check if forwards have already been computed
@@ -78,7 +78,7 @@ def forward_modelling(folder=None):
                 modflowmodel=flow_model,
                 exe_name=exe_name_mt,
                 grid_dir=grid_dir,
-                save_ucn=False,
+                save_ucn=True,
             )
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
@@ -92,21 +92,12 @@ def forward_modelling(folder=None):
             hl = (time.time() - start_fwd) // 60
             logger.info(f"done in {hl} min")
             if not folder:
-                bel4ed.datasets._base.keep_essential(results_dir)
+                keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
             logger.info(f"terminated f{res_dir}")
             return 0
     else:
         logger.info(f"pass {res_dir}")
-        hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
-        # Run Flow Modelling
-        flow(
-            exe_name=exe_name_mf,
-            model_ws=results_dir,
-            grid_dir=grid_dir,
-            hk_array=hk_array,
-            xy_dummy=xy_dummy,
-        )
 
     return results_dir

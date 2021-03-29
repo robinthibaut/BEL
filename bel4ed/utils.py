@@ -4,8 +4,9 @@ import shutil
 from os.path import join as jp
 from typing import List
 
-import joblib
 import types
+
+import joblib
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -135,7 +136,7 @@ def combinator(combi):
     return cb
 
 
-def reload_trained_model(root: str, well: str, sample_n: int = 0):
+def reload_trained_model(root: str, well: str):
     res_dir = jp(Setup.Directories.forecasts_dir, root, well, "obj")
 
     bel = joblib.load(jp(res_dir, "bel.pkl"))
