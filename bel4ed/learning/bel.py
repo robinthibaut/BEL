@@ -122,7 +122,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
 
         check_is_fitted(self.cca)
-        X = check_array(X, copy=True, dtype=FLOAT_DTYPES)
+        # X = check_array(X, copy=True, dtype=FLOAT_DTYPES)
 
         # The key here is to cut PC's based on the number defined in configuration file
 
@@ -250,7 +250,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: forecast_posterior
         """
         check_is_fitted(self.cca)
-        Y_pred = check_array(Y_pred, dtype=FLOAT_DTYPES)
+        Y_pred = check_array(Y_pred)
 
         y_post = self.Y_post_processing.inverse_transform(Y_pred)
         y_post = (

@@ -19,6 +19,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from loguru import logger
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
+from sklearn.utils import check_array
 
 from bel4ed.datasets import data_loader, load_transport_model
 import bel4ed.utils
@@ -581,12 +582,11 @@ def post_examination(
 
 
 def h_pca_inverse_plot(
-        bel, root, training: bool = True, fig_dir: str = None, show: bool = False
+        bel, fig_dir: str = None, show: bool = False
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
     :param bel
-    :param training: bool:
     :param fig_dir: str:
     :param show: bool:
     :return:
@@ -594,25 +594,22 @@ def h_pca_inverse_plot(
 
     shape = bel.Y_shape
 
-    if training:
-        v_pc = bel.Y_pc[root]
-        # roots = pca_o.roots_training
+    if bel.Y_obs_pc is not None:
+        v_pc = check_array(bel.Y_obs_pc.reshape(1, -1))
     else:
-        v_pc = bel.Y_obs_pc
-        # roots = pca_o.test_root
+        Y_obs = check_array(bel.Y_obs)
+        v_pc = bel.Y_pre_processing.transform(Y_obs)[:, : Setup.HyperParameters.n_pc_target]
 
-    if training:
-        h_to_plot = np.copy(
-            bel.X.reshape(1, shape[1], shape[2])
-        )
-    else:
-        h_to_plot = np.copy(
-            bel.X_obs.reshape(1, shape[1], shape[2])
-        )
+    nc = bel.Y_pre_processing["pca"].n_components_
+    dummy = np.zeros((1, nc))
+    dummy[:, : v_pc.shape[1]] = v_pc
+    v_pred = bel.Y_pre_processing.inverse_transform(dummy)
+
+    h_to_plot = np.copy(
+        Y_obs.reshape(1, shape[1], shape[2])
+    )
 
     whpa_plot(whpa=h_to_plot, color="red", alpha=1, lw=2)
-
-    v_pred = bel.inverse_transform(v_pc)
 
     whpa_plot(
         whpa=v_pred.reshape(1, shape[1], shape[2]),
@@ -677,8 +674,11 @@ def plot_results(
         # Plot curves
         sdir = jp(md, "data")
 
-        tc = bel.X.reshape((bel.n_posts,) + bel.X_shape)
-        tcp = bel.X_obs.reshape((-1,) + bel.X_shape)
+        X = check_array(bel.X)
+        X_obs = check_array(bel.X_obs)
+
+        tc = X.reshape((bel.n_posts,) + bel.X_shape)
+        tcp = X_obs.reshape((-1,) + bel.X_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 
         # Plot parameters for predictor
@@ -726,8 +726,9 @@ def plot_results(
         # WHP - h test + training
         fig_dir = jp(Setup.Directories.forecasts_dir, root)
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        h_test = bel.Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
-        h_training = bel.Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
+        Y, Y_obs = check_array(bel.Y), check_array(bel.Y_obs)
+        h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
+        h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -1082,8 +1083,6 @@ def plot_pc_ba(bel, root: str = None, w: str = None, data: bool = False, target:
     if target:
         h_pca_inverse_plot(
             bel,
-            root=root,
-            training=False,
             fig_dir=os.path.join(subdir, w, "pca")
         )
 
@@ -1253,7 +1252,7 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, root=root, data=True, target=False)
+            plot_pc_ba(bel, root=root, w=w, data=True, target=False)
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
@@ -1279,6 +1278,8 @@ def pca_vision(
                 annotation=["D"],
                 fig_file=fig_file,
             )
+        if before_after:
+            plot_pc_ba(bel, root=root, w=w, data=False, target=True)
 
 
 def check_root(xlim: list, ylim: list, root: list):
@@ -1306,7 +1307,6 @@ def d_pca_inverse_plot(
         xlabel: str = None,
         ylabel: str = None,
         labelsize: float = 11.0,
-        training: bool = True,
         fig_dir: str = None,
         show: bool = False,
 ):
@@ -1316,26 +1316,20 @@ def d_pca_inverse_plot(
     :param ylabel:
     :param labelsize:
     :param factor:
-    :param training: bool:
     :param fig_dir: str:
     :param show: bool:
     :return:
     """
 
-    if training:
-        v_pc = bel.X_pc
-    else:
-        v_pc = bel.X_obs_pc
+
+    v_pc = bel.X_obs_pc
 
     nc = bel.X_pre_processing["pca"].n_components_
-    dummy = np.zeros((nc, nc))
+    dummy = np.zeros((1, nc))
     dummy[:, : v_pc.shape[1]] = v_pc
     v_pred = bel.X_pre_processing.inverse_transform(dummy)
 
-    if training:
-        to_plot = np.copy(bel.X[root])
-    else:
-        to_plot = np.copy(bel.X_obs)
+    to_plot = np.copy(bel.X_obs)
 
     plt.plot(to_plot * factor, "r", alpha=0.8)
     plt.plot(v_pred * factor, "b", alpha=0.8)
