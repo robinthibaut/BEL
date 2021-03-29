@@ -136,50 +136,8 @@ def combinator(combi):
 
 
 def reload_trained_model(root: str, well: str, sample_n: int = 0):
-    base_dir = jp(Setup.Directories.forecasts_dir, "base")
     res_dir = jp(Setup.Directories.forecasts_dir, root, well, "obj")
 
-    f_names = list(map(lambda fn: jp(res_dir, f"{fn}.pkl"), ["cca", "d_pca", "post"]))
-    cca_operator, d_pco, post = list(map(joblib.load, f_names))
+    bel = joblib.load(jp(res_dir, "bel.pkl"))
 
-    h_pco = joblib.load(jp(base_dir, "h_pca.pkl"))
-    h_pred = np.load(jp(base_dir, "roots_whpa", f"{root}.npy"))
-
-    # Inspect transformation between physical and PC space
-    dnc0 = d_pco.n_pc_cut
-    hnc0 = h_pco.n_pc_cut
-
-    # Cut desired number of PC components
-    d_pc_training, d_pc_prediction = d_pco.comp_refresh(dnc0)
-    h_pco.test_transform(h_pred, test_roots=[root])
-    h_pc_training, h_pc_prediction = h_pco.comp_refresh(hnc0)
-
-    # CCA scores
-    d_cca_training, h_cca_training = cca_operator.x_scores_, cca_operator.y_scores_
-
-    d, h = d_cca_training.T, h_cca_training.T
-
-    d_obs = d_pc_prediction[sample_n]
-    h_obs = h_pc_prediction[sample_n]
-
-    # # Transform to CCA space and transpose
-    d_cca_prediction, h_cca_prediction = cca_operator.fit_transform(
-        d_obs.reshape(1, -1), h_obs.reshape(1, -1)
-    )
-
-    #  Watch out for the transpose operator.
-    h2 = h.copy()
-    d2 = d.copy()
-    tfm1 = post.X_pipeline
-    h = tfm1.fit_transform(h2.T)
-    h = h.T
-    h_cca_prediction = tfm1.fit_transform(h_cca_prediction)
-    h_cca_prediction = h_cca_prediction.T
-
-    tfm2 = post.Y_pipeline
-    d = tfm2.fit_transform(d2.T)
-    d = d.T
-    d_cca_prediction = tfm2.fit_transform(d_cca_prediction)
-    d_cca_prediction = d_cca_prediction.T
-
-    return d, h, d_cca_prediction, h_cca_prediction, post, cca_operator
+    return bel

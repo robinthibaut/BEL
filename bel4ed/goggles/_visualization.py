@@ -1077,7 +1077,6 @@ def plot_pc_ba(bel, root: str = None, w: str = None, data: bool = False, target:
             ylabel=ylabel,
             labelsize=labelsize,
             factor=factor,
-            training=False,
             fig_dir=os.path.join(subdir, w, "pca"),
         )
     if target:
@@ -1154,15 +1153,17 @@ def cca_vision(root: str = None, folders: list = None):
         res_dir = os.path.join(subdir, f, "obj")
 
         # Load objects
-        d_cca_training, h_cca_training, *rest = reload_trained_model(root=root, well=f)
+        bel = reload_trained_model(root=root, well=f)
 
-        _kde_cca(root=root, well=f, sdir=os.path.join(subdir, f, "cca"))
+        _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
 
+        d_c, h_c = bel.cca.transform(bel.X_pc, bel.Y_pc)
+        
         # CCA coefficient plot
         cca_coefficient = np.corrcoef(
-            d_cca_training,
-            h_cca_training,
-        ).diagonal(offset=d_cca_training.shape[0])
+            d_c,
+            h_c
+        ).diagonal(offset=d_c.shape[0])
         plt.plot(cca_coefficient, "lightblue", zorder=1)
         plt.scatter(
             x=np.arange(len(cca_coefficient)),
@@ -1321,18 +1322,23 @@ def d_pca_inverse_plot(
     :return:
     """
 
-
+    shape = bel.X_shape
     v_pc = bel.X_obs_pc
 
     nc = bel.X_pre_processing["pca"].n_components_
     dummy = np.zeros((1, nc))
     dummy[:, : v_pc.shape[1]] = v_pc
-    v_pred = bel.X_pre_processing.inverse_transform(dummy)
 
-    to_plot = np.copy(bel.X_obs)
+    v_pred = bel.X_pre_processing.inverse_transform(dummy).reshape((-1,)+shape)
+    to_plot = np.copy(bel.X_obs).reshape((-1,)+shape)
 
-    plt.plot(to_plot * factor, "r", alpha=0.8)
-    plt.plot(v_pred * factor, "b", alpha=0.8)
+    cols = ["r" for _ in range(shape[1])]
+    highlights = [i for i in range(shape[1])]
+    curves(cols=cols, tc=to_plot*factor, highlight=highlights)
+
+    cols = ["b" for _ in range(shape[1])]
+    curves(cols=cols, tc=v_pred*factor, highlight=highlights)
+
     # Add title inside the box
     an = ["A"]
     legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
@@ -1927,59 +1933,58 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        root: str,
-        well: str,
-        sample_n: int = 0,
+        bel,
         sdir: str = None,
         show: bool = False,
         dist_plot: bool = False,
 ):
-    # Reload model
-    d, h, d_cca_prediction, h_cca_prediction, post, cca_operator = reload_trained_model(
-        root=root, well=well, sample_n=sample_n
-    )
+
     # Find max kde value
     vmax = 0
-    for comp_n in range(cca_operator.n_components):
+    for comp_n in range(bel.cca.n_components):
 
         hp, sup = posterior_conditional(
-            X=d[comp_n], Y=h[comp_n], X_obs=d_cca_prediction[comp_n]
+            X=bel.X_f[comp_n], Y=bel.Y_f[comp_n], X_obs=bel.X_obs_f[comp_n]
         )
 
         # Plot h posterior given d
-        density, _ = kde_params(x=d[comp_n], y=h[comp_n])
+        density, _ = kde_params(x=bel.X_f[comp_n], y=bel.Y_f[comp_n])
         maxloc = np.max(density)
         if vmax < maxloc:
             vmax = maxloc
 
-    cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=cca_operator.n_components
+    cca_coefficient = np.corrcoef(bel.X_f, bel.Y_f).diagonal(
+        offset=bel.cca.n_components
     )  # Gets correlation coefficient
 
-    for comp_n in range(cca_operator.n_components):
+    # Transform Y obs
+    bel.Y_obs_f = bel.transform(Y=bel.Y_obs)
+
+    # load prediction object
+    post_test = bel.random_sample(bel.n_posts).T
+    # post_test_t = bel.X_pipeline.fit_transform(post_test.T).T
+
+    for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
         # Conditional:
         hp, sup = posterior_conditional(
-            X=d[comp_n], Y=h[comp_n], X_obs=d_cca_prediction[comp_n]
+            X=bel.X_f[comp_n], Y=bel.Y_f[comp_n], X_obs=bel.X_obs_f[comp_n]
         )
 
-        # load prediction object
-        post_test = post.random_sample(Setup.HyperParameters.n_posts).T
-        post_test_t = post.X_pipeline.fit_transform(post_test.T).T
-        y_samp = post_test_t[comp_n]
-
         # Plot h posterior given d
-        density, support = kde_params(x=d[comp_n], y=h[comp_n], gridsize=1000)
+        density, support = kde_params(x=bel.X_f[comp_n], y=bel.Y_f[comp_n], gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = KDE()
         marginal_eval_y = KDE()
 
         # support is cached
-        kde_x, sup_x = marginal_eval_x(d[comp_n])
-        kde_y, sup_y = marginal_eval_y(h[comp_n])
+        kde_x, sup_x = marginal_eval_x(bel.X_f[comp_n])
+        kde_y, sup_y = marginal_eval_y(bel.Y_f[comp_n])
+
+        y_samp = post_test[comp_n]
         # use the same support as y
         kde_y_samp, sup_samp = marginal_eval_y(y_samp)
 
@@ -1995,7 +2000,7 @@ def _kde_cca(
         cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
         # Vertical line
         ax_joint.axvline(
-            x=d_cca_prediction[comp_n],
+            x=bel.X_obs_f[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -2003,7 +2008,7 @@ def _kde_cca(
         )
         # Horizontal line
         ax_joint.axhline(
-            y=h_cca_prediction[comp_n],
+            y=bel.Y_obs_f[comp_n],
             color="deepskyblue",
             linewidth=1,
             alpha=0.5,
@@ -2011,8 +2016,8 @@ def _kde_cca(
         )
         # Scatter plot
         ax_joint.plot(
-            d[comp_n],
-            h[comp_n],
+            bel.X_f[comp_n],
+            bel.Y_f[comp_n],
             "ko",
             markersize=2,
             markeredgecolor="w",
@@ -2021,8 +2026,8 @@ def _kde_cca(
         )
         # Point
         ax_joint.plot(
-            d_cca_prediction[comp_n],
-            h_cca_prediction[comp_n],
+            bel.X_obs_f[comp_n],
+            bel.Y_obs_f[comp_n],
             "wo",
             markersize=5,
             markeredgecolor="k",
@@ -2037,7 +2042,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_x.axvline(
-            x=d_cca_prediction[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+            x=bel.X_obs_f[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
         )
         ax_marg_x.legend(loc=2, fontsize=10)
 
@@ -2050,7 +2055,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_y.axhline(
-            y=h_cca_prediction[comp_n],
+            y=bel.Y_obs_f[comp_n],
             xmax=0.25,
             color="deepskyblue",
             linewidth=1,
@@ -2146,7 +2151,7 @@ def _kde_cca(
 
             # True prediction
             plt.axvline(
-                x=h_cca_prediction[0],
+                x=bel.Y_obs_f[0],
                 linewidth=3,
                 alpha=0.4,
                 color="deepskyblue",
@@ -2159,7 +2164,7 @@ def _kde_cca(
             # Tuning
             plt.ylabel("Density", fontsize=14)
             plt.xlabel("$h^{c}$", fontsize=14)
-            plt.xlim([np.min(h[comp_n]), np.max(d[comp_n])])
+            plt.xlim([np.min(bel.X_f[comp_n]), np.max(bel.X_f[comp_n])])
             plt.tick_params(labelsize=14)
 
             plt.legend(loc=2)

@@ -71,4 +71,4 @@ if __name__ == "__main__":
 
         #
         #
-        myvis.cca_vision(bel, root=sample, folders=wells)
+        myvis.cca_vision(root=sample, folders=wells)

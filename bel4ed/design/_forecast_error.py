@@ -31,6 +31,7 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
     :param X_train:
     :param X_test:
     :param y_train:
+    :param y_test:
     :param directory:
     :param source_ids:
     :return:
