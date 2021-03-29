@@ -1944,16 +1944,16 @@ def _kde_cca(
     for comp_n in range(bel.cca.n_components):
 
         hp, sup = posterior_conditional(
-            X=bel.X_f[comp_n], Y=bel.Y_f[comp_n], X_obs=bel.X_obs_f[comp_n]
+            X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
         )
 
         # Plot h posterior given d
-        density, _ = kde_params(x=bel.X_f[comp_n], y=bel.Y_f[comp_n])
+        density, _ = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n])
         maxloc = np.max(density)
         if vmax < maxloc:
             vmax = maxloc
 
-    cca_coefficient = np.corrcoef(bel.X_f, bel.Y_f).diagonal(
+    cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
 
@@ -1961,8 +1961,7 @@ def _kde_cca(
     bel.Y_obs_f = bel.transform(Y=bel.Y_obs)
 
     # load prediction object
-    post_test = bel.random_sample(bel.n_posts).T
-    # post_test_t = bel.X_pipeline.fit_transform(post_test.T).T
+    post_test = bel.random_sample(bel.n_posts)
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -1970,21 +1969,21 @@ def _kde_cca(
 
         # Conditional:
         hp, sup = posterior_conditional(
-            X=bel.X_f[comp_n], Y=bel.Y_f[comp_n], X_obs=bel.X_obs_f[comp_n]
+            X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
         )
 
         # Plot h posterior given d
-        density, support = kde_params(x=bel.X_f[comp_n], y=bel.Y_f[comp_n], gridsize=1000)
+        density, support = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=1000)
         xx, yy = support
 
         marginal_eval_x = KDE()
         marginal_eval_y = KDE()
 
         # support is cached
-        kde_x, sup_x = marginal_eval_x(bel.X_f[comp_n])
-        kde_y, sup_y = marginal_eval_y(bel.Y_f[comp_n])
+        kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n])
+        kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n])
 
-        y_samp = post_test[comp_n]
+        y_samp = post_test.T[comp_n]
         # use the same support as y
         kde_y_samp, sup_samp = marginal_eval_y(y_samp)
 
@@ -2000,7 +1999,7 @@ def _kde_cca(
         cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
         # Vertical line
         ax_joint.axvline(
-            x=bel.X_obs_f[comp_n],
+            x=bel.X_obs_f.T[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -2008,7 +2007,7 @@ def _kde_cca(
         )
         # Horizontal line
         ax_joint.axhline(
-            y=bel.Y_obs_f[comp_n],
+            y=bel.Y_obs_f.T[comp_n],
             color="deepskyblue",
             linewidth=1,
             alpha=0.5,
@@ -2016,8 +2015,8 @@ def _kde_cca(
         )
         # Scatter plot
         ax_joint.plot(
-            bel.X_f[comp_n],
-            bel.Y_f[comp_n],
+            bel.X_f.T[comp_n],
+            bel.Y_f.T[comp_n],
             "ko",
             markersize=2,
             markeredgecolor="w",
@@ -2026,8 +2025,8 @@ def _kde_cca(
         )
         # Point
         ax_joint.plot(
-            bel.X_obs_f[comp_n],
-            bel.Y_obs_f[comp_n],
+            bel.X_obs_f.T[comp_n],
+            bel.Y_obs_f.T[comp_n],
             "wo",
             markersize=5,
             markeredgecolor="k",
@@ -2042,7 +2041,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_x.axvline(
-            x=bel.X_obs_f[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+            x=bel.X_obs_f.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
         )
         ax_marg_x.legend(loc=2, fontsize=10)
 
@@ -2055,7 +2054,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_y.axhline(
-            y=bel.Y_obs_f[comp_n],
+            y=bel.Y_obs_f.T[comp_n],
             xmax=0.25,
             color="deepskyblue",
             linewidth=1,
@@ -2164,7 +2163,7 @@ def _kde_cca(
             # Tuning
             plt.ylabel("Density", fontsize=14)
             plt.xlabel("$h^{c}$", fontsize=14)
-            plt.xlim([np.min(bel.X_f[comp_n]), np.max(bel.X_f[comp_n])])
+            plt.xlim([np.min(bel.X_f.T[comp_n]), np.max(bel.X_f.T[comp_n])])
             plt.tick_params(labelsize=14)
 
             plt.legend(loc=2)

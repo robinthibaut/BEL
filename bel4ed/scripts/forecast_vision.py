@@ -38,36 +38,36 @@ if __name__ == "__main__":
 
         wells = ['123456']
 
-        for j, w in enumerate(wells):
-
-            logger.info(f"Plotting well {w}")
-
-            if w == "123456":
-                annotation = alphabet[i]
-            else:
-                annotation = alphabet[j - 1]
-
-            # BEL pickle
-            md = jp(Setup.Directories.forecasts_dir, sample, w)
-            bel = joblib.load(jp(md, "obj", "bel.pkl"))
-
-            # myvis.plot_results(bel, root=sample, folder=w, annotation=annotation, d=True)
-
-            myvis.pca_vision(
-                bel,
-                w=w,
-                root=sample,
-                d=True,
-                h=True,
-                exvar=True,
-                before_after=True,
-                labels=True,
-                scores=True,
-            )
-
-        myvis.plot_K_field(root=sample)
-
-        myvis.plot_head_field(root=sample)
+        # for j, w in enumerate(wells):
+        #
+        #     logger.info(f"Plotting well {w}")
+        #
+        #     if w == "123456":
+        #         annotation = alphabet[i]
+        #     else:
+        #         annotation = alphabet[j - 1]
+        #
+        #     # BEL pickle
+        #     md = jp(Setup.Directories.forecasts_dir, sample, w)
+        #     bel = joblib.load(jp(md, "obj", "bel.pkl"))
+        #
+        #     # myvis.plot_results(bel, root=sample, folder=w, annotation=annotation, d=True)
+        #
+        #     myvis.pca_vision(
+        #         bel,
+        #         w=w,
+        #         root=sample,
+        #         d=True,
+        #         h=True,
+        #         exvar=True,
+        #         before_after=True,
+        #         labels=True,
+        #         scores=True,
+        #     )
+        #
+        # myvis.plot_K_field(root=sample)
+        #
+        # myvis.plot_head_field(root=sample)
 
         #
         #
