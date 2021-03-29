@@ -117,8 +117,8 @@ def backtrack(flowmodel, exe_name: str, load: bool = False):
     # noinspection PyTypeChecker
     ewb = e.get_destination_endpoint_data(dest_cells=wn, source=True)
     # In this implementation, we are only interested in x y locations.
-    xep = ewb.X  # Endpoints x-locations (m)
-    yep = ewb.Y  # Endpoints y-locations (m)
+    xep = ewb.x  # Endpoints x-locations (m)
+    yep = ewb.y  # Endpoints y-locations (m)
     pzone_xy = np.array(list(zip(xep, yep)))
 
     np.save(jp(model_ws, "tracking_ep"), pzone_xy)
