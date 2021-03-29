@@ -25,7 +25,6 @@ import bel4ed.utils
 from bel4ed.utils import Root
 from bel4ed.algorithms import KDE, kde_params, posterior_conditional
 from bel4ed.config import Setup
-from bel4ed.preprocessing import PC
 from bel4ed.spatial import (
     binary_stack,
     contours_vertices,
@@ -1276,7 +1275,7 @@ def pca_vision(
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
-        h_pc_prediction = bel.X_pre_processing.transform(Y=bel.Y_obs)
+        h_pc_prediction = bel.Y_pre_processing.transform(Y=bel.Y_obs)
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.pdf")
         if scores:
