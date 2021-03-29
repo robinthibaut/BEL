@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # VTK
     mi = ModelVTK(base=base, folder="818bf1676c424f76b83bd777ae588a1d")
     mi.flow_vtk()
-    # mi.transport_vtk()
-    # mi.conc_vtk()
-    # mi.particles_vtk(path=1)
-    # mi.wells_vtk()
+    mi.transport_vtk()
+    mi.conc_vtk()
+    mi.particles_vtk(path=1)
+    mi.wells_vtk()
