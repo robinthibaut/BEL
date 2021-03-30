@@ -10,7 +10,7 @@ from sklearn.pipeline import Pipeline
 
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
-from bel4ed.design import compute_metric, measure_info_mode
+from bel4ed.design import measure_info_mode
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import analysis
 from bel4ed.learning.bel import BEL
