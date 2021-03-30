@@ -1174,12 +1174,10 @@ def cca_vision(root: str = None, folders: list = None):
         # Load objects
         bel = reload_trained_model(root=root, well=f)
 
-        _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
-
-        d_c, h_c = bel.cca.transform(bel.X_pc, bel.Y_pc)
-
         # CCA coefficient plot
-        cca_coefficient = np.corrcoef(d_c.T, h_c.T).diagonal(offset=d_c.shape[0])
+        cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
+            offset=bel.cca.n_components
+        )  # Gets correlation coefficient
         plt.plot(cca_coefficient, "lightblue", zorder=1)
         plt.scatter(
             x=np.arange(len(cca_coefficient)),
@@ -1213,6 +1211,10 @@ def cca_vision(root: str = None, folders: list = None):
             transparent=True,
         )
         plt.close()
+
+        # KDE plots which consume a lot of time.
+        _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
+
 
 
 def pca_vision(
@@ -1952,7 +1954,7 @@ def _kde_cca(
     show: bool = False,
     dist_plot: bool = False,
 ):
-    # Find max kde value
+    # Find max kde value (absolutely not optimal)
     vmax = 0
     for comp_n in range(bel.cca.n_components):
 
