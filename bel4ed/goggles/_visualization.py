@@ -114,7 +114,9 @@ def _proxy_legend(
         for i, c in enumerate(colors)
     ]
 
-    obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
+    leg = obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
+    for text in leg.get_texts():
+        text.set_color("k")
 
     if legend1:
         try:
@@ -154,6 +156,9 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
         loc=loc,
         fontsize=fz,
     )
+
+    for text in legend_a.get_texts():
+        text.set_color("k")
 
     return legend_a
 
@@ -400,6 +405,7 @@ def whpa_plot(
     labelsize: float = 5,
     cmap: str = "coolwarm",
     color: str = "white",
+    grid: bool = True,
     show_wells: bool = False,
     well_ids: list = None,
     title: str = None,
@@ -411,6 +417,7 @@ def whpa_plot(
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
+    :param grid:
     :param grf: Grid cell size
     :param well_comb: List of well combination
     :param highlight: Boolean to display lines on top of filling between contours or not.
@@ -511,7 +518,8 @@ def whpa_plot(
         )
 
     # Grid
-    plt.grid(color="c", linestyle="-", linewidth=0.5, alpha=0.2)
+    if grid:
+        plt.grid(color="c", linestyle="-", linewidth=0.5, alpha=0.2)
 
     # Plot wells
     well_legend = None
@@ -536,7 +544,7 @@ def whpa_plot(
     plt.ylabel(ylabel, fontsize=labelsize)
 
     # Tick size
-    plt.tick_params(labelsize=labelsize, colors="k")
+    plt.tick_params(labelsize=labelsize)
 
     if annotation:
         legend = _proxy_annotate(annotation=annotation, fz=14, loc=2)

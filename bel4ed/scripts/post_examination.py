@@ -1,12 +1,19 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from os.path import join as jp
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
 
-import experiment.visualization as mplot
-from experiment.config import Setup
+import bel4ed.goggles as myvis
+from bel4ed.config import Setup
+
+COLOR = 'w'
+plt.rcParams['text.color'] = COLOR
+plt.rcParams['axes.labelcolor'] = COLOR
+plt.rcParams['xtick.color'] = COLOR
+plt.rcParams['ytick.color'] = COLOR
 
 md = Setup.Directories
 
@@ -16,10 +23,11 @@ sdir = jp(md.forecasts_dir, root, sources)
 # post_obj = joblib.load(jp(sdir, 'obj', 'post.pkl'))
 # h_samples = post_obj.random_sample()
 
-sb.set_theme()
+# sb.set_theme()
 
-ndor = jp(md.forecasts_dir, "base", "roots_whpa", f"{root}.npy")
-nn = np.load(ndor)
+ndor = jp(md.forecasts_dir, root, sources, "obj", "bel.pkl")
+bel = joblib.load(ndor)
+nn = bel.Y_obs.reshape(bel.Y_shape)
 # nnt = np.flipud(nn[0])
 # plt.imshow(nnt)
 # plt.colorbar()
@@ -39,16 +47,18 @@ nn = np.load(ndor)
 fc = Setup.Focus
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
-mplot.whpa_plot(
+myvis.whpa_plot(
     whpa=nn,
     x_lim=x_lim,
     y_lim=[335, 700],
     labelsize=11,
+    cmap="magma",
     alpha=1,
+    grid=False,
     xlabel="X(m)",
     ylabel="Y(m)",
     cb_title="SD(m)",
-    annotation=["B"],
+    # annotation=["B"],
     bkg_field_array=np.flipud(nn[0]),
     color="black",
 )
@@ -57,7 +67,7 @@ mplot.whpa_plot(
 # plt.gca().add_artist(legend)
 
 plt.savefig(
-    jp(md.forecasts_dir, "base", "roots_whpa", f"{root}_SD.pdf"),
+    jp(md.forecasts_dir, root, sources, "data", f"{root}_SD.pdf"),
     bbox_inches="tight",
     dpi=300,
     transparent=True,

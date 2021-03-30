@@ -4,12 +4,19 @@ import os
 import string
 
 import joblib
+import matplotlib.pyplot as plt
 from loguru import logger
 from os.path import join as jp
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
 from bel4ed.utils import data_read
+
+COLOR = 'w'
+plt.rcParams['text.color'] = COLOR
+plt.rcParams['axes.labelcolor'] = COLOR
+plt.rcParams['xtick.color'] = COLOR
+plt.rcParams['ytick.color'] = COLOR
 
 if __name__ == "__main__":
 
