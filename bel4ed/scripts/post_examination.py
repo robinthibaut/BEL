@@ -9,11 +9,11 @@ import seaborn as sb
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
 
-COLOR = 'w'
-plt.rcParams['text.color'] = COLOR
-plt.rcParams['axes.labelcolor'] = COLOR
-plt.rcParams['xtick.color'] = COLOR
-plt.rcParams['ytick.color'] = COLOR
+COLOR = "w"
+plt.rcParams["text.color"] = COLOR
+plt.rcParams["axes.labelcolor"] = COLOR
+plt.rcParams["xtick.color"] = COLOR
+plt.rcParams["ytick.color"] = COLOR
 
 md = Setup.Directories
 

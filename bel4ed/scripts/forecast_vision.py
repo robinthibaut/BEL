@@ -58,7 +58,9 @@ if __name__ == "__main__":
             md = jp(Setup.Directories.forecasts_dir, sample, w)
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
-            myvis.plot_results(bel, root=sample, folder=w, annotation=annotation, d=True)
+            myvis.plot_results(
+                bel, root=sample, folder=w, annotation=annotation, d=True
+            )
 
             myvis.pca_vision(
                 bel,

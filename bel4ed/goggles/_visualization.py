@@ -1216,7 +1216,6 @@ def cca_vision(root: str = None, folders: list = None):
         _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
 
 
-
 def pca_vision(
     bel,
     root: str or Root,
