@@ -1175,7 +1175,7 @@ def cca_vision(root: str = None, folders: list = None):
         bel = reload_trained_model(root=root, well=f)
 
         # CCA coefficient plot
-        cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
+        cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
             offset=bel.cca.n_components
         )  # Gets correlation coefficient
         plt.plot(cca_coefficient, "lightblue", zorder=1)
@@ -1957,7 +1957,7 @@ def _kde_cca(
     # Find max kde value (absolutely not optimal)
     vmax = 0
     for comp_n in range(bel.cca.n_components):
-
+        # Working with final product of BEL (not with raw cca scores)
         hp, sup = posterior_conditional(
             X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
         )
