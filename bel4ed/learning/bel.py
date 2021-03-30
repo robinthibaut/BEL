@@ -16,6 +16,7 @@ from sklearn.base import (
 )
 
 from ..config import Setup
+
 # TODO: Get rid of "Setup" in this module
 
 from ..algorithms import mvn_inference
@@ -256,7 +257,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_is_fitted(self.cca)
         Y_pred = check_array(Y_pred)
 
-        y_post = self.Y_post_processing.inverse_transform(Y_pred)  # Posterior CCA scores
+        y_post = self.Y_post_processing.inverse_transform(
+            Y_pred
+        )  # Posterior CCA scores
         y_post = (
             np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
             + self.cca.y_mean_
@@ -265,7 +268,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Back transform PC scores
         nc = self.Y_pre_processing["pca"].n_components_  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
-        dummy[:, : y_post.shape[1]] = y_post  # Fill the dummy matrix with the posterior PC
+        dummy[
+            :, : y_post.shape[1]
+        ] = y_post  # Fill the dummy matrix with the posterior PC
         y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 
         return y_post
