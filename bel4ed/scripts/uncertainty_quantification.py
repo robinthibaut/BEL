@@ -93,15 +93,11 @@ def main_1(metric=None):
         y_test=y_test,
         directory=base.Directories.forecasts_dir,
         source_ids=wells,
+        metric=modified_hausdorff,
     )
 
-    # base.Wells.combination = wells  # Not optimal
-
-    # # 2 - Sample and compute dissimilarity
-    # compute_metric(base=base, roots_obs=test_r, combinations=wells, metric=metric)
-    #
-    # # 3 - Process dissimilarity measure
-    # measure_info_mode(base=base, roots_obs=test_r, metric=metric)
+    # 3 - Process dissimilarity measure
+    measure_info_mode(base=base, roots_obs=test_r, metric=metric)
 
 
 if __name__ == "__main__":

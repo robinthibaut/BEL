@@ -19,8 +19,6 @@ from ..utils import Root
 __all__ = [
     "analysis",
     "measure_info_mode",
-    "objective_function",
-    "compute_metric",
 ]
 
 
@@ -36,7 +34,7 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
     :param source_ids:
     :return:
     """
-
+    global_mean = 0
     # Directories
     combinations = source_ids
     total = len(X_test)
@@ -111,10 +109,12 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
             dummy[:, : n_cut] = y_obs_pc  # Fill the dummy matrix with the posterior PC
             Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy)  # Inverse transform = "True image"
 
-            objective_function(y_r=Y_reconstructed, y_samples=Y_posterior, metric=metric, directory=obj_dir)
+            mean = _objective_function(y_r=Y_reconstructed, y_samples=Y_posterior, metric=metric, directory=obj_dir)
+            global_mean += mean
+    return global_mean
 
 
-def objective_function(y_r, y_samples, metric, directory):
+def _objective_function(y_r, y_samples, metric, directory):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
     components to allow proper comparison.
@@ -141,7 +141,7 @@ def objective_function(y_r, y_samples, metric, directory):
     # Compute metric between the 'true image' and the n sampled images or images feature
     similarity = np.array([metric(true_feature, f) for f in to_compare])
 
-    # Save objective_function result
+    # Save _objective_function result
     np.save(jp(directory, f"{method_name}"), similarity)
 
     logger.info(f"Similarity : {np.mean(similarity)}")
@@ -171,34 +171,3 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
     np.save(
         os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
     )
-
-
-def compute_metric(
-        base: Type[Setup],
-        roots_obs: Root,
-        combinations: list,
-        metric,
-):
-    global_mean = 0
-    total = len(roots_obs)
-    for ix, r_ in enumerate(roots_obs):  # For each observation root
-        logger.info(f"[{ix + 1}/{total}]-{r_}")
-        for ixw, c in enumerate(combinations):  # For each wel combination
-            logger.info(f"[{ix + 1}/{total}]-{r_}-{ixw + 1}/{len(combinations)}")
-            # Uncertainty analysis
-            logger.info("Uncertainty quantification")
-            study_folder = os.path.join(
-                base.Directories.forecasts_dir, f"{r_}", "".join(list(map(str, c)))
-            )
-            uq = UncertaintyQuantification(
-                base=base,
-                seed=123456,
-            )
-            # Sample posterior
-            logger.info("Sample posterior")
-            uq.sample_posterior(n_posts=base.HyperParameters.n_posts)
-            logger.info("Similarity measure")
-            mean = objective_function(uq, metric)
-            global_mean += mean
-
-    return global_mean
