@@ -90,13 +90,15 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             # Extract n random sample (target pc's).
             # The posterior distribution is computed within the method below.
             bel.predict(X_test_select)
+            # Compute CCA Gaussian scores
             Y_posts_gaussian = bel.random_sample()
-
+            # Get back to original space
             Y_posterior = bel.inverse_transform(
                 Y_pred=Y_posts_gaussian,
             )
 
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"))  # Save the fitted CCA operator
+            # Save the fitted BEL model
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
             np.save(jp(obj_dir, "post.npy"), Y_posterior)

@@ -59,7 +59,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X, self.Y = None, None
         self.X_obs, self.Y_obs = None, None  # Observation data
 
-        # Dataset after preprocessing
+        # Dataset after preprocessing (dimension-reduced as indicated in config)
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -96,7 +96,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         _xt, _yt = (
             _xt[:, : Setup.HyperParameters.n_pc_predictor],
             _yt[:, : Setup.HyperParameters.n_pc_target],
-        )
+        )  # Cut PC
 
         # Dataset after preprocessing
         self.X_pc, self.Y_pc = _xt, _yt
@@ -118,7 +118,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def transform(self, X=None, Y=None) -> (np.array, np.array):
         """
-        Transform all pipelines
+        Transform data across all pipelines
         :param X:
         :param Y:
         :return:
@@ -171,6 +171,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def random_sample(self, n_posts: int = None) -> np.array:
         """
+        Random sample the inferred posterior Gaussian distribution
         :param n_posts:
         :return:
         """
@@ -192,7 +193,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def fit_transform(self, X, y=None, **fit_params):
         """
-        Fit-Transform all pipelines
+        Fit-Transform accross all pipelines
         :param X:
         :param y:
         :return:
@@ -253,15 +254,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_is_fitted(self.cca)
         Y_pred = check_array(Y_pred)
 
-        y_post = self.Y_post_processing.inverse_transform(Y_pred)
+        y_post = self.Y_post_processing.inverse_transform(Y_pred)  # Posterior CCA scores
         y_post = (
             np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
             + self.cca.y_mean_
-        )
+        )  # Posterior PC scores
 
-        nc = self.Y_pre_processing["pca"].n_components_
-        dummy = np.zeros((self.n_posts, nc))
-        dummy[:, : y_post.shape[1]] = y_post
-        y_post = self.Y_pre_processing.inverse_transform(dummy)
+        # Back transform PC scores
+        nc = self.Y_pre_processing["pca"].n_components_  # Number of components
+        dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
+        dummy[:, : y_post.shape[1]] = y_post  # Fill the dummy matrix with the posterior PC
+        y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 
         return y_post
