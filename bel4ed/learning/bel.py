@@ -125,8 +125,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
 
         check_is_fitted(self.cca)
-        # X = check_array(X, copy=True, dtype=FLOAT_DTYPES)
-
         # The key here is to cut PC's based on the number defined in configuration file
 
         if X is not None and Y is None:
@@ -262,7 +260,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )
 
         nc = self.Y_pre_processing["pca"].n_components_
-        dummy = np.zeros((nc, nc))
+        dummy = np.zeros((self.n_posts, nc))
         dummy[:, : y_post.shape[1]] = y_post
         y_post = self.Y_pre_processing.inverse_transform(dummy)
 

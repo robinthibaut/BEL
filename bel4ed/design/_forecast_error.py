@@ -108,9 +108,9 @@ def objective_function(bel, metric):
     components to allow proper comparison.
     """
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-    n_cut = bel.h_pco.n_pc_cut  # Number of components to keep
+    n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
     # Inverse fit_transform and reshape
-    # FIXME: Problem is that bel.h_pco_predict_pc is None
+    true_image = bel.Y_obs.reshape(bel.Y_shape)
     true_image = bel.h_pco.custom_inverse_transform(
         bel.h_pco.predict_pc, n_cut
     ).reshape((bel.shape[1], bel.shape[2]))
