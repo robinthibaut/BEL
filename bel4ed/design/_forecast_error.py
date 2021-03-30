@@ -104,12 +104,16 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
             # Compute objective function
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
             n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
-            y_obs_pc = bel.Y_obs_pc
-            dummy = np.zeros((1, n_cut))  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc  # Fill the dummy matrix with the posterior PC
+            y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
+            dummy = np.zeros((1, y_obs_pc.shape[1]))  # Create a dummy matrix filled with zeros
+            dummy[:, :n_cut] = y_obs_pc[:, :n_cut]   # Fill the dummy matrix with the posterior PC
+
+            # Reshape for the objective function
             Y_reconstructed = bel.Y_pre_processing.inverse_transform(
                 dummy
-            )  # Inverse transform = "True image"
+            ).reshape(bel.Y_shape)  # Inverse transform = "True image"
+
+            Y_posterior = Y_posterior.reshape((bel.n_posts,)+(bel.Y_shape[1], bel.Y_shape[2]))
 
             mean = _objective_function(
                 y_r=Y_reconstructed,
@@ -134,8 +138,8 @@ def _objective_function(y_r, y_samples, metric, directory):
     if method_name == "modified_hausdorff":
         # For MHD, we need the 0 contours vertices
         x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_r)
-        true_feature = vertices  # Vertices of the true observation
-        to_compare = contours_vertices(x=x, y=y, arrays=y_samples)[0]
+        true_feature = vertices[0]  # Vertices of the true observation
+        to_compare = contours_vertices(x=x, y=y, arrays=y_samples)
     elif method_name == "structural_similarity":
         # SSIM works with continuous images
         true_feature = y_r

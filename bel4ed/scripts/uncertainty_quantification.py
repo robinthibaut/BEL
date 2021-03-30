@@ -29,7 +29,7 @@ def main_1(metric=None):
     X, Y = load_dataset()
 
     # Source IDs
-    wells = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object)
+    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     base = Setup
     base.Wells.combination = wells
 
