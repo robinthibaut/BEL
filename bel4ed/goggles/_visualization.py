@@ -1179,7 +1179,7 @@ def cca_vision(root: str = None, folders: list = None):
         d_c, h_c = bel.cca.transform(bel.X_pc, bel.Y_pc)
 
         # CCA coefficient plot
-        cca_coefficient = np.corrcoef(d_c, h_c).diagonal(offset=d_c.shape[0])
+        cca_coefficient = np.corrcoef(d_c.T, h_c.T).diagonal(offset=d_c.shape[0])
         plt.plot(cca_coefficient, "lightblue", zorder=1)
         plt.scatter(
             x=np.arange(len(cca_coefficient)),
