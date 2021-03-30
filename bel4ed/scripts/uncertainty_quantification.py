@@ -46,7 +46,6 @@ def main_1(metric=None):
     np.random.seed(seed)
 
     # Pipelines
-
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [

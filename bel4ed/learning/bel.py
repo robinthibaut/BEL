@@ -16,6 +16,7 @@ from sklearn.base import (
 )
 
 from ..config import Setup
+# TODO: Get rid of "Setup" in this module
 
 from ..algorithms import mvn_inference
 
@@ -204,6 +205,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def predict(self, X_obs) -> (np.array, np.array):
         """
         Make predictions, in the BEL fashion.
+        Maybe rename to "fit" since the "predictions" come with "random_sample"
         """
         self.X_obs = X_obs  # Save dataframe with name
         X_obs = check_array(self.X_obs)

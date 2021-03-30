@@ -101,7 +101,7 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             joblib.dump(bel, jp(obj_dir, "bel.pkl"))
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
-            np.save(jp(obj_dir, "post.npy"), Y_posterior)
+            np.save(jp(obj_dir, "post.npy"), Y_posterior)  # Is it necessary ? Maybe prefer using bel.random_sample()
 
 
 def objective_function(bel, metric):
@@ -111,21 +111,28 @@ def objective_function(bel, metric):
     """
     # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
     n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
-    # Inverse fit_transform and reshape
-    true_image = bel.Y_obs.reshape(bel.Y_shape)
-    true_image = bel.h_pco.custom_inverse_transform(
-        bel.h_pco.predict_pc, n_cut
-    ).reshape((bel.shape[1], bel.shape[2]))
+    y_obs_pc = bel.Y_obs_pc
+    dummy = np.zeros((1, n_cut))  # Create a dummy matrix filled with zeros
+    dummy[:, : n_cut] = y_obs_pc  # Fill the dummy matrix with the posterior PC
+    y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy)  # Inverse transform = "True image"
+
+    # Now get the random samples
+    y_samples = bel.random_sample()
+    y_samples_r = bel.inverse_transform(y_samples)
+
+    x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 
     method_name = metric.__name__
     logger.info(f"Quantifying image difference based on {method_name}")
     if method_name == "modified_hausdorff":
-        x, y, vertices = contour_extract()
-        to_compare = vertices
-        true_feature = contours_vertices(x=x, y=y, arrays=true_image)[0]
+        # For MHD, we need the 0 contours vertices
+        x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_reconstructed)
+        true_feature = vertices  # Vertices of the true observation
+        to_compare = contours_vertices(x=x, y=y, arrays=y_samples_r)[0]
     elif method_name == "structural_similarity":
-        to_compare = bel.random_sample()
-        true_feature = true_image
+        # SSIM works with continuous images
+        true_feature = y_reconstructed
+        to_compare = y_samples_r
     else:
         logger.error("Metric name not recognized.")
         to_compare = None
