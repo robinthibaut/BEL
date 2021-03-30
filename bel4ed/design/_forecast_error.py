@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
+def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metric):
     """
 
     :param bel:
@@ -62,12 +62,12 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             [
                 utils.dirmaker(f, erase=True)
                 for f in [
-                    obj_dir,
-                    fig_data_dir,
-                    fig_pca_dir,
-                    fig_cca_dir,
-                    fig_pred_dir,
-                ]
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
             ]
 
             # %% Select wells:
@@ -101,24 +101,24 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             joblib.dump(bel, jp(obj_dir, "bel.pkl"))
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
-            np.save(jp(obj_dir, "post.npy"), Y_posterior)  # Is it necessary ? Maybe prefer using bel.random_sample()
+            # np.save(jp(obj_dir, "post.npy"), Y_posterior)  # Is it necessary ? Maybe prefer using bel.random_sample()
+
+            # Compute objective function
+            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+            n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
+            y_obs_pc = bel.Y_obs_pc
+            dummy = np.zeros((1, n_cut))  # Create a dummy matrix filled with zeros
+            dummy[:, : n_cut] = y_obs_pc  # Fill the dummy matrix with the posterior PC
+            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy)  # Inverse transform = "True image"
+
+            objective_function(y_r=Y_reconstructed, y_samples=Y_posterior, metric=metric, directory=obj_dir)
 
 
-def objective_function(bel, metric):
+def objective_function(y_r, y_samples, metric, directory):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
     components to allow proper comparison.
     """
-    # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-    n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
-    y_obs_pc = bel.Y_obs_pc
-    dummy = np.zeros((1, n_cut))  # Create a dummy matrix filled with zeros
-    dummy[:, : n_cut] = y_obs_pc  # Fill the dummy matrix with the posterior PC
-    y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy)  # Inverse transform = "True image"
-
-    # Now get the random samples
-    y_samples = bel.random_sample()
-    y_samples_r = bel.inverse_transform(y_samples)
 
     x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 
@@ -126,13 +126,13 @@ def objective_function(bel, metric):
     logger.info(f"Quantifying image difference based on {method_name}")
     if method_name == "modified_hausdorff":
         # For MHD, we need the 0 contours vertices
-        x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_reconstructed)
+        x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_r)
         true_feature = vertices  # Vertices of the true observation
-        to_compare = contours_vertices(x=x, y=y, arrays=y_samples_r)[0]
+        to_compare = contours_vertices(x=x, y=y, arrays=y_samples)[0]
     elif method_name == "structural_similarity":
         # SSIM works with continuous images
-        true_feature = y_reconstructed
-        to_compare = y_samples_r
+        true_feature = y_r
+        to_compare = y_samples
     else:
         logger.error("Metric name not recognized.")
         to_compare = None
@@ -142,7 +142,7 @@ def objective_function(bel, metric):
     similarity = np.array([metric(true_feature, f) for f in to_compare])
 
     # Save objective_function result
-    np.save(jp(uq.res_dir, f"{method_name}"), similarity)
+    np.save(jp(directory, f"{method_name}"), similarity)
 
     logger.info(f"Similarity : {np.mean(similarity)}")
 
@@ -174,10 +174,10 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
 
 def compute_metric(
-    base: Type[Setup],
-    roots_obs: Root,
-    combinations: list,
-    metric,
+        base: Type[Setup],
+        roots_obs: Root,
+        combinations: list,
+        metric,
 ):
     global_mean = 0
     total = len(roots_obs)
