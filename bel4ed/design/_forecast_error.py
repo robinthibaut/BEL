@@ -6,6 +6,7 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from loguru import logger
+from sklearn.base import clone
 
 from .. import utils
 from ..config import Setup
@@ -65,7 +66,10 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
                     fig_pred_dir,
                 ]
             ]
-
+            # Clone BEL
+            bel_clone = clone(bel)
+            bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
+            bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
@@ -78,17 +82,17 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
                 X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)
             )  # Only one sample
             y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
-            bel.Y_obs = y_test_select
+            bel_clone.Y_obs = y_test_select
             # BEL fit
-            bel.fit(X=X_train_select, Y=y_train)
+            bel_clone.fit(X=X_train_select, Y=y_train)
 
             # %% Sample
             # Extract n random sample (target pc's).
             # The posterior distribution is computed within the method below.
-            bel.predict(X_test_select)
+            bel_clone.predict(X_test_select)
 
             # Save the fitted BEL model
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
+            joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
 

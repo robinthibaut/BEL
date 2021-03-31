@@ -15,7 +15,6 @@ from sklearn.base import (
     MultiOutputMixin,
 )
 
-
 from ..algorithms import mvn_inference
 
 
@@ -25,14 +24,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-        self,
-        mode: str = "mvn",
-        X_pre_processing=None,
-        Y_pre_processing=None,
-        X_post_processing=None,
-        Y_post_processing=None,
-        cca=None,
-        copy=True,
+            self,
+            mode: str = "mvn",
+            X_pre_processing=None,
+            Y_pre_processing=None,
+            X_post_processing=None,
+            Y_post_processing=None,
+            cca=None,
+            copy=True,
     ):
         self.copy = copy
         # How to infer the posterior parameters
@@ -59,7 +58,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
-        self.X_n_pc, self.Y_n_pc = None, None
+        self._X_n_pc, self._Y_n_pc = None, None
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -68,6 +67,22 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Dataset after postprocessing
         self.X_f, self.Y_f = None, None
         self.X_obs_f, self.Y_obs_f = None, None
+
+    @property
+    def X_n_pc(self):
+        return self._X_n_pc
+
+    @X_n_pc.setter
+    def X_n_pc(self, X_n_pc):
+        self._X_n_pc = X_n_pc
+
+    @property
+    def Y_n_pc(self):
+        return self._Y_n_pc
+
+    @Y_n_pc.setter
+    def Y_n_pc(self, Y_n_pc):
+        self._Y_n_pc = Y_n_pc
 
     def fit(self, X, Y):
         """
@@ -246,8 +261,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.posterior_mean, self.posterior_covariance
 
     def inverse_transform(
-        self,
-        Y_pred,
+            self,
+            Y_pred,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior Y to their physical space.
@@ -261,15 +276,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
-            + self.cca.y_mean_
+                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
+                + self.cca.y_mean_
         )  # Posterior PC scores
 
         # Back transform PC scores
         nc = self.Y_pre_processing["pca"].n_components_  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
-            :, : y_post.shape[1]
+        :, : y_post.shape[1]
         ] = y_post  # Fill the dummy matrix with the posterior PC
         y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 
