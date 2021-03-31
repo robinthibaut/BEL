@@ -82,6 +82,10 @@ def test_posterior():
         cca=cca,
     )
 
+    # Set PC cut
+    bel.X_n_pc = n_pc_pred
+    bel.Y_n_pc = n_pc_targ
+
     # Fit
     bel.fit(X=X_train, Y=y_train)
     # Predict posterior mean and covariance

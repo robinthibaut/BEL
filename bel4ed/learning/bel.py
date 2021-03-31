@@ -58,8 +58,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X, self.Y = None, None
         self.X_obs, self.Y_obs = None, None  # Observation data
 
-        # Dataset after preprocessing (dimension-reduced as indicated in config)
-        self. X_n_pc, self.Y_n_pc = None, None
+        # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
+        self.X_n_pc, self.Y_n_pc = None, None
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
