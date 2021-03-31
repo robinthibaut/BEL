@@ -138,7 +138,9 @@ def _objective_function(y_r, y_samples, metric, directory):
         true_feature = vertices[0]  # Vertices of the true observation
         to_compare = contours_vertices(x=x, y=y, arrays=y_samples)
     elif method_name == "structural_similarity":
-        # SSIM works with continuous images
+        # SSIM works with continuous images.
+        # With SSIM, a value of 1 = perfect similarity.
+        # SSIM values decrease with dissimilarity
         true_feature = y_r[0]
         to_compare = y_samples
     else:

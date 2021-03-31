@@ -107,13 +107,13 @@ def plot_uq(metric):
         jp(Setup.Directories.forecasts_dir, f"uq_{metric.__name__}.npy")
     )
     colors = Setup.Wells.colors
-    mode_histo(colors=colors, wm=wm, an_i=0)
+    mode_histo(colors=colors, wm=wm, an_i=0, fig_name=metric.__name__)
 
 
 if __name__ == "__main__":
     # main_1(metric=modified_hausdorff)
-    # plot_uq(modified_hausdorff)
+    # main_1(metric=structural_similarity)
 
-    main_1(metric=structural_similarity)
+    plot_uq(modified_hausdorff)
     plot_uq(structural_similarity)
 
