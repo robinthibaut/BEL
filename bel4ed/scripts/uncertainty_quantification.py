@@ -51,7 +51,7 @@ def init_bel():
     )
 
     # Initiate BEL object
-    bel = BEL(
+    bel_model = BEL(
         X_pre_processing=X_pre_processing,
         X_post_processing=X_post_processing,
         Y_pre_processing=Y_pre_processing,
@@ -59,10 +59,10 @@ def init_bel():
         cca=cca,
     )
 
-    return bel
+    return bel_model
 
 
-def main(model, training_idx, test_idx, source_ids):
+def train(model, training_idx, test_idx, source_ids):
 
     # Load datasets
     X, Y = load_dataset()
@@ -90,13 +90,12 @@ def main(model, training_idx, test_idx, source_ids):
     )
 
 
-def plot_uq(metric):
-    # 4 - Plot UQ
+def plot_uq(metric_function):
     wm = np.load(
-        jp(Setup.Directories.forecasts_dir, f"uq_{metric.__name__}.npy")
+        jp(Setup.Directories.forecasts_dir, f"uq_{metric_function.__name__}.npy")
     )
     colors = Setup.Wells.colors
-    mode_histo(colors=colors, wm=wm, an_i=0, fig_name=metric.__name__)
+    mode_histo(colors=colors, wm=wm, an_i=0, fig_name=metric_function.__name__)
 
 
 if __name__ == "__main__":
@@ -108,20 +107,24 @@ if __name__ == "__main__":
     # Source IDs
     wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
 
+    # Initiate BEL model
     bel = init_bel()
 
-    main(model=bel,
-         training_idx=training_r,
-         test_idx=test_r,
-         source_ids=wells)
+    # Train model
+    train(model=bel,
+          training_idx=training_r,
+          test_idx=test_r,
+          source_ids=wells)
 
+    # Pick a metric
     metric = modified_hausdorff
 
+    # Compute UQ
     bel_uq(index=test_r, directory=Setup.Directories.forecasts_dir, source_ids=wells, metric=metric)
 
-    # 3 - Process dissimilarity measure
+    # Process dissimilarity measure
     measure_info_mode(roots_obs=test_r, metric=metric, source_ids=wells)
 
+    # Plot UQ
     plot_uq(modified_hausdorff)
-    plot_uq(structural_similarity)
 
