@@ -175,16 +175,16 @@ def _objective_function(y_r, y_samples, metric, directory):
     return np.mean(similarity)
 
 
-def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
+def measure_info_mode(roots_obs: Root, metric, source_ids):
     """Scan the computed metric files and process them based on the mode"""
     logger.info("Computing ED results")
 
-    wid = list(map(str, [_[0] for _ in base.Wells.combination]))  # Well identifiers (n)
-    wm = np.zeros((len(wid), base.HyperParameters.n_posts))
+    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
+    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
 
     for r in roots_obs:
         # Starting point = root folder in forecast directory
-        droot = os.path.join(base.Directories.forecasts_dir, r)
+        droot = os.path.join(Setup.Directories.forecasts_dir, r)
         for e in wid:  # For each sub folder (well) in the main folder
             # Get the objective function file
             ufp = os.path.join(droot, e, "obj")
@@ -195,5 +195,5 @@ def measure_info_mode(base: Type[Setup], roots_obs: Root, metric):
 
     logger.info("Done")
     np.save(
-        os.path.join(base.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
+        os.path.join(Setup.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
     )

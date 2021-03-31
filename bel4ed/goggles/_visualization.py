@@ -878,7 +878,8 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
 
     # Bar plot
     plt.bar(np.arange(1, 7), -modes, color=colors)
-    plt.title("Amount of information of each well")
+    # plt.title("Amount of information of each well")
+    plt.title(f"{fig_name}")
     plt.xlabel("Well ID")
     plt.ylabel("Opposite deviation from mode's mean")
     plt.grid(color="#95a5a6", linestyle="-", linewidth=0.5, axis="y", alpha=0.7)
@@ -896,7 +897,8 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
     # Plot histogram
     for i, m in enumerate(wm):
         sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
-    plt.title("Summed metric distribution for each well")
+    # plt.title("Summed metric distribution for each well")
+    plt.title(f"{fig_name}")
     plt.xlabel("Summed metric")
     plt.ylabel("KDE")
     legend_1 = plt.legend(wid, loc=1)

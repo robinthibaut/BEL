@@ -3,6 +3,7 @@ from os.path import join as jp
 
 import numpy as np
 from loguru import logger
+from functools import partial
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
@@ -17,35 +18,7 @@ from bel4ed.design import bel_training, bel_uq
 from bel4ed.learning.bel import BEL
 
 
-def main_1(metric=None):
-    if metric is None:
-        metric = modified_hausdorff
-
-    # Get roots used for testing
-    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
-    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-
-    # Load datasets
-    X, Y = load_dataset()
-
-    # Source IDs
-    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    base = Setup
-    base.Wells.combination = wells
-
-    # Select roots for testing
-    X_train = X.loc[training_r]
-    # X_test = X.loc[["818bf1676c424f76b83bd777ae588a1d"]]
-    X_test = X.loc[test_r]
-    y_train = Y.loc[training_r]
-    # y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
-    y_test = Y.loc[test_r]
-
-    # Set seed
-    seed = 123456
-    np.random.seed(seed)
-
+def init_bel():
     # Pipelines
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -86,20 +59,35 @@ def main_1(metric=None):
         cca=cca,
     )
 
+    return bel
+
+
+def main(model, training_idx, test_idx, source_ids):
+
+    # Load datasets
+    X, Y = load_dataset()
+
+    # Select roots for testing
+    X_train = X.loc[training_idx]
+    # X_test = X.loc[["818bf1676c424f76b83bd777ae588a1d"]]
+    X_test = X.loc[test_idx]
+    y_train = Y.loc[training_idx]
+    # y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
+    y_test = Y.loc[test_idx]
+
+    # Set seed
+    seed = 123456
+    np.random.seed(seed)
+
     bel_training(
-        bel=bel,
+        bel=model,
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        directory=base.Directories.forecasts_dir,
-        source_ids=wells,
+        directory=Setup.Directories.forecasts_dir,
+        source_ids=source_ids,
     )
-
-    bel_uq(index=X_test.index, directory=base.Directories.forecasts_dir, source_ids=wells, metric=metric)
-
-    # 3 - Process dissimilarity measure
-    measure_info_mode(base=base, roots_obs=test_r, metric=metric)
 
 
 def plot_uq(metric):
@@ -112,8 +100,27 @@ def plot_uq(metric):
 
 
 if __name__ == "__main__":
-    # main_1(metric=modified_hausdorff)
-    main_1(metric=structural_similarity)
+    # Get roots used for testing
+    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
+    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
+
+    # Source IDs
+    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+
+    bel = init_bel()
+
+    main(model=bel,
+         training_idx=training_r,
+         test_idx=test_r,
+         source_ids=wells)
+
+    metric = modified_hausdorff
+
+    bel_uq(index=test_r, directory=Setup.Directories.forecasts_dir, source_ids=wells, metric=metric)
+
+    # 3 - Process dissimilarity measure
+    measure_info_mode(roots_obs=test_r, metric=metric, source_ids=wells)
 
     plot_uq(modified_hausdorff)
     plot_uq(structural_similarity)
