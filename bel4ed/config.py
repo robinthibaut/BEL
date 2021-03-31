@@ -112,7 +112,6 @@ class Setup:
         cell_dim: float = 4
 
     @dataclass
-    # self.cols = ['w', 'g', 'r', 'c', 'm', 'y']
     class Wells:
         """Wells coordinates"""
 

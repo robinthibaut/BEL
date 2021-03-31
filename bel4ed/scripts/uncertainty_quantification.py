@@ -9,6 +9,7 @@ from sklearn.cross_decomposition import CCA
 from sklearn.pipeline import Pipeline
 
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
+from bel4ed.goggles import mode_histo
 from bel4ed.config import Setup
 from bel4ed.design import measure_info_mode
 from bel4ed.datasets import i_am_root, load_dataset
@@ -100,5 +101,15 @@ def main_1(metric=None):
     measure_info_mode(base=base, roots_obs=test_r, metric=metric)
 
 
+def plot_uq(metric):
+    # 4 - Plot UQ
+    wm = np.load(
+        jp(Setup.Directories.forecasts_dir, f"uq_{metric.__name__}.npy")
+    )
+    colors = Setup.Wells.colors
+    mode_histo(colors=colors, wm=wm, an_i=0)
+
+
 if __name__ == "__main__":
-    main_1(metric=modified_hausdorff)
+    # main_1(metric=modified_hausdorff)
+    plot_uq(modified_hausdorff)

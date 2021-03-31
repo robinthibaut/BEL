@@ -852,6 +852,14 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
 
 
 def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average"):
+    """
+
+    :param colors:
+    :param an_i: Figure annotation
+    :param wm: Arrays of metric
+    :param fig_name:
+    :return:
+    """
     alphabet = string.ascii_uppercase
     wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
 
