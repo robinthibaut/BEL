@@ -112,4 +112,8 @@ def plot_uq(metric):
 
 if __name__ == "__main__":
     # main_1(metric=modified_hausdorff)
-    plot_uq(modified_hausdorff)
+    # plot_uq(modified_hausdorff)
+
+    main_1(metric=structural_similarity)
+    plot_uq(structural_similarity)
+

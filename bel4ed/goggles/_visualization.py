@@ -892,13 +892,12 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
         transparent=True,
     )
     plt.close()
-    # plt.show()
 
     # Plot histogram
     for i, m in enumerate(wm):
         sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
-    plt.title("Summed MHD distribution for each well")
-    plt.xlabel("Summed MHD")
+    plt.title("Summed metric distribution for each well")
+    plt.xlabel("Summed metric")
     plt.ylabel("KDE")
     legend_1 = plt.legend(wid, loc=1)
     plt.gca().add_artist(legend_1)

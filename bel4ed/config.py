@@ -155,7 +155,7 @@ class Setup:
 
         # Injection wells in use for prediction (default: all)
         combination = np.arange(1, len(wells_data))
-        colors = ["w", "g", "r", "c", "m", "y"]
+        colors = ["b", "g", "r", "c", "m", "y"]
 
     @dataclass
     class HyperParameters:
