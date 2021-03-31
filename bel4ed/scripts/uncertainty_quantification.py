@@ -13,7 +13,7 @@ from bel4ed.goggles import mode_histo
 from bel4ed.config import Setup
 from bel4ed.design import measure_info_mode
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.design import analysis
+from bel4ed.design import bel_training, bel_uq
 from bel4ed.learning.bel import BEL
 
 
@@ -86,7 +86,7 @@ def main_1(metric=None):
         cca=cca,
     )
 
-    analysis(
+    bel_training(
         bel=bel,
         X_train=X_train,
         X_test=X_test,
@@ -94,8 +94,9 @@ def main_1(metric=None):
         y_test=y_test,
         directory=base.Directories.forecasts_dir,
         source_ids=wells,
-        metric=metric,
     )
+
+    bel_uq(index=X_test.index, directory=base.Directories.forecasts_dir, source_ids=wells, metric=metric)
 
     # 3 - Process dissimilarity measure
     measure_info_mode(base=base, roots_obs=test_r, metric=metric)
@@ -112,7 +113,7 @@ def plot_uq(metric):
 
 if __name__ == "__main__":
     # main_1(metric=modified_hausdorff)
-    # main_1(metric=structural_similarity)
+    main_1(metric=structural_similarity)
 
     plot_uq(modified_hausdorff)
     plot_uq(structural_similarity)

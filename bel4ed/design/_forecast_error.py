@@ -17,14 +17,14 @@ from ..spatial import contour_extract
 from ..utils import Root, flatten_array
 
 __all__ = [
-    "analysis",
+    "bel_training",
+    "bel_uq",
     "measure_info_mode",
 ]
 
 
-def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metric):
+def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
     """
-
     :param bel:
     :param X_train:
     :param X_test:
@@ -32,7 +32,6 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
     :param y_test:
     :param directory:
     :param source_ids:
-    :param metric:
     :return:
     """
     # Directories
@@ -88,19 +87,31 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
             # Extract n random sample (target pc's).
             # The posterior distribution is computed within the method below.
             bel.predict(X_test_select)
-            # Compute CCA Gaussian scores
-            Y_posts_gaussian = bel.random_sample()
-            # Get back to original space
-            Y_posterior = bel.inverse_transform(
-                Y_pred=Y_posts_gaussian,
-            )
 
             # Save the fitted BEL model
             joblib.dump(bel, jp(obj_dir, "bel.pkl"))
             msg = f"model trained and saved in {obj_dir}"
             logger.info(msg)
-            # np.save(jp(obj_dir, "post.npy"), Y_posterior)  # Is it necessary ? Maybe prefer using bel.random_sample()
 
+
+def bel_uq(index, directory, source_ids, metric):
+    # Directories
+    combinations = source_ids
+    total = len(index)
+    for ix, test_root in enumerate(index):  # For each observation root
+        logger.info(f"[{ix + 1}/{total}]-{test_root}")
+        # Directory in which to load forecasts
+        bel_dir = jp(directory, test_root)
+
+        for ixw, c in enumerate(combinations):  # For each wel combination
+            logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
+
+            new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, new_dir)
+
+            # %% Folders
+            obj_dir = jp(sub_dir, "obj")
+            bel = joblib.load(jp(obj_dir, "bel.pkl"))
             # Compute objective function
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
             n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
@@ -113,6 +124,12 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
                 dummy
             ).reshape(bel.Y_shape)  # Inverse transform = "True image"
 
+            # Compute CCA Gaussian scores
+            Y_posts_gaussian = bel.random_sample()
+            # Get back to original space
+            Y_posterior = bel.inverse_transform(
+                Y_pred=Y_posts_gaussian,
+            )
             Y_posterior = Y_posterior.reshape((bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2]))
 
             _objective_function(
