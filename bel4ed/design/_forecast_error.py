@@ -2,7 +2,6 @@
 
 import os
 from os.path import join as jp
-from typing import Type
 
 import joblib
 import numpy as np
@@ -14,7 +13,7 @@ from ..spatial import (
     contours_vertices,
 )
 from ..spatial import contour_extract
-from ..utils import Root, flatten_array
+from ..utils import Root
 
 __all__ = [
     "bel_training",
@@ -94,7 +93,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             logger.info(msg)
 
 
-def bel_uq(index, directory, source_ids, metric):
+def bel_uq(index: list, directory: str, source_ids: list or np.array, metrics: list or tuple):
     # Directories
     combinations = source_ids
     total = len(index)
@@ -132,12 +131,13 @@ def bel_uq(index, directory, source_ids, metric):
             )
             Y_posterior = Y_posterior.reshape((bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2]))
 
-            _objective_function(
-                y_r=Y_reconstructed,
-                y_samples=Y_posterior,
-                metric=metric,
-                directory=obj_dir,
-            )
+            for m in metrics:
+                _objective_function(
+                    y_r=Y_reconstructed,
+                    y_samples=Y_posterior,
+                    metric=m,
+                    directory=obj_dir,
+                )
 
 
 def _objective_function(y_r, y_samples, metric, directory):
@@ -166,6 +166,7 @@ def _objective_function(y_r, y_samples, metric, directory):
         similarity = 1 - np.array([metric(true_feature, f) for f in to_compare])
     else:
         logger.error("Metric name not recognized.")
+        similarity = None
 
     # Save _objective_function result
     np.save(jp(directory, f"{method_name}"), similarity)

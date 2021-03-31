@@ -59,6 +59,10 @@ def init_bel():
         cca=cca,
     )
 
+    # Set PC cut
+    bel_model.X_n_pc = n_pc_pred
+    bel_model.Y_n_pc = n_pc_targ
+
     return bel_model
 
 
@@ -117,13 +121,14 @@ if __name__ == "__main__":
           source_ids=wells)
 
     # Pick a metric
-    metric = modified_hausdorff
+    metrics = (modified_hausdorff, structural_similarity)
 
     # Compute UQ
-    bel_uq(index=test_r, directory=Setup.Directories.forecasts_dir, source_ids=wells, metric=metric)
+    bel_uq(index=test_r, directory=Setup.Directories.forecasts_dir, source_ids=wells, metrics=metrics)
 
     # Process dissimilarity measure
-    measure_info_mode(roots_obs=test_r, metric=metric, source_ids=wells)
+    for m in metrics:
+        measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
 
     # Plot UQ
     plot_uq(modified_hausdorff)
