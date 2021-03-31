@@ -15,9 +15,6 @@ from sklearn.base import (
     MultiOutputMixin,
 )
 
-from ..config import Setup
-
-# TODO: Get rid of "Setup" in this module
 
 from ..algorithms import mvn_inference
 
@@ -62,6 +59,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced as indicated in config)
+        self. X_n_pc, self.Y_n_pc = None, None
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -96,8 +94,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )
 
         _xt, _yt = (
-            _xt[:, : Setup.HyperParameters.n_pc_predictor],
-            _yt[:, : Setup.HyperParameters.n_pc_target],
+            _xt[:, : self.X_n_pc],
+            _yt[:, : self.Y_n_pc],
         )  # Cut PC
 
         # Dataset after preprocessing
@@ -132,7 +130,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if X is not None and Y is None:
             X = check_array(X, copy=True)
             _xt = self.X_pre_processing.transform(X)
-            _xt = _xt[:, : Setup.HyperParameters.n_pc_predictor]
+            _xt = _xt[:, : self.X_n_pc]
             _xc = self.cca.transform(X=_xt)
             _xp = self.X_post_processing.transform(_xc)
 
@@ -145,8 +143,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.Y_pre_processing.transform(Y),
             )
             _xt, _yt = (
-                _xt[:, : Setup.HyperParameters.n_pc_predictor],
-                _yt[:, : Setup.HyperParameters.n_pc_target],
+                _xt[:, : self.X_n_pc],
+                _yt[:, : self.Y_n_pc],
             )
             _, _yc = self.cca.transform(X=_xt, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
@@ -159,8 +157,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.Y_pre_processing.transform(self.Y),
             )
             _xt, _yt = (
-                _xt[:, : Setup.HyperParameters.n_pc_predictor],
-                _yt[:, : Setup.HyperParameters.n_pc_target],
+                _xt[:, : self.X_n_pc],
+                _yt[:, : self.Y_n_pc],
             )
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
@@ -183,12 +181,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         check_is_fitted(self.cca)
         if n_posts is None:
-            self.n_posts = Setup.HyperParameters.n_posts
+            n_posts = self.n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
         Y_samples = np.random.multivariate_normal(
-            mean=self.posterior_mean, cov=self.posterior_covariance, size=self.n_posts
+            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
         )
 
         return Y_samples
@@ -212,7 +210,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_obs = check_array(self.X_obs)
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
-        X_obs = X_obs[:, : Setup.HyperParameters.n_pc_predictor]
+        X_obs = X_obs[:, : self.X_n_pc]
         self.X_obs_pc = X_obs
         X_obs = self.cca.transform(X_obs)
         self.X_obs_c = X_obs
@@ -221,7 +219,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
         # Number of PCA components for the curves
-        x_dim = Setup.HyperParameters.n_pc_predictor
+        x_dim = self.X_n_pc
         noise = 0.01
         # I matrix. (n_comp_PCA, n_comp_PCA)
         x_cov = np.eye(x_dim) * noise
