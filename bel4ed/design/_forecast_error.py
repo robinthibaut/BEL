@@ -70,6 +70,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             bel_clone = clone(bel)
             bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
             bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
+            bel_clone.n_posts = Setup.HyperParameters.n_posts
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]

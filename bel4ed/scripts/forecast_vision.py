@@ -10,6 +10,7 @@ from os.path import join as jp
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
+from bel4ed.datasets import i_am_root
 from bel4ed.utils import data_read
 
 # COLOR = 'w'
@@ -20,9 +21,9 @@ from bel4ed.utils import data_read
 
 if __name__ == "__main__":
 
-    base_dir = os.path.join(Setup.Directories.forecasts_dir, "base")
-    test_roots = data_read(os.path.join(base_dir, "test_roots.dat"))
-    samples = [item for sublist in test_roots for item in sublist]
+    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
+    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # roots = samples
 

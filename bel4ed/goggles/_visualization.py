@@ -695,7 +695,7 @@ def plot_results(
         X = check_array(bel.X)
         X_obs = check_array(bel.X_obs)
 
-        tc = X.reshape((bel.n_posts,) + bel.X_shape)
+        tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 

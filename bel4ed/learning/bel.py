@@ -49,8 +49,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.posterior_covariance = None
 
         # Parameters for sampling
-        self.seed = None
-        self.n_posts = None
+        self._seed = None
+        self._n_posts = None
 
         # Original dataset
         self.X_shape, self.Y_shape = None, None
@@ -83,6 +83,22 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @Y_n_pc.setter
     def Y_n_pc(self, Y_n_pc):
         self._Y_n_pc = Y_n_pc
+
+    @property
+    def n_posts(self):
+        return self._n_posts
+
+    @n_posts.setter
+    def n_posts(self, n_posts):
+        self._n_posts = n_posts
+
+    @property
+    def seed(self):
+        return self._seed
+
+    @seed.setter
+    def seed(self, seed):
+        self._seed = seed
 
     def fit(self, X, Y):
         """
