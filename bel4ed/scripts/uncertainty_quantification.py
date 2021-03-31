@@ -115,10 +115,10 @@ if __name__ == "__main__":
     wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
 
     # Initiate BEL model
-    bel = init_bel()
+    # bel = init_bel()
 
     # Train model
-    train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    # train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
 
     # Pick metrics
     metrics = (modified_hausdorff, structural_similarity)

@@ -115,7 +115,7 @@ def bel_uq(
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
             # Compute objective function
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-            n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
+            n_cut = bel.Y_n_pc  # Number of components to keep
             y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
             dummy = np.zeros(
                 (1, y_obs_pc.shape[1])
@@ -130,7 +130,7 @@ def bel_uq(
             )  # Inverse transform = "True image"
 
             # Compute CCA Gaussian scores
-            Y_posts_gaussian = bel.random_sample()
+            Y_posts_gaussian = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
             # Get back to original space
             Y_posterior = bel.inverse_transform(
                 Y_pred=Y_posts_gaussian,

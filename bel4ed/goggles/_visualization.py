@@ -766,7 +766,7 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
-        forecast_posterior = bel.random_sample()
+        forecast_posterior = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
         forecast_posterior = bel.inverse_transform(forecast_posterior)
         forecast_posterior = forecast_posterior.reshape(
             (-1,) + (bel.Y_shape[1], bel.Y_shape[2])
@@ -1984,7 +1984,7 @@ def _kde_cca(
     bel.Y_obs_f = bel.transform(Y=bel.Y_obs)
 
     # load prediction object
-    post_test = bel.random_sample(bel.n_posts)
+    post_test = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters

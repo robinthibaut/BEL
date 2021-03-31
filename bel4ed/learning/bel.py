@@ -182,6 +182,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_is_fitted(self.cca)
         if n_posts is None:
             n_posts = self.n_posts
+        else:
+            self.n_posts = n_posts
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
