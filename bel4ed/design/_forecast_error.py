@@ -60,12 +60,12 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
             [
                 utils.dirmaker(f, erase=True)
                 for f in [
-                    obj_dir,
-                    fig_data_dir,
-                    fig_pca_dir,
-                    fig_cca_dir,
-                    fig_pred_dir,
-                ]
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
             ]
 
             # %% Select wells:
@@ -106,14 +106,14 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
             n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
             y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
             dummy = np.zeros((1, y_obs_pc.shape[1]))  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc[:, :n_cut]   # Fill the dummy matrix with the posterior PC
+            dummy[:, :n_cut] = y_obs_pc[:, :n_cut]  # Fill the dummy matrix with the posterior PC
 
             # Reshape for the objective function
             Y_reconstructed = bel.Y_pre_processing.inverse_transform(
                 dummy
             ).reshape(bel.Y_shape)  # Inverse transform = "True image"
 
-            Y_posterior = Y_posterior.reshape((bel.n_posts,)+(bel.Y_shape[1], bel.Y_shape[2]))
+            Y_posterior = Y_posterior.reshape((bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2]))
 
             _objective_function(
                 y_r=Y_reconstructed,
@@ -121,6 +121,7 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
                 metric=metric,
                 directory=obj_dir,
             )
+
 
 def _objective_function(y_r, y_samples, metric, directory):
     """
@@ -137,19 +138,17 @@ def _objective_function(y_r, y_samples, metric, directory):
         x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_r)
         true_feature = vertices[0]  # Vertices of the true observation
         to_compare = contours_vertices(x=x, y=y, arrays=y_samples)
+        similarity = np.array([metric(true_feature, f) for f in to_compare])
     elif method_name == "structural_similarity":
         # SSIM works with continuous images.
         # With SSIM, a value of 1 = perfect similarity.
         # SSIM values decrease with dissimilarity
         true_feature = y_r[0]
         to_compare = y_samples
+        # Compute metric between the 'true image' and the n sampled images or images feature
+        similarity = 1 - np.array([metric(true_feature, f) for f in to_compare])
     else:
         logger.error("Metric name not recognized.")
-        to_compare = None
-        true_feature = None
-
-    # Compute metric between the 'true image' and the n sampled images or images feature
-    similarity = np.array([metric(true_feature, f) for f in to_compare])
 
     # Save _objective_function result
     np.save(jp(directory, f"{method_name}"), similarity)
