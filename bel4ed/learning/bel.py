@@ -7,7 +7,6 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    FLOAT_DTYPES,
 )
 from sklearn.base import (
     BaseEstimator,
@@ -99,6 +98,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @seed.setter
     def seed(self, seed):
         self._seed = seed
+        np.random.seed(self._seed)
 
     def fit(self, X, Y):
         """

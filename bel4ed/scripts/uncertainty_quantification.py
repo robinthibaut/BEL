@@ -81,10 +81,6 @@ def train(model, training_idx: list, test_idx: list, source_ids: list or np.arra
     # y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
     y_test = Y.loc[test_idx]
 
-    # Set seed
-    seed = 123456
-    np.random.seed(seed)
-
     bel_training(
         bel=model,
         X_train=X_train,

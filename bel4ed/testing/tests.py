@@ -40,7 +40,7 @@ def test_posterior():
 
     # Set seed
     seed = 123456
-    np.random.seed(seed)
+    # np.random.seed(seed)
 
     # Number of CCA components is chosen as the min number of PC
     n_pc_pred, n_pc_targ = (
@@ -85,6 +85,8 @@ def test_posterior():
     # Set PC cut
     bel.X_n_pc = n_pc_pred
     bel.Y_n_pc = n_pc_targ
+    bel.n_posts = Setup.HyperParameters.n_posts
+    bel.seed = seed
 
     # Fit
     bel.fit(X=X_train, Y=y_train)
