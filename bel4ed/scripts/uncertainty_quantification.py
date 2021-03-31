@@ -94,7 +94,7 @@ def main_1(metric=None):
         y_test=y_test,
         directory=base.Directories.forecasts_dir,
         source_ids=wells,
-        metric=modified_hausdorff,
+        metric=metric,
     )
 
     # 3 - Process dissimilarity measure

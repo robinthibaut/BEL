@@ -14,7 +14,7 @@ from ..spatial import (
     contours_vertices,
 )
 from ..spatial import contour_extract
-from ..utils import Root
+from ..utils import Root, flatten_array
 
 __all__ = [
     "analysis",
@@ -35,7 +35,6 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
     :param metric:
     :return:
     """
-    global_mean = 0
     # Directories
     combinations = source_ids
     total = len(X_test)
@@ -116,15 +115,12 @@ def analysis(bel, X_train, X_test, y_train, y_test, directory, source_ids, metri
 
             Y_posterior = Y_posterior.reshape((bel.n_posts,)+(bel.Y_shape[1], bel.Y_shape[2]))
 
-            mean = _objective_function(
+            _objective_function(
                 y_r=Y_reconstructed,
                 y_samples=Y_posterior,
                 metric=metric,
                 directory=obj_dir,
             )
-            global_mean += mean
-    return global_mean
-
 
 def _objective_function(y_r, y_samples, metric, directory):
     """
@@ -143,7 +139,7 @@ def _objective_function(y_r, y_samples, metric, directory):
         to_compare = contours_vertices(x=x, y=y, arrays=y_samples)
     elif method_name == "structural_similarity":
         # SSIM works with continuous images
-        true_feature = y_r
+        true_feature = y_r[0]
         to_compare = y_samples
     else:
         logger.error("Metric name not recognized.")
