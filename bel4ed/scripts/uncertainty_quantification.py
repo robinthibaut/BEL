@@ -19,7 +19,10 @@ from bel4ed.learning.bel import BEL
 
 
 def init_bel():
-    # Pipelines
+    """
+    Set all BEL pipelines
+    :return:
+    """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [
@@ -66,7 +69,7 @@ def init_bel():
     return bel_model
 
 
-def train(model, training_idx, test_idx, source_ids):
+def train(model, training_idx: list, test_idx: list, source_ids: list or np.array):
 
     # Load datasets
     X, Y = load_dataset()
@@ -115,16 +118,18 @@ if __name__ == "__main__":
     bel = init_bel()
 
     # Train model
-    train(model=bel,
-          training_idx=training_r,
-          test_idx=test_r,
-          source_ids=wells)
+    train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
 
-    # Pick a metric
+    # Pick metrics
     metrics = (modified_hausdorff, structural_similarity)
 
-    # Compute UQ
-    bel_uq(index=test_r, directory=Setup.Directories.forecasts_dir, source_ids=wells, metrics=metrics)
+    # Compute UQ with metrics
+    bel_uq(
+        index=test_r,
+        directory=Setup.Directories.forecasts_dir,
+        source_ids=wells,
+        metrics=metrics,
+    )
 
     # Process dissimilarity measure
     for m in metrics:
@@ -132,4 +137,3 @@ if __name__ == "__main__":
 
     # Plot UQ
     plot_uq(modified_hausdorff)
-

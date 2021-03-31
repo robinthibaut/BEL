@@ -58,12 +58,12 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             [
                 utils.dirmaker(f, erase=True)
                 for f in [
-                obj_dir,
-                fig_data_dir,
-                fig_pca_dir,
-                fig_cca_dir,
-                fig_pred_dir,
-            ]
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
+                ]
             ]
 
             # %% Select wells:
@@ -93,7 +93,9 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             logger.info(msg)
 
 
-def bel_uq(index: list, directory: str, source_ids: list or np.array, metrics: list or tuple):
+def bel_uq(
+    index: list, directory: str, source_ids: list or np.array, metrics: list or tuple
+):
     # Directories
     combinations = source_ids
     total = len(index)
@@ -115,13 +117,17 @@ def bel_uq(index: list, directory: str, source_ids: list or np.array, metrics: l
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
             n_cut = Setup.HyperParameters.n_pc_target  # Number of components to keep
             y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
-            dummy = np.zeros((1, y_obs_pc.shape[1]))  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc[:, :n_cut]  # Fill the dummy matrix with the posterior PC
+            dummy = np.zeros(
+                (1, y_obs_pc.shape[1])
+            )  # Create a dummy matrix filled with zeros
+            dummy[:, :n_cut] = y_obs_pc[
+                :, :n_cut
+            ]  # Fill the dummy matrix with the posterior PC
 
             # Reshape for the objective function
-            Y_reconstructed = bel.Y_pre_processing.inverse_transform(
-                dummy
-            ).reshape(bel.Y_shape)  # Inverse transform = "True image"
+            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                bel.Y_shape
+            )  # Inverse transform = "True image"
 
             # Compute CCA Gaussian scores
             Y_posts_gaussian = bel.random_sample()
@@ -129,7 +135,9 @@ def bel_uq(index: list, directory: str, source_ids: list or np.array, metrics: l
             Y_posterior = bel.inverse_transform(
                 Y_pred=Y_posts_gaussian,
             )
-            Y_posterior = Y_posterior.reshape((bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2]))
+            Y_posterior = Y_posterior.reshape(
+                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
+            )
 
             for m in metrics:
                 _objective_function(
