@@ -70,7 +70,6 @@ def init_bel():
 
 
 def train(model, training_idx: list, test_idx: list, source_ids: list or np.array):
-
     # Load datasets
     X, Y = load_dataset()
 
@@ -112,7 +111,8 @@ if __name__ == "__main__":
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # Source IDs
-    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    # wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
 
     # Initiate BEL model
     bel = init_bel()
@@ -121,20 +121,20 @@ if __name__ == "__main__":
     train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
 
     # Pick metrics
-    metrics = (modified_hausdorff, structural_similarity)
+    # metrics = (modified_hausdorff, structural_similarity)
 
     # Compute UQ with metrics
-    bel_uq(
-        index=test_r,
-        directory=Setup.Directories.forecasts_dir,
-        source_ids=wells,
-        metrics=metrics,
-    )
+    # bel_uq(
+    #     index=test_r,
+    #     directory=Setup.Directories.forecasts_dir,
+    #     source_ids=wells,
+    #     metrics=metrics,
+    # )
 
     # Process dissimilarity measure
-    for m in metrics:
-        measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
+    # for m in metrics:
+    #     measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
 
     # Plot UQ
-    plot_uq(modified_hausdorff)
-    plot_uq(structural_similarity)
+    # plot_uq(modified_hausdorff)
+    # plot_uq(structural_similarity)

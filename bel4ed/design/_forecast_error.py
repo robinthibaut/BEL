@@ -66,7 +66,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
                     fig_pred_dir,
                 ]
             ]
-            # Clone BEL
+            # Clone BEL for safety
             bel_clone = clone(bel)
             bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
             bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
