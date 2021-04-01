@@ -1,17 +1,13 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import os
 import string
-
-import joblib
-import matplotlib.pyplot as plt
-from loguru import logger
 from os.path import join as jp
+
+from loguru import logger
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root
-from bel4ed.utils import data_read
 
 # COLOR = 'w'
 # plt.rcParams['text.color'] = COLOR
@@ -46,37 +42,37 @@ if __name__ == "__main__":
 
         wells = ["123456", "1", "2", "3", "4", "5", "6"]
 
-        for j, w in enumerate(wells):
-
-            logger.info(f"Plotting well {w}")
-
-            if w == "123456":
-                annotation = alphabet[i]
-            else:
-                annotation = alphabet[j - 1]
-
-            # BEL pickle
-            md = jp(Setup.Directories.forecasts_dir, sample, w)
-            bel = joblib.load(jp(md, "obj", "bel.pkl"))
-
-            myvis.plot_results(
-                bel, root=sample, folder=w, annotation=annotation, d=True
-            )
-
-            myvis.pca_vision(
-                bel,
-                w=w,
-                root=sample,
-                d=True,
-                h=True,
-                exvar=True,
-                before_after=True,
-                labels=True,
-                scores=True,
-            )
+        # for j, w in enumerate(wells):
+        #
+        #     logger.info(f"Plotting well {w}")
+        #
+        #     if w == "123456":
+        #         annotation = alphabet[i]
+        #     else:
+        #         annotation = alphabet[j - 1]
+        #
+        #     # BEL pickle
+        #     md = jp(Setup.Directories.forecasts_dir, sample, w)
+        #     bel = joblib.load(jp(md, "obj", "bel.pkl"))
+        #
+        #     myvis.plot_results(
+        #         bel, root=sample, folder=w, annotation=annotation, d=True
+        #     )
+        #
+        #     myvis.pca_vision(
+        #         bel,
+        #         w=w,
+        #         root=sample,
+        #         d=True,
+        #         h=True,
+        #         exvar=True,
+        #         before_after=True,
+        #         labels=True,
+        #         scores=True,
+        #     )
 
         myvis.plot_K_field(root=sample)
 
-        myvis.plot_head_field(root=sample)
-
-        myvis.cca_vision(root=sample, folders=wells)
+        # myvis.plot_head_field(root=sample)
+        #
+        # myvis.cca_vision(root=sample, folders=wells)

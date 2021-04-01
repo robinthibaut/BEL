@@ -3,15 +3,15 @@
 import warnings
 
 import numpy as np
-from sklearn.utils import check_array
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_consistent_length,
-)
 from sklearn.base import (
     BaseEstimator,
     TransformerMixin,
     MultiOutputMixin,
+)
+from sklearn.utils import check_array
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_consistent_length,
 )
 
 from ..algorithms import mvn_inference
@@ -226,7 +226,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def fit_transform(self, X, y=None, **fit_params):
         """
-        Fit-Transform accross all pipelines
+        Fit-Transform across all pipelines
         :param X:
         :param y:
         :return:

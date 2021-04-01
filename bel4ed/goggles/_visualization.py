@@ -24,6 +24,7 @@ import bel4ed.utils
 from bel4ed.algorithms import KDE, kde_params, posterior_conditional
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader, load_transport_model
+from bel4ed.datasets import load_flow_model
 from bel4ed.spatial import (
     binary_stack,
     contours_vertices,
@@ -31,8 +32,6 @@ from bel4ed.spatial import (
     refine_machine,
     blocks_from_rc_3d,
 )
-
-from bel4ed.datasets import load_flow_model
 from bel4ed.utils import Root, reload_trained_model
 
 __all__ = [
@@ -826,7 +825,7 @@ def plot_results(
 
 def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
     if wells is None:
-        wells = Setup.Wells()
+        wells = Setup.Wells
 
     matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "hk0.npy"))
     grid_dim = Setup.GridDimensions
@@ -842,7 +841,7 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
         plt.xlabel("X(m)", fontsize=11)
         plt.ylabel("Y(m)", fontsize=11)
         plot_wells(wells, markersize=3.5)
-        # well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
+        well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
