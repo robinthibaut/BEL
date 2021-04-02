@@ -14,12 +14,10 @@ from ..spatial import contour_extract
 from ..spatial import (
     contours_vertices,
 )
-from ..utils import Root
 
 __all__ = [
     "bel_training",
     "bel_uq",
-    "measure_info_mode",
 ]
 
 
@@ -201,27 +199,3 @@ def _objective_function(
             # pass None as weights to np.average: uniform mean
             multioutput = None
             return np.average(output_errors, weights=multioutput, axis=0)
-
-
-def measure_info_mode(roots_obs: Root, metric, source_ids):
-    """Scan the computed metric files and process them based on the mode"""
-    logger.info("Computing ED results")
-
-    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
-
-    for r in roots_obs:
-        # Starting point = root folder in forecast directory
-        droot = os.path.join(Setup.Directories.forecasts_dir, r)
-        for e in wid:  # For each sub folder (well) in the main folder
-            # Get the objective function file
-            ufp = os.path.join(droot, e, "obj")
-            fmhd = os.path.join(ufp, f"{metric.__name__}.npy")
-            mhd = np.load(fmhd)  # Load MHD
-            idw = int(e) - 1  # -1 to respect 0 index (Well index)
-            wm[idw] += mhd  # Add MHD at each well
-
-    logger.info("Done")
-    np.save(
-        os.path.join(Setup.Directories.forecasts_dir, f"uq_{metric.__name__}.npy"), wm
-    )
