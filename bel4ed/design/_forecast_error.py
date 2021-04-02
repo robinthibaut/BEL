@@ -105,8 +105,8 @@ def bel_uq(
     # Directories
     combinations = source_ids
     total = len(index)
-    # wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-    # wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
+    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
+    wm = np.zeros((len(metrics), len(wid), Setup.HyperParameters.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
@@ -148,17 +148,22 @@ def bel_uq(
                 (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
             )
 
-            for m in metrics:
-                _objective_function(
+            for j, m in enumerate(metrics):
+                oe = _objective_function(
                     y_true=Y_reconstructed,
                     y_pred=Y_posterior,
                     metric=m,
-                    directory=obj_dir,
                 )
+                wm[j, ixw] += oe
+
+    for j, m in enumerate(metrics):
+        np.save(
+            os.path.join(Setup.Directories.forecasts_dir, f"uq_{m.__name__}.npy"), wm[j]
+        )
 
 
 def _objective_function(y_true, y_pred,
-                        metric, directory,
+                        metric,
                         multioutput='raw_values', sample_weight=None):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
@@ -188,7 +193,7 @@ def _objective_function(y_true, y_pred,
         output_errors = None
 
     # Save _objective_function result
-    np.save(jp(directory, f"{method_name}"), output_errors)
+    # np.save(jp(directory, f"{method_name}"), output_errors)
 
     logger.info(f"Similarity : {np.average(output_errors, weights=sample_weight)}")
 
@@ -199,7 +204,7 @@ def _objective_function(y_true, y_pred,
             # pass None as weights to np.average: uniform mean
             multioutput = None
 
-    return np.average(output_errors, weights=multioutput)
+    return output_errors
 
 
 def measure_info_mode(roots_obs: Root, metric, source_ids):

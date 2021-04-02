@@ -11,7 +11,6 @@ from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
-from bel4ed.design import measure_info_mode
 from bel4ed.goggles import mode_histo
 from bel4ed.learning.bel import BEL
 
@@ -126,8 +125,8 @@ if __name__ == "__main__":
     )
 
     # Process dissimilarity measure
-    for m in metrics:
-        measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
+    # for m in metrics:
+    #     measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
 
     # Plot UQ
     plot_uq(modified_hausdorff)
