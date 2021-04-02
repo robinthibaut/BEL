@@ -162,9 +162,9 @@ def bel_uq(
         )
 
 
-def _objective_function(y_true, y_pred,
-                        metric,
-                        multioutput='raw_values', sample_weight=None):
+def _objective_function(
+        y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
+):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
     components to allow proper comparison.
@@ -192,19 +192,15 @@ def _objective_function(y_true, y_pred,
         logger.error("Metric name not recognized.")
         output_errors = None
 
-    # Save _objective_function result
-    # np.save(jp(directory, f"{method_name}"), output_errors)
-
     logger.info(f"Similarity : {np.average(output_errors, weights=sample_weight)}")
 
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             return output_errors
-        elif multioutput == 'uniform_average':
+        elif multioutput == "uniform_average":
             # pass None as weights to np.average: uniform mean
             multioutput = None
-
-    return output_errors
+            return np.average(output_errors, weights=multioutput, axis=0)
 
 
 def measure_info_mode(roots_obs: Root, metric, source_ids):

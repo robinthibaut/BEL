@@ -841,7 +841,7 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
         plt.xlabel("X(m)", fontsize=11)
         plt.ylabel("Y(m)", fontsize=11)
         plot_wells(wells, markersize=3.5)
-        well_legend = plt.legend(fontsize=11, loc=2, framealpha=.6)
+        well_legend = plt.legend(fontsize=11, loc=2, framealpha=0.6)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
