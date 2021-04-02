@@ -71,7 +71,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
             bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
             bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
             bel_clone.n_posts = Setup.HyperParameters.n_posts
-            bel_clone.seed = 123456
+            # bel_clone.seed = 123456
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
@@ -105,8 +105,8 @@ def bel_uq(
     # Directories
     combinations = source_ids
     total = len(index)
-    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
+    # wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
+    # wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
@@ -121,6 +121,7 @@ def bel_uq(
             # %% Folders
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
+            bel.seed = None
             # Compute objective function
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
             n_cut = bel.Y_n_pc  # Number of components to keep
