@@ -10,10 +10,10 @@ from sklearn.base import clone
 
 from .. import utils
 from ..config import Setup
+from ..spatial import contour_extract
 from ..spatial import (
     contours_vertices,
 )
-from ..spatial import contour_extract
 from ..utils import Root
 
 __all__ = [
@@ -105,6 +105,8 @@ def bel_uq(
     # Directories
     combinations = source_ids
     total = len(index)
+    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
+    wm = np.zeros((len(wid), Setup.HyperParameters.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
@@ -147,14 +149,16 @@ def bel_uq(
 
             for m in metrics:
                 _objective_function(
-                    y_r=Y_reconstructed,
-                    y_samples=Y_posterior,
+                    y_true=Y_reconstructed,
+                    y_pred=Y_posterior,
                     metric=m,
                     directory=obj_dir,
                 )
 
 
-def _objective_function(y_r, y_samples, metric, directory):
+def _objective_function(y_true, y_pred,
+                        metric, directory,
+                        multioutput='raw_values', sample_weight=None):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
     components to allow proper comparison.
@@ -166,28 +170,35 @@ def _objective_function(y_r, y_samples, metric, directory):
     logger.info(f"Quantifying image difference based on {method_name}")
     if method_name == "modified_hausdorff":
         # For MHD, we need the 0 contours vertices
-        x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_r)
+        x, y, vertices = contour_extract(x_lim=x_lim, y_lim=y_lim, grf=grf, Z=y_true)
         true_feature = vertices[0]  # Vertices of the true observation
-        to_compare = contours_vertices(x=x, y=y, arrays=y_samples)
-        similarity = np.array([metric(true_feature, f) for f in to_compare])
+        to_compare = contours_vertices(x=x, y=y, arrays=y_pred)
+        output_errors = np.array([metric(true_feature, f) for f in to_compare])
     elif method_name == "structural_similarity":
         # SSIM works with continuous images.
         # With SSIM, a value of 1 = perfect similarity.
         # SSIM values decrease with dissimilarity
-        true_feature = y_r[0]
-        to_compare = y_samples
+        true_feature = y_true[0]
+        to_compare = y_pred
         # Compute metric between the 'true image' and the n sampled images or images feature
-        similarity = 1 - np.array([metric(true_feature, f) for f in to_compare])
+        output_errors = -np.array([metric(true_feature, f) for f in to_compare])
     else:
         logger.error("Metric name not recognized.")
-        similarity = None
+        output_errors = None
 
     # Save _objective_function result
-    np.save(jp(directory, f"{method_name}"), similarity)
+    np.save(jp(directory, f"{method_name}"), output_errors)
 
-    logger.info(f"Similarity : {np.mean(similarity)}")
+    logger.info(f"Similarity : {np.average(output_errors, weights=sample_weight)}")
 
-    return np.mean(similarity)
+    if isinstance(multioutput, str):
+        if multioutput == 'raw_values':
+            return output_errors
+        elif multioutput == 'uniform_average':
+            # pass None as weights to np.average: uniform mean
+            multioutput = None
+
+    return np.average(output_errors, weights=multioutput)
 
 
 def measure_info_mode(roots_obs: Root, metric, source_ids):

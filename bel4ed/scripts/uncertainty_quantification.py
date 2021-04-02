@@ -2,19 +2,17 @@
 from os.path import join as jp
 
 import numpy as np
-from loguru import logger
-from functools import partial
-from sklearn.preprocessing import StandardScaler, PowerTransformer
-from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
+from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
-from bel4ed.goggles import mode_histo
 from bel4ed.config import Setup
-from bel4ed.design import measure_info_mode
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
+from bel4ed.design import measure_info_mode
+from bel4ed.goggles import mode_histo
 from bel4ed.learning.bel import BEL
 
 
@@ -107,30 +105,30 @@ if __name__ == "__main__":
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # Source IDs
-    # wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
 
     # Initiate BEL model
-    bel = init_bel()
+    # bel = init_bel()
 
     # Train model
-    train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    # train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
 
     # Pick metrics
-    # metrics = (modified_hausdorff, structural_similarity)
+    metrics = (modified_hausdorff, structural_similarity)
 
     # Compute UQ with metrics
-    # bel_uq(
-    #     index=test_r,
-    #     directory=Setup.Directories.forecasts_dir,
-    #     source_ids=wells,
-    #     metrics=metrics,
-    # )
+    bel_uq(
+        index=test_r,
+        directory=Setup.Directories.forecasts_dir,
+        source_ids=wells,
+        metrics=metrics,
+    )
 
     # Process dissimilarity measure
-    # for m in metrics:
-    #     measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
+    for m in metrics:
+        measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
 
     # Plot UQ
-    # plot_uq(modified_hausdorff)
-    # plot_uq(structural_similarity)
+    plot_uq(modified_hausdorff)
+    plot_uq(structural_similarity)

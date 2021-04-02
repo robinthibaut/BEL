@@ -1,11 +1,5 @@
-"""Metrics to assess performance on regression task
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-Functions named as ``*_score`` return a scalar value to maximize: the higher
-the better
-
-Function named as ``*_error`` or ``*_loss`` return a scalar value to minimize:
-the lower the better
-"""
 import os
 
 import numpy as np
