@@ -19,7 +19,7 @@ from ..algorithms import mvn_inference
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
-    Heart of the framework.
+    Heart of the framework. Inherits from scikit-learn base classes.
     """
 
     def __init__(
@@ -67,8 +67,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_f, self.Y_f = None, None
         self.X_obs_f, self.Y_obs_f = None, None
 
+    # The following properties are central to the BEL framework
     @property
     def X_n_pc(self):
+        """Number of components to keep after pre-processing (dimensionality reduction)"""
         return self._X_n_pc
 
     @X_n_pc.setter
@@ -77,6 +79,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def Y_n_pc(self):
+        """Number of components to keep after pre-processing (dimensionality reduction)"""
         return self._Y_n_pc
 
     @Y_n_pc.setter
@@ -85,6 +88,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def n_posts(self):
+        """Number of sample to extract from the posterior multivariate distribution after post-processing"""
         return self._n_posts
 
     @n_posts.setter
@@ -93,6 +97,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
+        """Seed aka random state to reproduce the same samples"""
         return self._seed
 
     @seed.setter

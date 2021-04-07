@@ -65,10 +65,12 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
                 ]
             ]
             # Clone BEL for safety
+            # Reset params
             bel_clone = clone(bel)
             bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
             bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
             bel_clone.n_posts = Setup.HyperParameters.n_posts
+            # Setting the seed might cause issues
             # bel_clone.seed = 123456
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
