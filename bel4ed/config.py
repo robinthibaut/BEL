@@ -13,6 +13,8 @@ from os.path import dirname, join
 
 import numpy as np
 
+TEST_ROOT = "818bf1676c424f76b83bd777ae588a1d"
+
 
 class Machine(object):
     computer: str = platform.node()

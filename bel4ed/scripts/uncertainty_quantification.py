@@ -2,6 +2,7 @@
 from os.path import join as jp
 
 import numpy as np
+from sklearn.model_selection import KFold
 
 from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
@@ -11,27 +12,48 @@ from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo
 
 
-def train(model, training_idx: list, test_idx: list, source_ids: list or np.array):
+def train(model,
+          training_idx: list, test_idx: list,
+          source_ids: list or np.array,
+          kfold: bool = False, n_splits: int = None):
     # Load datasets
     X, Y = load_dataset()
 
-    # Select roots for testing
-    X_train = X.loc[training_idx]
-    # X_test = X.loc[["818bf1676c424f76b83bd777ae588a1d"]]
-    X_test = X.loc[test_idx]
-    y_train = Y.loc[training_idx]
-    # y_test = Y.loc[["818bf1676c424f76b83bd777ae588a1d"]]
-    y_test = Y.loc[test_idx]
+    if kfold:
+        kf = KFold(n_splits=n_splits)
+        kf.get_n_splits(X)
+        for train_index, test_index in kf.split(X):
+            X_train = X.loc[train_index]
+            X_test = X.loc[test_index]
+            y_train = Y.loc[train_index]
+            y_test = Y.loc[test_index]
 
-    bel_training(
-        bel=model,
-        X_train=X_train,
-        X_test=X_test,
-        y_train=y_train,
-        y_test=y_test,
-        directory=Setup.Directories.forecasts_dir,
-        source_ids=source_ids,
-    )
+            bel_training(
+                bel=model,
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                directory=Setup.Directories.forecasts_dir,
+                source_ids=source_ids,
+            )
+
+    else:
+        # Select roots for testing
+        X_train = X.loc[training_idx]
+        X_test = X.loc[test_idx]
+        y_train = Y.loc[training_idx]
+        y_test = Y.loc[test_idx]
+
+        bel_training(
+            bel=model,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            directory=Setup.Directories.forecasts_dir,
+            source_ids=source_ids,
+        )
 
 
 def plot_uq(metric_function):
