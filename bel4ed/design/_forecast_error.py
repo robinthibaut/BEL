@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids, fold: str = None):
+def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
     """
     :param bel:
     :param X_train:
@@ -38,7 +38,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids, f
     for ix, test_root in enumerate(X_test.index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
-        bel_dir = jp(directory, fold, test_root)
+        bel_dir = jp(directory, test_root)
 
         for ixw, c in enumerate(combinations):  # For each wel combination
             logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
@@ -100,7 +100,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids, f
 
 
 def bel_uq(
-    index: list, directory: str, source_ids: list or np.array, metrics: list or tuple
+        index: list, directory: str, source_ids: list or np.array, metrics: list or tuple, delete: bool = False
 ):
     # Directories
     combinations = source_ids
@@ -122,30 +122,39 @@ def bel_uq(
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
             # Compute objective function
-            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-            n_cut = bel.Y_n_pc  # Number of components to keep
-            y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
-            dummy = np.zeros(
-                (1, y_obs_pc.shape[1])
-            )  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc[
-                :, :n_cut
-            ]  # Fill the dummy matrix with the posterior PC
+            try:
+                Y_reconstructed = bel.Y_reconstructed
+            except AttributeError:
+                # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+                n_cut = bel.Y_n_pc  # Number of components to keep
+                y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
+                dummy = np.zeros(
+                    (1, y_obs_pc.shape[1])
+                )  # Create a dummy matrix filled with zeros
+                dummy[:, :n_cut] = y_obs_pc[
+                                   :, :n_cut
+                                   ]  # Fill the dummy matrix with the posterior PC
+                # Reshape for the objective function
+                Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                    bel.Y_shape
+                )  # Inverse transform = "True image"
 
-            # Reshape for the objective function
-            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
-                bel.Y_shape
-            )  # Inverse transform = "True image"
-
-            # Compute CCA Gaussian scores
-            Y_posts_gaussian = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
-            # Get back to original space
-            Y_posterior = bel.inverse_transform(
-                Y_pred=Y_posts_gaussian,
-            )
-            Y_posterior = Y_posterior.reshape(
-                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
-            )
+            try:
+                Y_posterior = bel.Y_posterior
+            except AttributeError:
+                # Compute CCA Gaussian scores
+                Y_posts_gaussian = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
+                # Get back to original space
+                Y_posterior = bel.inverse_transform(
+                    Y_pred=Y_posts_gaussian,
+                )
+                Y_posterior = Y_posterior.reshape(
+                    (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
+                )
+            # Save statistical parameters
+            pmean = bel.posterior_mean
+            pcov = bel.posterior_covariance
+            seed = bel.seed
 
             for j, m in enumerate(metrics):
                 oe = _objective_function(
@@ -154,6 +163,16 @@ def bel_uq(
                     metric=m,
                 )
                 wm[j, ixw] += oe
+
+            if delete:
+                # For KFold, save a lighter version of the bel model.
+                bel = bel.clone(bel)
+                bel.posterior_mean = pmean
+                bel.posterior_covariance = pcov
+                bel.Y_reconstructed = Y_reconstructed
+                bel.Y_posterior = Y_posterior
+                bel.seed = seed
+                joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
     for j, m in enumerate(metrics):
         np.save(

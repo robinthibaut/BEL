@@ -8,7 +8,7 @@ from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.design import bel_training
+from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo
 
 
@@ -29,17 +29,29 @@ def train(model,
         kf.get_n_splits(X_)
         ns = 0  # Split number
         for train_index, test_index in kf.split(X_):
+            fold_directory = jp(Setup.Directories.forecasts_dir, f"fold_{ns}")
             bel_training(
                 bel=model,
                 X_train=X_.iloc[train_index],
                 X_test=X_.iloc[test_index],
                 y_train=y_.iloc[train_index],
                 y_test=y_.iloc[test_index],
-                directory=Setup.Directories.forecasts_dir,
+                directory=fold_directory,
                 source_ids=source_ids,
-                fold=f"fold_{ns}",
             )
             ns += 1
+
+            # Pick metrics
+            metrics = (modified_hausdorff, structural_similarity)
+
+            # Compute UQ with metrics
+            bel_uq(
+                index=test_index,
+                directory=fold_directory,
+                source_ids=wells,
+                metrics=metrics,
+                delete=True,
+            )
 
     else:
         # Select roots for testing
