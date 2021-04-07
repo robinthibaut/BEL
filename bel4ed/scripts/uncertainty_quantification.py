@@ -75,7 +75,7 @@ def run(model,
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff, structural_similarity)
+        metrics = (modified_hausdorff,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -113,4 +113,4 @@ if __name__ == "__main__":
     bel = init_bel()
 
     # Train model
-    run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=True, n_splits=5)
+    run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=False, n_splits=5)

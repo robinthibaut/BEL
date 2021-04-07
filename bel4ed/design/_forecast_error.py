@@ -110,8 +110,6 @@ def bel_uq(
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
-        if not isinstance(test_root, str):
-            test_root = str(test_root)
         bel_dir = jp(directory, test_root)
 
         for ixw, c in enumerate(combinations):  # For each wel combination
