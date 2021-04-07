@@ -30,15 +30,15 @@ def run(model,
         ns = 0  # Split number
         for train_index, test_index in kf.split(X_):
             fold_directory = jp(Setup.Directories.forecasts_dir, f"fold_{ns}")
-            # bel_training(
-            #     bel=model,
-            #     X_train=X_.iloc[train_index],
-            #     X_test=X_.iloc[test_index],
-            #     y_train=y_.iloc[train_index],
-            #     y_test=y_.iloc[test_index],
-            #     directory=fold_directory,
-            #     source_ids=source_ids,
-            # )
+            bel_training(
+                bel=model,
+                X_train=X_.iloc[train_index],
+                X_test=X_.iloc[test_index],
+                y_train=y_.iloc[train_index],
+                y_test=y_.iloc[test_index],
+                directory=fold_directory,
+                source_ids=source_ids,
+            )
             ns += 1
 
             # Pick metrics
@@ -46,13 +46,13 @@ def run(model,
 
             # Compute UQ with metrics
             index = X_.iloc[test_index].index
-            # bel_uq(
-            #     index=index,
-            #     directory=fold_directory,
-            #     source_ids=wells,
-            #     metrics=metrics,
-            #     delete=True,
-            # )
+            bel_uq(
+                index=index,
+                directory=fold_directory,
+                source_ids=wells,
+                metrics=metrics,
+                delete=True,
+            )
 
             plot_uq(modified_hausdorff, directory=fold_directory)
             plot_uq(structural_similarity, directory=fold_directory)
