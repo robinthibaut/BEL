@@ -2,68 +2,13 @@
 from os.path import join as jp
 
 import numpy as np
-from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
 
+from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo
-from bel4ed.learning.bel import BEL
-
-
-def init_bel():
-    """
-    Set all BEL pipelines
-    :return:
-    """
-    # Pipeline before CCA
-    X_pre_processing = Pipeline(
-        [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
-        ]
-    )
-    Y_pre_processing = Pipeline(
-        [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
-        ]
-    )
-
-    # Canonical Correlation Analysis
-    # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = (
-        Setup.HyperParameters.n_pc_predictor,
-        Setup.HyperParameters.n_pc_target,
-    )
-    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
-
-    # Pipeline after CCA
-    X_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
-    Y_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
-
-    # Initiate BEL object
-    bel_model = BEL(
-        X_pre_processing=X_pre_processing,
-        X_post_processing=X_post_processing,
-        Y_pre_processing=Y_pre_processing,
-        Y_post_processing=Y_post_processing,
-        cca=cca,
-    )
-
-    # Set PC cut
-    bel_model.X_n_pc = n_pc_pred
-    bel_model.Y_n_pc = n_pc_targ
-
-    return bel_model
 
 
 def train(model, training_idx: list, test_idx: list, source_ids: list or np.array):
@@ -108,7 +53,7 @@ if __name__ == "__main__":
     # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
 
     # Initiate BEL model
-    # bel = init_bel()
+    bel = init_bel()
 
     # Train model
     # train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)

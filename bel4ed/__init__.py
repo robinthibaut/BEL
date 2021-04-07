@@ -4,11 +4,18 @@ from datetime import date
 from os.path import join as jp
 
 from loguru import logger
+from sklearn.cross_decomposition import CCA
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PowerTransformer
 
+from .config import Setup
 from .hydro import forward_modelling
 from .learning import bel
 
 __version__ = "1.0.dev0"
+
+from .learning.bel import BEL
 
 source = __name__.split(".")[-1]
 # Set up logger
@@ -30,4 +37,56 @@ __all__ = [
     "learning",
     "preprocessing",
     "spatial",
+    "init_bel",
 ]
+
+
+def init_bel():
+    """
+    Set all BEL pipelines
+    :return:
+    """
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
+
+    # Canonical Correlation Analysis
+    # Number of CCA components is chosen as the min number of PC
+    n_pc_pred, n_pc_targ = (
+        Setup.HyperParameters.n_pc_predictor,
+        Setup.HyperParameters.n_pc_target,
+    )
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
+
+    # Pipeline after CCA
+    X_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+    Y_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+
+    # Initiate BEL object
+    bel_model = BEL(
+        X_pre_processing=X_pre_processing,
+        X_post_processing=X_post_processing,
+        Y_pre_processing=Y_pre_processing,
+        Y_post_processing=Y_post_processing,
+        cca=cca,
+    )
+
+    # Set PC cut
+    bel_model.X_n_pc = n_pc_pred
+    bel_model.Y_n_pc = n_pc_targ
+
+    return bel_model

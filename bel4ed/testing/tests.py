@@ -1,19 +1,16 @@
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 from os.path import join as jp
 
 import numpy as np
 
+from bel4ed import init_bel
 from bel4ed.config import Setup
-from sklearn.preprocessing import StandardScaler, PowerTransformer
-from sklearn.decomposition import PCA
-from sklearn.cross_decomposition import CCA
-from sklearn.pipeline import Pipeline
-
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.learning.bel import BEL
 
 
 def test_posterior():
-    """Compare posterior samples with reference default values"""
+    """Compare posterior mean and covariance with reference default values"""
 
     # Get roots used for testing
     training_file = jp(Setup.Directories.test_dir, "roots.dat")
@@ -40,52 +37,9 @@ def test_posterior():
 
     # Set seed
     seed = 123456
-    # np.random.seed(seed)
-
-    # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = (
-        Setup.HyperParameters.n_pc_predictor,
-        Setup.HyperParameters.n_pc_target,
-    )
-
-    # Pipeline before CCA
-    X_pre_processing = Pipeline(
-        [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
-        ]
-    )
-    Y_pre_processing = Pipeline(
-        [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
-        ]
-    )
-
-    # Canonical Correlation Analysis
-    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
-
-    # Pipeline after CCA
-    X_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
-    Y_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
 
     # Initiate BEL object
-    bel = BEL(
-        X_pre_processing=X_pre_processing,
-        X_post_processing=X_post_processing,
-        Y_pre_processing=Y_pre_processing,
-        Y_post_processing=Y_post_processing,
-        cca=cca,
-    )
-
-    # Set PC cut
-    bel.X_n_pc = n_pc_pred
-    bel.Y_n_pc = n_pc_targ
-    bel.n_posts = Setup.HyperParameters.n_posts
+    bel = init_bel()
     bel.seed = seed
 
     # Fit
