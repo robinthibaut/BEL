@@ -110,6 +110,8 @@ def bel_uq(
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
+        if not isinstance(test_root, str):
+            test_root = str(test_root)
         bel_dir = jp(directory, test_root)
 
         for ixw, c in enumerate(combinations):  # For each wel combination
@@ -121,7 +123,6 @@ def bel_uq(
             # %% Folders
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
-            # Compute objective function
             try:
                 Y_reconstructed = bel.Y_reconstructed
             except AttributeError:
@@ -166,7 +167,7 @@ def bel_uq(
 
             if delete:
                 # For KFold, save a lighter version of the bel model.
-                bel = bel.clone(bel)
+                bel = clone(bel)
                 bel.posterior_mean = pmean
                 bel.posterior_covariance = pcov
                 bel.Y_reconstructed = Y_reconstructed
@@ -176,7 +177,7 @@ def bel_uq(
 
     for j, m in enumerate(metrics):
         np.save(
-            os.path.join(Setup.Directories.forecasts_dir, f"uq_{m.__name__}.npy"), wm[j]
+            os.path.join(directory, f"uq_{m.__name__}.npy"), wm[j]
         )
 
 

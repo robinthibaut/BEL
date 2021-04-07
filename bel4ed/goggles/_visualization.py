@@ -850,7 +850,7 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
         plt.close()
 
 
-def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average"):
+def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average", directory: str = None):
     """
 
     :param colors:
@@ -859,6 +859,8 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
     :param fig_name:
     :return:
     """
+    if directory is None:
+        directory = Setup.Directories.forecasts_dir
     alphabet = string.ascii_uppercase
     wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
 
@@ -887,7 +889,7 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(Setup.Directories.forecasts_dir, f"{fig_name}_well_mode.pdf"),
+        os.path.join(directory, f"{fig_name}_well_mode.pdf"),
         dpi=300,
         transparent=True,
     )
@@ -908,7 +910,7 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average")
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(Setup.Directories.forecasts_dir, f"{fig_name}_hist.pdf"),
+        os.path.join(directory, f"{fig_name}_hist.pdf"),
         dpi=300,
         transparent=True,
     )
