@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
+def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids, fold: str = None):
     """
     :param bel:
     :param X_train:
@@ -38,7 +38,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
     for ix, test_root in enumerate(X_test.index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
-        bel_dir = jp(directory, test_root)
+        bel_dir = jp(directory, fold, test_root)
 
         for ixw, c in enumerate(combinations):  # For each wel combination
             logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
@@ -121,7 +121,6 @@ def bel_uq(
             # %% Folders
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
-            bel.seed = None
             # Compute objective function
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
             n_cut = bel.Y_n_pc  # Number of components to keep

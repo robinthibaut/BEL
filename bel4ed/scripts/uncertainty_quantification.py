@@ -8,7 +8,7 @@ from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.design import bel_training, bel_uq
+from bel4ed.design import bel_training
 from bel4ed.goggles import mode_histo
 
 
@@ -20,23 +20,26 @@ def train(model,
     X, Y = load_dataset()
 
     if kfold:
-        kf = KFold(n_splits=n_splits)
-        kf.get_n_splits(X)
-        for train_index, test_index in kf.split(X):
-            X_train = X.loc[train_index]
-            X_test = X.loc[test_index]
-            y_train = Y.loc[train_index]
-            y_test = Y.loc[test_index]
+        idx = [*training_idx, *test_idx]
 
+        X_ = X.loc[idx]
+        y_ = Y.loc[idx]
+
+        kf = KFold(n_splits=n_splits)
+        kf.get_n_splits(X_)
+        ns = 0  # Split number
+        for train_index, test_index in kf.split(X_):
             bel_training(
                 bel=model,
-                X_train=X_train,
-                X_test=X_test,
-                y_train=y_train,
-                y_test=y_test,
+                X_train=X_.iloc[train_index],
+                X_test=X_.iloc[test_index],
+                y_train=y_.iloc[train_index],
+                y_test=y_.iloc[test_index],
                 directory=Setup.Directories.forecasts_dir,
                 source_ids=source_ids,
+                fold=f"fold_{ns}",
             )
+            ns += 1
 
     else:
         # Select roots for testing
@@ -78,23 +81,23 @@ if __name__ == "__main__":
     bel = init_bel()
 
     # Train model
-    # train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    train(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=True, n_splits=5)
 
     # Pick metrics
     metrics = (modified_hausdorff, structural_similarity)
 
     # Compute UQ with metrics
-    bel_uq(
-        index=test_r,
-        directory=Setup.Directories.forecasts_dir,
-        source_ids=wells,
-        metrics=metrics,
-    )
+    # bel_uq(
+    #     index=test_r,
+    #     directory=Setup.Directories.forecasts_dir,
+    #     source_ids=wells,
+    #     metrics=metrics,
+    # )
 
     # Process dissimilarity measure
     # for m in metrics:
     #     measure_info_mode(roots_obs=test_r, metric=m, source_ids=wells)
 
     # Plot UQ
-    plot_uq(modified_hausdorff)
-    plot_uq(structural_similarity)
+    # plot_uq(modified_hausdorff)
+    # plot_uq(structural_similarity)
