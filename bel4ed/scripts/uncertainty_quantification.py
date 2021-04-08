@@ -2,7 +2,7 @@
 from os.path import join as jp
 
 import numpy as np
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
@@ -12,9 +12,9 @@ from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo
 
 
-def run(model,
-        training_idx: list, test_idx: list,
-        source_ids: list or np.array,
+def run(model, *,
+        training_idx: list = None, test_idx: list = None,
+        source_ids: list or np.array = None,
         kfold: bool = False, n_splits: int = None):
     # Load datasets
     X, Y = load_dataset()
@@ -30,15 +30,15 @@ def run(model,
         ns = 0  # Split number
         for train_index, test_index in kf.split(X_):
             fold_directory = jp(Setup.Directories.forecasts_dir, f"fold_{ns}")
-            bel_training(
-                bel=model,
-                X_train=X_.iloc[train_index],
-                X_test=X_.iloc[test_index],
-                y_train=y_.iloc[train_index],
-                y_test=y_.iloc[test_index],
-                directory=fold_directory,
-                source_ids=source_ids,
-            )
+            # bel_training(
+            #     bel=model,
+            #     X_train=X_.iloc[train_index],
+            #     X_test=X_.iloc[test_index],
+            #     y_train=y_.iloc[train_index],
+            #     y_test=y_.iloc[test_index],
+            #     directory=fold_directory,
+            #     source_ids=source_ids,
+            # )
             ns += 1
 
             # Pick metrics
@@ -46,18 +46,19 @@ def run(model,
 
             # Compute UQ with metrics
             index = X_.iloc[test_index].index
-            bel_uq(
-                index=index,
-                directory=fold_directory,
-                source_ids=wells,
-                metrics=metrics,
-                delete=True,
-            )
+            # bel_uq(
+            #     index=index,
+            #     directory=fold_directory,
+            #     source_ids=wells,
+            #     metrics=metrics,
+            #     delete=True,
+            # )
 
             plot_uq(modified_hausdorff, directory=fold_directory)
             plot_uq(structural_similarity, directory=fold_directory)
 
-    else:
+    if training_idx and test_idx:
+        custom_directory = jp(Setup.Directories.forecasts_dir, "custom")
         # Select roots for testing
         X_train = X.loc[training_idx]
         X_test = X.loc[test_idx]
@@ -70,7 +71,7 @@ def run(model,
             X_test=X_test,
             y_train=y_train,
             y_test=y_test,
-            directory=Setup.Directories.forecasts_dir,
+            directory=custom_directory,
             source_ids=source_ids,
         )
 
@@ -80,13 +81,40 @@ def run(model,
         # Compute UQ with metrics
         bel_uq(
             index=test_idx,
-            directory=Setup.Directories.forecasts_dir,
+            directory=custom_directory,
             source_ids=wells,
             metrics=metrics,
         )
 
-        plot_uq(modified_hausdorff)
-        plot_uq(structural_similarity)
+        plot_uq(modified_hausdorff, directory=custom_directory)
+        plot_uq(structural_similarity, directory=custom_directory)
+    else:
+        test_directory = jp(Setup.Directories.forecasts_dir, "test")
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=1000, test_size=250, random_state=42)
+
+        bel_training(
+            bel=model,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            directory=test_directory,
+            source_ids=source_ids,
+        )
+
+        # Pick metrics
+        metrics = (modified_hausdorff,)
+
+        # Compute UQ with metrics
+        bel_uq(
+            index=test_idx,
+            directory=test_directory,
+            source_ids=wells,
+            metrics=metrics,
+        )
+
+        plot_uq(modified_hausdorff, directory=test_directory)
+        plot_uq(structural_similarity, directory=test_directory)
 
 
 def plot_uq(metric_function, directory: str = None):
@@ -113,4 +141,6 @@ if __name__ == "__main__":
     bel = init_bel()
 
     # Train model
-    run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=False, n_splits=5)
+    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=True, n_splits=5)
+    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=False, n_splits=5)
+    run(model=bel, source_ids=wells, )

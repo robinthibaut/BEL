@@ -18,6 +18,8 @@ from matplotlib.pyplot import legend
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array
 
 import bel4ed.utils
@@ -863,6 +865,9 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average",
         directory = Setup.Directories.forecasts_dir
     alphabet = string.ascii_uppercase
     wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
+
+    pipeline = Pipeline([("s_scaler", StandardScaler()), ])
+    wm = pipeline.fit_transform(wm)
 
     modes = []  # Get MHD corresponding to each well's mode
     for i, m in enumerate(wm):  # For each well, look up its MHD distribution

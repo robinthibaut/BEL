@@ -40,7 +40,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
         # Directory in which to load forecasts
         bel_dir = jp(directory, test_root)
 
-        for ixw, c in enumerate(combinations):  # For each wel combination
+        for ixw, c in enumerate(combinations):  # For each well combination
             logger.info(f"[{ix + 1}/{total}]-{test_root}-{ixw + 1}/{len(combinations)}")
 
             new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
