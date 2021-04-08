@@ -35,9 +35,9 @@ def run(
         y_ = Y.loc[idx]
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        kf.get_n_splits(X_)
+        kf.get_n_splits()
         ns = 0  # Split number
-        for train_index, test_index in kf.split(X_):
+        for train_index, test_index in kf.split(X_, y_):
             fold_directory = jp(
                 Setup.Directories.forecasts_dir, f"fold_{len(idx)}_{ns}"
             )
@@ -185,10 +185,10 @@ if __name__ == "__main__":
         source_ids=wells,
         kfold=True,
         n_splits=5,
-        shuffle=True,
+        shuffle=False,
         random_state=42,
     )
 
     # Test datasets with various sizes
     # run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True)
-    # run(model=bel, source_ids=wells, random_state=3, shuffle=True)
+    # run(model=bel, source_ids=wells, random_state=6, shuffle=True)
