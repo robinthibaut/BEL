@@ -100,7 +100,12 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
 
 
 def bel_uq(
-        *, index: list, directory: str, source_ids: list or np.array, metrics: list or tuple, delete: bool = False
+        *,
+        index: list,
+        directory: str,
+        source_ids: list or np.array,
+        metrics: list or tuple,
+        delete: bool = False,
 ):
     # Directories
     combinations = source_ids
@@ -142,7 +147,9 @@ def bel_uq(
                 Y_posterior = bel.Y_posterior
             except AttributeError:
                 # Compute CCA Gaussian scores
-                Y_posts_gaussian = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
+                Y_posts_gaussian = bel.random_sample(
+                    n_posts=Setup.HyperParameters.n_posts
+                )
                 # Get back to original space
                 Y_posterior = bel.inverse_transform(
                     Y_pred=Y_posts_gaussian,
@@ -174,9 +181,7 @@ def bel_uq(
                 joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
     for j, m in enumerate(metrics):
-        np.save(
-            os.path.join(directory, f"uq_{m.__name__}.npy"), wm[j]
-        )
+        np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), wm[j])
 
 
 def _objective_function(

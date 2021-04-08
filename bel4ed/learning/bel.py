@@ -25,12 +25,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def __init__(
             self,
             mode: str = "mvn",
+            copy=True,
+            *,
             X_pre_processing=None,
             Y_pre_processing=None,
             X_post_processing=None,
             Y_post_processing=None,
             cca=None,
-            copy=True,
     ):
         self.copy = copy
         # How to infer the posterior parameters

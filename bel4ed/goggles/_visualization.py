@@ -852,7 +852,13 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
         plt.close()
 
 
-def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average", directory: str = None):
+def mode_histo(
+        colors: list,
+        an_i: int,
+        wm: np.array,
+        fig_name: str = "average",
+        directory: str = None,
+):
     """
 
     :param colors:
@@ -866,7 +872,11 @@ def mode_histo(colors: list, an_i: int, wm: np.array, fig_name: str = "average",
     alphabet = string.ascii_uppercase
     wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
 
-    pipeline = Pipeline([("s_scaler", StandardScaler()), ])
+    pipeline = Pipeline(
+        [
+            ("s_scaler", StandardScaler()),
+        ]
+    )
     wm = pipeline.fit_transform(wm)
 
     modes = []  # Get MHD corresponding to each well's mode
