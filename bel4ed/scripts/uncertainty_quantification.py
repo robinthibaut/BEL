@@ -16,7 +16,7 @@ def run(model, *,
         training_idx: list = None, test_idx: list = None,
         source_ids: list or np.array = None,
         kfold: bool = False, n_splits: int = None,
-        train_size: int = 200, test_size: int = 50):
+        train_size: int = 200, test_size: int = 50, random_state: int = 42):
     # Load datasets
     X, Y = load_dataset()
 
@@ -30,7 +30,7 @@ def run(model, *,
         kf.get_n_splits(X_)
         ns = 0  # Split number
         for train_index, test_index in kf.split(X_):
-            fold_directory = jp(Setup.Directories.forecasts_dir, f"fold_{ns}")
+            fold_directory = jp(Setup.Directories.forecasts_dir, f"fold_{len(idx)}_{ns}")
             # bel_training(
             #     bel=model,
             #     X_train=X_.iloc[train_index],
@@ -90,9 +90,9 @@ def run(model, *,
         plot_uq(modified_hausdorff, directory=custom_directory)
         plot_uq(structural_similarity, directory=custom_directory)
     else:
-        test_directory = jp(Setup.Directories.forecasts_dir, "test")
+        test_directory = jp(Setup.Directories.forecasts_dir, f"test_{train_size}_{test_size}_{random_state}")
         X_train, X_test, y_train, y_test = \
-            train_test_split(X, Y, train_size=train_size, test_size=test_size, shuffle=True, random_state=42)
+            train_test_split(X, Y, train_size=train_size, test_size=test_size, shuffle=True, random_state=random_state)
 
         bel_training(
             bel=model,
@@ -109,14 +109,13 @@ def run(model, *,
 
         # Compute UQ with metrics
         bel_uq(
-            index=test_idx,
+            index=X_test.index,
             directory=test_directory,
             source_ids=wells,
             metrics=metrics,
         )
 
-        plot_uq(modified_hausdorff, directory=test_directory)
-        plot_uq(structural_similarity, directory=test_directory)
+        [plot_uq(m, directory=test_directory) for m in metrics]
 
 
 def plot_uq(metric_function, directory: str = None):
@@ -143,7 +142,12 @@ if __name__ == "__main__":
     bel = init_bel()
 
     # Train model
+    # Reference dataset
+    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+
+    # KFold on custom dataset
     # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=True, n_splits=5)
-    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=False, n_splits=5)
+
+    # Test datasets with various sizes
     # run(model=bel, source_ids=wells, train_size=1000, test_size=250)
-    run(model=bel, source_ids=wells)
+    run(model=bel, source_ids=wells, random_state=3)
