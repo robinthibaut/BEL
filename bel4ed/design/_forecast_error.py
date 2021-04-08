@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
+def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids):
     """
     :param bel:
     :param X_train:
@@ -100,7 +100,7 @@ def bel_training(bel, X_train, X_test, y_train, y_test, directory, source_ids):
 
 
 def bel_uq(
-        index: list, directory: str, source_ids: list or np.array, metrics: list or tuple, delete: bool = False
+        *, index: list, directory: str, source_ids: list or np.array, metrics: list or tuple, delete: bool = False
 ):
     # Directories
     combinations = source_ids
