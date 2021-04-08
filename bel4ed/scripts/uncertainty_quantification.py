@@ -1,11 +1,12 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from os.path import join as jp
 
+from loguru import logger
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import init_bel
-from bel4ed.algorithms import modified_hausdorff
+from bel4ed.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
@@ -22,7 +23,7 @@ def run(
         n_splits: int = None,
         train_size: int = 200,
         test_size: int = 50,
-        random_state: int = 42,
+        random_state: int = None,
         shuffle: bool = False,
 ):
     # Load datasets
@@ -35,9 +36,12 @@ def run(
         y_ = Y.loc[idx]
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        kf.get_n_splits()
+        kf.get_n_splits(X_)
         ns = 0  # Split number
         for train_index, test_index in kf.split(X_, y_):
+            train_index = np.array([i for i in range(200)])
+            test_index = np.array([i for i in range(200, 250)])
+            logger.info(f"Fold {ns}")
             fold_directory = jp(
                 Setup.Directories.forecasts_dir, f"fold_{len(idx)}_{ns}"
             )
@@ -61,7 +65,7 @@ def run(
             ns += 1
 
             # Pick metrics
-            metrics = (modified_hausdorff,)
+            metrics = (structural_similarity,)
 
             # Compute UQ with metrics
             bel_uq(
@@ -69,12 +73,11 @@ def run(
                 directory=fold_directory,
                 source_ids=wells,
                 metrics=metrics,
-                delete=True,
             )
 
             [plot_uq(m, directory=fold_directory) for m in metrics]
 
-    if training_idx and test_idx:
+    elif training_idx and test_idx:
         custom_directory = jp(
             Setup.Directories.forecasts_dir,
             f"custom_{len(training_idx)}_{len(test_idx)}",
@@ -96,7 +99,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (structural_similarity,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -133,7 +136,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (structural_similarity,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -186,9 +189,9 @@ if __name__ == "__main__":
         kfold=True,
         n_splits=5,
         shuffle=False,
-        random_state=42,
+        random_state=None,
     )
 
     # Test datasets with various sizes
-    # run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True)
+    # run(model=bel, source_ids=wells, train_size=200, test_size=50, shuffle=False)
     # run(model=bel, source_ids=wells, random_state=6, shuffle=True)
