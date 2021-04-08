@@ -15,7 +15,8 @@ from bel4ed.goggles import mode_histo
 def run(model, *,
         training_idx: list = None, test_idx: list = None,
         source_ids: list or np.array = None,
-        kfold: bool = False, n_splits: int = None):
+        kfold: bool = False, n_splits: int = None,
+        train_size: int = 200, test_size: int = 50):
     # Load datasets
     X, Y = load_dataset()
 
@@ -58,7 +59,7 @@ def run(model, *,
             plot_uq(structural_similarity, directory=fold_directory)
 
     if training_idx and test_idx:
-        custom_directory = jp(Setup.Directories.forecasts_dir, "custom")
+        custom_directory = jp(Setup.Directories.forecasts_dir, f"custom_{len(training_idx)}_{len(test_idx)}")
         # Select roots for testing
         X_train = X.loc[training_idx]
         X_test = X.loc[test_idx]
@@ -90,7 +91,8 @@ def run(model, *,
         plot_uq(structural_similarity, directory=custom_directory)
     else:
         test_directory = jp(Setup.Directories.forecasts_dir, "test")
-        X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=1000, test_size=250, random_state=42)
+        X_train, X_test, y_train, y_test = \
+            train_test_split(X, Y, train_size=train_size, test_size=test_size, shuffle=True, random_state=42)
 
         bel_training(
             bel=model,
@@ -143,4 +145,5 @@ if __name__ == "__main__":
     # Train model
     # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=True, n_splits=5)
     # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells, kfold=False, n_splits=5)
-    run(model=bel, source_ids=wells, )
+    # run(model=bel, source_ids=wells, train_size=1000, test_size=250)
+    run(model=bel, source_ids=wells)
