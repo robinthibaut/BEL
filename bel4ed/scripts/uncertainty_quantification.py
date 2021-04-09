@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from os.path import join as jp
 
+import pandas as pd
 from loguru import logger
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
@@ -32,10 +33,23 @@ def run(
 
     if kfold:
 
-        idx = np.array([*training_idx, *test_idx], dtype=object)
+        try:
+            idx = np.array([*training_idx, *test_idx], dtype=object)
+            X_ = X.loc[idx]
+            y_ = Y.loc[idx]
+        except TypeError:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X,
+                Y,
+                train_size=train_size,
+                test_size=test_size,
+                shuffle=shuffle,
+                random_state=random_state,
+            )
 
-        X_ = X.loc[idx]
-        y_ = Y.loc[idx]
+            idx = [*X_train.index, *X_test.index]
+            X_ = pd.concat([X_train, X_test])
+            y_ = pd.concat([y_train, y_test])
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
         kf.get_n_splits(idx)
@@ -198,18 +212,20 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
-    # run(
-    #     model=bel,
-    #     training_idx=training_r,
-    #     test_idx=test_r,
-    #     source_ids=wells,
-    #     kfold=True,
-    #     n_splits=5,
-    #     shuffle=False,
-    #     random_state=None,
-    #     name="k",
-    # )
+    run(
+        model=bel,
+        # training_idx=training_r,
+        # test_idx=test_r,
+        train_size=400,
+        test_size=100,
+        source_ids=wells,
+        kfold=True,
+        n_splits=5,
+        shuffle=False,
+        random_state=None,
+        name="bigger",
+    )
 
     # Test datasets with various sizes
-    run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True, random_state=6492, name="new")
+    # run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True, random_state=6492, name="new")
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
