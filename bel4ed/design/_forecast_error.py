@@ -106,6 +106,7 @@ def bel_uq(
         source_ids: list or np.array,
         metrics: list or tuple,
         delete: bool = False,
+        clear: bool = False,
 ):
     # Directories
     combinations = source_ids
@@ -170,18 +171,19 @@ def bel_uq(
                 )
                 wm[j, ixw] += oe
 
+            os.remove(jp(obj_dir, "bel.pkl"))
+
             if delete:
-                os.remove(jp(obj_dir, "bel.pkl"))
                 # For KFold, save a lighter version of the bel model.
                 bel = clone(bel)
 
-            bel.posterior_mean = pmean
-            bel.posterior_covariance = pcov
-            bel.Y_reconstructed = Y_reconstructed
-            bel.Y_posterior = Y_posterior
-            bel.seed = seed
-
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
+            if not clear:
+                bel.posterior_mean = pmean
+                bel.posterior_covariance = pcov
+                bel.Y_reconstructed = Y_reconstructed
+                bel.Y_posterior = Y_posterior
+                bel.seed = seed
+                joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
     for k, e in enumerate(metrics):
         np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), wm[k])

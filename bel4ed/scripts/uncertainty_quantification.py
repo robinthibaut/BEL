@@ -49,7 +49,9 @@ def run(
 
             idx = [*X_train.index, *X_test.index]
             X_ = pd.concat([X_train, X_test])
+            X_.attrs["physical_shape"] = X.attrs["physical_shape"]
             y_ = pd.concat([y_train, y_test])
+            y_.attrs["physical_shape"] = Y.attrs["physical_shape"]
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
         kf.get_n_splits(idx)
@@ -90,6 +92,7 @@ def run(
                 source_ids=wells,
                 metrics=metrics,
                 delete=True,
+                clear=True,
             )
 
             [plot_uq(m, directory=fold_directory) for m in metrics]
@@ -120,7 +123,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (structural_similarity,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -216,14 +219,14 @@ if __name__ == "__main__":
         model=bel,
         # training_idx=training_r,
         # test_idx=test_r,
-        train_size=400,
-        test_size=100,
+        train_size=1000,
+        test_size=250,
         source_ids=wells,
         kfold=True,
         n_splits=5,
         shuffle=False,
         random_state=None,
-        name="bigger",
+        name="new_K",
     )
 
     # Test datasets with various sizes
