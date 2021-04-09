@@ -34,31 +34,24 @@ def run(
 
         idx = np.array([*training_idx, *test_idx], dtype=object)
 
-        # X_ = X.loc[idx]
-        # y_ = Y.loc[idx]
+        X_ = X.loc[idx]
+        y_ = Y.loc[idx]
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        # kf.get_n_splits(X_)
         kf.get_n_splits(idx)
         ns = 0  # Split number
-        # for train_index, test_index in kf.split(X_):
         for train_index, test_index in kf.split(idx):
             logger.info(f"Fold {ns}")
             logger.info(train_index)
             logger.info(test_index)
             fold_directory = jp(
-                Setup.Directories.forecasts_dir, f"fold_{len(idx)}_{ns}"
+                Setup.Directories.forecasts_dir, f"{name}fold_{len(idx)}_{ns}"
             )
 
-            # X_train = X_.iloc[train_index]
-            # X_test = X_.iloc[test_index]
-            # y_train = y_.iloc[train_index]
-            # y_test = y_.iloc[test_index]
-
-            X_train = X.loc[idx[train_index]]
-            X_test = X.loc[idx[test_index]]
-            y_train = Y.loc[idx[train_index]]
-            y_test = Y.loc[idx[test_index]]
+            X_train = X_.iloc[train_index]
+            X_test = X_.iloc[test_index]
+            y_train = y_.iloc[train_index]
+            y_test = y_.iloc[test_index]
 
             index = X_test.index
 
@@ -82,6 +75,7 @@ def run(
                 directory=fold_directory,
                 source_ids=wells,
                 metrics=metrics,
+                delete=True,
             )
 
             [plot_uq(m, directory=fold_directory) for m in metrics]
@@ -101,15 +95,15 @@ def run(
         y_train = Y.loc[training_idx]
         y_test = Y.loc[test_idx]
 
-        # bel_training(
-        #     bel=model,
-        #     X_train=X_train,
-        #     X_test=X_test,
-        #     y_train=y_train,
-        #     y_test=y_test,
-        #     directory=custom_directory,
-        #     source_ids=source_ids,
-        # )
+        bel_training(
+            bel=model,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            directory=custom_directory,
+            source_ids=source_ids,
+        )
 
         # Pick metrics
         metrics = (modified_hausdorff,)
@@ -153,7 +147,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (structural_similarity,)
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
@@ -161,6 +155,7 @@ def run(
             directory=test_directory,
             source_ids=wells,
             metrics=metrics,
+            delete=True,
         )
 
         [plot_uq(m, directory=test_directory) for m in metrics]
@@ -195,7 +190,7 @@ if __name__ == "__main__":
 
     # Train model
     # Reference dataset
-    run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]
@@ -203,17 +198,18 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
-    run(
-        model=bel,
-        training_idx=training_r,
-        test_idx=test_r,
-        source_ids=wells,
-        kfold=True,
-        n_splits=5,
-        shuffle=False,
-        random_state=None,
-    )
+    # run(
+    #     model=bel,
+    #     training_idx=training_r,
+    #     test_idx=test_r,
+    #     source_ids=wells,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    #     name="k",
+    # )
 
     # Test datasets with various sizes
-    run(model=bel, source_ids=wells, train_size=200, test_size=50, shuffle=False)
+    run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True, random_state=6492, name="new")
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)

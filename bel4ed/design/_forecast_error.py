@@ -171,6 +171,7 @@ def bel_uq(
                 wm[j, ixw] += oe
 
             if delete:
+                os.remove(jp(obj_dir, "bel.pkl"))
                 # For KFold, save a lighter version of the bel model.
                 bel = clone(bel)
 
@@ -180,7 +181,7 @@ def bel_uq(
             bel.Y_posterior = Y_posterior
             bel.seed = seed
 
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"), compress=3)
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
     for k, e in enumerate(metrics):
         np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), wm[k])
