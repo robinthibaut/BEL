@@ -7,7 +7,6 @@ import joblib
 import numpy as np
 from loguru import logger
 from sklearn.base import clone
-from numba import jit
 
 from .. import utils
 from ..config import Setup
@@ -174,15 +173,17 @@ def bel_uq(
             if delete:
                 # For KFold, save a lighter version of the bel model.
                 bel = clone(bel)
-                bel.posterior_mean = pmean
-                bel.posterior_covariance = pcov
-                bel.Y_reconstructed = Y_reconstructed
-                bel.Y_posterior = Y_posterior
-                bel.seed = seed
-                joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
-    for j, m in enumerate(metrics):
-        np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), wm[j])
+            bel.posterior_mean = pmean
+            bel.posterior_covariance = pcov
+            bel.Y_reconstructed = Y_reconstructed
+            bel.Y_posterior = Y_posterior
+            bel.seed = seed
+
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"), compress=3)
+
+    for k, e in enumerate(metrics):
+        np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), wm[k])
 
 
 def _objective_function(
@@ -193,6 +194,7 @@ def _objective_function(
     components to allow proper comparison.
     """
 
+    # TODO: pass this as kwargs
     x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 
     method_name = metric.__name__

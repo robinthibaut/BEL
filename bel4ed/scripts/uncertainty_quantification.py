@@ -25,6 +25,7 @@ def run(
         test_size: int = 50,
         random_state: int = None,
         shuffle: bool = False,
+        name: str = None
 ):
     # Load datasets
     X, Y = load_dataset()
@@ -86,9 +87,13 @@ def run(
             [plot_uq(m, directory=fold_directory) for m in metrics]
 
     elif training_idx and test_idx:
+        if name:
+            pre = name
+        else:
+            pre = "test"
         custom_directory = jp(
             Setup.Directories.forecasts_dir,
-            f"custom_{len(training_idx)}_{len(test_idx)}",
+            f"{pre}_{len(training_idx)}_{len(test_idx)}",
         )
         # Select roots for testing
         X_train = X.loc[training_idx]
@@ -96,18 +101,18 @@ def run(
         y_train = Y.loc[training_idx]
         y_test = Y.loc[test_idx]
 
-        bel_training(
-            bel=model,
-            X_train=X_train,
-            X_test=X_test,
-            y_train=y_train,
-            y_test=y_test,
-            directory=custom_directory,
-            source_ids=source_ids,
-        )
+        # bel_training(
+        #     bel=model,
+        #     X_train=X_train,
+        #     X_test=X_test,
+        #     y_train=y_train,
+        #     y_test=y_test,
+        #     directory=custom_directory,
+        #     source_ids=source_ids,
+        # )
 
         # Pick metrics
-        metrics = (structural_similarity,)
+        metrics = (modified_hausdorff,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -120,9 +125,13 @@ def run(
         [plot_uq(m, directory=custom_directory) for m in metrics]
 
     else:
+        if name:
+            pre = name
+        else:
+            pre = "test"
         test_directory = jp(
             Setup.Directories.forecasts_dir,
-            f"test_{train_size}_{test_size}_{random_state}",
+            f"{pre}_{train_size}_{test_size}_{random_state}",
         )
         X_train, X_test, y_train, y_test = train_test_split(
             X,
@@ -186,20 +195,25 @@ if __name__ == "__main__":
 
     # Train model
     # Reference dataset
-    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    # Test
+    # idx_ = [*training_r, *test_r]
+    # training_test = idx_[50:]
+    # test_test = idx_[:50]
+    # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
-    # run(
-    #     model=bel,
-    #     training_idx=training_r,
-    #     test_idx=test_r,
-    #     source_ids=wells,
-    #     kfold=True,
-    #     n_splits=5,
-    #     shuffle=False,
-    #     random_state=None,
-    # )
+    run(
+        model=bel,
+        training_idx=training_r,
+        test_idx=test_r,
+        source_ids=wells,
+        kfold=True,
+        n_splits=5,
+        shuffle=False,
+        random_state=None,
+    )
 
     # Test datasets with various sizes
-    # run(model=bel, source_ids=wells, train_size=200, test_size=50, shuffle=False)
-    run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
+    run(model=bel, source_ids=wells, train_size=200, test_size=50, shuffle=False)
+    # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
