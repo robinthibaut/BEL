@@ -7,6 +7,7 @@ import joblib
 import numpy as np
 from loguru import logger
 from sklearn.base import clone
+from numba import jit
 
 from .. import utils
 from ..config import Setup

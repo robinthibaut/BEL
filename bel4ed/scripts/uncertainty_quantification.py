@@ -30,26 +30,34 @@ def run(
     X, Y = load_dataset()
 
     if kfold:
-        idx = [*training_idx, *test_idx]
 
-        X_ = X.loc[idx]
-        y_ = Y.loc[idx]
+        idx = np.array([*training_idx, *test_idx], dtype=object)
+
+        # X_ = X.loc[idx]
+        # y_ = Y.loc[idx]
 
         kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        kf.get_n_splits(X_)
+        # kf.get_n_splits(X_)
+        kf.get_n_splits(idx)
         ns = 0  # Split number
-        for train_index, test_index in kf.split(X_, y_):
-            train_index = np.array([i for i in range(200)])
-            test_index = np.array([i for i in range(200, 250)])
+        # for train_index, test_index in kf.split(X_):
+        for train_index, test_index in kf.split(idx):
             logger.info(f"Fold {ns}")
+            logger.info(train_index)
+            logger.info(test_index)
             fold_directory = jp(
                 Setup.Directories.forecasts_dir, f"fold_{len(idx)}_{ns}"
             )
 
-            X_train = X_.iloc[train_index]
-            X_test = X_.iloc[test_index]
-            y_train = y_.iloc[train_index]
-            y_test = y_.iloc[test_index]
+            # X_train = X_.iloc[train_index]
+            # X_test = X_.iloc[test_index]
+            # y_train = y_.iloc[train_index]
+            # y_test = y_.iloc[test_index]
+
+            X_train = X.loc[idx[train_index]]
+            X_test = X.loc[idx[test_index]]
+            y_train = Y.loc[idx[train_index]]
+            y_test = Y.loc[idx[test_index]]
 
             index = X_test.index
 
@@ -65,7 +73,7 @@ def run(
             ns += 1
 
             # Pick metrics
-            metrics = (structural_similarity,)
+            metrics = (modified_hausdorff,)
 
             # Compute UQ with metrics
             bel_uq(
@@ -136,11 +144,11 @@ def run(
         )
 
         # Pick metrics
-        metrics = (structural_similarity,)
-
+        metrics = (modified_hausdorff,)
+        index = X_test.index
         # Compute UQ with metrics
         bel_uq(
-            index=X_test.index,
+            index=index,
             directory=test_directory,
             source_ids=wells,
             metrics=metrics,
@@ -181,17 +189,17 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
 
     # KFold on custom dataset
-    run(
-        model=bel,
-        training_idx=training_r,
-        test_idx=test_r,
-        source_ids=wells,
-        kfold=True,
-        n_splits=5,
-        shuffle=False,
-        random_state=None,
-    )
+    # run(
+    #     model=bel,
+    #     training_idx=training_r,
+    #     test_idx=test_r,
+    #     source_ids=wells,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    # )
 
     # Test datasets with various sizes
     # run(model=bel, source_ids=wells, train_size=200, test_size=50, shuffle=False)
-    # run(model=bel, source_ids=wells, random_state=6, shuffle=True)
+    run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
