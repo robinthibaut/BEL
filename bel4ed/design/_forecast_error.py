@@ -65,11 +65,14 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
                 ]
             ]
             # Clone BEL for safety
+            n_posts = bel.n_posts
+            X_n_pc = bel.X_n_pc
+            Y_n_pc = bel.Y_n_pc
             # Reset params
             bel_clone = clone(bel)
-            bel_clone.X_n_pc = Setup.HyperParameters.n_pc_predictor
-            bel_clone.Y_n_pc = Setup.HyperParameters.n_pc_target
-            bel_clone.n_posts = Setup.HyperParameters.n_posts
+            bel_clone.X_n_pc = X_n_pc
+            bel_clone.Y_n_pc = Y_n_pc
+            bel_clone.n_posts = n_posts
             # Setting the seed might cause issues
             # bel_clone.seed = 123456
             # %% Select wells:
@@ -100,13 +103,13 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
 
 
 def bel_uq(
-        *,
-        index: list,
-        directory: str,
-        source_ids: list or np.array,
-        metrics: list or tuple,
-        delete: bool = False,
-        clear: bool = False,
+    *,
+    index: list,
+    directory: str,
+    source_ids: list or np.array,
+    metrics: list or tuple,
+    delete: bool = False,
+    clear: bool = False,
 ):
     # Directories
     combinations = source_ids
@@ -137,8 +140,8 @@ def bel_uq(
                     (1, y_obs_pc.shape[1])
                 )  # Create a dummy matrix filled with zeros
                 dummy[:, :n_cut] = y_obs_pc[
-                                   :, :n_cut
-                                   ]  # Fill the dummy matrix with the posterior PC
+                    :, :n_cut
+                ]  # Fill the dummy matrix with the posterior PC
                 # Reshape for the objective function
                 Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
                     bel.Y_shape
@@ -190,7 +193,7 @@ def bel_uq(
 
 
 def _objective_function(
-        y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
+    y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
 ):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA

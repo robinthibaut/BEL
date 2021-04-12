@@ -853,11 +853,11 @@ def plot_K_field(root: str = None, wells=None, deprecated: bool = True):
 
 
 def mode_histo(
-        colors: list,
-        an_i: int,
-        wm: np.array,
-        fig_name: str = "average",
-        directory: str = None,
+    colors: list,
+    an_i: int,
+    wm: np.array,
+    fig_name: str = "average",
+    directory: str = None,
 ):
     """
 

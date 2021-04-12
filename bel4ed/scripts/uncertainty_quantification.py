@@ -15,18 +15,18 @@ from bel4ed.goggles import mode_histo
 
 
 def run(
-        model,
-        *,
-        training_idx: list = None,
-        test_idx: list = None,
-        source_ids: list or np.array = None,
-        kfold: bool = False,
-        n_splits: int = None,
-        train_size: int = 200,
-        test_size: int = 50,
-        random_state: int = None,
-        shuffle: bool = False,
-        name: str = None
+    model,
+    *,
+    training_idx: list = None,
+    test_idx: list = None,
+    source_ids: list or np.array = None,
+    kfold: bool = False,
+    n_splits: int = None,
+    train_size: int = 200,
+    test_size: int = 50,
+    random_state: int = None,
+    shuffle: bool = False,
+    name: str = None,
 ):
     # Load datasets
     X, Y = load_dataset()
@@ -172,7 +172,7 @@ def run(
             directory=test_directory,
             source_ids=wells,
             metrics=metrics,
-            delete=True,
+            delete=False,
         )
 
         # [plot_uq(m, directory=test_directory) for m in metrics]
@@ -230,7 +230,16 @@ if __name__ == "__main__":
     # )
 
     # Test datasets with various sizes
-    sizes = [200, 300, 400, 500, 1000, 2000, 3000, 4000]
+    sizes = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 750, 1000, 2000]
     for i in sizes:
-        run(model=bel, source_ids=wells, train_size=i, test_size=1, shuffle=True, random_state=6492, name="n_thr")
+        bel.n_posts = i
+        run(
+            model=bel,
+            source_ids=wells,
+            train_size=i,
+            test_size=1,
+            shuffle=True,
+            random_state=6492,
+            name="n_thr",
+        )
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
