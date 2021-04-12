@@ -168,6 +168,7 @@ def run(
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
+            bel=model,
             index=index,
             directory=test_directory,
             source_ids=wells,

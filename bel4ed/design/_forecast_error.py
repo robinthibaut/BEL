@@ -104,6 +104,7 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
 
 def bel_uq(
     *,
+    bel,
     index: list,
     directory: str,
     source_ids: list or np.array,
@@ -115,7 +116,7 @@ def bel_uq(
     combinations = source_ids
     total = len(index)
     wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-    wm = np.zeros((len(metrics), len(wid), Setup.HyperParameters.n_posts))
+    wm = np.zeros((len(metrics), len(wid), bel.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
@@ -152,7 +153,7 @@ def bel_uq(
             except AttributeError:
                 # Compute CCA Gaussian scores
                 Y_posts_gaussian = bel.random_sample(
-                    n_posts=Setup.HyperParameters.n_posts
+                    n_posts=None
                 )
                 # Get back to original space
                 Y_posterior = bel.inverse_transform(
