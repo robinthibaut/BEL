@@ -3,6 +3,7 @@
 import string
 from os.path import join as jp
 
+import joblib
 from loguru import logger
 
 import bel4ed.goggles as myvis
@@ -42,23 +43,23 @@ if __name__ == "__main__":
 
         wells = ["123456", "1", "2", "3", "4", "5", "6"]
 
-        # for j, w in enumerate(wells):
-        #
-        #     logger.info(f"Plotting well {w}")
-        #
-        #     if w == "123456":
-        #         annotation = alphabet[i]
-        #     else:
-        #         annotation = alphabet[j - 1]
-        #
-        #     # BEL pickle
-        #     md = jp(Setup.Directories.forecasts_dir, sample, w)
-        #     bel = joblib.load(jp(md, "obj", "bel.pkl"))
-        #
-        #     myvis.plot_results(
-        #         bel, root=sample, folder=w, annotation=annotation, d=True
-        #     )
-        #
+        for j, w in enumerate(wells):
+
+            logger.info(f"Plotting well {w}")
+
+            if w == "123456":
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j - 1]
+
+            # BEL pickle
+            md = jp(Setup.Directories.forecasts_dir, sample, w)
+            bel = joblib.load(jp(md, "obj", "bel.pkl"))
+
+            myvis.plot_results(
+                bel, root=sample, folder=w, annotation=annotation, d=True
+            )
+
         myvis.pca_vision(
             bel,
             w=w,

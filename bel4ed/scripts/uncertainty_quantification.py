@@ -123,7 +123,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (structural_similarity,)
+        metrics = (modified_hausdorff,)
 
         # Compute UQ with metrics
         bel_uq(
@@ -164,7 +164,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (structural_similarity,)
+        metrics = (modified_hausdorff,)
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
@@ -175,7 +175,7 @@ def run(
             delete=True,
         )
 
-        [plot_uq(m, directory=test_directory) for m in metrics]
+        # [plot_uq(m, directory=test_directory) for m in metrics]
 
 
 def plot_uq(metric_function, directory: str = None):
@@ -199,8 +199,8 @@ if __name__ == "__main__":
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # Source IDs
-    wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    # wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
 
     # Initiate BEL model
     bel = init_bel()
@@ -215,20 +215,22 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
-    run(
-        model=bel,
-        # training_idx=training_r,
-        # test_idx=test_r,
-        train_size=1000,
-        test_size=250,
-        source_ids=wells,
-        kfold=True,
-        n_splits=5,
-        shuffle=False,
-        random_state=None,
-        name="new_K",
-    )
+    # run(
+    #     model=bel,
+    #     # training_idx=training_r,
+    #     # test_idx=test_r,
+    #     train_size=1000,
+    #     test_size=250,
+    #     source_ids=wells,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    #     name="new_K",
+    # )
 
     # Test datasets with various sizes
-    # run(model=bel, source_ids=wells, train_size=1000, test_size=250, shuffle=True, random_state=6492, name="new")
+    sizes = [200, 300, 400, 500, 1000, 2000, 3000, 4000]
+    for i in sizes:
+        run(model=bel, source_ids=wells, train_size=i, test_size=1, shuffle=True, random_state=6492, name="n_thr")
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
