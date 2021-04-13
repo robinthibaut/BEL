@@ -87,6 +87,7 @@ def run(
 
             # Compute UQ with metrics
             bel_uq(
+                bel=model,
                 index=index,
                 directory=fold_directory,
                 source_ids=wells,
@@ -127,6 +128,7 @@ def run(
 
         # Compute UQ with metrics
         bel_uq(
+            bel=model,
             index=test_idx,
             directory=custom_directory,
             source_ids=wells,
@@ -231,9 +233,10 @@ if __name__ == "__main__":
     # )
 
     # Test datasets with various sizes
-    sizes = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 750, 1000, 2000]
+    sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
+
     for i in sizes:
-        bel.n_posts = i
+        bel.n_posts = 500
         run(
             model=bel,
             source_ids=wells,
