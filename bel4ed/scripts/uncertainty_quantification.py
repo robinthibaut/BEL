@@ -8,7 +8,7 @@ from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import init_bel
 from bel4ed.algorithms import modified_hausdorff, structural_similarity
-from bel4ed.config import Setup
+from bel4ed.config import Setup, TEST_ROOT
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo
@@ -19,7 +19,8 @@ def run(
     *,
     training_idx: list = None,
     test_idx: list = None,
-    source_ids: list or np.array = None,
+    source_ids_training: list or np.array = None,
+    source_ids_uq: list or np.array = None,
     kfold: bool = False,
     n_splits: int = None,
     train_size: int = 200,
@@ -30,6 +31,9 @@ def run(
 ):
     # Load datasets
     X, Y = load_dataset()
+
+    if source_ids_uq is None:
+        source_ids_uq = source_ids_training
 
     if kfold:
 
@@ -78,7 +82,7 @@ def run(
                 y_train=y_train,
                 y_test=y_test,
                 directory=fold_directory,
-                source_ids=source_ids,
+                source_ids=source_ids_training,
             )
             ns += 1
 
@@ -90,7 +94,7 @@ def run(
                 bel=model,
                 index=index,
                 directory=fold_directory,
-                source_ids=wells,
+                source_ids=source_ids_uq,
                 metrics=metrics,
                 delete=True,
                 clear=True,
@@ -120,18 +124,18 @@ def run(
             y_train=y_train,
             y_test=y_test,
             directory=custom_directory,
-            source_ids=source_ids,
+            source_ids=source_ids_training,
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (modified_hausdorff, structural_similarity)
 
         # Compute UQ with metrics
         bel_uq(
             bel=model,
             index=test_idx,
             directory=custom_directory,
-            source_ids=wells,
+            source_ids=source_ids_uq,
             metrics=metrics,
         )
 
@@ -162,7 +166,7 @@ def run(
             y_train=y_train,
             y_test=y_test,
             directory=test_directory,
-            source_ids=source_ids,
+            source_ids=source_ids_training,
         )
 
         # Pick metrics
@@ -173,12 +177,12 @@ def run(
             bel=model,
             index=index,
             directory=test_directory,
-            source_ids=wells,
+            source_ids=source_ids_uq,
             metrics=metrics,
             delete=False,
         )
 
-        # [plot_uq(m, directory=test_directory) for m in metrics]
+        [plot_uq(m, directory=test_directory) for m in metrics]
 
 
 def plot_uq(metric_function, directory: str = None):
@@ -202,15 +206,18 @@ if __name__ == "__main__":
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # Source IDs
-    # wells = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    wells_training = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object)
 
     # Initiate BEL model
     bel = init_bel()
-
+    bel.n_posts = Setup.HyperParameters.n_posts
     # Train model
     # Reference dataset
-    # run(model=bel, training_idx=training_r, test_idx=test_r, source_ids=wells)
+    run(model=bel,
+        training_idx=training_r, test_idx=[TEST_ROOT],
+        source_ids_training=wells_training, source_ids_uq=wells_uq)
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]
@@ -233,17 +240,17 @@ if __name__ == "__main__":
     # )
 
     # Test datasets with various sizes
-    sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
-
-    for i in sizes:
-        bel.n_posts = 500
-        run(
-            model=bel,
-            source_ids=wells,
-            train_size=i,
-            test_size=1,
-            shuffle=True,
-            random_state=6492,
-            name="n_thr",
-        )
+    # sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
+    #
+    # for i in sizes:
+    #     bel.n_posts = 500
+    #     run(
+    #         model=bel,
+    #         source_ids=wells,
+    #         train_size=i,
+    #         test_size=1,
+    #         shuffle=True,
+    #         random_state=6492,
+    #         name="n_thr",
+    #     )
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
