@@ -26,4 +26,3 @@ plt.title("Figure 1")
 plt.xlabel("Training size")
 plt.ylabel("Average error")
 plt.show()
-

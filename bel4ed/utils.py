@@ -1,3 +1,5 @@
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import itertools
 import os
 import shutil
@@ -136,8 +138,8 @@ def combinator(combi):
     return cb
 
 
-def reload_trained_model(root: str, well: str):
-    res_dir = jp(Setup.Directories.forecasts_dir, root, well, "obj")
+def reload_trained_model(base_dir: str, root: str, well: str):
+    res_dir = jp(base_dir, root, well, "obj")
 
     bel = joblib.load(jp(res_dir, "bel.pkl"))
 

@@ -208,16 +208,22 @@ if __name__ == "__main__":
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
-    wells_training = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object)
+    wells_training = np.array(
+        [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
+    )
 
     # Initiate BEL model
     bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
     # Train model
     # Reference dataset
-    run(model=bel,
-        training_idx=training_r, test_idx=test_r,
-        source_ids_training=wells_training, source_ids_uq=wells_uq)
+    run(
+        model=bel,
+        training_idx=training_r,
+        test_idx=test_r,
+        source_ids_training=wells_training,
+        source_ids_uq=wells_uq,
+    )
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]

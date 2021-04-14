@@ -152,9 +152,7 @@ def bel_uq(
                 Y_posterior = bel.Y_posterior
             except AttributeError:
                 # Compute CCA Gaussian scores
-                Y_posts_gaussian = bel.random_sample(
-                    n_posts=None
-                )
+                Y_posts_gaussian = bel.random_sample(n_posts=None)
                 # Get back to original space
                 Y_posterior = bel.inverse_transform(
                     Y_pred=Y_posts_gaussian,
