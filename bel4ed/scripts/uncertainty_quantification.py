@@ -216,7 +216,7 @@ if __name__ == "__main__":
     # Train model
     # Reference dataset
     run(model=bel,
-        training_idx=training_r, test_idx=[TEST_ROOT],
+        training_idx=training_r, test_idx=test_r,
         source_ids_training=wells_training, source_ids_uq=wells_uq)
     # Test
     # idx_ = [*training_r, *test_r]
