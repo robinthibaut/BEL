@@ -1298,7 +1298,7 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, root=root, w=w, data=True, target=False)
+            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=True, target=False)
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
@@ -1325,7 +1325,7 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, root=root, w=w, data=False, target=True)
+            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=False, target=True)
 
 
 def check_root(xlim: list, ylim: list, root: list):
