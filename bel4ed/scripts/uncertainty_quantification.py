@@ -117,28 +117,28 @@ def run(
         y_train = Y.loc[training_idx]
         y_test = Y.loc[test_idx]
 
-        bel_training(
-            bel=model,
-            X_train=X_train,
-            X_test=X_test,
-            y_train=y_train,
-            y_test=y_test,
-            directory=custom_directory,
-            source_ids=source_ids_training,
-        )
+        # bel_training(
+        #     bel=model,
+        #     X_train=X_train,
+        #     X_test=X_test,
+        #     y_train=y_train,
+        #     y_test=y_test,
+        #     directory=custom_directory,
+        #     source_ids=source_ids_training,
+        # )
 
         # Pick metrics
         metrics = (modified_hausdorff, structural_similarity)
 
         # Compute UQ with metrics
         if len(test_idx) > 1:
-            bel_uq(
-                bel=model,
-                index=test_idx,
-                directory=custom_directory,
-                source_ids=source_ids_uq,
-                metrics=metrics,
-            )
+            # bel_uq(
+            #     bel=model,
+            #     index=test_idx,
+            #     directory=custom_directory,
+            #     source_ids=source_ids_uq,
+            #     metrics=metrics,
+            # )
 
             [plot_uq(m, directory=custom_directory) for m in metrics]
 
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "roots.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    test_r = ['818bf1676c424f76b83bd777ae588a1d']
+    # test_r = ['818bf1676c424f76b83bd777ae588a1d']
 
     # Source IDs
     # wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
