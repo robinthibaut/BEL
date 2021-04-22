@@ -33,45 +33,45 @@ if __name__ == "__main__":
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
-    base_dir = jp(Setup.Directories.forecasts_dir, "test_200_50")
+    base_dir = jp(Setup.Directories.forecasts_dir, "test_200_1")
 
     for i, sample in enumerate(roots):
         logger.info(f"Plotting root {sample}")
 
-        wells = ["123456", "1", "2", "3", "4", "5", "6"]
+        wells = ["123456"]
 
-        # for j, w in enumerate(wells):
-        #
-        #     logger.info(f"Plotting well {w}")
-        #
-        #     if w == "123456":
-        #         annotation = alphabet[i]
-        #     else:
-        #         annotation = alphabet[j - 1]
-        #
-        #     # BEL pickle
-        #     md = jp(base_dir, sample, w)
-        #     bel = joblib.load(jp(md, "obj", "bel.pkl"))
-        #
-        #     myvis.plot_results(
-        #         bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
-        #     )
-        #
-        # myvis.pca_vision(
-        #     bel,
-        #     base_dir=base_dir,
-        #     w=w,
-        #     root=sample,
-        #     d=True,
-        #     h=True,
-        #     exvar=True,
-        #     before_after=True,
-        #     labels=True,
-        #     scores=True,
-        # )
-        #
-        # myvis.plot_K_field(base_dir=base_dir, root=sample)
-        #
-        # myvis.plot_head_field(base_dir=base_dir, root=sample)
-        #
+        for j, w in enumerate(wells):
+
+            logger.info(f"Plotting well {w}")
+
+            if w == "123456":
+                annotation = alphabet[i]
+            else:
+                annotation = alphabet[j - 1]
+
+            # BEL pickle
+            md = jp(base_dir, sample, w)
+            bel = joblib.load(jp(md, "obj", "bel.pkl"))
+
+            myvis.plot_results(
+                bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
+            )
+
+            myvis.pca_vision(
+                bel,
+                base_dir=base_dir,
+                w=w,
+                root=sample,
+                d=True,
+                h=True,
+                exvar=True,
+                before_after=True,
+                labels=True,
+                scores=True,
+            )
+
+        myvis.plot_K_field(base_dir=base_dir, root=sample)
+
+        myvis.plot_head_field(base_dir=base_dir, root=sample)
+
         myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)

@@ -131,15 +131,16 @@ def run(
         metrics = (modified_hausdorff, structural_similarity)
 
         # Compute UQ with metrics
-        bel_uq(
-            bel=model,
-            index=test_idx,
-            directory=custom_directory,
-            source_ids=source_ids_uq,
-            metrics=metrics,
-        )
+        if len(test_idx) > 1:
+            bel_uq(
+                bel=model,
+                index=test_idx,
+                directory=custom_directory,
+                source_ids=source_ids_uq,
+                metrics=metrics,
+            )
 
-        [plot_uq(m, directory=custom_directory) for m in metrics]
+            [plot_uq(m, directory=custom_directory) for m in metrics]
 
     else:
         if name:
@@ -173,16 +174,17 @@ def run(
         metrics = (modified_hausdorff,)
         index = X_test.index
         # Compute UQ with metrics
-        bel_uq(
-            bel=model,
-            index=index,
-            directory=test_directory,
-            source_ids=source_ids_uq,
-            metrics=metrics,
-            delete=False,
-        )
+        if len(test_idx) > 1:
+            bel_uq(
+                bel=model,
+                index=index,
+                directory=test_directory,
+                source_ids=source_ids_uq,
+                metrics=metrics,
+                delete=False,
+            )
 
-        [plot_uq(m, directory=test_directory) for m in metrics]
+            [plot_uq(m, directory=test_directory) for m in metrics]
 
 
 def plot_uq(metric_function, directory: str = None):
@@ -204,13 +206,15 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "roots.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
+    test_r = ['818bf1676c424f76b83bd777ae588a1d']
 
     # Source IDs
-    wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    # wells = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
-    wells_training = np.array(
-        [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
-    )
+    # wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    # wells_training = np.array(
+    #     [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
+    # )
+
+    wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
 
     # Initiate BEL model
     bel = init_bel()
@@ -222,7 +226,7 @@ if __name__ == "__main__":
         training_idx=training_r,
         test_idx=test_r,
         source_ids_training=wells_training,
-        source_ids_uq=wells_uq,
+        # source_ids_uq=wells_uq,
     )
     # Test
     # idx_ = [*training_r, *test_r]
