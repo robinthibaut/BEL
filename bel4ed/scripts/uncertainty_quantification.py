@@ -65,7 +65,7 @@ def run(
             logger.info(train_index)
             logger.info(test_index)
             fold_directory = jp(
-                Setup.Directories.forecasts_dir, f"{name}fold_{len(idx)}_{ns}"
+                Setup.Directories.forecasts_dir, f"{name}fold_{len(idx)}_split{ns}"
             )
 
             X_train = X_.iloc[train_index]
@@ -75,30 +75,30 @@ def run(
 
             index = X_test.index
 
-            bel_training(
-                bel=model,
-                X_train=X_train,
-                X_test=X_test,
-                y_train=y_train,
-                y_test=y_test,
-                directory=fold_directory,
-                source_ids=source_ids_training,
-            )
+            # bel_training(
+            #     bel=model,
+            #     X_train=X_train,
+            #     X_test=X_test,
+            #     y_train=y_train,
+            #     y_test=y_test,
+            #     directory=fold_directory,
+            #     source_ids=source_ids_training,
+            # )
             ns += 1
 
             # Pick metrics
             metrics = (modified_hausdorff,)
 
             # Compute UQ with metrics
-            bel_uq(
-                bel=model,
-                index=index,
-                directory=fold_directory,
-                source_ids=source_ids_uq,
-                metrics=metrics,
-                delete=True,
-                clear=True,
-            )
+            # bel_uq(
+            #     bel=model,
+            #     index=index,
+            #     directory=fold_directory,
+            #     source_ids=source_ids_uq,
+            #     metrics=metrics,
+            #     delete=True,
+            #     clear=True,
+            # )
 
             [plot_uq(m, directory=fold_directory) for m in metrics]
 
@@ -131,14 +131,14 @@ def run(
         metrics = (modified_hausdorff, structural_similarity)
 
         # Compute UQ with metrics
-        if len(test_idx) > 1:
-            # bel_uq(
-            #     bel=model,
-            #     index=test_idx,
-            #     directory=custom_directory,
-            #     source_ids=source_ids_uq,
-            #     metrics=metrics,
-            # )
+        if len(test_idx) > 0:
+            bel_uq(
+                bel=model,
+                index=test_idx,
+                directory=custom_directory,
+                source_ids=source_ids_uq,
+                metrics=metrics,
+            )
 
             [plot_uq(m, directory=custom_directory) for m in metrics]
 
@@ -206,10 +206,10 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "roots.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    # test_r = ['818bf1676c424f76b83bd777ae588a1d']
+    test_r = ['818bf1676c424f76b83bd777ae588a1d']
 
     # Source IDs
-    # wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
+    wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     # wells_training = np.array(
     #     [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
     # )
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         model=bel,
         training_idx=training_r,
         test_idx=test_r,
-        source_ids_training=wells_training,
+        source_ids_training=wells_uq,
         # source_ids_uq=wells_uq,
     )
     # Test
@@ -241,7 +241,6 @@ if __name__ == "__main__":
     #     # test_idx=test_r,
     #     train_size=1000,
     #     test_size=250,
-    #     source_ids=wells,
     #     kfold=True,
     #     n_splits=5,
     #     shuffle=False,
