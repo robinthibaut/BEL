@@ -918,9 +918,21 @@ def mode_histo(
     # Plot BOX
     columns = ["1", "2", "3", "4", "5", "6"]
     wmd = pd.DataFrame(columns=["1", "2", "3", "4", "5", "6"], data=wm.T)
-    palette = {columns[i] : colors[i] for i in range(len(columns))}
+    palette = {columns[i]: colors[i] for i in range(len(columns))}
     # palette = {'b', 'g', 'r', 'c', 'm', 'y'}
     sns.boxplot(data=wmd, palette=palette, order=["1", "2", "3", "4", "5", "6"])
+    plt.xlabel("Well ID")
+    plt.ylabel("Metric value")
+    plt.title("Box-plot of the metric values for each data source")
+    legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
+    plt.gca().add_artist(legend_a)
+
+    plt.savefig(
+        os.path.join(directory, f"{fig_name}_well_box.pdf"),
+        dpi=300,
+        transparent=True,
+    )
+    plt.close()
     plt.show()
 
     # Plot histogram
