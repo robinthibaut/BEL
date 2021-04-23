@@ -235,18 +235,18 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
-    # run(
-    #     model=bel,
-    #     # training_idx=training_r,
-    #     # test_idx=test_r,
-    #     train_size=1000,
-    #     test_size=250,
-    #     kfold=True,
-    #     n_splits=5,
-    #     shuffle=False,
-    #     random_state=None,
-    #     name="new_K",
-    # )
+    run(
+        model=bel,
+        # training_idx=training_r,
+        # test_idx=test_r,
+        train_size=1000,
+        test_size=250,
+        kfold=True,
+        n_splits=5,
+        shuffle=False,
+        random_state=None,
+        name="new_K",
+    )
 
     # Test datasets with various sizes
     # sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]

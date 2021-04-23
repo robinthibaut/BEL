@@ -945,7 +945,7 @@ def mode_histo(
     plt.title(f"{fig_name}")
     plt.xlabel("Summed metric")
     plt.ylabel("KDE")
-    legend_1 = plt.legend(wid, loc=1)
+    legend_1 = plt.legend(wid, loc=2)
     plt.gca().add_artist(legend_1)
     plt.grid(alpha=0.2)
 
