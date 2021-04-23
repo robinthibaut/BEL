@@ -861,6 +861,7 @@ def mode_histo(
         colors: list,
         an_i: int,
         wm: np.array,
+        title: str = None,
         fig_name: str = "average",
         directory: str = None,
 ):
@@ -923,12 +924,16 @@ def mode_histo(
     sns.boxplot(data=wmd, palette=palette, order=columns)
     plt.xlabel("Well ID")
     plt.ylabel("Metric value")
-    plt.title("Box-plot of the metric values for each data source")
+    if title is None:
+        title = "Box-plot of the metric values for each data source"
+    plt.title(title)
+    plt.grid(color="saddlebrown", linestyle="--", linewidth=0.7, axis="y", alpha=0.5)
+
     try:
         an_i = int(directory.split("split")[-1])
     except ValueError:
         pass
-    legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=1, fz=14)
+    legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
     plt.savefig(

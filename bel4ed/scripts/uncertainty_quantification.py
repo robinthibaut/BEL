@@ -15,19 +15,19 @@ from bel4ed.goggles import mode_histo
 
 
 def run(
-    model,
-    *,
-    training_idx: list = None,
-    test_idx: list = None,
-    source_ids_training: list or np.array = None,
-    source_ids_uq: list or np.array = None,
-    kfold: bool = False,
-    n_splits: int = None,
-    train_size: int = 200,
-    test_size: int = 50,
-    random_state: int = None,
-    shuffle: bool = False,
-    name: str = None,
+        model,
+        *,
+        training_idx: list = None,
+        test_idx: list = None,
+        source_ids_training: list or np.array = None,
+        source_ids_uq: list or np.array = None,
+        kfold: bool = False,
+        n_splits: int = None,
+        train_size: int = 200,
+        test_size: int = 50,
+        random_state: int = None,
+        shuffle: bool = False,
+        name: str = None,
 ):
     # Load datasets
     X, Y = load_dataset()
@@ -62,8 +62,8 @@ def run(
         ns = 0  # Split number
         for train_index, test_index in kf.split(idx):
             logger.info(f"Fold {ns}")
-            logger.info(train_index)
-            logger.info(test_index)
+            # logger.info(train_index)
+            # logger.info(test_index)
             fold_directory = jp(
                 Setup.Directories.forecasts_dir, f"{name}fold_{len(idx)}_split{ns}"
             )
@@ -88,6 +88,7 @@ def run(
 
             # Pick metrics
             metrics = (modified_hausdorff,)
+            acro = ["MHD"]
 
             # Compute UQ with metrics
             # bel_uq(
@@ -100,8 +101,10 @@ def run(
             #     clear=True,
             # )
 
-            [plot_uq(m, directory=fold_directory) for m in metrics]
-
+            [plot_uq(m, directory=fold_directory,
+                     title=f"{acro[i]} Training/Test {train_size}/{test_size}",
+                     an_i=i)
+             for i, m in enumerate(metrics)]
     elif training_idx and test_idx:
         if name:
             pre = name
@@ -129,19 +132,22 @@ def run(
 
         # Pick metrics
         metrics = (modified_hausdorff, structural_similarity)
+        acro = ["MHD", "SSIM"]
 
         # Compute UQ with metrics
         if len(test_idx) > 0:
-            bel_uq(
-                bel=model,
-                index=test_idx,
-                directory=custom_directory,
-                source_ids=source_ids_uq,
-                metrics=metrics,
-            )
+            # bel_uq(
+            #     bel=model,
+            #     index=test_idx,
+            #     directory=custom_directory,
+            #     source_ids=source_ids_uq,
+            #     metrics=metrics,
+            # )
 
-            [plot_uq(m, directory=custom_directory) for m in metrics]
-
+            [plot_uq(m, directory=custom_directory,
+                     title=f"{acro[i]} Training/Test {len(training_idx)}/{len(test_idx)}",
+                     an_i=i)
+             for i, m in enumerate(metrics)]
     else:
         if name:
             pre = name
@@ -184,10 +190,13 @@ def run(
                 delete=False,
             )
 
-            [plot_uq(m, directory=test_directory) for m in metrics]
+            [plot_uq(m, directory=test_directory,
+                     title=f"{m.__name__.capitalize()} Training/Test {len(training_idx)}/{len(test_idx)}",
+                     an_i=i)
+             for i, m in enumerate(metrics)]
 
 
-def plot_uq(metric_function, directory: str = None):
+def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int = 0):
     if directory is None:
         directory = Setup.Directories.forecasts_dir
     wm = np.load(jp(directory, f"uq_{metric_function.__name__}.npy"))
@@ -195,7 +204,8 @@ def plot_uq(metric_function, directory: str = None):
     mode_histo(
         colors=colors,
         wm=wm,
-        an_i=0,
+        an_i=an_i,
+        title=title,
         directory=directory,
         fig_name=metric_function.__name__,
     )
@@ -206,7 +216,7 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "roots.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    test_r = ['818bf1676c424f76b83bd777ae588a1d']
+    # test_r = ['818bf1676c424f76b83bd777ae588a1d']
 
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
