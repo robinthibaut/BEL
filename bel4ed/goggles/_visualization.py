@@ -283,7 +283,7 @@ def pca_scores(
     # Ticks
     plt.xticks(np.arange(0, n_comp, 5), fontsize=11)
     # Plot all training scores
-    plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.05)
+    plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
 
     # For each sample used for prediction:
@@ -921,7 +921,10 @@ def mode_histo(
     wmd = pd.DataFrame(columns=columns, data=wm.T)
     palette = {columns[i]: colors[i] for i in range(len(columns))}
     # palette = {'b', 'g', 'r', 'c', 'm', 'y'}
-    sns.boxplot(data=wmd, palette=palette, order=columns)
+    fig, ax1 = plt.subplots()
+    sns.boxplot(data=wmd, palette=palette, order=columns, linewidth=1, ax=ax1)
+    [line.set_color('white') for line in ax1.get_lines()[4::6]]
+    plt.ylim([-2.5, 3])
     plt.xlabel("Well ID")
     plt.ylabel("Metric value")
     if title is None:
@@ -935,6 +938,9 @@ def mode_histo(
         pass
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
+
+    # legend_b = _proxy_annotate(annotation=[f"Fold {an_i+1}"], loc=1, fz=14)
+    # plt.gca().add_artist(legend_b)
 
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.pdf"),
@@ -1317,7 +1323,7 @@ def pca_vision(
                 training=bel.X_pc,
                 prediction=bel.X_obs_pc,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
-                annotation=["E"],
+                annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
             )
@@ -1328,7 +1334,7 @@ def pca_vision(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
                 thr=0.8,
-                annotation=["C"],
+                annotation=["E"],
                 fig_file=fig_file,
             )
         if before_after:
@@ -1344,7 +1350,7 @@ def pca_vision(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
                 n_comp=Setup.HyperParameters.n_pc_target,
-                annotation=["F"],
+                annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
             )
@@ -1355,7 +1361,7 @@ def pca_vision(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_target,
                 thr=0.85,
-                annotation=["D"],
+                annotation=["F"],
                 fig_file=fig_file,
             )
         if before_after:

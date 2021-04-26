@@ -70,8 +70,8 @@ if __name__ == "__main__":
                 scores=True,
             )
 
-        myvis.plot_K_field(base_dir=base_dir, root=sample)
+        # myvis.plot_K_field(base_dir=base_dir, root=sample)
 
-        myvis.plot_head_field(base_dir=base_dir, root=sample)
+        # myvis.plot_head_field(base_dir=base_dir, root=sample)
 
-        myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
+        # myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)

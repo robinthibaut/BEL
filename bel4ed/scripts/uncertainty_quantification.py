@@ -231,13 +231,13 @@ if __name__ == "__main__":
     bel.n_posts = Setup.HyperParameters.n_posts
     # Train model
     # Reference dataset
-    run(
-        model=bel,
-        training_idx=training_r,
-        test_idx=test_r,
-        source_ids_training=wells_uq,
-        # source_ids_uq=wells_uq,
-    )
+    # run(
+    #     model=bel,
+    #     training_idx=training_r,
+    #     test_idx=test_r,
+    #     source_ids_training=wells_uq,
+    #     # source_ids_uq=wells_uq,
+    # )
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]
@@ -245,19 +245,30 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
 
     # KFold on custom dataset
+    # run(
+    #     model=bel,
+    #     # training_idx=training_r,
+    #     # test_idx=test_r,
+    #     train_size=1000,
+    #     test_size=250,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    #     name="new_K",
+    # )
     run(
         model=bel,
         # training_idx=training_r,
         # test_idx=test_r,
-        train_size=1000,
-        test_size=250,
+        train_size=200,
+        test_size=50,
         kfold=True,
         n_splits=5,
         shuffle=False,
         random_state=None,
-        name="new_K",
+        name="k",
     )
-
     # Test datasets with various sizes
     # sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
     #
