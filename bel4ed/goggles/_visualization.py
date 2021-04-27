@@ -939,8 +939,8 @@ def mode_histo(
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    # legend_b = _proxy_annotate(annotation=[f"Fold {an_i+1}"], loc=1, fz=14)
-    # plt.gca().add_artist(legend_b)
+    legend_b = _proxy_annotate(annotation=[f"Fold {an_i+1}"], loc=1, fz=14)
+    plt.gca().add_artist(legend_b)
 
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.pdf"),
@@ -979,6 +979,7 @@ def curves(
         sdir: str = None,
         labelsize: float = 12,
         factor: float = 1,
+        conc: bool = 0,
         xlabel: str = None,
         ylabel: str = None,
         title: str = "curves",
@@ -1000,13 +1001,17 @@ def curves(
     """
     if highlight is None:
         highlight = []
-    n_sim, n_wells, nts = tc.shape
-    for i in range(n_sim):
-        for t in range(n_wells):
-            if i in highlight:
-                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=2, alpha=1)
-            elif not ghost:
-                plt.plot(tc[i][t] * factor, color=cols[t], linewidth=0.2, alpha=0.5)
+
+    if not conc:
+        n_sim, n_wells, nts = tc.shape
+        for i in range(n_sim):
+            for t in range(n_wells):
+                if i in highlight:
+                    plt.plot(tc[i][t] * factor, color=cols[t], linewidth=2, alpha=1)
+                elif not ghost:
+                    plt.plot(tc[i][t] * factor, color=cols[t], linewidth=0.2, alpha=0.5)
+    else:
+        plt.plot(np.concatenate(tc[0]) * factor, color=cols[0], linewidth=2, alpha=1)
 
     plt.grid(linewidth=0.3, alpha=0.4)
     plt.xlabel(xlabel)
@@ -1419,10 +1424,10 @@ def d_pca_inverse_plot(
 
     cols = ["r" for _ in range(shape[1])]
     highlights = [i for i in range(shape[1])]
-    curves(cols=cols, tc=to_plot * factor, highlight=highlights)
+    curves(cols=cols, tc=to_plot, factor=factor, highlight=highlights, conc=True)
 
     cols = ["b" for _ in range(shape[1])]
-    curves(cols=cols, tc=v_pred * factor, highlight=highlights)
+    curves(cols=cols, tc=v_pred, factor=factor, highlight=highlights, conc=True)
 
     # Add title inside the box
     an = ["A"]

@@ -53,9 +53,9 @@ if __name__ == "__main__":
             md = jp(base_dir, sample, w)
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
-            myvis.plot_results(
-                bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
-            )
+            # myvis.plot_results(
+            #     bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
+            # )
 
             myvis.pca_vision(
                 bel,

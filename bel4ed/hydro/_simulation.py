@@ -55,8 +55,9 @@ def forward_modelling(folder=None):
     opt = np.array(
         [os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files]
     )
+    override = True
 
-    if not opt.all():
+    if not opt.all() or override:
         # Resets folder
         # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
