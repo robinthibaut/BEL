@@ -218,18 +218,18 @@ def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int
 
 if __name__ == "__main__":
     # Get roots used for testing
-    training_file = jp(Setup.Directories.storage_dir, "training_root_400.dat")
+    training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
     test_r = ['818bf1676c424f76b83bd777ae588a1d']
     # %%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    # wells_training = np.array(
-    #     [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
-    # )
+    wells_training = np.array(
+        [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
+    )
 
-    wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    # wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
     # %%
     # Initiate BEL model
     bel = init_bel()
@@ -241,8 +241,8 @@ if __name__ == "__main__":
         model=bel,
         training_idx=training_r,
         test_idx=test_r,
-        source_ids_training=wells_uq,
-        # source_ids_uq=wells_uq,
+        source_ids_training=wells_training,
+        source_ids_uq=wells_uq,
     )
     # %%
     # Test

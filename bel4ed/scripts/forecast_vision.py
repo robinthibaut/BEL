@@ -18,8 +18,8 @@ from bel4ed.datasets import i_am_root
 
 if __name__ == "__main__":
 
-    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
+    training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # roots = test_r
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
-    base_dir = jp(Setup.Directories.forecasts_dir, "test_200_1")
+    base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
 
     for i, sample in enumerate(roots):
         logger.info(f"Plotting root {sample}")
