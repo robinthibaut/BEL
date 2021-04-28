@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from os.path import join as jp
 
+import numpy.random
 import pandas as pd
 from loguru import logger
 import numpy as np
@@ -153,6 +154,8 @@ def run(
             pre = name
         else:
             pre = "test"
+        if random_state is None:
+            random_state = np.random.randint(0, 1e7)
         test_directory = jp(
             Setup.Directories.forecasts_dir,
             f"{pre}_{train_size}_{test_size}_{random_state}",
@@ -177,7 +180,7 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff,)
+        metrics = (modified_hausdorff, structural_similarity,)
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
@@ -215,11 +218,11 @@ def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int
 
 if __name__ == "__main__":
     # Get roots used for testing
-    training_file = jp(Setup.Directories.storage_dir, "roots.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
+    training_file = jp(Setup.Directories.storage_dir, "training_root_400.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    # test_r = ['818bf1676c424f76b83bd777ae588a1d']
-    #%%
+    test_r = ['818bf1676c424f76b83bd777ae588a1d']
+    # %%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     # wells_training = np.array(
@@ -227,27 +230,27 @@ if __name__ == "__main__":
     # )
 
     wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
-    #%%
+    # %%
     # Initiate BEL model
     bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
     # Train model
-    #%%
+    # %%
     # Reference dataset
-    # run(
-    #     model=bel,
-    #     training_idx=training_r,
-    #     test_idx=test_r,
-    #     source_ids_training=wells_uq,
-    #     # source_ids_uq=wells_uq,
-    # )
-    #%%
+    run(
+        model=bel,
+        training_idx=training_r,
+        test_idx=test_r,
+        source_ids_training=wells_uq,
+        # source_ids_uq=wells_uq,
+    )
+    # %%
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]
     # test_test = idx_[:50]
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
-    #%%
+    # %%
     # KFold on custom dataset
     # run(
     #     model=bel,
@@ -261,7 +264,7 @@ if __name__ == "__main__":
     #     random_state=None,
     #     name="new_K",
     # )
-    #%%
+    # %%
     # run(
     #     model=bel,
     #     # training_idx=training_r,
@@ -274,22 +277,43 @@ if __name__ == "__main__":
     #     random_state=None,
     #     name="k",
     # )
-    #%%
+    # %%
     # Test datasets with various sizes
-    sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
-
-    for j in range(10):
-        rs = np.random.randint(1, 1e6)
-        for i in sizes:
-            bel.n_posts = 400
-            run(
-                model=bel,
-                source_ids_training=wells_training,
-                train_size=i,
-                test_size=1,
-                shuffle=True,
-                random_state=rs,
-                name="n_thr",
-            )
-    #%%
-    # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
+    # sizes = range(125, 500, 25)
+    #
+    # rand = [287071, 437176,
+    #         446122, 502726,
+    #         656184, 791302,
+    #         824883, 851117,
+    #         885166, 980285,
+    #         15843, 202157,
+    #         235506, 430849,
+    #         547976, 617924,
+    #         862286, 863668,
+    #         975934, 993935,
+    #         1561, 1998,
+    #         1678941, 19619,
+    #         125691, 168994652,
+    #         16516, 5747,
+    #         156886, 218766,
+    #         21518, 51681,
+    #         6546844, 5418717]
+    #
+    # for rs in rand:
+    #     for i in sizes:
+    #         bel.n_posts = 400
+    #         run(
+    #             model=bel,
+    #             source_ids_training=wells_training,
+    #             train_size=i,
+    #             test_size=1,
+    #             shuffle=True,
+    #             random_state=rs,
+    #             name="n_thr",
+    #         )
+    # %%
+    # run(model=bel,
+    #     source_ids_training=wells_training,
+    #     train_size=400,
+    #     test_size=100,
+    #     shuffle=True)

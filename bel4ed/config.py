@@ -172,7 +172,7 @@ class Setup:
 
         # Posterior
         # Size of data set
-        n_total: int = 250  # Parameter to optimize
+        n_total: int = 500  # Parameter to optimize
         n_training: int = int(n_total * 0.8)
         n_test: int = int(n_total * 0.2)
         # Sample size

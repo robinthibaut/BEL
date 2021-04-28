@@ -5,19 +5,32 @@ import matplotlib.pyplot as plt
 
 from bel4ed.config import Setup
 
-sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
-rs = ["287071", "437176",
-      "446122", "502726",
-      "656184", "791302",
-      "824883", "851117",
-      "885166", "980285"]
+sizes = range(125, 500, 25)
+
+rand = [287071, 437176,
+        446122, 502726,
+        656184, 791302,
+        824883, 851117,
+        885166, 980285,
+        15843, 202157,
+        235506, 430849,
+        547976, 617924,
+        862286, 863668,
+        975934, 993935,
+        1561, 1998,
+        1678941, 19619,
+        125691, 168994652,
+        16516, 5747,
+        156886, 218766,
+        21518, 51681,
+        6546844, 5418717]
 
 fig, ax = plt.subplots()
 
-for rand in rs:
-    folders = [f"n_thr_{i}_1_{rand}" for i in sizes]
+for rs in rand:
+    folders = [f"n_thr_{i}_1_{rs}" for i in sizes]
     md = Setup.Directories.forecasts_dir
-    obj = "uq_modified_hausdorff.npy"
+    obj = "uq_structural_similarity.npy"
 
     files = [jp(md, f, obj) for f in folders]
 
@@ -33,7 +46,9 @@ for rand in rs:
     # ax.plot(means[:, 0], means[:, 1], "+")
     # plt.title("")
 plt.grid(alpha=0.3)
-plt.ylim([6.5, 15.2])
+# plt.xlim([125, 500])
+# plt.ylim([6.5, 15.2])
 plt.xlabel("Training size")
 plt.ylabel("Average error")
+plt.savefig("n_training.png")
 plt.show()
