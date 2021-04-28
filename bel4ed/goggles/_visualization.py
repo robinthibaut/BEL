@@ -852,7 +852,7 @@ def plot_K_field(
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
-        cb.ax.set_title("$Log_{10} m/s$")
+        cb.ax.set_title("$Log_{10} m/d$")
         plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=True)
         plt.close()
 

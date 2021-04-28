@@ -56,21 +56,21 @@ if __name__ == "__main__":
             # myvis.plot_results(
             #     bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
             # )
+            #
+            # myvis.pca_vision(
+            #     bel,
+            #     base_dir=base_dir,
+            #     w=w,
+            #     root=sample,
+            #     d=True,
+            #     h=True,
+            #     exvar=True,
+            #     before_after=True,
+            #     labels=True,
+            #     scores=True,
+            # )
 
-            myvis.pca_vision(
-                bel,
-                base_dir=base_dir,
-                w=w,
-                root=sample,
-                d=True,
-                h=True,
-                exvar=True,
-                before_after=True,
-                labels=True,
-                scores=True,
-            )
-
-        # myvis.plot_K_field(base_dir=base_dir, root=sample)
+        myvis.plot_K_field(base_dir=base_dir, root=sample)
 
         # myvis.plot_head_field(base_dir=base_dir, root=sample)
 

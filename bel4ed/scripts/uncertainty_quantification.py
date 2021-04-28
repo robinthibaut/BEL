@@ -75,15 +75,15 @@ def run(
 
             index = X_test.index
 
-            # bel_training(
-            #     bel=model,
-            #     X_train=X_train,
-            #     X_test=X_test,
-            #     y_train=y_train,
-            #     y_test=y_test,
-            #     directory=fold_directory,
-            #     source_ids=source_ids_training,
-            # )
+            bel_training(
+                bel=model,
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                directory=fold_directory,
+                source_ids=source_ids_training,
+            )
             ns += 1
 
             # Pick metrics
@@ -91,20 +91,20 @@ def run(
             acro = ["MHD"]
 
             # Compute UQ with metrics
-            # bel_uq(
-            #     bel=model,
-            #     index=index,
-            #     directory=fold_directory,
-            #     source_ids=source_ids_uq,
-            #     metrics=metrics,
-            #     delete=True,
-            #     clear=True,
-            # )
+            bel_uq(
+                bel=model,
+                index=index,
+                directory=fold_directory,
+                source_ids=source_ids_uq,
+                metrics=metrics,
+                delete=True,
+                clear=True,
+            )
 
             [plot_uq(m, directory=fold_directory,
-                     title=f"{acro[i]} Training/Test {train_size}/{test_size}",
-                     an_i=i)
-             for i, m in enumerate(metrics)]
+                     title=f"{acro[ix]} Training/Test {train_size}/{test_size}",
+                     an_i=ix)
+             for ix, m in enumerate(metrics)]
     elif training_idx and test_idx:
         if name:
             pre = name
@@ -120,15 +120,15 @@ def run(
         y_train = Y.loc[training_idx]
         y_test = Y.loc[test_idx]
 
-        # bel_training(
-        #     bel=model,
-        #     X_train=X_train,
-        #     X_test=X_test,
-        #     y_train=y_train,
-        #     y_test=y_test,
-        #     directory=custom_directory,
-        #     source_ids=source_ids_training,
-        # )
+        bel_training(
+            bel=model,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            directory=custom_directory,
+            source_ids=source_ids_training,
+        )
 
         # Pick metrics
         metrics = (modified_hausdorff, structural_similarity)
@@ -136,18 +136,18 @@ def run(
 
         # Compute UQ with metrics
         if len(test_idx) > 0:
-            # bel_uq(
-            #     bel=model,
-            #     index=test_idx,
-            #     directory=custom_directory,
-            #     source_ids=source_ids_uq,
-            #     metrics=metrics,
-            # )
+            bel_uq(
+                bel=model,
+                index=test_idx,
+                directory=custom_directory,
+                source_ids=source_ids_uq,
+                metrics=metrics,
+            )
 
             [plot_uq(m, directory=custom_directory,
-                     title=f"{acro[i]} Training/Test {len(training_idx)}/{len(test_idx)}",
-                     an_i=i)
-             for i, m in enumerate(metrics)]
+                     title=f"{acro[ix]} Training/Test {len(training_idx)}/{len(test_idx)}",
+                     an_i=ix)
+             for ix, m in enumerate(metrics)]
     else:
         if name:
             pre = name
@@ -180,20 +180,22 @@ def run(
         metrics = (modified_hausdorff,)
         index = X_test.index
         # Compute UQ with metrics
-        if len(test_idx) > 1:
-            bel_uq(
-                bel=model,
-                index=index,
-                directory=test_directory,
-                source_ids=source_ids_uq,
-                metrics=metrics,
-                delete=False,
-            )
+        bel_uq(
+            bel=model,
+            index=index,
+            directory=test_directory,
+            source_ids=source_ids_uq,
+            metrics=metrics,
+            delete=False,
+        )
 
+        try:
             [plot_uq(m, directory=test_directory,
-                     title=f"{m.__name__.capitalize()} Training/Test {len(training_idx)}/{len(test_idx)}",
-                     an_i=i)
-             for i, m in enumerate(metrics)]
+                     title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
+                     an_i=ix)
+             for ix, m in enumerate(metrics)]
+        except ValueError:
+            pass
 
 
 def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int = 0):
@@ -217,7 +219,7 @@ if __name__ == "__main__":
     test_file = jp(Setup.Directories.storage_dir, "test_roots.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
     # test_r = ['818bf1676c424f76b83bd777ae588a1d']
-
+    #%%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     # wells_training = np.array(
@@ -225,11 +227,12 @@ if __name__ == "__main__":
     # )
 
     wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
-
+    #%%
     # Initiate BEL model
     bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
     # Train model
+    #%%
     # Reference dataset
     # run(
     #     model=bel,
@@ -238,12 +241,13 @@ if __name__ == "__main__":
     #     source_ids_training=wells_uq,
     #     # source_ids_uq=wells_uq,
     # )
+    #%%
     # Test
     # idx_ = [*training_r, *test_r]
     # training_test = idx_[50:]
     # test_test = idx_[:50]
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
-
+    #%%
     # KFold on custom dataset
     # run(
     #     model=bel,
@@ -257,30 +261,35 @@ if __name__ == "__main__":
     #     random_state=None,
     #     name="new_K",
     # )
-    run(
-        model=bel,
-        # training_idx=training_r,
-        # test_idx=test_r,
-        train_size=200,
-        test_size=50,
-        kfold=True,
-        n_splits=5,
-        shuffle=False,
-        random_state=None,
-        name="k",
-    )
+    #%%
+    # run(
+    #     model=bel,
+    #     # training_idx=training_r,
+    #     # test_idx=test_r,
+    #     train_size=200,
+    #     test_size=50,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    #     name="k",
+    # )
+    #%%
     # Test datasets with various sizes
-    # sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
-    #
-    # for i in sizes:
-    #     bel.n_posts = 500
-    #     run(
-    #         model=bel,
-    #         source_ids=wells,
-    #         train_size=i,
-    #         test_size=1,
-    #         shuffle=True,
-    #         random_state=6492,
-    #         name="n_thr",
-    #     )
+    sizes = [125, 150, 200, 250, 400, 500, 750, 1000, 2000]
+
+    for j in range(10):
+        rs = np.random.randint(1, 1e6)
+        for i in sizes:
+            bel.n_posts = 400
+            run(
+                model=bel,
+                source_ids_training=wells_training,
+                train_size=i,
+                test_size=1,
+                shuffle=True,
+                random_state=rs,
+                name="n_thr",
+            )
+    #%%
     # run(model=bel, source_ids=wells, random_state=7017162, shuffle=True)
