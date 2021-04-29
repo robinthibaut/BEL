@@ -197,6 +197,10 @@ def explained_variance(
     cum = (
             np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
     )
+    # x-ticks
+    # plt.xticks(range(1, n_comp+1, 4))
+    plt.xticks(np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
+               np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]))
     # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks, fontsize=8.5)
@@ -1365,7 +1369,7 @@ def pca_vision(
             explained_variance(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_target,
-                thr=0.85,
+                thr=0.8,
                 annotation=["F"],
                 fig_file=fig_file,
             )
