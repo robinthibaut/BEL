@@ -49,7 +49,7 @@ fc = Setup.Focus
 x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
 myvis.whpa_plot(
-    whpa=nn,
+    whpa=nn[0],
     x_lim=[870, 1080],
     y_lim=[415, 600],
     labelsize=11,

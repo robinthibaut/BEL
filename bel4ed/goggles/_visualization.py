@@ -469,7 +469,7 @@ def whpa_plot(
     else:
         grf = grf
 
-    nrow, ncol, x, y = refine_machine(xlim, ylim, grf)
+    nrow, ncol, x, y = refine_machine(focus.x_range, focus.y_range, grf)
 
     # Plot background
     if bkg_field_array is not None:
@@ -508,15 +508,14 @@ def whpa_plot(
         if highlight:  # Also display curves
             for z in whpa:
                 contour = plt.contour(
-                    x, y, z, [0], colors=color, linewidths=lw, alpha=halpha
+                    z, [0], extent=(xlim[0], xlim[1], ylim[0], ylim[1]), colors=color, linewidths=lw, alpha=halpha
                 )
 
     else:  # If only one WHPA to display
         contour = plt.contour(
-            x,
-            y,
             whpa,
-            [0],
+            0,
+            extent=(xlim[0], xlim[1], ylim[0], ylim[1]),
             colors=color,
             linewidths=lw,
             alpha=halpha,
