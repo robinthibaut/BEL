@@ -16,19 +16,19 @@ from bel4ed.goggles import mode_histo
 
 
 def run(
-        model,
-        *,
-        training_idx: list = None,
-        test_idx: list = None,
-        source_ids_training: list or np.array = None,
-        source_ids_uq: list or np.array = None,
-        kfold: bool = False,
-        n_splits: int = None,
-        train_size: int = 200,
-        test_size: int = 50,
-        random_state: int = None,
-        shuffle: bool = False,
-        name: str = None,
+    model,
+    *,
+    training_idx: list = None,
+    test_idx: list = None,
+    source_ids_training: list or np.array = None,
+    source_ids_uq: list or np.array = None,
+    kfold: bool = False,
+    n_splits: int = None,
+    train_size: int = 200,
+    test_size: int = 50,
+    random_state: int = None,
+    shuffle: bool = False,
+    name: str = None,
 ):
     # Load datasets
     X, Y = load_dataset()
@@ -102,10 +102,15 @@ def run(
                 clear=True,
             )
 
-            [plot_uq(m, directory=fold_directory,
-                     title=f"{acro[ix]} Training/Test {train_size}/{test_size}",
-                     an_i=ix)
-             for ix, m in enumerate(metrics)]
+            [
+                plot_uq(
+                    m,
+                    directory=fold_directory,
+                    title=f"{acro[ix]} Training/Test {train_size}/{test_size}",
+                    an_i=ix,
+                )
+                for ix, m in enumerate(metrics)
+            ]
     elif training_idx and test_idx:
         if name:
             pre = name
@@ -145,10 +150,15 @@ def run(
                 metrics=metrics,
             )
 
-            [plot_uq(m, directory=custom_directory,
-                     title=f"{acro[ix]} Training/Test {len(training_idx)}/{len(test_idx)}",
-                     an_i=ix)
-             for ix, m in enumerate(metrics)]
+            [
+                plot_uq(
+                    m,
+                    directory=custom_directory,
+                    title=f"{acro[ix]} Training/Test {len(training_idx)}/{len(test_idx)}",
+                    an_i=ix,
+                )
+                for ix, m in enumerate(metrics)
+            ]
     else:
         if name:
             pre = name
@@ -180,7 +190,10 @@ def run(
         )
 
         # Pick metrics
-        metrics = (modified_hausdorff, structural_similarity,)
+        metrics = (
+            modified_hausdorff,
+            structural_similarity,
+        )
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
@@ -193,10 +206,15 @@ def run(
         )
 
         try:
-            [plot_uq(m, directory=test_directory,
-                     title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
-                     an_i=ix)
-             for ix, m in enumerate(metrics)]
+            [
+                plot_uq(
+                    m,
+                    directory=test_directory,
+                    title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
+                    an_i=ix,
+                )
+                for ix, m in enumerate(metrics)
+            ]
         except ValueError:
             pass
 
@@ -221,13 +239,11 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    test_r = ['818bf1676c424f76b83bd777ae588a1d']
+    test_r = ["818bf1676c424f76b83bd777ae588a1d"]
     # %%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
-    wells_training = np.array(
-        [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
-    )
+    wells_training = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
 
     # wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
     # %%

@@ -55,7 +55,12 @@ if __name__ == "__main__":
 
             logger.info(f"Plotting results")
             myvis.plot_results(
-                bel, base_dir=base_dir, root=sample, folder=w, annotation=annotation, d=True
+                bel,
+                base_dir=base_dir,
+                root=sample,
+                folder=w,
+                annotation=annotation,
+                d=True,
             )
 
             logger.info(f"Plotting PCA")
@@ -79,4 +84,4 @@ if __name__ == "__main__":
         # myvis.plot_head_field(base_dir=base_dir, root=sample)
 
         logger.info(f"Plotting CCA")
-        # myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
+        myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
