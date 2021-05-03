@@ -198,9 +198,8 @@ def explained_variance(
             np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
     )
     # x-ticks
-    # plt.xticks(range(1, n_comp+1, 4))
     plt.xticks(np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-               np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]))
+               np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]), fontsize=11)
     # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks, fontsize=8.5)
@@ -221,7 +220,7 @@ def explained_variance(
         alpha=0.8,
     )
     # Axes labels
-    plt.xlabel("PC number", fontsize=11)
+    plt.xlabel("PC number", fontsize=10)
     plt.ylabel("Cumulative explained variance (%)", fontsize=11)
     # Legend
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
@@ -285,8 +284,8 @@ def pca_scores(
     # Grid
     plt.grid(alpha=0.2)
     # Ticks
-    plt.xticks(np.arange(0, n_comp, 5), fontsize=11)
-    # Plot all training scores
+    plt.xticks(np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
+               np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]))    # Plot all training scores
     plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
 
@@ -470,7 +469,7 @@ def whpa_plot(
     else:
         grf = grf
 
-    nrow, ncol, x, y = refine_machine(focus.x_range, focus.y_range, grf)
+    nrow, ncol, x, y = refine_machine(xlim, ylim, grf)
 
     # Plot background
     if bkg_field_array is not None:

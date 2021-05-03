@@ -4,8 +4,8 @@ from os.path import join as jp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiment.config import Setup
-from experiment.visualization import proxy_annotate
+from bel4ed.config import Setup
+from bel4ed.goggles import _visualization
 
 md = Setup.Directories
 
@@ -14,7 +14,7 @@ md = Setup.Directories
 # flow = fops.load_flow_model(model_nam)
 
 root = "818bf1676c424f76b83bd777ae588a1d"
-ep = f"/Users/robin/PycharmProjects/BEL/experiment/storage/forwards/{root}/tracking_ep.npy"
+ep = f"/Users/robin/PycharmProjects/BEL/bel4ed/datasets/forwards/{root}/tracking_ep.npy"
 
 epxy = np.load(ep)
 
@@ -45,11 +45,16 @@ plt.xlabel("X(m)")
 plt.ylabel("Y(m)")
 plt.tick_params(labelsize=11)
 
-legend = proxy_annotate(annotation=["A"], loc=2, fz=14)
+legend = _visualization._proxy_annotate(annotation=["A"], loc=2, fz=14)
 plt.gca().add_artist(legend)
 
+sub_folder = "test_400_1"
+root = "818bf1676c424f76b83bd777ae588a1d"
+sources = "123456"
+sdir = jp(md.forecasts_dir, sub_folder, root, sources)
+
 plt.savefig(
-    jp(md.forecasts_dir, "base", "roots_whpa", f"{root}_ep.pdf"),
+    jp(sdir, f"{root}_ep.pdf"),
     dpi=300,
     bbox_inches="tight",
     transparent=True,
