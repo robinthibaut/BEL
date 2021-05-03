@@ -61,6 +61,7 @@ myvis.whpa_plot(
     cb_title="SD(m)",
     annotation=["B"],
     bkg_field_array=np.flipud(nn[0]),
+    vmin=-50,
     color="black",
 )
 

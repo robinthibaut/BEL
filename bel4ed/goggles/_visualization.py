@@ -475,7 +475,7 @@ def whpa_plot(
     if bkg_field_array is not None:
         plt.imshow(
             bkg_field_array,
-            extent=(xlim[0], xlim[1], ylim[0], ylim[1]),
+            extent=np.concatenate([focus.x_range, focus.y_range]),
             vmin=vmin,
             vmax=vmax,
             cmap=cmap,
@@ -514,8 +514,8 @@ def whpa_plot(
     else:  # If only one WHPA to display
         contour = plt.contour(
             whpa,
-            0,
-            extent=(xlim[0], xlim[1], ylim[0], ylim[1]),
+            [0],
+            extent=np.concatenate([focus.x_range, focus.y_range]),
             colors=color,
             linewidths=lw,
             alpha=halpha,
