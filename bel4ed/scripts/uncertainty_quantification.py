@@ -239,7 +239,7 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    test_r = ["818bf1676c424f76b83bd777ae588a1d"]
+    # test_r = ["818bf1676c424f76b83bd777ae588a1d"]
     # %%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
@@ -253,13 +253,13 @@ if __name__ == "__main__":
     # Train model
     # %%
     # Reference dataset
-    run(
-        model=bel,
-        training_idx=training_r,
-        test_idx=test_r,
-        source_ids_training=wells_training,
-        source_ids_uq=wells_uq,
-    )
+    # run(
+    #     model=bel,
+    #     training_idx=training_r,
+    #     test_idx=test_r,
+    #     source_ids_training=wells_training,
+    #     source_ids_uq=wells_uq,
+    # )
     # %%
     # Test
     # idx_ = [*training_r, *test_r]
@@ -268,18 +268,19 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
     # %%
     # KFold on custom dataset
-    # run(
-    #     model=bel,
-    #     # training_idx=training_r,
-    #     # test_idx=test_r,
-    #     train_size=1000,
-    #     test_size=250,
-    #     kfold=True,
-    #     n_splits=5,
-    #     shuffle=False,
-    #     random_state=None,
-    #     name="new_K",
-    # )
+    run(
+        model=bel,
+        training_idx=training_r,
+        test_idx=test_r,
+        source_ids_training=wells_training,
+        # train_size=1000,
+        # test_size=250,
+        kfold=True,
+        n_splits=5,
+        shuffle=False,
+        random_state=None,
+        name="K_update_",
+    )
     # %%
     # run(
     #     model=bel,
