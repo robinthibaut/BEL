@@ -76,15 +76,15 @@ def run(
 
             index = X_test.index
 
-            bel_training(
-                bel=model,
-                X_train=X_train,
-                X_test=X_test,
-                y_train=y_train,
-                y_test=y_test,
-                directory=fold_directory,
-                source_ids=source_ids_training,
-            )
+            # bel_training(
+            #     bel=model,
+            #     X_train=X_train,
+            #     X_test=X_test,
+            #     y_train=y_train,
+            #     y_test=y_test,
+            #     directory=fold_directory,
+            #     source_ids=source_ids_training,
+            # )
             ns += 1
 
             # Pick metrics
@@ -92,21 +92,21 @@ def run(
             acro = ["MHD"]
 
             # Compute UQ with metrics
-            bel_uq(
-                bel=model,
-                index=index,
-                directory=fold_directory,
-                source_ids=source_ids_uq,
-                metrics=metrics,
-                delete=True,
-                clear=True,
-            )
+            # bel_uq(
+            #     bel=model,
+            #     index=index,
+            #     directory=fold_directory,
+            #     source_ids=source_ids_uq,
+            #     metrics=metrics,
+            #     delete=True,
+            #     clear=True,
+            # )
 
             [
                 plot_uq(
                     m,
                     directory=fold_directory,
-                    title=f"{acro[ix]} Training/Test {train_size}/{test_size}",
+                    title=f"{acro[ix]} Training/Test {len(X_train)}/{len(X_test)}",
                     an_i=ix,
                 )
                 for ix, m in enumerate(metrics)
@@ -155,7 +155,7 @@ def run(
                     m,
                     directory=custom_directory,
                     title=f"{acro[ix]} Training/Test {len(training_idx)}/{len(test_idx)}",
-                    an_i=ix,
+                    an_i=ix+2,
                 )
                 for ix, m in enumerate(metrics)
             ]
