@@ -2,10 +2,14 @@
 import numpy as np
 from os.path import join as jp
 import matplotlib.pyplot as plt
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from bel4ed.config import Setup
 
-sizes = range(125, 500, 25)
+sizes = np.concatenate([range(125, 500, 25), range(500, 1000, 100)])
+
+sizes = np.concatenate([[125], range(150, 500, 50), range(500, 1000, 100)])
 
 rand = [
     287071,
@@ -27,21 +31,7 @@ rand = [
     862286,
     863668,
     975934,
-    993935,
-    1561,
-    1998,
-    1678941,
-    19619,
-    125691,
-    168994652,
-    16516,
-    5747,
-    156886,
-    218766,
-    21518,
-    51681,
-    6546844,
-    5418717,
+    993935
 ]
 
 fig, ax = plt.subplots()
@@ -61,13 +51,14 @@ for rs in rand:
 
     # print(means)
 
-    ax.plot(means[:, 0], means[:, 1], "-")
-    # ax.plot(means[:, 0], means[:, 1], "+")
+    ax.plot(means[:, 0], means[:, 1], "-", alpha=.8, linewidth=2)
+    # ax.plot(means[:, 0], means[:, 1], "lightblue", "o", markersize=1)
     # plt.title("")
+plt.axvline(x=400)
 plt.grid(alpha=0.3)
-# plt.xlim([125, 500])
-# plt.ylim([6.5, 15.2])
+plt.xlim([125, 900])
+plt.ylim([-.822, -.667])
 plt.xlabel("Training size")
-plt.ylabel("Average error")
-plt.savefig("n_training.png")
+plt.ylabel("Average SSIM index")
+plt.savefig("n_training.pdf", dpi=300, bbox_inches="tight", transparent=True)
 plt.show()

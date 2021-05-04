@@ -191,7 +191,7 @@ def run(
 
         # Pick metrics
         metrics = (
-            modified_hausdorff,
+            # modified_hausdorff,
             structural_similarity,
         )
         index = X_test.index
@@ -205,18 +205,18 @@ def run(
             delete=False,
         )
 
-        try:
-            [
-                plot_uq(
-                    m,
-                    directory=test_directory,
-                    title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
-                    an_i=ix,
-                )
-                for ix, m in enumerate(metrics)
-            ]
-        except ValueError:
-            pass
+        # try:
+        #     [
+        #         plot_uq(
+        #             m,
+        #             directory=test_directory,
+        #             title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
+        #             an_i=ix,
+        #         )
+        #         for ix, m in enumerate(metrics)
+        #     ]
+        # except ValueError:
+        #     pass
 
 
 def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int = 0):
@@ -268,19 +268,19 @@ if __name__ == "__main__":
     # run(model=bel, training_idx=training_test, test_idx=test_test, source_ids=wells, name="check")
     # %%
     # KFold on custom dataset
-    run(
-        model=bel,
-        training_idx=training_r,
-        test_idx=test_r,
-        source_ids_training=wells_training,
-        # train_size=1000,
-        # test_size=250,
-        kfold=True,
-        n_splits=5,
-        shuffle=False,
-        random_state=None,
-        name="K_update_",
-    )
+    # run(
+    #     model=bel,
+    #     training_idx=training_r,
+    #     test_idx=test_r,
+    #     source_ids_training=wells_training,
+    #     # train_size=1000,
+    #     # test_size=250,
+    #     kfold=True,
+    #     n_splits=5,
+    #     shuffle=False,
+    #     random_state=None,
+    #     name="K_update_",
+    # )
     # %%
     # run(
     #     model=bel,
@@ -296,38 +296,38 @@ if __name__ == "__main__":
     # )
     # %%
     # Test datasets with various sizes
-    # sizes = range(125, 500, 25)
-    #
-    # rand = [287071, 437176,
-    #         446122, 502726,
-    #         656184, 791302,
-    #         824883, 851117,
-    #         885166, 980285,
-    #         15843, 202157,
-    #         235506, 430849,
-    #         547976, 617924,
-    #         862286, 863668,
-    #         975934, 993935,
-    #         1561, 1998,
-    #         1678941, 19619,
-    #         125691, 168994652,
-    #         16516, 5747,
-    #         156886, 218766,
-    #         21518, 51681,
-    #         6546844, 5418717]
-    #
-    # for rs in rand:
-    #     for i in sizes:
-    #         bel.n_posts = 400
-    #         run(
-    #             model=bel,
-    #             source_ids_training=wells_training,
-    #             train_size=i,
-    #             test_size=1,
-    #             shuffle=True,
-    #             random_state=rs,
-    #             name="n_thr",
-    #         )
+    sizes = np.concatenate([range(125, 500, 25), range(500, 1000, 100)])
+
+    rand = [287071, 437176,
+            446122, 502726,
+            656184, 791302,
+            824883, 851117,
+            885166, 980285,
+            15843, 202157,
+            235506, 430849,
+            547976, 617924,
+            862286, 863668,
+            975934, 993935,
+            1561, 1998,
+            1678941, 19619,
+            125691, 168994652,
+            16516, 5747,
+            156886, 218766,
+            21518, 51681,
+            6546844, 5418717]
+
+    for rs in rand:
+        for i in sizes:
+            bel.n_posts = 400
+            run(
+                model=bel,
+                source_ids_training=wells_training,
+                train_size=i,
+                test_size=1,
+                shuffle=True,
+                random_state=rs,
+                name="n_thr",
+            )
     # %%
     # run(model=bel,
     #     source_ids_training=wells_training,
