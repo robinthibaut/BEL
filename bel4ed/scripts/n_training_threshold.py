@@ -46,7 +46,7 @@ for rs in rand:
     uq = [np.load(fi) for fi in files]
 
     # means = [np.mean(e)/e.shape[1] for e in uq]
-    means = [np.mean(e) for e in uq]
+    means = [-np.mean(e) for e in uq]
     means = np.array(list(zip(sizes, means)))
 
     # print(means)
@@ -57,7 +57,7 @@ for rs in rand:
 plt.axvline(x=400)
 plt.grid(alpha=0.3)
 plt.xlim([125, 900])
-plt.ylim([-.822, -.667])
+# plt.ylim([-.822, -.667])
 plt.xlabel("Training size")
 plt.ylabel("Average SSIM index")
 plt.savefig("n_training.pdf", dpi=300, bbox_inches="tight", transparent=True)

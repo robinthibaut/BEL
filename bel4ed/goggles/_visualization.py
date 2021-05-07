@@ -1273,7 +1273,7 @@ def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
             zorder=2,
         )
         cb = plt.colorbar()
-        cb.ax.set_title("R")
+        cb.ax.set_title(r"$\it{" + "r" + "}$")
         plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
         plt.xticks(
             np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
@@ -2123,7 +2123,7 @@ def _kde_cca(
             markersize=2,
             markeredgecolor="w",
             markeredgewidth=0.2,
-            alpha=0.7,
+            alpha=0.9,
         )
         # Point
         ax_joint.plot(
@@ -2196,7 +2196,7 @@ def _kde_cca(
         subtitle = _my_alphabet(comp_n)
         # Add title inside the box
         an = [
-            f"{subtitle}. Pair {comp_n + 1} - R = {round(cca_coefficient[comp_n], 3)}"
+            f"{subtitle}. Pair {comp_n + 1} - " + r"$\it{" + "r" + "}$" + f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #

@@ -22,12 +22,15 @@ if __name__ == "__main__":
     test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
-    roots = test_r
+    # roots = test_r
+    #
+    # roots = ["818bf1676c424f76b83bd777ae588a1d",
+    #          "fa4e291de56b4604b8cb53943c18e5e2",
+    #          "d08b2a80c7ef431b92ae3c6fd9cb6482",
+    #          "818dd775ba0c4e8aa567b5d7d153c9db"]
 
-    roots = ["818bf1676c424f76b83bd777ae588a1d",
-             "fa4e291de56b4604b8cb53943c18e5e2",
-             "d08b2a80c7ef431b92ae3c6fd9cb6482",
-             "818dd775ba0c4e8aa567b5d7d153c9db"]
+    roots = ["818bf1676c424f76b83bd777ae588a1d"]
+
 
     alphabet = string.ascii_uppercase
 
@@ -57,14 +60,14 @@ if __name__ == "__main__":
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
             logger.info(f"Plotting results")
-            myvis.plot_results(
-                bel,
-                base_dir=base_dir,
-                root=sample,
-                folder=w,
-                annotation=annotation,
-                d=False,
-            )
+            # myvis.plot_results(
+            #     bel,
+            #     base_dir=base_dir,
+            #     root=sample,
+            #     folder=w,
+            #     annotation=annotation,
+            #     d=False,
+            # )
 
             logger.info(f"Plotting PCA")
             # myvis.pca_vision(
@@ -87,4 +90,4 @@ if __name__ == "__main__":
         # myvis.plot_head_field(base_dir=base_dir, root=sample)
 
         logger.info(f"Plotting CCA")
-        # myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
+        myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
