@@ -2196,7 +2196,11 @@ def _kde_cca(
         subtitle = _my_alphabet(comp_n)
         # Add title inside the box
         an = [
-            f"{subtitle}. Pair {comp_n + 1} - " + r"$\it{" + "r" + "}$" + f" = {round(cca_coefficient[comp_n], 3)}"
+            f"{subtitle}. Pair {comp_n + 1} - "
+            + r"$\it{"
+            + "r"
+            + "}$"
+            + f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #

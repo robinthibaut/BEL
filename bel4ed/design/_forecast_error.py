@@ -116,7 +116,7 @@ def bel_uq(
     combinations = source_ids
     total = len(index)
     wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-    wm = np.zeros((len(metrics), len(wid), bel.n_posts))
+    theta = np.zeros((len(metrics), len(wid), bel.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         logger.info(f"[{ix + 1}/{total}]-{test_root}")
         # Directory in which to load forecasts
@@ -171,7 +171,7 @@ def bel_uq(
                     y_pred=Y_posterior,
                     metric=m,
                 )
-                wm[j, ixw] += oe
+                theta[j, ixw] += oe
 
             os.remove(jp(obj_dir, "bel.pkl"))
 
@@ -188,7 +188,7 @@ def bel_uq(
                 joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
     for k, e in enumerate(metrics):
-        np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), wm[k])
+        np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), theta[k])
 
 
 def _objective_function(

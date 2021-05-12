@@ -31,7 +31,6 @@ if __name__ == "__main__":
 
     roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
-
     alphabet = string.ascii_uppercase
 
     fc = Setup.Focus()

@@ -31,7 +31,7 @@ rand = [
     862286,
     863668,
     975934,
-    993935
+    993935,
 ]
 
 fig, ax = plt.subplots()
@@ -51,7 +51,7 @@ for rs in rand:
 
     # print(means)
 
-    ax.plot(means[:, 0], means[:, 1], "-", alpha=.8, linewidth=2)
+    ax.plot(means[:, 0], means[:, 1], "-", alpha=0.8, linewidth=2)
     # ax.plot(means[:, 0], means[:, 1], "lightblue", "o", markersize=1)
     # plt.title("")
 plt.axvline(x=400)
