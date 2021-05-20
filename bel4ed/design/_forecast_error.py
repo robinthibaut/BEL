@@ -10,8 +10,8 @@ from sklearn.base import clone
 
 from .. import utils
 from ..config import Setup
-from ..spatial import contour_extract
-from ..spatial import (
+from skbel.spatial import contour_extract
+from skbel.spatial import (
     contours_vertices,
 )
 

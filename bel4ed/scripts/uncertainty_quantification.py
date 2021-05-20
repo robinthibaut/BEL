@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import init_bel
-from bel4ed.algorithms import modified_hausdorff, structural_similarity
+from skbel.algorithms import modified_hausdorff, structural_similarity
 from bel4ed.config import Setup, TEST_ROOT
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
@@ -253,13 +253,13 @@ if __name__ == "__main__":
     # Train model
     # %%
     # Reference dataset
-    # run(
-    #     model=bel,
-    #     training_idx=training_r,
-    #     test_idx=test_r,
-    #     source_ids_training=wells_training,
-    #     source_ids_uq=wells_uq,
-    # )
+    run(
+        model=bel,
+        training_idx=training_r,
+        test_idx=test_r,
+        source_ids_training=wells_training,
+        source_ids_uq=wells_uq,
+    )
     # %%
     # Test
     # idx_ = [*training_r, *test_r]
@@ -335,18 +335,18 @@ if __name__ == "__main__":
         5418717,
     ]
 
-    for rs in rand:
-        for i in sizes:
-            bel.n_posts = 400
-            run(
-                model=bel,
-                source_ids_training=wells_training,
-                train_size=i,
-                test_size=1,
-                shuffle=True,
-                random_state=rs,
-                name="n_thr",
-            )
+    # for rs in rand:
+    #     for i in sizes:
+    #         bel.n_posts = 400
+    #         run(
+    #             model=bel,
+    #             source_ids_training=wells_training,
+    #             train_size=i,
+    #             test_size=1,
+    #             shuffle=True,
+    #             random_state=rs,
+    #             name="n_thr",
+    #         )
     # %%
     # run(model=bel,
     #     source_ids_training=wells_training,

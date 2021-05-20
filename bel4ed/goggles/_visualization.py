@@ -24,11 +24,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
 
 import bel4ed.utils
-from bel4ed.algorithms import KDE, kde_params, posterior_conditional
+from skbel.algorithms import KDE, kde_params, posterior_conditional
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader, load_transport_model
 from bel4ed.datasets import load_flow_model
-from bel4ed.spatial import (
+from skbel.spatial import (
     binary_stack,
     contours_vertices,
     grid_parameters,
