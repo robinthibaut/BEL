@@ -1,9 +1,8 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import numpy as np
 from os.path import join as jp
+
 import matplotlib.pyplot as plt
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 from bel4ed.config import Setup
 

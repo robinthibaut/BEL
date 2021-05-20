@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import os
 
 import numpy as np
 from scipy.interpolate import interp1d

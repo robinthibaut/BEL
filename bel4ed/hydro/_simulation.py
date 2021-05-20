@@ -8,21 +8,19 @@ from os.path import join as jp
 
 import numpy as np
 from loguru import logger
-
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
 from pysgems.io.sgio import PointSet
 from pysgems.sgems import sg
 
 import bel4ed.utils as utils
-
-from bel4ed.datasets import keep_essential
-from bel4ed.utils import dirmaker
 from bel4ed.config import Setup, Machine
+from bel4ed.datasets import keep_essential
 from bel4ed.hydro.backtracking.modpath import backtrack
 from bel4ed.hydro.flow.modflow import flow
 from bel4ed.hydro.transport.mt3d import transport
 from bel4ed.preprocessing import travelling_particles
+from bel4ed.utils import dirmaker
 
 __all__ = ["forward_modelling"]
 

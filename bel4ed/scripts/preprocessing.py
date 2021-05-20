@@ -5,12 +5,12 @@ from os.path import join as jp
 import numpy as np
 import pandas as pd
 from loguru import logger
+from skbel.spatial import grid_parameters
 
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader
-from skbel.spatial import grid_parameters
-from bel4ed.utils import i_am_framed
 from bel4ed.preprocessing import beautiful_curves, signed_distance
+from bel4ed.utils import i_am_framed
 
 md = Setup.Directories.hydro_res_dir
 listme = os.listdir(md)

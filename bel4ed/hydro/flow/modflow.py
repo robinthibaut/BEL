@@ -8,9 +8,9 @@ import flopy
 import flopy.utils.binaryfile as bf
 import numpy as np
 from scipy.spatial import distance_matrix
+from skbel.spatial import refine_axis
 
 from ...config import Setup
-from skbel.spatial import refine_axis
 
 
 def flow(

@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-from typing import List
 
 import numpy as np
 from matplotlib import pyplot as plt

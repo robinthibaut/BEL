@@ -1,15 +1,15 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from os.path import join as jp
 
+import numpy as np
 import numpy.random
 import pandas as pd
 from loguru import logger
-import numpy as np
+from skbel.algorithms import modified_hausdorff, structural_similarity
 from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import init_bel
-from skbel.algorithms import modified_hausdorff, structural_similarity
-from bel4ed.config import Setup, TEST_ROOT
+from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
 from bel4ed.goggles import mode_histo

@@ -1,5 +1,4 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import itertools
 import math
 import operator
 import os
@@ -15,27 +14,24 @@ import vtk
 from flopy.export import vtk as vtk_flow
 from loguru import logger
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import legend
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
-from skbel.goggles._visualization import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import check_array, deprecated
-
-import bel4ed.utils
-from skbel.algorithms import KDE, kde_params, posterior_conditional
-from bel4ed.config import Setup
-from bel4ed.datasets import data_loader, load_transport_model
-from bel4ed.datasets import load_flow_model
-from bel4ed.spatial import binary_stack
+from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
 from skbel.spatial import (
     contours_vertices,
     grid_parameters,
     refine_machine,
     blocks_from_rc_3d,
 )
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_array, deprecated
+
+import bel4ed.utils
+from bel4ed.config import Setup
+from bel4ed.datasets import data_loader, load_transport_model
+from bel4ed.datasets import load_flow_model
+from bel4ed.spatial import binary_stack
 from bel4ed.utils import Root, reload_trained_model
 
 __all__ = [
@@ -50,6 +46,7 @@ __all__ = [
     "mode_histo",
     "ModelVTK",
 ]
+
 
 def vertices_vtp(folder, vertices):
     vdir = folder
@@ -707,7 +704,7 @@ def mode_histo(
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    legend_b = _proxy_annotate(annotation=[f"Fold {an_i+1}"], loc=1, fz=14)
+    legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
     plt.gca().add_artist(legend_b)
 
     plt.savefig(
@@ -1618,4 +1615,3 @@ class ModelVTK:
         writer.SetInputData(welPolydata)
         writer.SetFileName(jp(self.vtk_dir, "wells.vtp"))
         writer.Write()
-

@@ -4,7 +4,6 @@ from os.path import join as jp
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sb
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup

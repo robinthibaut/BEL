@@ -11,7 +11,6 @@ import numpy as np
 import skfmm
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-
 __all__ = ["travelling_particles", "signed_distance"]
 
 from skbel.spatial import block_shaped

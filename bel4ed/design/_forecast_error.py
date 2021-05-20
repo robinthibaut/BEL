@@ -6,14 +6,14 @@ from os.path import join as jp
 import joblib
 import numpy as np
 from loguru import logger
-from sklearn.base import clone
-
-from .. import utils
-from ..config import Setup
 from skbel.spatial import contour_extract
 from skbel.spatial import (
     contours_vertices,
 )
+from sklearn.base import clone
+
+from .. import utils
+from ..config import Setup
 
 __all__ = [
     "bel_training",

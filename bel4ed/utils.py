@@ -3,10 +3,9 @@
 import itertools
 import os
 import shutil
+import types
 from os.path import join as jp
 from typing import List
-
-import types
 
 import joblib
 import numpy as np
