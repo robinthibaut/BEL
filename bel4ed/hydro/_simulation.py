@@ -9,9 +9,15 @@ from os.path import join as jp
 import numpy as np
 from loguru import logger
 
+from pysgems.algo.sgalgo import XML
+from pysgems.dis.sgdis import Discretize
+from pysgems.io.sgio import PointSet
+from pysgems.sgems import sg
+
+import bel4ed.utils as utils
+
 from bel4ed.datasets import keep_essential
 from bel4ed.utils import dirmaker
-from bel4ed.algorithms import sgsim
 from bel4ed.config import Setup, Machine
 from bel4ed.hydro.backtracking.modpath import backtrack
 from bel4ed.hydro.flow.modflow import flow
@@ -19,6 +25,116 @@ from bel4ed.hydro.transport.mt3d import transport
 from bel4ed.preprocessing import travelling_particles
 
 __all__ = ["forward_modelling"]
+
+
+def _log_transform(f, k_mean: float, k_std: float):
+    """
+    Transforms the values of the statistical_simulation simulations into meaningful data.
+    :param: f: np.array: Simulation output = Hk field
+    :param: k_mean: float: Mean of the Hk field
+    :param: k_std: float: Standard deviation of the Hk field
+    """
+    # TODO: Move this to pysgems package
+
+    ff = f * k_std + k_mean
+
+    return 10 ** ff
+
+
+def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True):
+    # TODO: Move this to pysgems package
+    """
+    Perform sequential gaussian simulation to generate K fields.
+    :param model_ws: str: Working directory
+    :param grid_dir: str: Grid directory
+    :param wells_hk: List[float]: K values at wells
+    :return:
+    """
+    # Initiate sgems pjt
+    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws)
+
+    # Load hard data point set
+
+    data_dir = grid_dir
+    dataset = "wells.eas"
+    file_path = jp(data_dir, dataset)
+
+    hd = PointSet(project=pjt, pointset_path=file_path)
+
+    k_params = Setup.ModelParameters
+    k_min, k_max, k_std = (
+        k_params.k_min,
+        k_params.k_max,
+        k_params.k_std,
+    )
+
+    # Hydraulic conductivity exponent mean between x and y.
+    k_mean = np.random.uniform(k_min, k_max)
+
+    if wells_hk is None:
+        # Fix hard data values at wells location
+        hku = k_max + np.random.rand(len(hd.dataframe))
+    else:
+        hku = wells_hk
+
+    if not os.path.exists(jp(model_ws, Setup.Files.sgems_file)):
+        hd.dataframe["hd"] = hku
+        hd.export_01(["hd"])  # Exports modified dataset in binary
+
+    # Generate grid. Grid dimensions can automatically be generated based on the data points
+    # unless specified otherwise, but cell dimensions dx, dy, (dz) must be specified
+    gd = Setup.GridDimensions()
+    Discretize(
+        project=pjt,
+        dx=gd.dx,
+        dy=gd.dy,
+        xo=gd.xo,
+        yo=gd.yo,
+        x_lim=gd.x_lim,
+        y_lim=gd.y_lim,
+    )
+
+    # Get sgems grid centers coordinates:
+    x = np.cumsum(pjt.dis.along_r) - pjt.dis.dx / 2
+    y = np.cumsum(pjt.dis.along_c) - pjt.dis.dy / 2
+    xv, yv = np.meshgrid(x, y, sparse=False, indexing="xy")
+    centers = np.stack((xv, yv), axis=2).reshape((-1, 2))
+
+    if os.path.exists(jp(model_ws, "hk0.npy")):
+        hk0 = np.load(jp(model_ws, "hk0.npy"))
+        return hk0, centers
+
+    # Load your algorithm xml file in the 'algorithms' folder.
+    dir_path = os.path.abspath(__file__ + "/..")
+    algo_dir = jp(dir_path, "")
+    al = XML(project=pjt, algo_dir=algo_dir)
+    al.xml_reader("bel_sgsim")
+
+    # Modify xml below:
+    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=0)
+
+    # Write python script
+    pjt.write_command()
+
+    # Run sgems
+    pjt.run()
+
+    opl = jp(model_ws, "results.grid")  # Output file location.
+
+    # Grid information directly derived from the output file.
+    matrix = utils.data_read(opl, start=3)
+    matrix = np.where(matrix == -9966699, np.nan, matrix)
+
+    tf = np.vectorize(_log_transform)  # Transform values from log10
+    matrix = tf(matrix, k_mean, k_std)  # Apply function to results
+
+    matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
+    matrix = np.flipud(matrix)  # Flip to correspond to sgems
+
+    if save:
+        np.save(jp(model_ws, "hk0"), matrix)  # Save the un-discretized hk grid
+
+    return matrix, centers
 
 
 def forward_modelling(folder=None):
