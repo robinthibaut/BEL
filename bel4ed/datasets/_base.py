@@ -10,7 +10,7 @@ import pandas as pd
 from loguru import logger
 
 from bel4ed.config import Setup
-from bel4ed.utils import data_read
+from skbel.utils import data_read
 
 __all__ = [
     "load_dataset",

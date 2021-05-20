@@ -8,7 +8,7 @@ from loguru import logger
 
 from bel4ed.config import Setup
 from bel4ed.datasets import data_loader
-from bel4ed.spatial import grid_parameters
+from skbel.spatial import grid_parameters
 from bel4ed.utils import i_am_framed
 from bel4ed.preprocessing import beautiful_curves, signed_distance
 

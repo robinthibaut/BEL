@@ -11,11 +11,10 @@ from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 from .config import Setup
 from .hydro import forward_modelling
-from .learning import bel
 
 __version__ = "1.0.dev0"
 
-from .learning.bel import BEL
+from skbel.learning.bel import BEL
 
 source = __name__.split(".")[-1]
 # Set up logger
@@ -31,10 +30,8 @@ __all__ = [
     "config",
     "utils",
     "goggles",
-    "algorithms",
     "design",
     "hydro",
-    "learning",
     "preprocessing",
     "spatial",
     "init_bel",

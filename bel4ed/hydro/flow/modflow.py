@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 from ...config import Setup
-from ...spatial import refine_axis
+from skbel.spatial import refine_axis
 
 
 def flow(
