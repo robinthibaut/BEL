@@ -14,7 +14,9 @@ from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 __all__ = ["travelling_particles", "signed_distance"]
 
-from bel4ed.spatial import block_shaped, binary_polygon
+from skbel.spatial import block_shaped
+
+from bel4ed.spatial import binary_polygon
 
 
 def _create_data_model(xy: list):
