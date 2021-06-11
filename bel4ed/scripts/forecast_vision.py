@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
-    base_dir = jp(Setup.Directories.forecasts_dir, "test_400_100")
+    base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
 
     for i, sample in enumerate(roots):
         logger.info(f"Plotting root {sample}")

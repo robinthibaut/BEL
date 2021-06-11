@@ -239,13 +239,13 @@ if __name__ == "__main__":
     training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
     test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-    # test_r = ["818bf1676c424f76b83bd777ae588a1d"]
+    test_r = ["818bf1676c424f76b83bd777ae588a1d"]
     # %%
     # Source IDs
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     wells_training = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
 
-    # wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
+    wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
     # %%
     # Initiate BEL model
     bel = init_bel()
