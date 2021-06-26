@@ -5,7 +5,7 @@ from os.path import join as jp
 
 from loguru import logger
 from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
@@ -36,6 +36,50 @@ __all__ = [
     "spatial",
     "init_bel",
 ]
+
+def kernel_bel():
+    """
+    Set all BEL pipelines. This is the blueprint of the framework.
+    """
+    n_pc_pred, n_pc_targ = 100, 150
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("pca", KernelPCA(n_components=n_pc_pred, kernel="rbf", fit_inverse_transform=False, alpha=1e-5)),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("pca", KernelPCA(n_components=n_pc_targ, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
+        ]
+    )
+
+    # Canonical Correlation Analysis
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500*5)
+
+    # Pipeline after CCA
+    X_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+    Y_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+
+    # Initiate BEL object
+    bel_model = BEL(
+        X_pre_processing=X_pre_processing,
+        X_post_processing=X_post_processing,
+        Y_pre_processing=Y_pre_processing,
+        Y_post_processing=Y_post_processing,
+        cca=cca,
+    )
+
+    bel_model.X_n_pc = n_pc_pred
+    bel_model.Y_n_pc = n_pc_targ
+
+    return bel_model
 
 
 def init_bel():

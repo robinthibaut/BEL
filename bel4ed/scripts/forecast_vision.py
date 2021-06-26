@@ -87,8 +87,8 @@ if __name__ == "__main__":
                 root=sample,
                 d=True,
                 h=True,
-                exvar=True,
-                before_after=True,
+                exvar=False,
+                before_after=False,
                 labels=True,
                 scores=True,
             )

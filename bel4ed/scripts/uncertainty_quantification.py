@@ -8,7 +8,7 @@ from loguru import logger
 from skbel.algorithms import modified_hausdorff, structural_similarity
 from sklearn.model_selection import KFold, train_test_split
 
-from bel4ed import init_bel
+from bel4ed import init_bel, kernel_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
     # %%
     # Initiate BEL model
-    bel = init_bel()
+    bel = kernel_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
     bel.mode = "kde"
     bel.X_shape = (6, 200)  # Six curves with 200 time steps each
