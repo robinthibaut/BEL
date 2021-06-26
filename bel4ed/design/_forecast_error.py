@@ -69,10 +69,11 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
             X_n_pc = bel.X_n_pc
             Y_n_pc = bel.Y_n_pc
             # Reset params
-            bel_clone = clone(bel)
-            bel_clone.X_n_pc = X_n_pc
-            bel_clone.Y_n_pc = Y_n_pc
-            bel_clone.n_posts = n_posts
+            # bel_clone = clone(bel)
+            bel_clone = bel
+            # bel_clone.X_n_pc = X_n_pc
+            # bel_clone.Y_n_pc = Y_n_pc
+            # bel_clone.n_posts = n_posts
             # Setting the seed might cause issues
             # bel_clone.seed = 123456
             # %% Select wells:

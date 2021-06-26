@@ -367,7 +367,7 @@ def post_examination(
     plt.close()
 
 
-def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
+def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
     :param bel
@@ -381,7 +381,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     if bel.Y_obs_pc is not None:
         v_pc = check_array(bel.Y_obs_pc.reshape(1, -1))
     else:
-        Y_obs = check_array(bel.Y_obs)
+        Y_obs = check_array(Y_obs)
         v_pc = bel.Y_pre_processing.transform(Y_obs)[
             :, : Setup.HyperParameters.n_pc_target
         ]
@@ -906,6 +906,8 @@ def plot_head_field(root: str = None, base_dir: str = None):
 
 def plot_pc_ba(
     bel,
+    X_obs,
+    Y_obs,
     base_dir: str = None,
     root: str = None,
     w: str = None,
@@ -937,6 +939,7 @@ def plot_pc_ba(
         labelsize = 11
         d_pca_inverse_plot(
             bel,
+            X_obs=X_obs,
             root=root,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -945,7 +948,7 @@ def plot_pc_ba(
             fig_dir=os.path.join(subdir, w, "pca"),
         )
     if target:
-        h_pca_inverse_plot(bel, fig_dir=os.path.join(subdir, w, "pca"))
+        h_pca_inverse_plot(bel, Y_obs=Y_obs, fig_dir=os.path.join(subdir, w, "pca"))
 
 
 def plot_whpa(bel, Y, Y_obs, base_dir, root):
@@ -983,7 +986,9 @@ def plot_whpa(bel, Y, Y_obs, base_dir, root):
         )
 
 
-def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
+def cca_vision(
+    base_dir: str = None, Y_obs: np.array = None, root: str = None, folders: list = None
+):
     """
     Loads CCA pickles and plots components for all folders
     :param root:
@@ -1054,15 +1059,16 @@ def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
         plt.close()
 
         # KDE plots which consume a lot of time.
-        _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
+        _kde_cca(bel, Y_obs=Y_obs, sdir=os.path.join(subdir, f, "cca"))
 
 
 def pca_vision(
     bel,
-    Y_obs,
-    root: str or Root,
-    base_dir: str,
-    w: str,
+    X_obs=None,
+    Y_obs=None,
+    root: str or Root = None,
+    base_dir: str = None,
+    w: str = None,
     d: bool = True,
     h: bool = False,
     scores: bool = True,
@@ -1113,7 +1119,16 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=True, target=False)
+            plot_pc_ba(
+                bel,
+                X_obs=X_obs,
+                Y_obs=None,
+                base_dir=base_dir,
+                root=root,
+                w=w,
+                data=True,
+                target=False,
+            )
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
@@ -1140,7 +1155,7 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=False, target=True)
+            plot_pc_ba(bel, X_obs=None, Y_obs=Y_obs, base_dir=base_dir, root=root, w=w, data=False, target=True)
 
 
 def check_root(xlim: list, ylim: list, root: list):

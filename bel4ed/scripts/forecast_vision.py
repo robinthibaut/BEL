@@ -32,10 +32,10 @@ if __name__ == "__main__":
     roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
     X, Y = load_dataset()
-    X_train = X.iloc[training_r]
-    X_test = X.iloc[test_r]
-    y_train = Y.iloc[training_r]
-    y_test = Y.iloc[test_r]
+    X_train = X.loc[training_r]
+    X_test = X.loc[roots]
+    y_train = Y.loc[training_r]
+    y_test = Y.loc[roots]
 
     alphabet = string.ascii_uppercase
 
@@ -67,16 +67,21 @@ if __name__ == "__main__":
             logger.info(f"Plotting results")
             myvis.plot_results(
                 bel,
+                X=X_train,
+                X_obs=X_test,
+                Y=y_train,
+                Y_obs=y_test,
                 base_dir=base_dir,
                 root=sample,
                 folder=w,
                 annotation=annotation,
-                d=False,
             )
 
             logger.info(f"Plotting PCA")
             myvis.pca_vision(
                 bel,
+                X_obs=X_test,
+                Y_obs=y_test,
                 base_dir=base_dir,
                 w=w,
                 root=sample,
@@ -95,4 +100,4 @@ if __name__ == "__main__":
         myvis.plot_head_field(base_dir=base_dir, root=sample)
 
         logger.info(f"Plotting CCA")
-        myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
+        myvis.cca_vision(base_dir=base_dir, Y_obs=y_test, root=sample, folders=wells)
