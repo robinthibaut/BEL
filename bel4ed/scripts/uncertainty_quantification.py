@@ -258,7 +258,7 @@ if __name__ == "__main__":
         training_idx=training_r,
         test_idx=test_r,
         source_ids_training=wells_training,
-        source_ids_uq=wells_uq,
+        # source_ids_uq=wells_uq,
     )
     # %%
     # Test

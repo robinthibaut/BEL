@@ -43,27 +43,28 @@ def init_bel():
     Set all BEL pipelines
     :return:
     """
+    n_pc_pred, n_pc_targ = (
+        Setup.HyperParameters.n_pc_predictor,
+        Setup.HyperParameters.n_pc_target,
+    )
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("scaler", StandardScaler()),
+            ("pca", PCA(n_pc_pred)),
         ]
     )
     Y_pre_processing = Pipeline(
         [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("scaler", StandardScaler()),
+            ("pca", PCA(n_pc_targ)),
         ]
     )
 
     # Canonical Correlation Analysis
     # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = (
-        Setup.HyperParameters.n_pc_predictor,
-        Setup.HyperParameters.n_pc_target,
-    )
-    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
+
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 5)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
