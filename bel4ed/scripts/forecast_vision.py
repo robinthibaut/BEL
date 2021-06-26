@@ -59,34 +59,34 @@ if __name__ == "__main__":
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
             logger.info(f"Plotting results")
-            # myvis.plot_results(
-            #     bel,
-            #     base_dir=base_dir,
-            #     root=sample,
-            #     folder=w,
-            #     annotation=annotation,
-            #     d=False,
-            # )
+            myvis.plot_results(
+                bel,
+                base_dir=base_dir,
+                root=sample,
+                folder=w,
+                annotation=annotation,
+                d=False,
+            )
 
             logger.info(f"Plotting PCA")
-            # myvis.pca_vision(
-            #     bel,
-            #     base_dir=base_dir,
-            #     w=w,
-            #     root=sample,
-            #     d=True,
-            #     h=True,
-            #     exvar=True,
-            #     before_after=True,
-            #     labels=True,
-            #     scores=True,
-            # )
+            myvis.pca_vision(
+                bel,
+                base_dir=base_dir,
+                w=w,
+                root=sample,
+                d=True,
+                h=True,
+                exvar=True,
+                before_after=True,
+                labels=True,
+                scores=True,
+            )
 
         logger.info(f"Plotting K")
-        # myvis.plot_K_field(base_dir=base_dir, root=sample)
+        myvis.plot_K_field(base_dir=base_dir, root=sample)
 
         logger.info(f"Plotting HEAD")
-        # myvis.plot_head_field(base_dir=base_dir, root=sample)
+        myvis.plot_head_field(base_dir=base_dir, root=sample)
 
         logger.info(f"Plotting CCA")
         myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)

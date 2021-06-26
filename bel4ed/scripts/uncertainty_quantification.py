@@ -141,7 +141,7 @@ def run(
         acro = ["MHD", "SSIM"]
 
         # Compute UQ with metrics
-        if len(test_idx) > 0:
+        if len(test_idx) > 1:
             bel_uq(
                 bel=model,
                 index=test_idx,
@@ -250,6 +250,7 @@ if __name__ == "__main__":
     # Initiate BEL model
     bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
+    bel.mode = "mvn"
     # Train model
     # %%
     # Reference dataset
