@@ -26,7 +26,7 @@ from experiment.base import MySetup
 
 
 def svm1(res_dir, d=True, h=False, folders=None):
-    """ Loads PCA pickles and plot scores for all folders """
+    """Loads PCA pickles and plot scores for all folders"""
     subdir = os.path.join(MySetup.Directories.forecasts_dir, res_dir)
     if folders is None:
         listme = os.listdir(subdir)

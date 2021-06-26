@@ -435,6 +435,10 @@ def plot_results(
     bel,
     d: bool = True,
     h: bool = True,
+    X=None,
+    X_obs=None,
+    Y=None,
+    Y_obs=None,
     root: str = None,
     base_dir: str = None,
     folder: str = None,
@@ -461,8 +465,8 @@ def plot_results(
         # Plot curves
         sdir = jp(md, "data")
 
-        X = check_array(bel.X)
-        X_obs = check_array(bel.X_obs)
+        X = check_array(X)
+        X_obs = check_array(X_obs)
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
@@ -513,7 +517,7 @@ def plot_results(
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        Y, Y_obs = check_array(bel.Y), check_array(bel.Y_obs)
+        Y, Y_obs = check_array(Y), check_array(Y_obs)
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
@@ -944,20 +948,20 @@ def plot_pc_ba(
         h_pca_inverse_plot(bel, fig_dir=os.path.join(subdir, w, "pca"))
 
 
-def plot_whpa(bel, base_dir, root):
+def plot_whpa(bel, Y, Y_obs, base_dir, root):
     """
     Loads target pickle and plots all training WHPA
     :return:
     """
 
-    h_training = bel.Y.reshape(bel.Y_shape)
+    h_training = Y.reshape(bel.Y_shape)
 
     whpa_plot(
         whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5
     )
 
     if root is not None:
-        h_pred = bel.Y_obs.reshape(bel.Y_shape)
+        h_pred = Y_obs.reshape(bel.Y_shape)
         whpa_plot(
             whpa=h_pred,
             color="darkred",
@@ -1055,6 +1059,7 @@ def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
 
 def pca_vision(
     bel,
+    Y_obs,
     root: str or Root,
     base_dir: str,
     w: str,
@@ -1112,7 +1117,7 @@ def pca_vision(
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
-        h_pc_prediction = bel.Y_pre_processing.transform(bel.Y_obs)
+        h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.pdf")
         if scores:
@@ -1159,6 +1164,7 @@ def check_root(xlim: list, ylim: list, root: list):
 def d_pca_inverse_plot(
     bel,
     root,
+    X_obs,
     factor: float = 1.0,
     xlabel: str = None,
     ylabel: str = None,
@@ -1185,7 +1191,7 @@ def d_pca_inverse_plot(
     dummy[:, : v_pc.shape[1]] = v_pc
 
     v_pred = bel.X_pre_processing.inverse_transform(dummy).reshape((-1,) + shape)
-    to_plot = np.copy(bel.X_obs).reshape((-1,) + shape)
+    to_plot = np.copy(X_obs).reshape((-1,) + shape)
 
     cols = ["r" for _ in range(shape[1])]
     highlights = [i for i in range(shape[1])]

@@ -8,7 +8,7 @@ from loguru import logger
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
-from bel4ed.datasets import i_am_root
+from bel4ed.datasets import i_am_root, load_dataset
 
 # COLOR = 'w'
 # plt.rcParams['text.color'] = COLOR
@@ -30,6 +30,12 @@ if __name__ == "__main__":
     #          "818dd775ba0c4e8aa567b5d7d153c9db"]
 
     roots = ["818bf1676c424f76b83bd777ae588a1d"]
+
+    X, Y = load_dataset()
+    X_train = X.iloc[training_r]
+    X_test = X.iloc[test_r]
+    y_train = Y.iloc[training_r]
+    y_test = Y.iloc[test_r]
 
     alphabet = string.ascii_uppercase
 
