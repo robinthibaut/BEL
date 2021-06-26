@@ -250,7 +250,7 @@ if __name__ == "__main__":
     # Initiate BEL model
     bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
-    bel.mode = "mvn"
+    bel.mode = "kde"
     bel.X_shape = (6, 200)  # Six curves with 200 time steps each
     bel.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
     # Train model
