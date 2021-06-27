@@ -1155,7 +1155,16 @@ def pca_vision(
                 fig_file=fig_file,
             )
         if before_after:
-            plot_pc_ba(bel, X_obs=None, Y_obs=Y_obs, base_dir=base_dir, root=root, w=w, data=False, target=True)
+            plot_pc_ba(
+                bel,
+                X_obs=None,
+                Y_obs=Y_obs,
+                base_dir=base_dir,
+                root=root,
+                w=w,
+                data=False,
+                target=True,
+            )
 
 
 def check_root(xlim: list, ylim: list, root: list):

@@ -37,27 +37,44 @@ __all__ = [
     "init_bel",
 ]
 
+
 def kernel_bel():
     """
     Set all BEL pipelines. This is the blueprint of the framework.
     """
-    n_pc_pred, n_pc_targ = 100, 150
+    n_pc_pred, n_pc_targ = 80, 100
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler()),
-            ("pca", KernelPCA(n_components=n_pc_pred, kernel="rbf", fit_inverse_transform=False, alpha=1e-5)),
+            (
+                "pca",
+                KernelPCA(
+                    n_components=n_pc_pred,
+                    kernel="rbf",
+                    fit_inverse_transform=False,
+                    alpha=1e-5,
+                ),
+            ),
         ]
     )
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler()),
-            ("pca", KernelPCA(n_components=n_pc_targ, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
+            (
+                "pca",
+                KernelPCA(
+                    n_components=n_pc_targ,
+                    kernel="rbf",
+                    fit_inverse_transform=True,
+                    alpha=1e-5,
+                ),
+            ),
         ]
     )
 
     # Canonical Correlation Analysis
-    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500*5)
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 5)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(

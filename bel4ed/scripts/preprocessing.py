@@ -26,7 +26,7 @@ n_time_steps = Setup.HyperParameters.n_tstp
 logger.info(f"Preprocessing predictor for {len(folders)} samples")
 predictor = pd.DataFrame()
 for i, f in enumerate(folders):
-    logger.info(f"[{i+1}/{len(folders)}] | {f}")
+    logger.info(f"[{i + 1}/{len(folders)}] | {f}")
     tc_training = beautiful_curves(
         res_dir=md,
         ids=[f],
@@ -57,7 +57,7 @@ predictor.to_pickle(file_name)
 logger.info(f"Preprocessing target for {len(folders)} samples")
 target = pd.DataFrame()
 for i, f in enumerate(folders):
-    logger.info(f"[{i+1}/{len(folders)}] | {f}")
+    logger.info(f"[{i + 1}/{len(folders)}] | {f}")
     x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
 
     _, pzs_training, _ = data_loader(roots=[f], h=True)
