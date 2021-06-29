@@ -20,7 +20,7 @@ import numpy as np
 
 from keras.callbacks import ModelCheckpoint
 from dcca.linear_cca import linear_cca
-from dcca.models import create_model
+from dcca.models import create_model, my_model
 
 
 def init_bel():
@@ -108,20 +108,20 @@ def train_model(
 
     # used dummy Y because labels are not used in the loss function
     model.fit(
-        train_set_x1,
-        train_set_x2,
+        [train_set_x1, train_set_x2],
+        np.zeros(len(train_set_x1)),
         batch_size=batch_size,
         epochs=epoch_num,
         shuffle=True,
-        validation_data=(valid_set_x1, valid_set_x2),
+        validation_data=([valid_set_x1, valid_set_x2], np.zeros(len(valid_set_x1))),
         callbacks=[checkpointer],
     )
 
     model.load_weights("temp_weights.h5")
 
     results = model.evaluate(
-        test_set_x1,
-        test_set_x2,
+        [test_set_x1, test_set_x2],
+        np.zeros(len(test_set_x1)),
         batch_size=batch_size,
         verbose=1,
     )
@@ -129,8 +129,8 @@ def train_model(
     print("loss on test data: ", results)
 
     results = model.evaluate(
-        valid_set_x1,
-        valid_set_x2,
+        [valid_set_x1, valid_set_x2],
+        np.zeros(len(valid_set_x1)),
         batch_size=batch_size,
         verbose=1,
     )
@@ -195,20 +195,20 @@ def test_model(model, data1, outdim_size, apply_linear_cca):
 save_to = "./new_features.gz"
 
 # the size of the new space learned by the model (number of the new features)
-outdim_size = 30
+outdim_size = 12
 
 # size of the input for view 1 and view 2
 input_shape1 = 50
 input_shape2 = 30
 
 # number of layers with nodes in each one
-size = 512
+size = 50
 layer_sizes1 = [size, size, size, outdim_size]
 layer_sizes2 = [size, size, size, outdim_size]
 
 # the parameters for training the network
 learning_rate = 1e-3
-epoch_num = 40
+epoch_num = 100
 batch_size = 32
 
 # the regularization parameter of the network
@@ -267,6 +267,9 @@ y_valid = bel.Y_pre_processing.transform(y_valid)
 
 
 model = train_model(model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size)
+
+output = model.predict([X_test, y_test])
+
 data1 = [[X_train, y_train], [X_valid, y_valid], [X_test, y_test]]
 new_data = test_model(model, data1, outdim_size, apply_linear_cca)
 
@@ -277,4 +280,5 @@ new_data = test_model(model, data1, outdim_size, apply_linear_cca)
 # f1.close()
 
 import matplotlib.pyplot as plt
-plt.plot(new_data[0][0][:, 0], new_data[0][0][:, 1])
+plt.plot(new_data[1][0][:, 0], new_data[1][1][:, 0], "ro")
+plt.show()
