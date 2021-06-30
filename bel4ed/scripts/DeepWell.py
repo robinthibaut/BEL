@@ -2,7 +2,7 @@
 
 from skbel.learning.bel import BEL
 from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
@@ -10,17 +10,55 @@ from sklearn.preprocessing import StandardScaler, PowerTransformer
 from bel4ed import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 
-try:
-    import cPickle as thepickle
-except ImportError:
-    import _pickle as thepickle
-
-import gzip
 import numpy as np
 
 from keras.callbacks import ModelCheckpoint
 from dcca.linear_cca import linear_cca
-from dcca.models import create_model, my_model
+from dcca.models import create_model
+
+
+def kernel_bel():
+    """
+    Set all BEL pipelines. This is the blueprint of the framework.
+    """
+    n_pc_pred, n_pc_targ = 300, 300
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            (
+                "pca",
+                KernelPCA(
+                    n_components=n_pc_pred,
+                    kernel="rbf",
+                    fit_inverse_transform=False,
+                    alpha=1e-5,
+                ),
+            ),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            (
+                "pca",
+                KernelPCA(
+                    n_components=n_pc_targ,
+                    kernel="rbf",
+                    fit_inverse_transform=True,
+                    alpha=1e-5,
+                ),
+            ),
+        ]
+    )
+
+    # Initiate BEL object
+    bel_model = BEL(
+        X_pre_processing=X_pre_processing,
+        Y_pre_processing=Y_pre_processing,
+    )
+
+    return bel_model
 
 
 def init_bel():
@@ -195,14 +233,14 @@ def test_model(model, data1, outdim_size, apply_linear_cca):
 save_to = "./new_features.gz"
 
 # the size of the new space learned by the model (number of the new features)
-outdim_size = 12
+outdim_size = 30
 
 # size of the input for view 1 and view 2
-input_shape1 = 50
-input_shape2 = 30
+input_shape1 = 300
+input_shape2 = 300
 
 # number of layers with nodes in each one
-size = 50
+size = 1024
 layer_sizes1 = [size, size, size, outdim_size]
 layer_sizes2 = [size, size, size, outdim_size]
 
@@ -213,15 +251,15 @@ batch_size = 32
 
 # the regularization parameter of the network
 # seems necessary to avoid the gradient exploding especially when non-saturating activations are used
-reg_par = 1e-5
+reg_par = 1e-6
 
 # specifies if all the singular values should get used to calculate the correlation or just the top outdim_size ones
 # if one option does not work for a network or dataset, try the other one
-use_all_singular_values = False
+use_all_singular_values = True
 
 # if a linear CCA should get applied on the learned features extracted from the networks
 # it does not affect the performance on noisy MNIST significantly
-apply_linear_cca = True
+apply_linear_cca = False
 
 # end of parameters section
 ############
@@ -237,7 +275,7 @@ model = create_model(
     outdim_size,
     use_all_singular_values,
 )
-model.build(input_shape=(50,))
+model.build(input_shape=(300,))
 model.summary()
 
 # Each view is stored in a gzip file separately. They will get downloaded the first time the code gets executed.
@@ -247,14 +285,14 @@ X, Y = load_dataset()
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     Y,
-    train_size=2000,
+    train_size=3000,
     test_size=1000,
 )
 
 X_valid, y_valid = X_test[:500], y_test[:500]
 X_test, y_test = X_test[500:], y_test[500:]
 
-bel = init_bel()
+bel = kernel_bel()
 bel.fit(X_train, y_train)
 
 X_train = bel.X_pre_processing.transform(X_train)
@@ -265,7 +303,6 @@ y_train = bel.Y_pre_processing.transform(y_train)
 y_test = bel.Y_pre_processing.transform(y_test)
 y_valid = bel.Y_pre_processing.transform(y_valid)
 
-
 model = train_model(model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size)
 
 output = model.predict([X_test, y_test])
@@ -273,12 +310,8 @@ output = model.predict([X_test, y_test])
 data1 = [[X_train, y_train], [X_valid, y_valid], [X_test, y_test]]
 new_data = test_model(model, data1, outdim_size, apply_linear_cca)
 
-# Saving new features in a gzip pickled file specified by save_to
-# print("saving new features ...")
-# f1 = gzip.open(save_to, "wb")
-# thepickle.dump(new_data, f1)
-# f1.close()
-
 import matplotlib.pyplot as plt
-plt.plot(new_data[1][0][:, 0], new_data[1][1][:, 0], "ro")
-plt.show()
+
+for i in range(outdim_size):
+    plt.plot(new_data[1][0][:, i], new_data[1][1][:, i], "ro")
+    plt.show()
