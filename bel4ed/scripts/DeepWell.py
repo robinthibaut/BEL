@@ -241,22 +241,22 @@ input_shape1 = 300
 input_shape2 = 300
 
 # number of layers with nodes in each one
-size = 8
-layer_sizes1 = [size, size//2, outdim_size]
-layer_sizes2 = [size, size//2, outdim_size]
+size = 4
+layer_sizes1 = [size*2, size, size//2, outdim_size]
+layer_sizes2 = [size*2, size, size//2, outdim_size]
 
 # the parameters for training the network
-learning_rate = 1e-1
+learning_rate = 1e-1  # 1e-1
 epoch_num = 100
 batch_size = 16
 
 # the regularization parameter of the network
 # seems necessary to avoid the gradient exploding especially when non-saturating activations are used
-reg_par = 1e-5
+reg_par = 1e-5  # 1e-5
 
 # specifies if all the singular values should get used to calculate the correlation or just the top outdim_size ones
 # if one option does not work for a network or dataset, try the other one
-use_all_singular_values = True
+use_all_singular_values = False  # False
 
 # if a linear CCA should get applied on the learned features extracted from the networks
 # it does not affect the performance on noisy MNIST significantly
