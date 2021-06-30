@@ -1,4 +1,5 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+import matplotlib.pyplot as plt
 
 from skbel.learning.bel import BEL
 from sklearn.cross_decomposition import CCA
@@ -240,18 +241,18 @@ input_shape1 = 300
 input_shape2 = 300
 
 # number of layers with nodes in each one
-size = 1024
-layer_sizes1 = [size, size, size, outdim_size]
-layer_sizes2 = [size, size, size, outdim_size]
+size = 8
+layer_sizes1 = [size, size//2, outdim_size]
+layer_sizes2 = [size, size//2, outdim_size]
 
 # the parameters for training the network
-learning_rate = 1e-3
+learning_rate = 1e-1
 epoch_num = 100
-batch_size = 32
+batch_size = 16
 
 # the regularization parameter of the network
 # seems necessary to avoid the gradient exploding especially when non-saturating activations are used
-reg_par = 1e-6
+reg_par = 1e-5
 
 # specifies if all the singular values should get used to calculate the correlation or just the top outdim_size ones
 # if one option does not work for a network or dataset, try the other one
@@ -274,6 +275,7 @@ model = create_model(
     reg_par,
     outdim_size,
     use_all_singular_values,
+    dropout=False
 )
 model.build(input_shape=(300,))
 model.summary()
@@ -309,8 +311,6 @@ output = model.predict([X_test, y_test])
 
 data1 = [[X_train, y_train], [X_valid, y_valid], [X_test, y_test]]
 new_data = test_model(model, data1, outdim_size, apply_linear_cca)
-
-import matplotlib.pyplot as plt
 
 for i in range(outdim_size):
     plt.plot(new_data[1][0][:, i], new_data[1][1][:, i], "ro")
