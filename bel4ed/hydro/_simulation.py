@@ -110,11 +110,10 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
 
     # Modify xml below:
     al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=True)
-
     # Structural uncertainty
-    r_max = np.random.uniform(2, 4)*100
+    r_max = round(np.random.uniform(2, 4)*100)
     al.xml_update("Variogram//structure_1//ranges", "max", str(r_max), show=True)
-    y_tilt = np.random.uniform(-30, 30)
+    y_tilt = round(np.random.uniform(-30, 30), 1)
     al.xml_update("Variogram//structure_1//angles", "x", str(y_tilt), show=True)
 
     # Write python script
@@ -127,11 +126,16 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
 
     # Grid information directly derived from the output file.
     matrix = utils.data_read(opl, start=3)
+
+    if matrix.size == 0:
+        logger.warning("Empty matrix")
+        return 0, 0
+
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
     tf = np.vectorize(_log_transform)
 
-    k_std = np.random.uniform(0.3, 0.6)
+    k_std = np.random.uniform(np.sqrt(0.1), np.sqrt(0.3))
     # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 

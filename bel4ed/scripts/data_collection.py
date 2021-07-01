@@ -31,7 +31,6 @@ def main(n_sim: int = None):
     # Automatically selects num,ber of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
     logger.info(f"working on {n_cpu} cpu - good luck")
-    n_cpu=1
     pool = mp.Pool(n_cpu)
 
     # If n_sim arg is left to None, redo all simulations in folders already presents
@@ -46,6 +45,9 @@ def main(n_sim: int = None):
                 listme,
             )
         )
+
+        # [forward_modelling(f) for f in folders]
+        # return 0
 
     # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
@@ -64,7 +66,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-    main(None)
+    main(1250)
     # forward_modelling("structural_test")
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")

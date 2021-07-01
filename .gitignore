@@ -6,6 +6,9 @@
 bel4ed/storage
 bel4ed/datasets/forwards
 
+*.grid
+*.bat
+*.script
 *.png
 *.pdf
 *.vtk
