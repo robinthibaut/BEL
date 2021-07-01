@@ -192,39 +192,39 @@ def forward_modelling(folder=None):
         # Statistical simulation
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
 
-        # # Run Flow
-        # flow_model = flow(
-        #     exe_name=exe_name_mf,
-        #     model_ws=results_dir,
-        #     grid_dir=grid_dir,
-        #     hk_array=hk_array,
-        #     xy_dummy=xy_dummy,
-        # )
-        # # Run Transport and Backtracking
-        # if flow_model:  # If flow simulation succeeds
-        #     transport(
-        #         modflowmodel=flow_model,
-        #         exe_name=exe_name_mt,
-        #         grid_dir=grid_dir,
-        #         save_ucn=True,
-        #     )
-        #     # Run Modpath
-        #     end_points = backtrack(flow_model, exe_name_mp)
-        #     # Compute particle delineation to compute signed distance later on
-        #     # indices of the vertices of the final protection zone
-        #     delineation = travelling_particles(end_points)
-        #     # using TSP algorithm
-        #     pzs = end_points[delineation]  # x-y coordinates protection zone
-        #     np.save(jp(results_dir, "pz"), pzs)  # Save those
-        #     # Deletes everything except final results
-        #     hl = (time.time() - start_fwd) // 60
-        #     logger.info(f"done in {hl} min")
-        #     if not folder:
-        #         keep_essential(results_dir)
-        # else:
-        #     shutil.rmtree(results_dir)
-        #     logger.info(f"terminated f{res_dir}")
-        #     return 0
+        # Run Flow
+        flow_model = flow(
+            exe_name=exe_name_mf,
+            model_ws=results_dir,
+            grid_dir=grid_dir,
+            hk_array=hk_array,
+            xy_dummy=xy_dummy,
+        )
+        # Run Transport and Backtracking
+        if flow_model:  # If flow simulation succeeds
+            transport(
+                modflowmodel=flow_model,
+                exe_name=exe_name_mt,
+                grid_dir=grid_dir,
+                save_ucn=True,
+            )
+            # Run Modpath
+            end_points = backtrack(flow_model, exe_name_mp)
+            # Compute particle delineation to compute signed distance later on
+            # indices of the vertices of the final protection zone
+            delineation = travelling_particles(end_points)
+            # using TSP algorithm
+            pzs = end_points[delineation]  # x-y coordinates protection zone
+            np.save(jp(results_dir, "pz"), pzs)  # Save those
+            # Deletes everything except final results
+            hl = (time.time() - start_fwd) // 60
+            logger.info(f"done in {hl} min")
+            if not folder:
+                keep_essential(results_dir)
+        else:
+            shutil.rmtree(results_dir)
+            logger.info(f"terminated f{res_dir}")
+            return 0
     else:
         logger.info(f"pass {res_dir}")
 

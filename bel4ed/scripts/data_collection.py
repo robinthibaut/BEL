@@ -66,7 +66,7 @@ def main(n_sim: int = None):
 
 if __name__ == "__main__":
     start = time.time()
-    main(1250)
-    # forward_modelling("structural_test")
+    # main(None)
+    forward_modelling("structural_test")
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")
