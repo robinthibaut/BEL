@@ -129,7 +129,10 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     matrix = utils.data_read(opl, start=3)
     matrix = np.where(matrix == -9966699, np.nan, matrix)
 
-    tf = np.vectorize(_log_transform)  # Transform values from log10
+    tf = np.vectorize(_log_transform)
+
+    k_std = np.random.uniform(0.1, 0.5)
+    # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
     matrix = matrix.reshape((pjt.dis.nrow, pjt.dis.ncol))  # reshape - assumes 2D !
