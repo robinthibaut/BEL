@@ -1,0 +1,2 @@
+cd C:\Users\Robin\PycharmProjects\BEL4ED\bel4ed\datasets\fwd_structural\22c2342c360545b0a3862d4521e90a7d 
+sgems-x64.exe sgems.script
