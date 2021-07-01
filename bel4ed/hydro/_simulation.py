@@ -131,7 +131,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
 
     tf = np.vectorize(_log_transform)
 
-    k_std = np.random.uniform(0.1, 0.5)
+    k_std = np.random.uniform(0.3, 0.6)
     # Transform values from log10
     matrix = tf(matrix, k_mean, k_std)  # Apply function to results
 
