@@ -31,6 +31,7 @@ def main(n_sim: int = None):
     # Automatically selects num,ber of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
     logger.info(f"working on {n_cpu} cpu - good luck")
+    n_cpu=1
     pool = mp.Pool(n_cpu)
 
     # If n_sim arg is left to None, redo all simulations in folders already presents
