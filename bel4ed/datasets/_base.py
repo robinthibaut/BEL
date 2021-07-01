@@ -20,6 +20,7 @@ __all__ = [
     "remove_incomplete",
     "keep_essential",
     "remove_bad_bkt",
+    "remove_file",
     "data_loader",
     "i_am_root",
     "cleanup",
@@ -91,6 +92,18 @@ def remove_sd(res_tree: str):
         # Adds the data files to the lists, which will be loaded later
         if "sd.npy" in f:
             os.remove(join(r, "sd.npy"))
+
+
+def remove_file(res_tree: str, file_name: str):
+    """
+    Deletes file out of sub-folders of folder res_tree.
+    :param res_tree: str: Path directing to the folder containing the directories of results
+    :return:
+    """
+    for r, d, f in os.walk(res_tree, topdown=False):
+        # Adds the data files to the lists, which will be loaded later
+        if file_name in f:
+            os.remove(join(r, file_name))
 
 
 def remove_incomplete(res_tree: str, crit: str = None):
