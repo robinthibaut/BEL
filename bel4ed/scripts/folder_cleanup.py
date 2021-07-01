@@ -4,5 +4,5 @@ from bel4ed.datasets._base import cleanup, filter_file
 
 if __name__ == "__main__":
     cleanup()
-    filter_file("pz.npy")
+    # filter_file("pz.npy")
     # spare_me()

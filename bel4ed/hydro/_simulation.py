@@ -103,13 +103,19 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
         return hk0, centers
 
     # Load your algorithm xml file in the 'algorithms' folder.
-    dir_path = os.path.abspath(__file__ + "/..")
-    algo_dir = jp(dir_path, "")
-    al = XML(project=pjt, algo_dir=algo_dir)
+    # dir_path = os.path.abspath(__file__ + "/..")
+    # algo_dir = jp(dir_path, "")
+    al = XML(project=pjt, algo_dir=Setup.Directories.algo_dir)
     al.xml_reader("bel_sgsim")
 
     # Modify xml below:
-    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=0)
+    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=True)
+
+    # Structural uncertainty
+    r_max = np.random.uniform(2, 4)*100
+    al.xml_update("Variogram//structure_1//ranges", "max", str(r_max), show=True)
+    y_tilt = np.random.uniform(-30, 30)
+    al.xml_update("Variogram//structure_1//angles", "x", str(y_tilt), show=True)
 
     # Write python script
     pjt.write_command()
