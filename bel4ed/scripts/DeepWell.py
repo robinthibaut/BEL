@@ -22,7 +22,7 @@ def kernel_bel():
     """
     Set all BEL pipelines. This is the blueprint of the framework.
     """
-    n_pc_pred, n_pc_targ = 300, 300
+    n_pc_pred, n_pc_targ = 200, 200
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [
@@ -237,18 +237,19 @@ save_to = "./new_features.gz"
 outdim_size = 30
 
 # size of the input for view 1 and view 2
-input_shape1 = 300
-input_shape2 = 300
+input_shape1 = 200
+input_shape2 = 200
 
 # number of layers with nodes in each one
+
 size = 4
 layer_sizes1 = [size*2, size, size//2, outdim_size]
 layer_sizes2 = [size*2, size, size//2, outdim_size]
 
 # the parameters for training the network
-learning_rate = 1e-1  # 1e-1
+learning_rate = 1e-3  # 1e-1
 epoch_num = 100
-batch_size = 16
+batch_size = 24
 
 # the regularization parameter of the network
 # seems necessary to avoid the gradient exploding especially when non-saturating activations are used
@@ -277,7 +278,7 @@ model = create_model(
     use_all_singular_values,
     dropout=False
 )
-model.build(input_shape=(300,))
+model.build(input_shape=(200,))
 model.summary()
 
 # Each view is stored in a gzip file separately. They will get downloaded the first time the code gets executed.
