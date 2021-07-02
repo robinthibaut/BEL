@@ -49,7 +49,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     :return:
     """
     # Initiate sgems pjt
-    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws, check_env=False, verbose=False)
+    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws, verbose=False)
 
     # Load hard data point set
 
@@ -109,12 +109,12 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     al.xml_reader("bel_sgsim")
 
     # Modify xml below:
-    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=True)
+    al.xml_update("Seed", "value", str(np.random.randint(1e9)), show=False)
     # Structural uncertainty
     r_max = round(np.random.uniform(2, 4)*100)
-    al.xml_update("Variogram//structure_1//ranges", "max", str(r_max), show=True)
-    y_tilt = round(np.random.uniform(-30, 30), 1)
-    al.xml_update("Variogram//structure_1//angles", "x", str(y_tilt), show=True)
+    al.xml_update("Variogram//structure_1//ranges", "max", str(r_max), show=False)
+    y_tilt = round(np.random.uniform(60, 120), 1)
+    al.xml_update("Variogram//structure_1//angles", "x", str(y_tilt), show=False)
 
     # Write python script
     pjt.write_command()
