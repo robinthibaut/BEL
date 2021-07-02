@@ -1,6 +1,5 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import os
-import sys
 
 from datetime import date
 from os.path import join as jp
@@ -10,12 +9,6 @@ from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA, KernelPCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
-
-try:
-    sys.path.insert(0, jp("..", "..", "..", "PycharmProjects", "pysgems"))
-    sys.path.insert(0, jp("..", "..", "..", "PycharmProjects", "skbel"))
-except Exception as e:
-    logger.warning(e)
 
 from bel4ed.config import Setup
 from bel4ed.hydro import forward_modelling
