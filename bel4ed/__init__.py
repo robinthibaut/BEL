@@ -12,10 +12,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 try:
-     sys.path.insert(0, "../../../PycharmProjects/pysgems")
-     sys.path.insert(0, "../../../PycharmProjects/skbel")
- except Exception as e:
-     logger.warning(e)
+    sys.path.insert(0, "../../../PycharmProjects/pysgems")
+    sys.path.insert(0, "../../../PycharmProjects/skbel")
+except Exception as e:
+    logger.warning(e)
 
 from bel4ed.config import Setup
 from bel4ed.hydro import forward_modelling
