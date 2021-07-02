@@ -228,12 +228,12 @@ def forward_modelling(**kwargs):
         hl = (time.time() - start_fwd) // 60
         logger.info(f"done in {hl} min")
 
-        if not folder:
+        if kwargs["flush"]:
             keep_essential(results_dir)
-        else:
-            shutil.rmtree(results_dir)
-            logger.info(f"terminated {res_dir}")
-            return 0
+        # else:
+        #     shutil.rmtree(results_dir)
+        #     logger.info(f"terminated {res_dir}")
+        #     return 0
     else:
         logger.info(f"pass {res_dir}")
 

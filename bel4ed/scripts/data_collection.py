@@ -85,7 +85,8 @@ if __name__ == "__main__":
                "flow": True,
                "transport": False,
                "ucn": False,
-               "backtrack": True}
+               "backtrack": True,
+               "flush": True}
     forward_modelling(**kw_args)
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")
