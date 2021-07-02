@@ -12,8 +12,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 try:
-    sys.path.insert(0, "../../../PycharmProjects/pysgems")
-    sys.path.insert(0, "../../../PycharmProjects/skbel")
+    sys.path.insert(0, jp("..", "..", "..", "PycharmProjects", "pysgems"))
+    sys.path.insert(0, jp("..", "..", "..", "PycharmProjects", "skbel"))
 except Exception as e:
     logger.warning(e)
 
