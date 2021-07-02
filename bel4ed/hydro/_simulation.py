@@ -232,7 +232,7 @@ def forward_modelling(**kwargs):
             keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
-            logger.info(f"terminated f{res_dir}")
+            logger.info(f"terminated {res_dir}")
             return 0
     else:
         logger.info(f"pass {res_dir}")
