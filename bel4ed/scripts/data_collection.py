@@ -47,8 +47,8 @@ def main(**kwargs):
         listme = os.listdir(Setup.Directories.hydro_res_dir)
         folders = list(
             filter(
-                lambda d: os.path.isdir(
-                    os.path.join(Setup.Directories.hydro_res_dir, d)
+                lambda fd: os.path.isdir(
+                    os.path.join(Setup.Directories.hydro_res_dir, fd)
                 ),
                 listme,
             )
@@ -104,9 +104,9 @@ if __name__ == "__main__":
         "pool": True,
         "override": True,
         "flow": True,
-        "transport": False,
+        "transport": True,
         "ucn": False,
-        "backtrack": True,
+        "backtrack": False,
         "flush": True,
     }
     main(**kw_args_pool)
