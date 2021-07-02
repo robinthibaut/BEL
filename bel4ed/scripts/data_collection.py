@@ -14,12 +14,19 @@ compared to all other uncertainties in the model.
 
 """
 
+import sys
 import multiprocessing as mp
 import os
 import time
 
 import numpy as np
 from loguru import logger
+
+# try:
+#     sys.path.insert(0, "../../../../PycharmProjects/pysgems")
+#     sys.path.insert(0, "../../../../PycharmProjects/skbel")
+# except Exception as e:
+#     logger.warning(e)
 
 import bel4ed.utils
 from bel4ed.config import Setup
