@@ -212,7 +212,7 @@ def forward_modelling(**kwargs):
                 modflowmodel=flow_model,
                 exe_name=exe_name_mt,
                 grid_dir=grid_dir,
-                save_ucn=False,
+                save_ucn=kwargs["ucn"],
             )
             # Run Modpath
         if flow_model and kwargs["backtrack"]:  # If flow simulation succeeds

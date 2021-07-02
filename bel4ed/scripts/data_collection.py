@@ -73,7 +73,12 @@ def main(**kwargs):
 if __name__ == "__main__":
     start = time.time()
     # main(None)
-    kwargs = {"folder": "structural_test", "override": True, "flow": True, "transport": False, "backtrack": True}
-    forward_modelling(**kwargs)
+    kw_args = {"folder": "structural_test",
+               "override": True,
+               "flow": True,
+               "transport": False,
+               "ucn": False,
+               "backtrack": True}
+    forward_modelling(**kw_args)
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")
