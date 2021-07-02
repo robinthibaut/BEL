@@ -19,7 +19,6 @@ import multiprocessing as mp
 import os
 import time
 
-import numpy as np
 from loguru import logger
 
 # try:
