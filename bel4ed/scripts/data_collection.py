@@ -21,12 +21,6 @@ import time
 
 from loguru import logger
 
-# try:
-#     sys.path.insert(0, "../../../../PycharmProjects/pysgems")
-#     sys.path.insert(0, "../../../../PycharmProjects/skbel")
-# except Exception as e:
-#     logger.warning(e)
-
 import bel4ed.utils
 from bel4ed.config import Setup
 from bel4ed.hydro import forward_modelling
