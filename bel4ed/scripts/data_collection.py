@@ -82,6 +82,8 @@ def main(**kwargs):
 
     # Start processes
     pool.map(forward_modelling, dicts)
+    pool.close()
+    pool.join()
 
 
 if __name__ == "__main__":
