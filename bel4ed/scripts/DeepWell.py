@@ -115,15 +115,15 @@ def init_bel():
 
 
 def train_model(
-        model,
-        train_set_x1,
-        train_set_x2,
-        test_set_x1,
-        test_set_x2,
-        valid_set_x1,
-        valid_set_x2,
-        epoch_num,
-        batch_size,
+    model,
+    train_set_x1,
+    train_set_x2,
+    test_set_x1,
+    test_set_x2,
+    valid_set_x1,
+    valid_set_x2,
+    epoch_num,
+    batch_size,
 ):
     """
     trains the model
@@ -243,8 +243,8 @@ input_shape2 = 200
 # number of layers with nodes in each one
 
 size = 4
-layer_sizes1 = [size*2, size, size//2, outdim_size]
-layer_sizes2 = [size*2, size, size//2, outdim_size]
+layer_sizes1 = [size * 2, size, size // 2, outdim_size]
+layer_sizes2 = [size * 2, size, size // 2, outdim_size]
 
 # the parameters for training the network
 learning_rate = 1e-3  # 1e-1
@@ -276,7 +276,7 @@ model = create_model(
     reg_par,
     outdim_size,
     use_all_singular_values,
-    dropout=False
+    dropout=False,
 )
 model.build(input_shape=(200,))
 model.summary()
@@ -306,7 +306,9 @@ y_train = bel.Y_pre_processing.transform(y_train)
 y_test = bel.Y_pre_processing.transform(y_test)
 y_valid = bel.Y_pre_processing.transform(y_valid)
 
-model = train_model(model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size)
+model = train_model(
+    model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size
+)
 
 output = model.predict([X_test, y_test])
 

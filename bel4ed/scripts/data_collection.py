@@ -61,6 +61,10 @@ def main(**kwargs):
                 fwd_dict["folder"] = f
                 forward_modelling(**fwd_dict)
             return 0
+        else:
+            dicts = [kwargs for _ in range(len(folders))]
+            for i, f in enumerate(folders):
+                dicts[i]["folder"] = f
 
     # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
@@ -68,25 +72,42 @@ def main(**kwargs):
             os.path.join(Setup.Directories.forecasts_dir, "base", "roots.dat")
         )
         folders = [item for sublist in training_roots for item in sublist]
+        dicts = [kwargs for _ in range(len(folders))]
+        for i, f in enumerate(folders):
+            dicts[i]["folder"] = f
 
     # If n_sim is any positive integer, performs the number of selected forward modelling
     else:
-        folders = np.zeros(n_sim)
+        dicts = [kwargs for _ in range(n_sim)]
 
     # Start processes
-    pool.map(forward_modelling, folders)
+    pool.map(forward_modelling, dicts)
 
 
 if __name__ == "__main__":
     start = time.time()
     # main(None)
-    kw_args = {"folder": "structural_test",
-               "override": True,
-               "flow": True,
-               "transport": False,
-               "ucn": False,
-               "backtrack": True,
-               "flush": True}
-    forward_modelling(**kw_args)
+    kw_args_single = {
+        "folder": "structural_test",
+        "override": True,
+        "flow": True,
+        "transport": False,
+        "ucn": False,
+        "backtrack": True,
+        "flush": True,
+    }
+    # forward_modelling(**kw_args_single)
+    kw_args_pool = {
+        "n_sim": 1250,
+        "folder": 0,
+        "pool": True,
+        "override": True,
+        "flow": False,
+        "transport": False,
+        "ucn": False,
+        "backtrack": False,
+        "flush": True,
+    }
+    main(**kw_args_pool)
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")

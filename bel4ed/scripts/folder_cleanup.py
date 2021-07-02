@@ -6,4 +6,6 @@ if __name__ == "__main__":
     # cleanup()
     # filter_file("pz.npy")
     # spare_me()
-    remove_file("/Users/robin/PycharmProjects/BEL/bel4ed/datasets/fwd_structural", "hk0.npy")
+    remove_file(
+        "/Users/robin/PycharmProjects/BEL/bel4ed/datasets/fwd_structural", "hk0.npy"
+    )
