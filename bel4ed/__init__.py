@@ -1,5 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import os
+import sys
+
 from datetime import date
 from os.path import join as jp
 
@@ -9,12 +11,18 @@ from sklearn.decomposition import PCA, KernelPCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
-from .config import Setup
-from .hydro import forward_modelling
+try:
+    sys.path.insert(0, "../../../PycharmProjects/pysgems")
+    sys.path.insert(0, "../../../PycharmProjects/skbel")
+except Exception as e:
+    logger.warning(e)
 
-__version__ = "1.0.dev0"
+from bel4ed.config import Setup
+from bel4ed.hydro import forward_modelling
 
 from skbel.learning.bel import BEL
+
+__version__ = "1.0.dev0"
 
 source = __name__.split(".")[-1]
 # Set up logger

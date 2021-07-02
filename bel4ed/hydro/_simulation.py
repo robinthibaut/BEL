@@ -49,7 +49,7 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     :return:
     """
     # Initiate sgems pjt
-    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws)
+    pjt = sg.Sgems(project_name="sgsim", project_wd=grid_dir, res_dir=model_ws, check_env=False, verbose=False)
 
     # Load hard data point set
 
@@ -206,7 +206,7 @@ def forward_modelling(folder=None):
                 modflowmodel=flow_model,
                 exe_name=exe_name_mt,
                 grid_dir=grid_dir,
-                save_ucn=True,
+                save_ucn=False,
             )
             # Run Modpath
             end_points = backtrack(flow_model, exe_name_mp)
