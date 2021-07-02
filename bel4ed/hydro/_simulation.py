@@ -148,8 +148,11 @@ def sgsim(model_ws: str, grid_dir: str, wells_hk: list = None, save: bool = True
     return matrix, centers
 
 
-def forward_modelling(folder=None):
+def forward_modelling(**kwargs):
     """Data collection"""
+
+    folder = kwargs["folder"]
+
     if folder == 0:
         folder = None
     # Directories
@@ -182,26 +185,29 @@ def forward_modelling(folder=None):
     opt = np.array(
         [os.path.isfile(jp(results_dir, d)) for d in Setup.Files.output_files]
     )
-    override = True
+    override = kwargs["override"]
 
     if not opt.all() or override:
         # Resets folder
         # fops.folder_reset(results_dir, exceptions=MySetup.Files.sgems_family)
 
         start_fwd = time.time()
+
         # Statistical simulation
         hk_array, xy_dummy = sgsim(model_ws=results_dir, grid_dir=grid_dir)
 
         # Run Flow
-        flow_model = flow(
-            exe_name=exe_name_mf,
-            model_ws=results_dir,
-            grid_dir=grid_dir,
-            hk_array=hk_array,
-            xy_dummy=xy_dummy,
-        )
+        flow_model = None
+        if kwargs["flow"]:
+            flow_model = flow(
+                exe_name=exe_name_mf,
+                model_ws=results_dir,
+                grid_dir=grid_dir,
+                hk_array=hk_array,
+                xy_dummy=xy_dummy,
+            )
         # Run Transport and Backtracking
-        if flow_model:  # If flow simulation succeeds
+        if flow_model and kwargs["transport"]:  # If flow simulation succeeds
             transport(
                 modflowmodel=flow_model,
                 exe_name=exe_name_mt,
@@ -209,6 +215,7 @@ def forward_modelling(folder=None):
                 save_ucn=False,
             )
             # Run Modpath
+        if flow_model and kwargs["backtrack"]:  # If flow simulation succeeds
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
             # indices of the vertices of the final protection zone
@@ -216,11 +223,13 @@ def forward_modelling(folder=None):
             # using TSP algorithm
             pzs = end_points[delineation]  # x-y coordinates protection zone
             np.save(jp(results_dir, "pz"), pzs)  # Save those
-            # Deletes everything except final results
-            hl = (time.time() - start_fwd) // 60
-            logger.info(f"done in {hl} min")
-            if not folder:
-                keep_essential(results_dir)
+
+        # Deletes everything except final results
+        hl = (time.time() - start_fwd) // 60
+        logger.info(f"done in {hl} min")
+
+        if not folder:
+            keep_essential(results_dir)
         else:
             shutil.rmtree(results_dir)
             logger.info(f"terminated f{res_dir}")

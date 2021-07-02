@@ -26,12 +26,14 @@ from bel4ed.config import Setup
 from bel4ed.hydro import forward_modelling
 
 
-def main(n_sim: int = None):
+def main(**kwargs):
     """Main function for multiprocessing"""
     # Automatically selects num,ber of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
     logger.info(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
+
+    n_sim = kwargs["n_sim"]
 
     # If n_sim arg is left to None, redo all simulations in folders already presents
     if n_sim is None:
@@ -46,8 +48,12 @@ def main(n_sim: int = None):
             )
         )
 
-        # [forward_modelling(f) for f in folders]
-        # return 0
+        if not kwargs["pool"]:
+            fwd_dict = kwargs
+            for f in folders:
+                fwd_dict["folder"] = f
+                forward_modelling(**fwd_dict)
+            return 0
 
     # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
@@ -67,6 +73,7 @@ def main(n_sim: int = None):
 if __name__ == "__main__":
     start = time.time()
     # main(None)
-    forward_modelling("structural_test")
+    kwargs = {"folder": "structural_test", "override": True, "flow": True, "transport": False, "backtrack": True}
+    forward_modelling(**kwargs)
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")
