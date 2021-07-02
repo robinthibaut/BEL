@@ -13,7 +13,7 @@ compared to all other uncertainties in the model.
 - Modeling Uncertainty in the Earth Sciences, p. 52
 
 """
-
+import copy
 import sys
 import multiprocessing as mp
 import os
@@ -34,7 +34,7 @@ from bel4ed.hydro import forward_modelling
 
 def main(**kwargs):
     """Main function for multiprocessing"""
-    # Automatically selects num,ber of worker based on cpu count
+    # Automatically selects number of worker based on cpu count
     n_cpu = mp.cpu_count() // 2 + 1
     logger.info(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
@@ -61,9 +61,9 @@ def main(**kwargs):
                 forward_modelling(**fwd_dict)
             return 0
         else:
-            dicts = [kwargs for _ in range(len(folders))]
-            for i, f in enumerate(folders):
-                dicts[i]["folder"] = f
+            dicts = [copy.deepcopy(kwargs) for _ in range(len(folders))]
+            for i, d in enumerate(dicts):
+                d.update((k, folders[i]) for k, v in d.items() if k == "folder")
 
     # If n_sim set to -1, perform forward modelling on the folder listed in the file roots.dat
     elif n_sim == -1:
@@ -71,7 +71,7 @@ def main(**kwargs):
             os.path.join(Setup.Directories.forecasts_dir, "base", "roots.dat")
         )
         folders = [item for sublist in training_roots for item in sublist]
-        dicts = [kwargs for _ in range(len(folders))]
+        dicts = [copy.deepcopy(kwargs) for _ in range(len(folders))]
         for i, f in enumerate(folders):
             dicts[i]["folder"] = f
 
@@ -99,14 +99,14 @@ if __name__ == "__main__":
     }
     # forward_modelling(**kw_args_single)
     kw_args_pool = {
-        "n_sim": 1250,
+        "n_sim": None,
         "folder": 0,
         "pool": True,
         "override": True,
-        "flow": False,
+        "flow": True,
         "transport": False,
         "ucn": False,
-        "backtrack": False,
+        "backtrack": True,
         "flush": True,
     }
     main(**kw_args_pool)
