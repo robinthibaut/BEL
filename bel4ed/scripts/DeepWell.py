@@ -477,7 +477,6 @@ hist = trainer.fit(
 )
 
 
-
 model = train_model(
     model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size
 )
