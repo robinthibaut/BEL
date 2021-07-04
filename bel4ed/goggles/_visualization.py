@@ -598,12 +598,15 @@ def plot_results(
 
 
 def plot_K_field(
-    root: str = None, base_dir: str = None, wells=None, deprecated: bool = True
+    root: str = None, base_dir: str = None, k_dir: str = None, wells=None, deprecated: bool = True, show: bool = False
 ):
     if wells is None:
         wells = Setup.Wells
 
-    matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "hk0.npy"))
+    if k_dir is None:
+        k_dir = Setup.Directories.hydro_res_dir
+
+    matrix = np.load(jp(k_dir, root, "hk0.npy"))
     grid_dim = Setup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
 
@@ -623,6 +626,8 @@ def plot_K_field(
         cb = plt.colorbar(im, cax=cax)
         cb.ax.set_title("$Log_{10} m/d$")
         plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=True)
+        if show:
+            plt.show()
         plt.close()
 
 

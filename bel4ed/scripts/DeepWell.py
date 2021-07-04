@@ -308,17 +308,9 @@ class Trainer(tfk.Model, ABC):
     def __init__(
             self,
             model,
-            n_couple_layer,
-            n_hid_layer,
-            n_hid_dim,
-            shuffle_type="reverse",
     ):
         super(Trainer, self).__init__()
         self.model = model
-        self.n_couple_layer = n_couple_layer
-        self.n_hid_layer = n_hid_layer
-        self.n_hid_dim = n_hid_dim
-        self.shuffle_type = shuffle_type
 
         self.w1 = 5.0
         self.w2 = 1.0
@@ -414,18 +406,7 @@ apply_linear_cca = False
 ############
 
 # Building, training, and producing the new features by DCCA
-model = create_model(
-    layer_sizes1,
-    layer_sizes2,
-    input_shape1,
-    input_shape2,
-    learning_rate,
-    reg_par,
-    outdim_size,
-    use_all_singular_values,
-    dropout=False,
-    invertible=True
-)
+
 
 model.build(input_shape=(200,))
 model.summary()
