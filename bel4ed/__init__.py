@@ -36,7 +36,7 @@ __all__ = [
     "preprocessing",
     "spatial",
     "init_bel",
-    "kernel_bel"
+    "kernel_bel",
 ]
 
 

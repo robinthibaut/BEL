@@ -7,6 +7,7 @@ from functools import reduce
 from os.path import join as jp
 
 import flopy
+import matplotlib
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -637,9 +638,10 @@ def plot_K_field(
 
 
 def mode_histo(
-    colors: list,
     an_i: int,
     wm: np.array,
+    combi: list,
+    colors: list = None,
     title: str = None,
     fig_name: str = "average",
     directory: str = None,
@@ -655,7 +657,8 @@ def mode_histo(
     if directory is None:
         directory = Setup.Directories.forecasts_dir
     alphabet = string.ascii_uppercase
-    wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
+    # wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
+    wid = combi
 
     pipeline = Pipeline(
         [
@@ -678,7 +681,7 @@ def mode_histo(
     modes -= np.mean(modes)
 
     # Bar plot
-    plt.bar(np.arange(1, 7), -modes, color=colors)
+    plt.bar(np.arange(1, len(wid) + 1), -modes, color=colors)
     # plt.title("Amount of information of each well")
     plt.title(f"{fig_name}")
     plt.xlabel("Well ID")
@@ -689,22 +692,27 @@ def mode_histo(
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_mode.pdf"),
+        os.path.join(directory, f"{fig_name}_well_mode.png"),
         dpi=300,
         transparent=True,
     )
     plt.close()
 
     # Plot BOX
-    columns = ["1", "2", "3", "4", "5", "6"]
+    columns = ["".join([str(wi) for wi in w]) for w in wid]
+    # columns = ["1", "2", "3", "4", "5", "6"]
+    lol = np.array([np.median(w) for w in wm])
+    norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
+    cmap = matplotlib.cm.get_cmap('coolwarm')
     wmd = pd.DataFrame(columns=columns, data=wm.T)
-    palette = {columns[i]: colors[i] for i in range(len(columns))}
+    palette = {columns[i]: cmap(norm(lol[i])) for i in range(len(columns))}
     # palette = {'b', 'g', 'r', 'c', 'm', 'y'}
     fig, ax1 = plt.subplots()
     sns.boxplot(data=wmd, palette=palette, order=columns, linewidth=1, ax=ax1)
     [line.set_color("white") for line in ax1.get_lines()[4::6]]
     plt.ylim([-2.5, 3])
     plt.xlabel("Well ID")
+    plt.xticks(rotation=70)
     plt.ylabel("Metric value")
     if title is None:
         title = "Box-plot of the metric values for each data source"
@@ -718,11 +726,11 @@ def mode_histo(
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
-    plt.gca().add_artist(legend_b)
+    # legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
+    # plt.gca().add_artist(legend_b)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_box.pdf"),
+        os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
         transparent=True,
     )
@@ -730,7 +738,8 @@ def mode_histo(
 
     # Plot histogram
     for i, m in enumerate(wm):
-        sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
+        # sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
+        sns.kdeplot(m, color="b", shade=True, linewidth=2)
     # plt.title("Summed metric distribution for each well")
     plt.title(f"{fig_name}")
     plt.xlabel("Summed metric")
@@ -743,7 +752,7 @@ def mode_histo(
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_hist.pdf"),
+        os.path.join(directory, f"{fig_name}_hist.png"),
         dpi=300,
         transparent=True,
     )
