@@ -121,15 +121,15 @@ def init_bel():
 
 
 def train_model(
-        model,
-        train_set_x1,
-        train_set_x2,
-        test_set_x1,
-        test_set_x2,
-        valid_set_x1,
-        valid_set_x2,
-        epoch_num,
-        batch_size,
+    model,
+    train_set_x1,
+    train_set_x2,
+    test_set_x1,
+    test_set_x2,
+    valid_set_x1,
+    valid_set_x2,
+    epoch_num,
+    batch_size,
 ):
     """
     trains the model
@@ -245,16 +245,12 @@ def inner_cca_objective(y_true, y_pred):
 
     # unpack (separate) the output of networks for view 1 and view 2
     H1 = tf.transpose(a=y_pred[:, 0:o1])
-    H2 = tf.transpose(a=y_pred[:, o1: o1 + o2])
+    H2 = tf.transpose(a=y_pred[:, o1 : o1 + o2])
 
     m = tf.shape(input=H1)[1]
 
-    H1bar = H1 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(
-        H1, tf.ones([m, m])
-    )
-    H2bar = H2 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(
-        H2, tf.ones([m, m])
-    )
+    H1bar = H1 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(H1, tf.ones([m, m]))
+    H2bar = H2 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(H2, tf.ones([m, m]))
 
     SigmaHat12 = tf.cast(tf.divide(1, m - 1), tf.float32) * tf.matmul(
         H1bar, H2bar, transpose_b=True
@@ -306,8 +302,8 @@ def inner_cca_objective(y_true, y_pred):
 
 class Trainer(tfk.Model, ABC):
     def __init__(
-            self,
-            model,
+        self,
+        model,
     ):
         super(Trainer, self).__init__()
         self.model = model
@@ -422,11 +418,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     test_size=1000,
 )
 
-trainer = Trainer(
-    model, 1, 1, 4
-)
+trainer = Trainer(model, 1, 1, 4)
 trainer.compile(optimizer="adam")
-
 
 
 X_valid, y_valid = X_test[:500], y_test[:500]

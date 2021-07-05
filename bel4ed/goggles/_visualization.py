@@ -598,7 +598,12 @@ def plot_results(
 
 
 def plot_K_field(
-    root: str = None, base_dir: str = None, k_dir: str = None, wells=None, deprecated: bool = True, show: bool = False
+    root: str = None,
+    base_dir: str = None,
+    k_dir: str = None,
+    wells=None,
+    deprecated: bool = True,
+    show: bool = False,
 ):
     if wells is None:
         wells = Setup.Wells

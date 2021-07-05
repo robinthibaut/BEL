@@ -12,7 +12,12 @@ from bel4ed import Setup
 from bel4ed.datasets import data_loader
 import matplotlib.pyplot as plt
 
-from bel4ed.goggles._visualization import curves_i, plot_K_field, plot_head_field, whpa_plot
+from bel4ed.goggles._visualization import (
+    curves_i,
+    plot_K_field,
+    plot_head_field,
+    whpa_plot,
+)
 from bel4ed.preprocessing import beautiful_curves, signed_distance
 from bel4ed.utils import i_am_framed
 
@@ -99,11 +104,7 @@ cols = [wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w]
 
 tc = predictor.to_numpy().reshape((-1, 6, 200))
 
-curves_i(
-    cols=cols,
-    tc=tc,
-    show=True
-)
+curves_i(cols=cols, tc=tc, show=True)
 
 for f in folders:
     plot_K_field(k_dir=p, base_dir=p, root=f, show=True)
@@ -112,7 +113,7 @@ for f in folders:
 
 fig_dir = jp(p, root)
 ff = jp(fig_dir, f"{root}.pdf")  # figure name
-h_training = target.to_numpy().reshape((-1,) + (100, 87))
+h_training = target.to_numpy().reshape((-1,) + (100, 100))
 # Plots target training + prediction
 for hg in h_training:
-    whpa_plot(whpa=hg, color="blue", alpha=1, show=True)
+    whpa_plot(whpa=hg, color="blue", alpha=1, x_lim=[750, 1150], show=True)

@@ -115,15 +115,15 @@ def init_bel():
 
 
 def train_model(
-        model,
-        train_set_x1,
-        train_set_x2,
-        test_set_x1,
-        test_set_x2,
-        valid_set_x1,
-        valid_set_x2,
-        epoch_num,
-        batch_size,
+    model,
+    train_set_x1,
+    train_set_x2,
+    test_set_x1,
+    test_set_x2,
+    valid_set_x1,
+    valid_set_x2,
+    epoch_num,
+    batch_size,
 ):
     """
     trains the model
@@ -226,6 +226,7 @@ def test_model(model, data1, outdim_size, apply_linear_cca):
 
     return new_data
 
+
 ############
 # Parameters Section
 
@@ -276,7 +277,7 @@ model = create_model(
     outdim_size,
     use_all_singular_values,
     dropout=False,
-    invertible=False
+    invertible=False,
 )
 
 model.build(input_shape=(200,))
