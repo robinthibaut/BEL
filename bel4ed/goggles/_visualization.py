@@ -729,7 +729,6 @@ def mode_histo(
     plt.subplots_adjust(right=0.9)
     # Colorbar
     # rect = [left, bottom, width, height
-    left = 0.035
     axcb = plt.axes([0.912, 0.11, 0.017, 0.771])
     cb1 = matplotlib.colorbar.ColorbarBase(
         axcb,
@@ -739,12 +738,21 @@ def mode_histo(
     )
     cb1.ax.set_title("Median", fontsize=8)
     cb1.ax.tick_params(labelsize=8)
+    from mpl_toolkits.axes_grid.inset_locator import inset_axes
+    inset_axes = inset_axes(ax1,
+                            width="30%",  # width = 30% of parent_bbox
+                            height="30%",  # height : 1 inch
+                            loc=4)
+    plot_wells(wells=Setup.Wells, annotate=True)
+    plt.xticks([])
+    plt.yticks([])
 
     # legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
     # plt.gca().add_artist(legend_b)
 
+    plt.gcf().subplots_adjust(bottom=0.15)
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_box.png"),
+        os.path.join(directory, f"{fig_name}_well_box.pdf"),
         dpi=300,
         transparent=True,
     )
@@ -885,7 +893,7 @@ def curves_i(
             plt.close()
 
 
-def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0):
+def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0, annotate: bool = False):
     if well_ids is None:
         comb = [0] + list(wells.combination)
     else:
@@ -911,6 +919,13 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
                 markeredgewidth=0.5,
                 label=label,
             )
+            if annotate:
+                plt.annotate(
+                    label,
+                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-15, 5),
+                    textcoords='offset points', ha='right', va='bottom',
+                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.5),
+                    arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
         s += 1
 
 
