@@ -740,8 +740,8 @@ def mode_histo(
     cb1.ax.tick_params(labelsize=8)
     from mpl_toolkits.axes_grid.inset_locator import inset_axes
     inset_axes = inset_axes(ax1,
-                            width="30%",  # width = 30% of parent_bbox
-                            height="30%",  # height : 1 inch
+                            width="25%",  # width = 30% of parent_bbox
+                            height="25%",  # height : 1 inch
                             loc=4)
     plot_wells(wells=Setup.Wells, annotate=True)
     plt.xticks([])
@@ -752,7 +752,7 @@ def mode_histo(
 
     plt.gcf().subplots_adjust(bottom=0.15)
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_box.pdf"),
+        os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
         transparent=True,
     )
@@ -921,11 +921,11 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
             )
             if annotate:
                 plt.annotate(
-                    label,
-                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-15, 5),
+                    label, fontsize=8,
+                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-10, 10),
                     textcoords='offset points', ha='right', va='bottom',
                     bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.5),
-                    arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+                    arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0'))
         s += 1
 
 
