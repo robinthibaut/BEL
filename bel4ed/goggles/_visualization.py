@@ -711,12 +711,12 @@ def mode_histo(
     sns.boxplot(data=wmd, palette=palette, order=columns, linewidth=1, ax=ax1)
     [line.set_color("white") for line in ax1.get_lines()[4::6]]
     plt.ylim([-2.5, 3])
-    plt.xlabel("Well ID")
+    plt.xlabel("Well combination")
     plt.xticks(rotation=70)
     plt.ylabel("Metric value")
     if title is None:
         title = "Box-plot of the metric values for each data source"
-    plt.title(title)
+    # plt.title(title)
     plt.grid(color="saddlebrown", linestyle="--", linewidth=0.7, axis="y", alpha=0.5)
 
     try:
@@ -725,6 +725,20 @@ def mode_histo(
         pass
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
+
+    plt.subplots_adjust(right=0.9)
+    # Colorbar
+    # rect = [left, bottom, width, height
+    left = 0.035
+    axcb = plt.axes([0.912, 0.11, 0.017, 0.771])
+    cb1 = matplotlib.colorbar.ColorbarBase(
+        axcb,
+        cmap=cmap,
+        norm=norm,
+        orientation="vertical",
+    )
+    cb1.ax.set_title("Median", fontsize=8)
+    cb1.ax.tick_params(labelsize=8)
 
     # legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
     # plt.gca().add_artist(legend_b)
