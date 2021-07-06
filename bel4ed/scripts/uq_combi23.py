@@ -31,15 +31,14 @@ def run(
     )
     index = X_test.index
     # Compute UQ with metrics
-    # bel_uq(
-    #     bel=model,
-    #     y_obs=y_test,
-    #     index=index,
-    #     directory=test_directory,
-    #     source_ids=source_ids_uq,
-    #     metrics=metrics,
-    #     delete=False,
-    # )
+    bel_uq(
+        bel=model,
+        y_obs=y_test,
+        index=index,
+        directory=test_directory,
+        source_ids=source_ids_uq,
+        metrics=metrics,
+    )
 
     try:
         [
@@ -118,7 +117,6 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, c23, tr)
         for tr in test_roots
     ]
-
     # n_cpu = mp.cpu_count() // 2 + 1
     # pool = mp.Pool(n_cpu)
     # pool.map(bel_training_mp, args)

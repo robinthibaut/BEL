@@ -667,41 +667,49 @@ def mode_histo(
     )
     wm = pipeline.fit_transform(wm)
 
-    modes = []  # Get MHD corresponding to each well's mode
-    for i, m in enumerate(wm):  # For each well, look up its MHD distribution
-        count, values = np.histogram(m, bins="fd")
-        # (Freedman Diaconis Estimator)
-        # Robust (resilient to outliers) estimator that takes into account data variability and data size.
-        # https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
-        idm = np.argmax(count)
-        mode = values[idm]
-        modes.append(mode)
-
-    modes = np.array(modes)  # Scale modes
-    modes -= np.mean(modes)
+    # modes = []  # Get MHD corresponding to each well's mode
+    # for i, m in enumerate(wm):  # For each well, look up its MHD distribution
+    #     count, values = np.histogram(m, bins="fd")
+    #     # (Freedman Diaconis Estimator)
+    #     # Robust (resilient to outliers) estimator that takes into account data variability and data size.
+    #     # https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
+    #     idm = np.argmax(count)
+    #     mode = values[idm]
+    #     modes.append(mode)
+    #
+    # modes = np.array(modes)  # Scale modes
+    # modes -= np.mean(modes)
 
     # Bar plot
-    plt.bar(np.arange(1, len(wid) + 1), -modes, color=colors)
-    # plt.title("Amount of information of each well")
-    plt.title(f"{fig_name}")
-    plt.xlabel("Well ID")
-    plt.ylabel("Opposite deviation from mode's mean")
-    plt.grid(color="#95a5a6", linestyle="-", linewidth=0.5, axis="y", alpha=0.7)
-
-    legend_a = _proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
-    plt.gca().add_artist(legend_a)
-
-    plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_mode.png"),
-        dpi=300,
-        transparent=True,
-    )
-    plt.close()
+    # plt.bar(np.arange(1, len(wid) + 1), -modes, color=colors)
+    # # plt.title("Amount of information of each well")
+    # plt.title(f"{fig_name}")
+    # plt.xlabel("Well ID")
+    # plt.ylabel("Opposite deviation from mode's mean")
+    # plt.grid(color="#95a5a6", linestyle="-", linewidth=0.5, axis="y", alpha=0.7)
+    #
+    # legend_a = _proxy_annotate(annotation=[alphabet[an_i + 1]], loc=2, fz=14)
+    # plt.gca().add_artist(legend_a)
+    #
+    # plt.savefig(
+    #     os.path.join(directory, f"{fig_name}_well_mode.png"),
+    #     dpi=300,
+    #     transparent=True,
+    # )
+    # plt.close()
 
     # Plot BOX
-    columns = ["".join([str(wi) for wi in w]) for w in wid]
-    # columns = ["1", "2", "3", "4", "5", "6"]
     lol = np.array([np.median(w) for w in wm])
+    columns = ["".join([str(wi) for wi in w]) for w in wid]
+
+    # Let's sort in increasing order
+    wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(35)))])
+    wm=wm[wm_idx]
+    columns = [x for _, x in sorted(zip(lol, columns))]
+
+    lol = sorted(lol)
+
+    # columns = ["1", "2", "3", "4", "5", "6"]
     norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
     cmap = matplotlib.cm.get_cmap('coolwarm')
     wmd = pd.DataFrame(columns=columns, data=wm.T)
@@ -738,6 +746,7 @@ def mode_histo(
     )
     cb1.ax.set_title("Median", fontsize=8)
     cb1.ax.tick_params(labelsize=8)
+    # Insert well plot
     from mpl_toolkits.axes_grid.inset_locator import inset_axes
     inset_axes = inset_axes(ax1,
                             width="25%",  # width = 30% of parent_bbox
@@ -759,26 +768,26 @@ def mode_histo(
     plt.close()
 
     # Plot histogram
-    for i, m in enumerate(wm):
-        # sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
-        sns.kdeplot(m, color="b", shade=True, linewidth=2)
-    # plt.title("Summed metric distribution for each well")
-    plt.title(f"{fig_name}")
-    plt.xlabel("Summed metric")
-    plt.ylabel("KDE")
-    legend_1 = plt.legend(wid, loc=2)
-    plt.gca().add_artist(legend_1)
-    plt.grid(alpha=0.2)
-
-    legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
-    plt.gca().add_artist(legend_a)
-
-    plt.savefig(
-        os.path.join(directory, f"{fig_name}_hist.png"),
-        dpi=300,
-        transparent=True,
-    )
-    plt.close()
+    # for i, m in enumerate(wm):
+    #     # sns.kdeplot(m, color=f"{colors[i]}", shade=True, linewidth=2)
+    #     sns.kdeplot(m, color="b", shade=True, linewidth=2)
+    # # plt.title("Summed metric distribution for each well")
+    # plt.title(f"{fig_name}")
+    # plt.xlabel("Summed metric")
+    # plt.ylabel("KDE")
+    # legend_1 = plt.legend(wid, loc=2)
+    # plt.gca().add_artist(legend_1)
+    # plt.grid(alpha=0.2)
+    #
+    # legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
+    # plt.gca().add_artist(legend_a)
+    #
+    # plt.savefig(
+    #     os.path.join(directory, f"{fig_name}_hist.png"),
+    #     dpi=300,
+    #     transparent=True,
+    # )
+    # plt.close()
 
 
 def curves(
@@ -922,10 +931,10 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
             if annotate:
                 plt.annotate(
                     label, fontsize=8,
-                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-10, 10),
+                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-5, 5),
                     textcoords='offset points', ha='right', va='bottom',
-                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.5),
-                    arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0'))
+                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.5),)
+                    # arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0'))
         s += 1
 
 

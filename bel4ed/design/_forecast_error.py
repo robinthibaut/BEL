@@ -12,7 +12,7 @@ from skbel.spatial import (
 )
 from sklearn.base import clone
 
-from .. import utils
+from .. import utils, init_bel
 from ..config import Setup
 
 __all__ = [
@@ -316,8 +316,7 @@ def bel_uq(
             os.remove(jp(obj_dir, "bel.pkl"))
 
             if delete:
-                # For KFold, save a lighter version of the bel model.
-                bel = clone(bel)
+                bel = init_bel()
 
             if not clear:
                 bel.posterior_mean = pmean
