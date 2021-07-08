@@ -9,6 +9,8 @@ bel4ed/datasets/forwards
 *.obs
 *.nam
 *.mtnam
+*.ssm
+*.wel
 *.mas
 *.psloc
 *.btn
