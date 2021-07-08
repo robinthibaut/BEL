@@ -113,3 +113,5 @@ if __name__ == "__main__":
             root=sample,
             folders=wells,
         )
+        plt.close()
+

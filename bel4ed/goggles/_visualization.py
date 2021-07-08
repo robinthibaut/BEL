@@ -404,8 +404,8 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
         labelsize=11,
         xlabel="X(m)",
         ylabel="Y(m)",
-        x_lim=[850, 1100],
-        y_lim=[350, 650],
+        x_lim=[750, 1150],
+        y_lim=[300, 700],
     )
 
     # Add title inside the box
