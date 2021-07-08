@@ -82,21 +82,21 @@ if __name__ == "__main__":
             plt.close()
 
             logger.info(f"Plotting PCA")
-            myvis.pca_vision(
-                bel,
-                X_obs=X_test.iloc[i],
-                Y_obs=y_test.iloc[i],
-                base_dir=base_dir,
-                w=w,
-                root=sample,
-                d=True,
-                h=True,
-                exvar=False,
-                before_after=True,
-                labels=True,
-                scores=True,
-            )
-            plt.close()
+            # myvis.pca_vision(
+            #     bel,
+            #     X_obs=X_test.iloc[i],
+            #     Y_obs=y_test.iloc[i],
+            #     base_dir=base_dir,
+            #     w=w,
+            #     root=sample,
+            #     d=True,
+            #     h=True,
+            #     exvar=False,
+            #     before_after=True,
+            #     labels=True,
+            #     scores=True,
+            # )
+            # plt.close()
 
         logger.info(f"Plotting K")
         myvis.plot_K_field(base_dir=base_dir, root=sample)
@@ -107,11 +107,11 @@ if __name__ == "__main__":
         plt.close()
 
         # logger.info(f"Plotting CCA")
-        myvis.cca_vision(
-            base_dir=base_dir,
-            Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
-            root=sample,
-            folders=wells,
-        )
-        plt.close()
+        # myvis.cca_vision(
+        #     base_dir=base_dir,
+        #     Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+        #     root=sample,
+        #     folders=wells,
+        # )
+        # plt.close()
 
