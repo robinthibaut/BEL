@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 d=True,
                 h=True,
                 exvar=False,
-                before_after=False,
+                before_after=True,
                 labels=True,
                 scores=True,
             )
@@ -101,4 +101,9 @@ if __name__ == "__main__":
         myvis.plot_head_field(base_dir=base_dir, root=sample)
 
         # logger.info(f"Plotting CCA")
-        # myvis.cca_vision(base_dir=base_dir, Y_obs=y_test, root=sample, folders=wells)
+        myvis.cca_vision(
+            base_dir=base_dir,
+            Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+            root=sample,
+            folders=wells,
+        )

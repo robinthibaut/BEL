@@ -41,7 +41,11 @@ for i, f in enumerate(folders):
     if not skip:
         try:
             # Target
-            x_lim, y_lim, grf = Setup.Focus.x_range, Setup.Focus.y_range, Setup.Focus.cell_dim
+            x_lim, y_lim, grf = (
+                Setup.Focus.x_range,
+                Setup.Focus.y_range,
+                Setup.Focus.cell_dim,
+            )
             _, pzs_training, _ = data_loader(roots=[f], h=True)
             # Load parameters:
             xys, nrow, ncol = grid_parameters(
