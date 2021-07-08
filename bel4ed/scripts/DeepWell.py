@@ -1,5 +1,11 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+from abc import ABC
+
 import matplotlib.pyplot as plt
+from dcca.objectives import cca_loss
+from inn.flow import MSE, MMD_multiscale, tfk
+import tensorflow as tf
+from inn.utils import UpdateLossFactor, NBatchLogger
 
 from skbel.learning.bel import BEL
 from sklearn.cross_decomposition import CCA
@@ -227,6 +233,135 @@ def test_model(model, data1, outdim_size, apply_linear_cca):
     return new_data
 
 
+def inner_cca_objective(y_true, y_pred):
+    """
+    It is the loss function of CCA as introduced in the original paper.
+    """
+
+    r1 = 1e-4
+    r2 = 1e-4
+    eps = 1e-12
+    o1 = o2 = int(y_pred.shape[1] // 2)
+
+    # unpack (separate) the output of networks for view 1 and view 2
+    H1 = tf.transpose(a=y_pred[:, 0:o1])
+    H2 = tf.transpose(a=y_pred[:, o1 : o1 + o2])
+
+    m = tf.shape(input=H1)[1]
+
+    H1bar = H1 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(H1, tf.ones([m, m]))
+    H2bar = H2 - tf.cast(tf.divide(1, m), tf.float32) * tf.matmul(H2, tf.ones([m, m]))
+
+    SigmaHat12 = tf.cast(tf.divide(1, m - 1), tf.float32) * tf.matmul(
+        H1bar, H2bar, transpose_b=True
+    )  # [dim, dim]
+    SigmaHat11 = tf.cast(tf.divide(1, m - 1), tf.float32) * tf.matmul(
+        H1bar, H1bar, transpose_b=True
+    ) + r1 * tf.eye(o1)
+    SigmaHat22 = tf.cast(tf.divide(1, m - 1), tf.float32) * tf.matmul(
+        H2bar, H2bar, transpose_b=True
+    ) + r2 * tf.eye(o2)
+
+    # Calculating the root inverse of covariance matrices by using eigen decomposition
+    [D1, V1] = tf.linalg.eigh(SigmaHat11)
+    [D2, V2] = tf.linalg.eigh(SigmaHat22)  # Added to increase stability
+
+    posInd1 = tf.compat.v1.where(tf.greater(D1, eps))
+    D1 = tf.gather_nd(D1, posInd1)  # get eigen values that are larger than eps
+    V1 = tf.transpose(
+        a=tf.nn.embedding_lookup(params=tf.transpose(a=V1), ids=tf.squeeze(posInd1))
+    )
+
+    posInd2 = tf.compat.v1.where(tf.greater(D2, eps))
+    D2 = tf.gather_nd(D2, posInd2)
+    V2 = tf.transpose(
+        a=tf.nn.embedding_lookup(params=tf.transpose(a=V2), ids=tf.squeeze(posInd2))
+    )
+
+    SigmaHat11RootInv = tf.matmul(
+        tf.matmul(V1, tf.linalg.tensor_diag(D1 ** -0.5)), V1, transpose_b=True
+    )  # [dim, dim]
+    SigmaHat22RootInv = tf.matmul(
+        tf.matmul(V2, tf.linalg.tensor_diag(D2 ** -0.5)), V2, transpose_b=True
+    )
+
+    Tval = tf.matmul(tf.matmul(SigmaHat11RootInv, SigmaHat12), SigmaHat22RootInv)
+
+    if use_all_singular_values:
+        corr = tf.sqrt(tf.linalg.trace(tf.matmul(Tval, Tval, transpose_a=True)))
+    else:
+        [U, V] = tf.linalg.eigh(tf.matmul(Tval, Tval, transpose_a=True))
+        U = tf.gather_nd(U, tf.compat.v1.where(tf.greater(U, eps)))
+        kk = tf.reshape(tf.cast(tf.shape(input=U), tf.int32), [])
+        K = tf.minimum(kk, outdim_size)
+        w, _ = tf.nn.top_k(U, k=K)
+        corr = tf.reduce_sum(input_tensor=tf.sqrt(w))
+
+    return -corr
+
+
+class Trainer(tfk.Model, ABC):
+    def __init__(
+        self,
+        model,
+    ):
+        super(Trainer, self).__init__()
+        self.model = model
+
+        self.w1 = 5.0
+        self.w2 = 1.0
+        self.w3 = 10.0
+        self.loss_factor = 1.0
+        self.loss_fit = inner_cca_objective
+        self.loss_latent = MMD_multiscale
+        self.loss_backward = MMD_multiscale
+
+    def train_step(self, data):
+        x_data, y_data = data
+        # x = x_data[:, :self.x_dim]
+        # y = y_data[:, -self.y_dim:]
+        # z = y_data[:, : self.z_dim]
+        # y_short = tf.concat([z, y], axis=-1)
+
+        # Forward loss
+        with tf.GradientTape() as tape:
+            y_out = self.model(x_data)
+            pred_loss = self.w1 * self.loss_fit(
+                y_data, y_out
+            )  # [zeros, y] <=> [zeros, yhat]
+            output_block_grad = tf.concat(
+                [y_out, y_out], axis=-1
+            )  # take out [z, y] only (not zeros)
+            latent_loss = self.w2 * self.loss_latent(
+                y_out, output_block_grad
+            )  # [z, y] <=> [zhat, yhat]
+            forward_loss = pred_loss + latent_loss
+        grads_forward = tape.gradient(forward_loss, self.model.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads_forward, self.model.trainable_weights))
+
+        # Backward loss
+        with tf.GradientTape() as tape:
+            x_rev = self.model.inverse(y_data)
+            # rev_loss = self.w3 * self.loss_factor * self.loss_fit(x_rev, x_data)
+            rev_loss = self.w3 * self.loss_factor * self.loss_backward(x_rev, x_data)
+        grads_backward = tape.gradient(rev_loss, self.model.trainable_weights)
+        self.optimizer.apply_gradients(
+            zip(grads_backward, self.model.trainable_weights)
+        )
+
+        total_loss = forward_loss + latent_loss + rev_loss
+        return {
+            "total_loss": total_loss,
+            "forward_loss": forward_loss,
+            "latent_loss": latent_loss,
+            "rev_loss": rev_loss,
+        }
+
+    def test_step(self, data):
+        x_data, y_data = data
+        return NotImplementedError
+
+
 ############
 # Parameters Section
 
@@ -267,17 +402,8 @@ apply_linear_cca = False
 ############
 
 # Building, training, and producing the new features by DCCA
-model = create_model(
-    layer_sizes1,
-    layer_sizes2,
-    input_shape1,
-    input_shape2,
-    learning_rate,
-    reg_par,
-    outdim_size,
-    use_all_singular_values,
-    dropout=False,
-)
+
+
 model.build(input_shape=(200,))
 model.summary()
 
@@ -292,6 +418,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     test_size=1000,
 )
 
+trainer = Trainer(model, 1, 1, 4)
+trainer.compile(optimizer="adam")
+
+
 X_valid, y_valid = X_test[:500], y_test[:500]
 X_test, y_test = X_test[500:], y_test[500:]
 
@@ -305,6 +435,21 @@ X_valid = bel.X_pre_processing.transform(X_valid)
 y_train = bel.Y_pre_processing.transform(y_train)
 y_test = bel.Y_pre_processing.transform(y_test)
 y_valid = bel.Y_pre_processing.transform(y_valid)
+
+
+# Train the model
+
+dataset = (X_train, y_train)
+LossFactor = UpdateLossFactor(100)
+logger = NBatchLogger(100, 100)
+hist = trainer.fit(
+    dataset,
+    batch_size=32,
+    epochs=100,
+    callbacks=[logger, LossFactor],
+    verbose=0,
+)
+
 
 model = train_model(
     model, X_train, y_train, X_test, y_test, X_valid, y_valid, epoch_num, batch_size

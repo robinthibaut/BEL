@@ -12,11 +12,12 @@ from skbel.spatial import (
 )
 from sklearn.base import clone
 
-from .. import utils
+from .. import utils, init_bel
 from ..config import Setup
 
 __all__ = [
     "bel_training",
+    "bel_training_mp",
     "bel_uq",
 ]
 
@@ -103,9 +104,142 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
             logger.info(msg)
 
 
+def bel_training_mp(args):
+    """"""
+    bel, X_train, X_test, y_train, y_test, directory, source_ids, test_root = args
+    # Directories
+    combinations = source_ids
+    # Directory in which to load forecasts
+    bel_dir = jp(directory, test_root)
+
+    for ixw, c in enumerate(combinations):  # For each well combination
+        new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+        sub_dir = jp(bel_dir, new_dir)
+
+        # %% Folders
+        obj_dir = jp(sub_dir, "obj")
+        fig_data_dir = jp(sub_dir, "data")
+        fig_pca_dir = jp(sub_dir, "pca")
+        fig_cca_dir = jp(sub_dir, "cca")
+        fig_pred_dir = jp(sub_dir, "uq")
+
+        # %% Creates directories
+        [
+            utils.dirmaker(f, erase=True)
+            for f in [
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
+        ]
+        bel_clone = bel
+        # %% Select wells:
+        selection = list(map(str, [wc for wc in c]))
+        X_train_select = X_train.copy().loc[:, selection]
+        # Update physical shape
+        X_train_select.attrs["physical_shape"] = (
+            len(selection),
+            X_train.attrs["physical_shape"][1],
+        )
+        X_test_select = (
+            X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)
+        )  # Only one sample
+        y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
+        bel_clone.Y_obs = y_test_select
+        # BEL fit
+        bel_clone.fit(X=X_train_select, Y=y_train)
+
+        # %% Sample
+        # Extract n random sample (target pc's).
+        # The posterior distribution is computed within the method below.
+        bel_clone.predict(X_test_select)
+
+        # Save the fitted BEL model
+        joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
+
+
+def bel_uq_mp(args):
+    bel, y_obs, test_root, directory, source_ids, metrics, delete, clear = args
+    # Directories
+    combinations = source_ids
+    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
+
+    # for ix, test_root in enumerate(index):  # For each observation root
+
+    bel_dir = jp(directory, test_root)
+
+    for ixw, c in enumerate(combinations):  # For each wel combination
+        new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+        sub_dir = jp(bel_dir, new_dir)
+        # %% Folders
+        obj_dir = jp(sub_dir, "obj")
+        bel = joblib.load(jp(obj_dir, "bel.pkl"))
+        try:
+            Y_reconstructed = bel.Y_reconstructed
+        except AttributeError:
+            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+            n_cut = bel.Y_n_pc  # Number of components to keep
+            try:
+                y_obs_pc = bel.Y_pre_processing.transform(y_obs)
+            except ValueError:
+                y_obs_pc = bel.Y_pre_processing.transform(y_obs.reshape(1, -1))
+            dummy = np.zeros(
+                (1, y_obs_pc.shape[1])
+            )  # Create a dummy matrix filled with zeros
+            dummy[:, :n_cut] = y_obs_pc[
+                :, :n_cut
+            ]  # Fill the dummy matrix with the posterior PC
+            # Reshape for the objective function
+            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                bel.Y_shape
+            )  # Inverse transform = "True image"
+
+        try:
+            Y_posterior = bel.Y_posterior
+        except AttributeError:
+            # Compute CCA Gaussian scores
+            Y_posts_gaussian = bel.random_sample(n_posts=None)
+            # Get back to original space
+            Y_posterior = bel.inverse_transform(
+                Y_pred=Y_posts_gaussian,
+            )
+            Y_posterior = Y_posterior.reshape(
+                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
+            )
+        # Save statistical parameters
+        pmean = bel.posterior_mean
+        pcov = bel.posterior_covariance
+        seed = bel.seed
+
+        for j, m in enumerate(metrics):
+            oe = _objective_function(
+                y_true=Y_reconstructed,
+                y_pred=Y_posterior,
+                metric=m,
+            )
+            np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
+
+        os.remove(jp(obj_dir, "bel.pkl"))
+
+        if delete:
+            # For KFold, save a lighter version of the bel model.
+            bel = clone(bel)
+
+        if not clear:
+            bel.posterior_mean = pmean
+            bel.posterior_covariance = pcov
+            bel.Y_reconstructed = Y_reconstructed
+            bel.Y_posterior = Y_posterior
+            bel.seed = seed
+            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
+
+
 def bel_uq(
     *,
     bel,
+    y_obs: np.array = None,
     index: list,
     directory: str,
     source_ids: list or np.array,
@@ -137,7 +271,12 @@ def bel_uq(
             except AttributeError:
                 # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
                 n_cut = bel.Y_n_pc  # Number of components to keep
-                y_obs_pc = bel.Y_pre_processing.transform(bel.Y_obs)
+                try:
+                    y_obs_pc = bel.Y_pre_processing.transform(y_obs[ix])
+                except ValueError:
+                    y_obs_pc = bel.Y_pre_processing.transform(
+                        y_obs.to_numpy()[ix].reshape(1, -1)
+                    )
                 dummy = np.zeros(
                     (1, y_obs_pc.shape[1])
                 )  # Create a dummy matrix filled with zeros
@@ -177,8 +316,7 @@ def bel_uq(
             os.remove(jp(obj_dir, "bel.pkl"))
 
             if delete:
-                # For KFold, save a lighter version of the bel model.
-                bel = clone(bel)
+                bel = init_bel()
 
             if not clear:
                 bel.posterior_mean = pmean
