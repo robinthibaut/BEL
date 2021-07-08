@@ -13,3 +13,5 @@ pysgems>=1.1.10
 loguru>=0.5.3
 scikit-image>=0.18.1
 scikit-fmm>=2021.2.2
+skbel
+pysgems
