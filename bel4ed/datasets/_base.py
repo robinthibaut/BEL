@@ -272,6 +272,7 @@ def filter_file(crit: str):
 
 
 def spare_me():
+    """Removes useless files and deletes folder with bad breakthrough curves"""
     res_tree = Setup.Directories.hydro_res_dir
     for r, d, f in os.walk(res_tree, topdown=False):
         if r != res_tree:
