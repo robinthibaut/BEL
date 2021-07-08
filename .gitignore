@@ -6,6 +6,16 @@
 bel4ed/storage
 bel4ed/datasets/forwards
 
+*.obs
+*.nam
+*.mtnam
+*.mas
+*.psloc
+*.btn
+*.ftl
+*.adv
+*.bas
+
 *.grid
 *.bat
 *.script

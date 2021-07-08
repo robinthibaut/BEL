@@ -93,7 +93,7 @@ if __name__ == "__main__":
     }
     # forward_modelling(**kw_args_single)
     kw_args_pool = {
-        "n_sim": 18,
+        "n_sim": 200,
         "folder": 0,
         "pool": True,
         "override": True,
