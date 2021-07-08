@@ -221,19 +221,10 @@ def bel_uq_mp(args):
             )
             np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
 
-        os.remove(jp(obj_dir, "bel.pkl"))
-
         if delete:
             # For KFold, save a lighter version of the bel model.
-            bel = clone(bel)
+            os.remove(jp(obj_dir, "bel.pkl"))
 
-        if not clear:
-            bel.posterior_mean = pmean
-            bel.posterior_covariance = pcov
-            bel.Y_reconstructed = Y_reconstructed
-            bel.Y_posterior = Y_posterior
-            bel.seed = seed
-            joblib.dump(bel, jp(obj_dir, "bel.pkl"))
 
 
 def bel_uq(
@@ -266,44 +257,35 @@ def bel_uq(
             # %% Folders
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
-            try:
-                Y_reconstructed = bel.Y_reconstructed
-            except AttributeError:
-                # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-                n_cut = bel.Y_n_pc  # Number of components to keep
-                try:
-                    y_obs_pc = bel.Y_pre_processing.transform(y_obs[ix])
-                except ValueError:
-                    y_obs_pc = bel.Y_pre_processing.transform(
-                        y_obs.to_numpy()[ix].reshape(1, -1)
-                    )
-                dummy = np.zeros(
-                    (1, y_obs_pc.shape[1])
-                )  # Create a dummy matrix filled with zeros
-                dummy[:, :n_cut] = y_obs_pc[
-                    :, :n_cut
-                ]  # Fill the dummy matrix with the posterior PC
-                # Reshape for the objective function
-                Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
-                    bel.Y_shape
-                )  # Inverse transform = "True image"
 
+            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+            n_cut = bel.Y_n_pc  # Number of components to keep
             try:
-                Y_posterior = bel.Y_posterior
-            except AttributeError:
-                # Compute CCA Gaussian scores
-                Y_posts_gaussian = bel.random_sample(n_posts=None)
-                # Get back to original space
-                Y_posterior = bel.inverse_transform(
-                    Y_pred=Y_posts_gaussian,
+                y_obs_pc = bel.Y_pre_processing.transform(y_obs[ix])
+            except ValueError:
+                y_obs_pc = bel.Y_pre_processing.transform(
+                    y_obs.to_numpy()[ix].reshape(1, -1)
                 )
-                Y_posterior = Y_posterior.reshape(
-                    (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
-                )
-            # Save statistical parameters
-            pmean = bel.posterior_mean
-            pcov = bel.posterior_covariance
-            seed = bel.seed
+            dummy = np.zeros(
+                (1, y_obs_pc.shape[1])
+            )  # Create a dummy matrix filled with zeros
+            dummy[:, :n_cut] = y_obs_pc[
+                :, :n_cut
+            ]  # Fill the dummy matrix with the posterior PC
+            # Reshape for the objective function
+            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                bel.Y_shape
+            )  # Inverse transform = "True image"
+
+            # Compute CCA Gaussian scores
+            Y_posts_gaussian = bel.random_sample(n_posts=None)
+            # Get back to original space
+            Y_posterior = bel.inverse_transform(
+                Y_pred=Y_posts_gaussian,
+            )
+            Y_posterior = Y_posterior.reshape(
+                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
+            )
 
             for j, m in enumerate(metrics):
                 oe = _objective_function(
@@ -313,18 +295,8 @@ def bel_uq(
                 )
                 theta[j, ixw] += oe
 
-            os.remove(jp(obj_dir, "bel.pkl"))
-
             if delete:
-                bel = init_bel()
-
-            if not clear:
-                bel.posterior_mean = pmean
-                bel.posterior_covariance = pcov
-                bel.Y_reconstructed = Y_reconstructed
-                bel.Y_posterior = Y_posterior
-                bel.seed = seed
-                joblib.dump(bel, jp(obj_dir, "bel.pkl"))
+                os.remove(jp(obj_dir, "bel.pkl"))
 
     for k, e in enumerate(metrics):
         np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), theta[k])
