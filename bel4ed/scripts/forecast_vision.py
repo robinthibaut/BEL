@@ -5,6 +5,8 @@ from os.path import join as jp
 
 import joblib
 from loguru import logger
+from matplotlib import pyplot as plt
+from skbel.goggles import _my_alphabet
 
 import bel4ed.goggles as myvis
 from bel4ed.config import Setup
@@ -56,9 +58,9 @@ if __name__ == "__main__":
             logger.info(f"Plotting well {w}")
 
             if w == "123456":
-                annotation = alphabet[i]
+                annotation = _my_alphabet(i)
             else:
-                annotation = alphabet[j - 1]
+                annotation = _my_alphabet(j - 1)
 
             # BEL pickle
             md = jp(base_dir, sample, w)
@@ -77,6 +79,7 @@ if __name__ == "__main__":
                 folder=w,
                 annotation=annotation,
             )
+            plt.close()
 
             logger.info(f"Plotting PCA")
             myvis.pca_vision(
@@ -93,12 +96,15 @@ if __name__ == "__main__":
                 labels=True,
                 scores=True,
             )
+            plt.close()
 
         logger.info(f"Plotting K")
         myvis.plot_K_field(base_dir=base_dir, root=sample)
+        plt.close()
 
         logger.info(f"Plotting HEAD")
         myvis.plot_head_field(base_dir=base_dir, root=sample)
+        plt.close()
 
         # logger.info(f"Plotting CCA")
         myvis.cca_vision(
