@@ -30,10 +30,12 @@ __all__ = [
 ]
 
 
-def load_dataset():
+def load_dataset(subdir: str = None):
+    if subdir is None:
+        subdir = "data"
     module_path = dirname(__file__)
-    predictor = pd.read_pickle(join(module_path, "data", "predictor.pkl"))
-    target = pd.read_pickle(join(module_path, "data", "target.pkl"))
+    predictor = pd.read_pickle(join(module_path, subdir, "predictor.pkl"))
+    target = pd.read_pickle(join(module_path, subdir, "target.pkl"))
 
     return predictor, target
 

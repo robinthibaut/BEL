@@ -467,7 +467,8 @@ def plot_results(
         sdir = jp(md, "data")
 
         X = check_array(X)
-        X_obs = check_array(X_obs)
+        # X_obs = check_array(X_obs)
+        X_obs = X_obs.to_numpy().reshape(1, -1)
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
@@ -518,7 +519,7 @@ def plot_results(
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
         ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        Y, Y_obs = check_array(Y), check_array(Y_obs)
+        Y, Y_obs = check_array(Y), Y_obs.to_numpy().reshape(-1, 1)
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
