@@ -29,7 +29,7 @@ from bel4ed.hydro import forward_modelling
 def main(**kwargs):
     """Main function for multiprocessing"""
     # Automatically selects number of worker based on cpu count
-    n_cpu = mp.cpu_count() // 2 + 1
+    n_cpu = 10
     logger.info(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
 
