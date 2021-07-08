@@ -18,6 +18,7 @@ bel4ed/datasets/forwards
 *.adv
 *.bas
 
+._.DS_Store
 *.grid
 *.bat
 *.script
