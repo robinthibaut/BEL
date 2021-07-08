@@ -111,7 +111,7 @@ class Setup:
     class Focus:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
 
-        x_range = [800, 1150]
+        x_range = [750, 1150]
         y_range = [300, 700]
         # Defines cell dimensions for the signed distance computation.
         cell_dim: float = 4
