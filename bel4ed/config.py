@@ -50,6 +50,7 @@ class Setup:
 
         # Files stored in the raw, forward dataset folder
         hk_file: str = "hk0.npy"
+        heads_file: str = "whpa_heads.npy"
         predictor_file: str = "bkt.npy"
         target_file: str = "pz.npy"
 
