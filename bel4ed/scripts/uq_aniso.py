@@ -142,10 +142,10 @@ if __name__ == "__main__":
         for tr in test_roots
     ]
     #
-    n_cpu = 4
-    pool = mp.Pool(n_cpu)
-    pool.map(bel_training_mp, args)
-    pool.close()
-    pool.join()
+    # n_cpu = 8
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_training_mp, args)
+    # pool.close()
+    # pool.join()
 
-    # run(bel, source_ids_uq=wells_uq)
+    run(bel, source_ids_uq=wells_uq)

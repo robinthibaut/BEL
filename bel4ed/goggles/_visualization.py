@@ -718,12 +718,12 @@ def mode_histo(
     columns = ["".join([str(wi) for wi in w]) for w in wid]
 
     # Let's sort in increasing order
-    wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
-    wm = wm[wm_idx]
+    # wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
+    # wm = wm[wm_idx]
     # columns = [x for _, x in sorted(zip(lol, columns))]
     well_cols = ["b", "g", "r", "c", "m", "y"]
     # well_cols = [x for _, x in sorted(zip(lol, well_cols))]
-    lol = sorted(lol)
+    # lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]
     norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
