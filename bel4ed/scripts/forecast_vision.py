@@ -20,8 +20,8 @@ from bel4ed.datasets import i_am_root, load_dataset
 
 if __name__ == "__main__":
 
-    training_file = jp(Setup.Directories.storage_dir, "training_roots_aniso_400.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_100.dat")
+    training_file = jp(Setup.Directories.storage_dir, "training_roots_aniso_1000_648908.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_250_648908.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # roots = test_r
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     #          "d08b2a80c7ef431b92ae3c6fd9cb6482",
     #          "818dd775ba0c4e8aa567b5d7d153c9db"]
 
-    roots = ["818bf1676c424f76b83bd777ae588a1d"]
+    # roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
     X, Y = load_dataset(subdir="data_structural")
     X_train = X.loc[training_r]
@@ -39,14 +39,10 @@ if __name__ == "__main__":
     y_train = Y.loc[training_r]
     y_test = Y.loc[test_r]
 
-    alphabet = string.ascii_uppercase
-
     fc = Setup.Focus()
     x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
 
-    # ['123456', '1', '2', '3', '4', '5', '6']
-
-    base_dir = jp(Setup.Directories.forecasts_dir, "aniso_400_100_1757085")
+    base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_648908")
 
     for i, sample in enumerate(test_r):
         logger.info(f"Plotting root {sample}")
@@ -65,7 +61,6 @@ if __name__ == "__main__":
             # BEL pickle
             md = jp(base_dir, sample, w)
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
-            bel.Y_shape = (1, 100, 100)
 
             logger.info(f"Plotting results")
             myvis.plot_results(

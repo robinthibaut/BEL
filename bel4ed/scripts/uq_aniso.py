@@ -87,7 +87,7 @@ if __name__ == "__main__":
     bel.n_posts = Setup.HyperParameters.n_posts
     bel.mode = "mvn"
     bel.X_shape = (6, 200)
-    bel.Y_shape = (1, 100, 87)
+    bel.Y_shape = (1, 100, 100)
 
     # Load datasets
     X, Y = load_dataset(subdir="data_structural")
