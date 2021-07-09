@@ -470,7 +470,7 @@ def plot_results(
         # X_obs = check_array(X_obs)
         X_obs = X_obs.to_numpy().reshape(1, -1)
 
-        tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
+        tc = X.reshape((-1,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
         tc = np.concatenate((tc, tcp), axis=0)
 
@@ -491,29 +491,29 @@ def plot_results(
             highlight=[len(tc) - 1],
         )
 
-        curves(
-            cols=cols,
-            tc=tc,
-            sdir=sdir,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            factor=factor,
-            labelsize=labelsize,
-            highlight=[len(tc) - 1],
-            ghost=True,
-            title="curves_ghost",
-        )
+        # curves(
+        #     cols=cols,
+        #     tc=tc,
+        #     sdir=sdir,
+        #     xlabel=xlabel,
+        #     ylabel=ylabel,
+        #     factor=factor,
+        #     labelsize=labelsize,
+        #     highlight=[len(tc) - 1],
+        #     ghost=True,
+        #     title="curves_ghost",
+        # )
 
-        curves_i(
-            cols=cols,
-            tc=tc,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            factor=factor,
-            labelsize=labelsize,
-            sdir=sdir,
-            highlight=[len(tc) - 1],
-        )
+        # curves_i(
+        #     cols=cols,
+        #     tc=tc,
+        #     xlabel=xlabel,
+        #     ylabel=ylabel,
+        #     factor=factor,
+        #     labelsize=labelsize,
+        #     sdir=sdir,
+        #     highlight=[len(tc) - 1],
+        # )
 
     if h:
         # WHP - h test + training

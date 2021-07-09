@@ -98,8 +98,8 @@ if __name__ == "__main__":
         plt.close()
 
         logger.info(f"Plotting HEAD")
-        myvis.plot_head_field(base_dir=base_dir, root=sample)
-        plt.close()
+        # myvis.plot_head_field(base_dir=base_dir, root=sample)
+        # plt.close()
 
         # logger.info(f"Plotting CCA")
         # myvis.cca_vision(
