@@ -4,7 +4,7 @@ import operator
 import os
 import string
 from functools import reduce
-from os.path import join as jp
+from os.path import join as jp, dirname
 
 import flopy
 import matplotlib
@@ -257,12 +257,12 @@ def whpa_plot(
 
         if load_bstack:
             try:
-                b_low = np.load(jp(jp(os.getcwd(), "_temp", "blow.npy")))
+                b_low = np.load(jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy"))
             except FileNotFoundError:
                 xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
                 vertices = contours_vertices(x=x, y=y, arrays=whpa)
                 b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
-                np.save(jp(os.getcwd(), "_temp", "blow.npy"), b_low)
+                np.save(jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy"), b_low)
         else:
             xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
             vertices = contours_vertices(x=x, y=y, arrays=whpa)
@@ -536,21 +536,21 @@ def plot_results(
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
-        whpa_plot(whpa=h_training, color="blue", alpha=0.5, load_bstack=True)
-        whpa_plot(
-            whpa=h_test,
-            color="r",
-            lw=2,
-            alpha=0.8,
-            xlabel="X(m)",
-            ylabel="Y(m)",
-            labelsize=11,
-        )
-        colors = ["blue", "red"]
-        labels = ["Training", "Test"]
-        legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
-        _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
-        plt.close()
+        # whpa_plot(whpa=h_training, color="blue", alpha=0.5, load_bstack=True)
+        # whpa_plot(
+        #     whpa=h_test,
+        #     color="r",
+        #     lw=2,
+        #     alpha=0.8,
+        #     xlabel="X(m)",
+        #     ylabel="Y(m)",
+        #     labelsize=11,
+        # )
+        # colors = ["blue", "red"]
+        # labels = ["Training", "Test"]
+        # legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
+        # _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+        # plt.close()
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
@@ -574,6 +574,7 @@ def plot_results(
             show_wells=True,
             well_ids=well_ids,
             show=False,
+            load_bstack=True,
         )
 
         # Samples

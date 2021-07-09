@@ -108,10 +108,10 @@ def plotter(sample):
 
 
 if __name__ == "__main__":
-    plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')
+    # plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')
     # cProfile.run("plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')")
-    # n_cpu = 8
-    # pool = mp.Pool(n_cpu)
-    # pool.map(plotter, test_r)
-    # pool.close()
-    # pool.join()
+    n_cpu = 8
+    pool = mp.Pool(n_cpu)
+    pool.map(plotter, test_r)
+    pool.close()
+    pool.join()
