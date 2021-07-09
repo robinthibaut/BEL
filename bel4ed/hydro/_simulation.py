@@ -188,9 +188,7 @@ def forward_modelling(args, **kwargs):
     logger.info(f"fwd {res_dir}")
     # Check if forwards have already been computed
     of = Setup.Files.output_files
-    opt = np.array(
-        [os.path.isfile(jp(results_dir, d)) for d in of]
-    )
+    opt = np.array([os.path.isfile(jp(results_dir, d)) for d in of])
     override = kwargs["override"]
 
     if not opt.all() or override:
@@ -213,7 +211,9 @@ def forward_modelling(args, **kwargs):
                 xy_dummy=xy_dummy,
             )
         # Run Transport and Backtracking
-        if flow_model and (kwargs["transport"] or not isfile(jp(results_dir, of.predictor_file))):
+        if flow_model and (
+            kwargs["transport"] or not isfile(jp(results_dir, of.predictor_file))
+        ):
             transport(
                 modflowmodel=flow_model,
                 exe_name=exe_name_mt,
@@ -221,7 +221,9 @@ def forward_modelling(args, **kwargs):
                 save_ucn=kwargs["ucn"],
             )
             # Run Modpath
-        if flow_model and (kwargs["backtrack"] or not isfile(jp(results_dir, of.target_file))):
+        if flow_model and (
+            kwargs["backtrack"] or not isfile(jp(results_dir, of.target_file))
+        ):
             end_points = backtrack(flow_model, exe_name_mp)
             # Compute particle delineation to compute signed distance later on
             # indices of the vertices of the final protection zone

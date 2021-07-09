@@ -226,7 +226,6 @@ def bel_uq_mp(args):
             os.remove(jp(obj_dir, "bel.pkl"))
 
 
-
 def bel_uq(
     *,
     bel,

@@ -145,7 +145,7 @@ def pca_scores(
 
     if fig_file:
         bel4ed.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=True)
+        plt.savefig(fig_file, dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -320,7 +320,7 @@ def whpa_plot(
 
     if fig_file:
         bel4ed.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=True)
+        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -361,7 +361,7 @@ def post_examination(
     # plt.gca().add_artist(legend)
 
     plt.savefig(
-        jp(sdir, f"{root}_SD.pdf"), dpi=300, bbox_inches="tight", transparent=True
+        jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=False
     )
     if show:
         plt.show()
@@ -423,7 +423,7 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
     if fig_dir is not None:
         bel4ed.utils.dirmaker(fig_dir)
         plt.savefig(
-            jp(fig_dir, f"h_pca_inverse_transform.pdf"), dpi=300, transparent=True
+            jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=False
         )
         plt.close()
 
@@ -467,7 +467,8 @@ def plot_results(
         sdir = jp(md, "data")
 
         X = check_array(X)
-        X_obs = check_array(X_obs)
+        # X_obs = check_array(X_obs)
+        X_obs = X_obs.to_numpy().reshape(1, -1)
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
@@ -517,8 +518,8 @@ def plot_results(
     if h:
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
-        ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        Y, Y_obs = check_array(Y), check_array(Y_obs)
+        ff = jp(fig_dir, f"{root}.png")  # figure name
+        Y, Y_obs = check_array(Y), Y_obs.to_numpy().reshape(-1, 1)
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
@@ -539,7 +540,7 @@ def plot_results(
         plt.close()
 
         # WHPs
-        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
+        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
         forecast_posterior = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
         forecast_posterior = bel.inverse_transform(forecast_posterior)
         forecast_posterior = forecast_posterior.reshape(
@@ -578,7 +579,7 @@ def plot_results(
             color=colors[2],
             lw=0.8,
             alpha=1,
-            x_lim=[800, 1200],
+            x_lim=[700, 1250],
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
@@ -631,7 +632,7 @@ def plot_K_field(
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
         cb.ax.set_title("$Log_{10} m/d$")
-        plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=True)
+        plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=False)
         if show:
             plt.show()
         plt.close()
@@ -694,7 +695,7 @@ def mode_histo(
     # plt.savefig(
     #     os.path.join(directory, f"{fig_name}_well_mode.png"),
     #     dpi=300,
-    #     transparent=True,
+    #     transparent=False,
     # )
     # plt.close()
 
@@ -704,14 +705,14 @@ def mode_histo(
 
     # Let's sort in increasing order
     wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(35)))])
-    wm=wm[wm_idx]
+    wm = wm[wm_idx]
     columns = [x for _, x in sorted(zip(lol, columns))]
 
     lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]
     norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
-    cmap = matplotlib.cm.get_cmap('coolwarm')
+    cmap = matplotlib.cm.get_cmap("coolwarm")
     wmd = pd.DataFrame(columns=columns, data=wm.T)
     palette = {columns[i]: cmap(norm(lol[i])) for i in range(len(columns))}
     # palette = {'b', 'g', 'r', 'c', 'm', 'y'}
@@ -748,10 +749,13 @@ def mode_histo(
     cb1.ax.tick_params(labelsize=8)
     # Insert well plot
     from mpl_toolkits.axes_grid.inset_locator import inset_axes
-    inset_axes = inset_axes(ax1,
-                            width="25%",  # width = 30% of parent_bbox
-                            height="25%",  # height : 1 inch
-                            loc=4)
+
+    inset_axes = inset_axes(
+        ax1,
+        width="25%",  # width = 30% of parent_bbox
+        height="25%",  # height : 1 inch
+        loc=4,
+    )
     plot_wells(wells=Setup.Wells, annotate=True)
     plt.xticks([])
     plt.yticks([])
@@ -763,7 +767,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
-        transparent=True,
+        transparent=False,
     )
     plt.close()
 
@@ -785,7 +789,7 @@ def mode_histo(
     # plt.savefig(
     #     os.path.join(directory, f"{fig_name}_hist.png"),
     #     dpi=300,
-    #     transparent=True,
+    #     transparent=False,
     # )
     # plt.close()
 
@@ -838,7 +842,7 @@ def curves(
     plt.tick_params(labelsize=labelsize)
     if sdir:
         bel4ed.utils.dirmaker(sdir)
-        plt.savefig(jp(sdir, f"{title}.pdf"), dpi=300, transparent=True)
+        plt.savefig(jp(sdir, f"{title}.png"), dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -895,14 +899,19 @@ def curves_i(
         plt.ylabel(ylabel)
         if sdir:
             bel4ed.utils.dirmaker(sdir)
-            plt.savefig(jp(sdir, f"{title}_{t + 1}.pdf"), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f"{title}_{t + 1}.png"), dpi=300, transparent=False)
             plt.close()
         if show:
             plt.show()
             plt.close()
 
 
-def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0, annotate: bool = False):
+def plot_wells(
+    wells: Setup.Wells,
+    well_ids: list = None,
+    markersize: float = 4.0,
+    annotate: bool = False,
+):
     if well_ids is None:
         comb = [0] + list(wells.combination)
     else:
@@ -930,11 +939,16 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
             )
             if annotate:
                 plt.annotate(
-                    label, fontsize=8,
-                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]), xytext=(-5, 5),
-                    textcoords='offset points', ha='right', va='bottom',
-                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.5),)
-                    # arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0'))
+                    label,
+                    fontsize=8,
+                    xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]),
+                    xytext=(-5, 5),
+                    textcoords="offset points",
+                    ha="right",
+                    va="bottom",
+                    bbox=dict(boxstyle="round,pad=0.5", fc="white", alpha=0.5),
+                )
+                # arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0'))
         s += 1
 
 
@@ -957,7 +971,7 @@ def plot_head_field(root: str = None, base_dir: str = None):
     cb = plt.colorbar(im, cax=cax)
     cb.ax.set_title("Head (m)")
 
-    plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=True)
+    plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=False)
     plt.close()
 
 
@@ -1039,7 +1053,7 @@ def plot_whpa(bel, Y, Y_obs, base_dir, root):
             legend1=legend,
             colors=["darkblue", "darkred"],
             labels=labels,
-            fig_file=os.path.join(base_dir, root, "whpa_training.pdf"),
+            fig_file=os.path.join(base_dir, root, "whpa_training.png"),
         )
 
 
@@ -1108,10 +1122,10 @@ def cca_vision(
         plt.gca().add_artist(legend)
 
         plt.savefig(
-            os.path.join(os.path.dirname(res_dir), "cca", "coefs.pdf"),
+            os.path.join(os.path.dirname(res_dir), "cca", "coefs.png"),
             bbox_inches="tight",
             dpi=300,
-            transparent=True,
+            transparent=False,
         )
         plt.close()
 
@@ -1155,7 +1169,7 @@ def pca_vision(
     subdir = jp(base_dir, root, w, "pca")
 
     if d:
-        fig_file = os.path.join(subdir, "d_scores.pdf")
+        fig_file = os.path.join(subdir, "d_scores.png")
         if scores:
             pca_scores(
                 training=bel.X_pc,
@@ -1167,7 +1181,7 @@ def pca_vision(
             )
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(subdir, "d_exvar.pdf")
+            fig_file = os.path.join(subdir, "d_exvar.png")
             explained_variance(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
@@ -1189,9 +1203,10 @@ def pca_vision(
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
+        Y_obs = Y_obs.to_numpy().reshape(1, -1)
         h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         # Plot
-        fig_file = os.path.join(subdir, "h_pca_scores.pdf")
+        fig_file = os.path.join(subdir, "h_pca_scores.png")
         if scores:
             pca_scores(
                 training=h_pc_training,
@@ -1203,7 +1218,7 @@ def pca_vision(
             )
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(subdir, "h_pca_exvar.pdf")
+            fig_file = os.path.join(subdir, "h_pca_exvar.png")
             explained_variance(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_target,
@@ -1301,7 +1316,7 @@ def d_pca_inverse_plot(
 
     if fig_dir is not None:
         bel4ed.utils.dirmaker(fig_dir)
-        plt.savefig(jp(fig_dir, f"{root}_d.pdf"), dpi=300, transparent=True)
+        plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -1344,10 +1359,10 @@ def hydro_examination(root: str):
     plt.gca().add_artist(legend)
 
     plt.savefig(
-        jp(md.forecasts_dir, "base", "roots_whpa", f"{root}_ep.pdf"),
+        jp(md.forecasts_dir, "base", "roots_whpa", f"{root}_ep.png"),
         dpi=300,
         bbox_inches="tight",
-        transparent=True,
+        transparent=False,
     )
     plt.show()
 

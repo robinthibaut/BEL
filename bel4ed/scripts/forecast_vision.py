@@ -18,8 +18,8 @@ from bel4ed.datasets import i_am_root, load_dataset
 
 if __name__ == "__main__":
 
-    training_file = jp(Setup.Directories.storage_dir, "training_roots_400.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots_100.dat")
+    training_file = jp(Setup.Directories.storage_dir, "training_roots_aniso_400.dat")
+    test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_100.dat")
     training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
     # roots = test_r
@@ -31,11 +31,11 @@ if __name__ == "__main__":
 
     roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
-    X, Y = load_dataset()
+    X, Y = load_dataset(subdir="data_structural")
     X_train = X.loc[training_r]
-    X_test = X.loc[roots]
+    X_test = X.loc[test_r]
     y_train = Y.loc[training_r]
-    y_test = Y.loc[roots]
+    y_test = Y.loc[test_r]
 
     alphabet = string.ascii_uppercase
 
@@ -44,9 +44,9 @@ if __name__ == "__main__":
 
     # ['123456', '1', '2', '3', '4', '5', '6']
 
-    base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
+    base_dir = jp(Setup.Directories.forecasts_dir, "aniso_400_100_1757085")
 
-    for i, sample in enumerate(roots):
+    for i, sample in enumerate(test_r):
         logger.info(f"Plotting root {sample}")
 
         wells = ["123456"]
@@ -63,14 +63,15 @@ if __name__ == "__main__":
             # BEL pickle
             md = jp(base_dir, sample, w)
             bel = joblib.load(jp(md, "obj", "bel.pkl"))
+            bel.Y_shape = (1, 100, 100)
 
             logger.info(f"Plotting results")
             myvis.plot_results(
                 bel,
                 X=X_train,
-                X_obs=X_test,
+                X_obs=X_test.iloc[i],
                 Y=y_train,
-                Y_obs=y_test,
+                Y_obs=y_test.iloc[i],
                 base_dir=base_dir,
                 root=sample,
                 folder=w,
@@ -80,15 +81,15 @@ if __name__ == "__main__":
             logger.info(f"Plotting PCA")
             myvis.pca_vision(
                 bel,
-                X_obs=X_test,
-                Y_obs=y_test,
+                X_obs=X_test.iloc[i],
+                Y_obs=y_test.iloc[i],
                 base_dir=base_dir,
                 w=w,
                 root=sample,
                 d=True,
                 h=True,
                 exvar=False,
-                before_after=False,
+                before_after=True,
                 labels=True,
                 scores=True,
             )
@@ -99,5 +100,10 @@ if __name__ == "__main__":
         logger.info(f"Plotting HEAD")
         myvis.plot_head_field(base_dir=base_dir, root=sample)
 
-        logger.info(f"Plotting CCA")
-        myvis.cca_vision(base_dir=base_dir, Y_obs=y_test, root=sample, folders=wells)
+        # logger.info(f"Plotting CCA")
+        myvis.cca_vision(
+            base_dir=base_dir,
+            Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+            root=sample,
+            folders=wells,
+        )
