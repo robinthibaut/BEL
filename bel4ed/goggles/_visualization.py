@@ -75,13 +75,13 @@ def vertices_vtp(folder, vertices):
 
 
 def pca_scores(
-        training: np.array,
-        prediction: np.array,
-        n_comp: int,
-        annotation: list,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training: np.array,
+    prediction: np.array,
+    n_comp: int,
+    annotation: list,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
@@ -152,31 +152,32 @@ def pca_scores(
 
 
 def whpa_plot(
-        grf: float = None,
-        well_comb: list = None,
-        whpa: np.array = None,
-        alpha: float = 0.4,
-        halpha: float = None,
-        lw: float = 0.5,
-        bkg_field_array: np.array = None,
-        vmin: float = None,
-        vmax: float = None,
-        x_lim: list = None,
-        y_lim: list = None,
-        xlabel: str = None,
-        ylabel: str = None,
-        cb_title: str = None,
-        labelsize: float = 5,
-        cmap: str = "coolwarm",
-        color: str = "white",
-        grid: bool = True,
-        show_wells: bool = False,
-        well_ids: list = None,
-        title: str = None,
-        annotation: list = None,
-        fig_file: str = None,
-        highlight: bool = False,
-        show: bool = False,
+    grf: float = None,
+    well_comb: list = None,
+    whpa: np.array = None,
+        load_bstack: bool = False,
+    alpha: float = 0.4,
+    halpha: float = None,
+    lw: float = 0.5,
+    bkg_field_array: np.array = None,
+    vmin: float = None,
+    vmax: float = None,
+    x_lim: list = None,
+    y_lim: list = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    cb_title: str = None,
+    labelsize: float = 5,
+    cmap: str = "coolwarm",
+    color: str = "white",
+    grid: bool = True,
+    show_wells: bool = False,
+    well_ids: list = None,
+    title: str = None,
+    annotation: list = None,
+    fig_file: str = None,
+    highlight: bool = False,
+    show: bool = False,
 ):
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
@@ -250,11 +251,23 @@ def whpa_plot(
         whpa = []
 
     if whpa.ndim > 2:  # New approach is to plot filled contours
+
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
-        vertices = contours_vertices(x=x, y=y, arrays=whpa)
-        b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
+
+        if load_bstack:
+            try:
+                b_low = np.load(jp(jp(os.getcwd(), "_temp", "blow.npy")))
+            except FileNotFoundError:
+                xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
+                vertices = contours_vertices(x=x, y=y, arrays=whpa)
+                b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
+                np.save(jp(os.getcwd(), "_temp", "blow.npy"), b_low)
+        else:
+            xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
+            vertices = contours_vertices(x=x, y=y, arrays=whpa)
+            b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
+
         contour = plt.contourf(
             new_x,
             new_y,
@@ -331,7 +344,7 @@ def whpa_plot(
 
 @deprecated()
 def post_examination(
-        root: str, xlim: list = None, ylim: list = None, show: bool = False
+    root: str, xlim: list = None, ylim: list = None, show: bool = False
 ):
     focus = Setup.Focus()
     if xlim is None:
@@ -384,8 +397,8 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
     else:
         Y_obs = check_array(Y_obs)
         v_pc = bel.Y_pre_processing.transform(Y_obs)[
-               :, : Setup.HyperParameters.n_pc_target
-               ]
+            :, : Setup.HyperParameters.n_pc_target
+        ]
 
     nc = bel.Y_pre_processing["pca"].n_components_
     dummy = np.zeros((1, nc))
@@ -433,17 +446,17 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
 
 
 def plot_results(
-        bel,
-        d: bool = True,
-        h: bool = True,
-        X=None,
-        X_obs=None,
-        Y=None,
-        Y_obs=None,
-        root: str = None,
-        base_dir: str = None,
-        folder: str = None,
-        annotation: list = None,
+    bel,
+    d: bool = True,
+    h: bool = True,
+    X=None,
+    X_obs=None,
+    Y=None,
+    Y_obs=None,
+    root: str = None,
+    base_dir: str = None,
+    folder: str = None,
+    annotation: list = None,
 ):
     """
     Plots forecasts results in the 'uq' folder
@@ -523,7 +536,7 @@ def plot_results(
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
-        whpa_plot(whpa=h_training, color="blue", alpha=0.5)
+        whpa_plot(whpa=h_training, color="blue", alpha=0.5, load_bstack=True)
         whpa_plot(
             whpa=h_test,
             color="r",
@@ -600,12 +613,12 @@ def plot_results(
 
 
 def plot_K_field(
-        root: str = None,
-        base_dir: str = None,
-        k_dir: str = None,
-        wells=None,
-        deprecated: bool = True,
-        show: bool = False,
+    root: str = None,
+    base_dir: str = None,
+    k_dir: str = None,
+    wells=None,
+    deprecated: bool = True,
+    show: bool = False,
 ):
     if wells is None:
         wells = Setup.Wells
@@ -639,13 +652,13 @@ def plot_K_field(
 
 
 def mode_histo(
-        an_i: int,
-        wm: np.array,
-        combi: list,
-        colors: list = None,
-        title: str = None,
-        fig_name: str = "average",
-        directory: str = None,
+    an_i: int,
+    wm: np.array,
+    combi: list,
+    colors: list = None,
+    title: str = None,
+    fig_name: str = "average",
+    directory: str = None,
 ):
     """
 
@@ -706,10 +719,9 @@ def mode_histo(
     # Let's sort in increasing order
     wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
     wm = wm[wm_idx]
-    columns = [x for _, x in sorted(zip(lol, columns))]
-    well_cols = ['b', 'g', 'r', 'c', 'm', 'y']
-    well_cols = [x for _, x in sorted(zip(lol, well_cols))]
-
+    # columns = [x for _, x in sorted(zip(lol, columns))]
+    well_cols = ["b", "g", "r", "c", "m", "y"]
+    # well_cols = [x for _, x in sorted(zip(lol, well_cols))]
     lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]
@@ -803,18 +815,18 @@ def mode_histo(
 
 
 def curves(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        ghost: bool = False,
-        sdir: str = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        conc: bool = 0,
-        xlabel: str = None,
-        ylabel: str = None,
-        title: str = "curves",
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    ghost: bool = False,
+    sdir: str = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    conc: bool = 0,
+    xlabel: str = None,
+    ylabel: str = None,
+    title: str = "curves",
+    show: bool = False,
 ):
     """
     Shows every breakthrough curve stacked on a plot.
@@ -858,15 +870,15 @@ def curves(
 
 
 def curves_i(
-        cols: list,
-        tc: np.array,
-        highlight: list = None,
-        labelsize: float = 12,
-        factor: float = 1,
-        xlabel: str = None,
-        ylabel: str = None,
-        sdir: str = None,
-        show: bool = False,
+    cols: list,
+    tc: np.array,
+    highlight: list = None,
+    labelsize: float = 12,
+    factor: float = 1,
+    xlabel: str = None,
+    ylabel: str = None,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     Shows every breakthrough individually for each observation point.
@@ -915,10 +927,10 @@ def curves_i(
 
 
 def plot_wells(
-        wells: Setup.Wells,
-        well_ids: list = None,
-        markersize: float = 4.0,
-        annotate: bool = False,
+    wells: Setup.Wells,
+    well_ids: list = None,
+    markersize: float = 4.0,
+    annotate: bool = False,
 ):
     if well_ids is None:
         comb = [0] + list(wells.combination)
@@ -984,14 +996,14 @@ def plot_head_field(root: str = None, base_dir: str = None):
 
 
 def plot_pc_ba(
-        bel,
-        X_obs,
-        Y_obs,
-        base_dir: str = None,
-        root: str = None,
-        w: str = None,
-        data: bool = False,
-        target: bool = False,
+    bel,
+    X_obs,
+    Y_obs,
+    base_dir: str = None,
+    root: str = None,
+    w: str = None,
+    data: bool = False,
+    target: bool = False,
 ):
     """
     Comparison between original variables and the same variables back-transformed with n PCA components.
@@ -1066,7 +1078,7 @@ def plot_whpa(bel, Y, Y_obs, base_dir, root):
 
 
 def cca_vision(
-        base_dir: str = None, Y_obs: np.array = None, root: str = None, folders: list = None
+    base_dir: str = None, Y_obs: np.array = None, root: str = None, folders: list = None
 ):
     """
     Loads CCA pickles and plots components for all folders
@@ -1142,18 +1154,18 @@ def cca_vision(
 
 
 def pca_vision(
-        bel,
-        X_obs=None,
-        Y_obs=None,
-        root: str or Root = None,
-        base_dir: str = None,
-        w: str = None,
-        d: bool = True,
-        h: bool = False,
-        scores: bool = True,
-        exvar: bool = True,
-        before_after=True,
-        labels: bool = False,
+    bel,
+    X_obs=None,
+    Y_obs=None,
+    root: str or Root = None,
+    base_dir: str = None,
+    w: str = None,
+    d: bool = True,
+    h: bool = False,
+    scores: bool = True,
+    exvar: bool = True,
+    before_after=True,
+    labels: bool = False,
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -1266,15 +1278,15 @@ def check_root(xlim: list, ylim: list, root: list):
 
 
 def d_pca_inverse_plot(
-        bel,
-        root,
-        X_obs,
-        factor: float = 1.0,
-        xlabel: str = None,
-        ylabel: str = None,
-        labelsize: float = 11.0,
-        fig_dir: str = None,
-        show: bool = False,
+    bel,
+    root,
+    X_obs,
+    factor: float = 1.0,
+    xlabel: str = None,
+    ylabel: str = None,
+    labelsize: float = 11.0,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.

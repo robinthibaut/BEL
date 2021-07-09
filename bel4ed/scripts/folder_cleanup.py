@@ -19,4 +19,3 @@ if __name__ == "__main__":
     # remove_file(
     #     "/Users/robin/PycharmProjects/BEL/bel4ed/datasets/fwd_structural", "hk0.npy"
     # )
-

@@ -31,15 +31,15 @@ def run(
     )
     index = X_test.index
     # Compute UQ with metrics
-    bel_uq(
-        bel=model,
-        y_obs=y_test,
-        index=index,
-        directory=test_directory,
-        source_ids=source_ids_uq,
-        metrics=metrics,
-        delete=True,
-    )
+    # bel_uq(
+    #     bel=model,
+    #     y_obs=y_test,
+    #     index=index,
+    #     directory=test_directory,
+    #     source_ids=source_ids_uq,
+    #     metrics=metrics,
+    #     delete=True,
+    # )
 
     try:
         [
@@ -79,7 +79,9 @@ def plot_uq(
 
 
 if __name__ == "__main__":
-    wells_training = np.array([[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object)
+    wells_training = np.array(
+        [[1, 2, 3, 4, 5, 6], [1], [2], [3], [4], [5], [6]], dtype=object
+    )
     wells_uq = np.array([[1], [2], [3], [4], [5], [6]], dtype=object)
     name = "aniso"
     # Initiate BEL model
@@ -110,13 +112,22 @@ if __name__ == "__main__":
 
     train_roots = [t for t in X_train.index]
     with open(
-        jp(Setup.Directories.storage_dir, f"training_roots_aniso_{train_size}_{random_state}.dat"), "w"
+        jp(
+            Setup.Directories.storage_dir,
+            f"training_roots_aniso_{train_size}_{random_state}.dat",
+        ),
+        "w",
     ) as doc:
         for line in train_roots:
             doc.write(line + "\n")
     test_roots = [t for t in X_test.index]
+
     with open(
-        jp(Setup.Directories.storage_dir, f"test_roots_aniso_{test_size}_{random_state}.dat"), "w"
+        jp(
+            Setup.Directories.storage_dir,
+            f"test_roots_aniso_{test_size}_{random_state}.dat",
+        ),
+        "w",
     ) as doc:
         for line in test_roots:
             doc.write(line + "\n")
@@ -130,12 +141,11 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, wells_training, tr)
         for tr in test_roots
     ]
-
-    n_cpu = 8
+    #
+    n_cpu = 4
     pool = mp.Pool(n_cpu)
     pool.map(bel_training_mp, args)
     pool.close()
     pool.join()
 
-    run(bel, source_ids_uq=wells_uq)
-
+    # run(bel, source_ids_uq=wells_uq)

@@ -1,7 +1,9 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import string
+import cProfile
 from os.path import join as jp
+import multiprocessing as mp
 
 import joblib
 from loguru import logger
@@ -17,13 +19,21 @@ from bel4ed.datasets import i_am_root, load_dataset
 # plt.rcParams['axes.labelcolor'] = COLOR
 # plt.rcParams['xtick.color'] = COLOR
 # plt.rcParams['ytick.color'] = COLOR
+training_file = jp(
+    Setup.Directories.storage_dir, "training_roots_aniso_1000_648908.dat"
+)
+test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_250_648908.dat")
+training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
+X, Y = load_dataset(subdir="data_structural")
+X_train = X.loc[training_r]
+X_test = X.loc[test_r]
+y_train = Y.loc[training_r]
+y_test = Y.loc[test_r]
+wells = ["123456"]
 
-if __name__ == "__main__":
 
-    training_file = jp(Setup.Directories.storage_dir, "training_roots_aniso_1000_648908.dat")
-    test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_250_648908.dat")
-    training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-
+def plotter(sample):
+    logger.info(f"Plotting root {sample}")
     # roots = test_r
     #
     # roots = ["818bf1676c424f76b83bd777ae588a1d",
@@ -33,80 +43,75 @@ if __name__ == "__main__":
 
     # roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
-    X, Y = load_dataset(subdir="data_structural")
-    X_train = X.loc[training_r]
-    X_test = X.loc[test_r]
-    y_train = Y.loc[training_r]
-    y_test = Y.loc[test_r]
+    for j, w in enumerate(wells):
 
-    fc = Setup.Focus()
-    x_lim, y_lim, grf = fc.x_range, fc.y_range, fc.cell_dim
+        logger.info(f"Plotting well {w}")
 
-    base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_648908")
+        if w == "123456":
+            annotation = _my_alphabet(j)
+        else:
+            annotation = _my_alphabet(j - 1)
 
-    for i, sample in enumerate(test_r):
-        logger.info(f"Plotting root {sample}")
+        # BEL pickle
+        base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_648908")
 
-        wells = ["123456"]
+        md = jp(base_dir, sample, w)
+        bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
-        for j, w in enumerate(wells):
-
-            logger.info(f"Plotting well {w}")
-
-            if w == "123456":
-                annotation = _my_alphabet(i)
-            else:
-                annotation = _my_alphabet(j - 1)
-
-            # BEL pickle
-            md = jp(base_dir, sample, w)
-            bel = joblib.load(jp(md, "obj", "bel.pkl"))
-
-            logger.info(f"Plotting results")
-            myvis.plot_results(
-                bel,
-                X=X_train,
-                X_obs=X_test.iloc[i],
-                Y=y_train,
-                Y_obs=y_test.iloc[i],
-                base_dir=base_dir,
-                root=sample,
-                folder=w,
-                annotation=annotation,
-            )
-            plt.close()
-
-            logger.info(f"Plotting PCA")
-            # myvis.pca_vision(
-            #     bel,
-            #     X_obs=X_test.iloc[i],
-            #     Y_obs=y_test.iloc[i],
-            #     base_dir=base_dir,
-            #     w=w,
-            #     root=sample,
-            #     d=True,
-            #     h=True,
-            #     exvar=False,
-            #     before_after=True,
-            #     labels=True,
-            #     scores=True,
-            # )
-            # plt.close()
-
-        logger.info(f"Plotting K")
-        myvis.plot_K_field(base_dir=base_dir, root=sample)
+        logger.info(f"Plotting results")
+        myvis.plot_results(
+            bel,
+            X=X_train,
+            X_obs=X_test.loc[sample],
+            Y=y_train,
+            Y_obs=y_test.loc[sample],
+            base_dir=base_dir,
+            root=sample,
+            folder=w,
+            annotation=annotation,
+        )
         plt.close()
 
-        logger.info(f"Plotting HEAD")
-        # myvis.plot_head_field(base_dir=base_dir, root=sample)
-        # plt.close()
-
-        # logger.info(f"Plotting CCA")
-        # myvis.cca_vision(
+        logger.info(f"Plotting PCA")
+        # myvis.pca_vision(
+        #     bel,
+        #     X_obs=X_test.iloc[i],
+        #     Y_obs=y_test.iloc[i],
         #     base_dir=base_dir,
-        #     Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+        #     w=w,
         #     root=sample,
-        #     folders=wells,
+        #     d=True,
+        #     h=True,
+        #     exvar=False,
+        #     before_after=True,
+        #     labels=True,
+        #     scores=True,
         # )
         # plt.close()
 
+    logger.info(f"Plotting K")
+    myvis.plot_K_field(base_dir=base_dir, root=sample)
+    plt.close()
+
+    # logger.info(f"Plotting HEAD")
+    # myvis.plot_head_field(base_dir=base_dir, root=sample)
+    # plt.close()
+
+    # logger.info(f"Plotting CCA")
+    # myvis.cca_vision(
+    #     base_dir=base_dir,
+    #     Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+    #     root=sample,
+    #     folders=wells,
+    # )
+    # plt.close()
+
+
+if __name__ == "__main__":
+    plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')
+    # cProfile.run("plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')")
+    # n_cpu = 8
+    # pool = mp.Pool(n_cpu)
+    # pool.map(plotter, test_r)
+    # pool.close()
+    # pool.join()
