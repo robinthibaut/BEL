@@ -404,7 +404,7 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
         labelsize=11,
         xlabel="X(m)",
         ylabel="Y(m)",
-        x_lim=[750, 1150],
+        x_lim=[650, 1200],
         y_lim=[300, 700],
     )
 
@@ -579,7 +579,7 @@ def plot_results(
             color=colors[2],
             lw=0.8,
             alpha=1,
-            x_lim=[700, 1250],
+            x_lim=[650, 1250],
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
