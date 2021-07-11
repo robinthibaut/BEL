@@ -58,8 +58,8 @@ if __name__ == "__main__":
 
     random_state = np.random.randint(0, 1e7)
 
-    train_size = 1000
-    test_size = 250
+    train_size = 400
+    test_size = 100
     shuffle = True
 
     X_train, X_test, y_train, y_test = train_test_split(
