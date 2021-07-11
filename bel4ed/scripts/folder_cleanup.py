@@ -9,13 +9,13 @@ from bel4ed.datasets._base import (
 )
 
 if __name__ == "__main__":
-    # cleanup()
+    cleanup()
     # filter_file("pz.npy")
     n = count_file(res_tree=Setup.Directories.hydro_res_dir, file_name="bkt.npy")
     print(n)
-    spare_me()
-    n = count_file(res_tree=Setup.Directories.hydro_res_dir, file_name="bkt.npy")
-    print(n)
+    # spare_me()
+    # n = count_file(res_tree=Setup.Directories.hydro_res_dir, file_name="bkt.npy")
+    # print(n)
     # remove_file(
     #     "/Users/robin/PycharmProjects/BEL/bel4ed/datasets/fwd_structural", "hk0.npy"
     # )
