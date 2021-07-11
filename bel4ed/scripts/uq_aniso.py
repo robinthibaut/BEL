@@ -18,44 +18,6 @@ from bel4ed.goggles import mode_histo
 from bel4ed.metrics import modified_hausdorff, structural_similarity
 
 
-def run(
-    model,
-    *,
-    source_ids_uq: list or np.array = None,
-):
-
-    # Pick metrics
-    metrics = (
-        # modified_hausdorff,
-        structural_similarity,
-    )
-    index = X_test.index
-    # Compute UQ with metrics
-    bel_uq(
-        bel=model,
-        y_obs=y_test,
-        index=index,
-        directory=test_directory,
-        source_ids=source_ids_uq,
-        metrics=metrics,
-        delete=True,
-    )
-
-    try:
-        [
-            plot_uq(
-                m,
-                directory=test_directory,
-                combi=source_ids_uq,
-                title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
-                an_i=ix,
-            )
-            for ix, m in enumerate(metrics)
-        ]
-    except ValueError:
-        pass
-
-
 def plot_uq(
     metric_function,
     combi: list = None,
