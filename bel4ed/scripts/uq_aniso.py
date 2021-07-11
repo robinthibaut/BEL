@@ -94,8 +94,9 @@ if __name__ == "__main__":
     # Load datasets
     X, Y = load_dataset(subdir="data_structural")
 
-    random_state = np.random.randint(0, 1e7)
+    # random_state = np.random.randint(0, 1e7)
     # random_state = 648908
+    random_state = 3529748
 
     train_size = 1000
     test_size = 250
@@ -142,10 +143,36 @@ if __name__ == "__main__":
         for tr in test_roots
     ]
     #
-    n_cpu = 8
-    pool = mp.Pool(n_cpu)
-    pool.map(bel_training_mp, args)
-    pool.close()
-    pool.join()
+    # n_cpu = 8
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_training_mp, args)
+    # pool.close()
+    # pool.join()
 
-    run(bel, source_ids_uq=wells_uq)
+    # Pick metrics
+    metrics = (
+        # modified_hausdorff,
+        structural_similarity,
+    )
+    index = X_test.index
+    # Compute UQ with metrics
+    # bel_uq(
+    #     bel=bel,
+    #     y_obs=y_test,
+    #     index=index,
+    #     directory=test_directory,
+    #     source_ids=wells_uq,
+    #     metrics=metrics,
+    #     delete=True,
+    # )
+
+    [
+        plot_uq(
+            m,
+            directory=test_directory,
+            combi=wells_uq,
+            # title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
+            an_i=ix,
+        )
+        for ix, m in enumerate(metrics)
+    ]

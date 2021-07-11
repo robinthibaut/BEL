@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
-from os.path import join as jp
+from os.path import join as jp, isfile
 
 import joblib
 import numpy as np
@@ -115,49 +115,50 @@ def bel_training_mp(args):
     for ixw, c in enumerate(combinations):  # For each well combination
         new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
-
-        # %% Folders
         obj_dir = jp(sub_dir, "obj")
-        fig_data_dir = jp(sub_dir, "data")
-        fig_pca_dir = jp(sub_dir, "pca")
-        fig_cca_dir = jp(sub_dir, "cca")
-        fig_pred_dir = jp(sub_dir, "uq")
 
-        # %% Creates directories
-        [
-            utils.dirmaker(f, erase=True)
-            for f in [
-                obj_dir,
-                fig_data_dir,
-                fig_pca_dir,
-                fig_cca_dir,
-                fig_pred_dir,
+        if not isfile(jp(obj_dir, "bel.pkl")):
+            # %% Folders
+            fig_data_dir = jp(sub_dir, "data")
+            fig_pca_dir = jp(sub_dir, "pca")
+            fig_cca_dir = jp(sub_dir, "cca")
+            fig_pred_dir = jp(sub_dir, "uq")
+
+            # %% Creates directories
+            [
+                utils.dirmaker(f, erase=False)
+                for f in [
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
+                ]
             ]
-        ]
-        bel_clone = bel
-        # %% Select wells:
-        selection = list(map(str, [wc for wc in c]))
-        X_train_select = X_train.copy().loc[:, selection]
-        # Update physical shape
-        X_train_select.attrs["physical_shape"] = (
-            len(selection),
-            X_train.attrs["physical_shape"][1],
-        )
-        X_test_select = (
-            X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)
-        )  # Only one sample
-        y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
-        bel_clone.Y_obs = y_test_select
-        # BEL fit
-        bel_clone.fit(X=X_train_select, Y=y_train)
+            bel_clone = bel
+            # %% Select wells:
+            selection = list(map(str, [wc for wc in c]))
+            X_train_select = X_train.copy().loc[:, selection]
+            # Update physical shape
+            X_train_select.attrs["physical_shape"] = (
+                len(selection),
+                X_train.attrs["physical_shape"][1],
+            )
+            X_test_select = (
+                X_test.copy().loc[test_root, selection].to_numpy().reshape(1, -1)
+            )  # Only one sample
+            y_test_select = y_test.copy().loc[test_root].to_numpy().reshape(1, -1)
+            bel_clone.Y_obs = y_test_select
+            # BEL fit
+            bel_clone.fit(X=X_train_select, Y=y_train)
 
-        # %% Sample
-        # Extract n random sample (target pc's).
-        # The posterior distribution is computed within the method below.
-        bel_clone.predict(X_test_select)
+            # %% Sample
+            # Extract n random sample (target pc's).
+            # The posterior distribution is computed within the method below.
+            bel_clone.predict(X_test_select)
 
-        # Save the fitted BEL model
-        joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
+            # Save the fitted BEL model
+            joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
 
 
 def bel_uq_mp(args):
