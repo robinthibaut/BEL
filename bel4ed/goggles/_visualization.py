@@ -155,7 +155,7 @@ def whpa_plot(
     grf: float = None,
     well_comb: list = None,
     whpa: np.array = None,
-        load_bstack: bool = False,
+    load_bstack: bool = False,
     alpha: float = 0.4,
     halpha: float = None,
     lw: float = 0.5,
@@ -257,12 +257,16 @@ def whpa_plot(
 
         if load_bstack:
             try:
-                b_low = np.load(jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy"))
+                b_low = np.load(
+                    jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy")
+                )
             except FileNotFoundError:
                 xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
                 vertices = contours_vertices(x=x, y=y, arrays=whpa)
                 b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
-                np.save(jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy"), b_low)
+                np.save(
+                    jp(dirname(os.path.abspath(__file__)), "_temp", "blow.npy"), b_low
+                )
         else:
             xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
             vertices = contours_vertices(x=x, y=y, arrays=whpa)
@@ -718,12 +722,12 @@ def mode_histo(
     columns = ["".join([str(wi) for wi in w]) for w in wid]
 
     # Let's sort in increasing order
-    # wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
-    # wm = wm[wm_idx]
-    # columns = [x for _, x in sorted(zip(lol, columns))]
+    wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
+    wm = wm[wm_idx]
+    columns = [x for _, x in sorted(zip(lol, columns))]
     well_cols = ["b", "g", "r", "c", "m", "y"]
-    # well_cols = [x for _, x in sorted(zip(lol, well_cols))]
-    # lol = sorted(lol)
+    well_cols = [x for _, x in sorted(zip(lol, well_cols))]
+    lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]
     norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
@@ -733,13 +737,13 @@ def mode_histo(
     fig, ax1 = plt.subplots()
     sns.boxplot(data=wmd, palette=palette, order=columns, linewidth=1, ax=ax1)
     [line.set_color("white") for line in ax1.get_lines()[4::6]]
-    plt.ylim([-4, 3])
+    plt.ylim([-4, 4])
     plt.xlabel("Well ID")
     if len(combi) > 12:
         rotation = 70
     else:
         rotation = 0
-    plt.xticks(rotation=rotation, fontsize=12, weight="bold")
+    plt.xticks(rotation=rotation, fontsize=11, weight="bold")
     plt.ylabel("Metric value")
     if title is None:
         title = "Box-plot of the metric values for each data source"
@@ -764,9 +768,9 @@ def mode_histo(
         orientation="vertical",
     )
     cb1.ax.set_title("Median", fontsize=8)
-    cb1.ax.tick_params(labelsize=8)
-    for xtick, color in zip(ax1.get_xticklabels(), well_cols):
-        xtick.set_color(color)
+    cb1.ax.tick_params(labelsize=7)
+    # for xtick, color in zip(ax1.get_xticklabels(), well_cols):
+    #     xtick.set_color(color)
 
     # Insert well plot
     from mpl_toolkits.axes_grid.inset_locator import inset_axes

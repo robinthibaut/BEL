@@ -31,15 +31,15 @@ def run(
     )
     index = X_test.index
     # Compute UQ with metrics
-    # bel_uq(
-    #     bel=model,
-    #     y_obs=y_test,
-    #     index=index,
-    #     directory=test_directory,
-    #     source_ids=source_ids_uq,
-    #     metrics=metrics,
-    #     delete=True,
-    # )
+    bel_uq(
+        bel=model,
+        y_obs=y_test,
+        index=index,
+        directory=test_directory,
+        source_ids=source_ids_uq,
+        metrics=metrics,
+        delete=True,
+    )
 
     try:
         [
@@ -94,8 +94,8 @@ if __name__ == "__main__":
     # Load datasets
     X, Y = load_dataset(subdir="data_structural")
 
-    # random_state = np.random.randint(0, 1e7)
-    random_state = 648908
+    random_state = np.random.randint(0, 1e7)
+    # random_state = 648908
 
     train_size = 1000
     test_size = 250
@@ -142,10 +142,10 @@ if __name__ == "__main__":
         for tr in test_roots
     ]
     #
-    # n_cpu = 8
-    # pool = mp.Pool(n_cpu)
-    # pool.map(bel_training_mp, args)
-    # pool.close()
-    # pool.join()
+    n_cpu = 8
+    pool = mp.Pool(n_cpu)
+    pool.map(bel_training_mp, args)
+    pool.close()
+    pool.join()
 
     run(bel, source_ids_uq=wells_uq)
