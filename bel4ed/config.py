@@ -117,11 +117,6 @@ class Setup:
         # Defines cell dimensions for the signed distance computation.
         cell_dim: float = 5
 
-        # x_range = [800, 1150]
-        # y_range = [300, 700]
-        # # Defines cell dimensions for the signed distance computation.
-        # cell_dim: float = 4
-
     @dataclass
     class Wells:
         """Wells coordinates"""
