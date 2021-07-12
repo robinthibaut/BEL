@@ -19,6 +19,38 @@ from bel4ed.goggles import mode_histo
 from bel4ed.metrics import modified_hausdorff, structural_similarity
 
 
+def find_extreme(
+    index_,
+    metric_function,
+    combi: list = None,
+    directory: str = None,
+):
+    vmin = np.inf
+    vmax = -np.inf
+    for ix, test_root in enumerate(index_):  # For each observation root
+        # Directory in which to load forecasts
+        bel_dir = jp(directory, test_root)
+        for ixw, c in enumerate(combi):  # For each wel combination
+            combi_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, combi_dir)
+            # Folders
+            obj_dir = jp(sub_dir, "obj")
+            efile = jp(obj_dir, f"uq_{metric_function.__name__}.npy")
+            oe = np.load(efile)
+            lmin = np.median(oe)
+            lmax = np.median(oe)
+            if vmin > lmin:
+                vmin = lmin
+                mroot = test_root
+                mcomb = combi_dir
+            if vmax < lmax:
+                vmax = lmax
+                mxroot = test_root
+                mxcomb = combi_dir
+
+    return mroot, mcomb, mxroot, mxcomb
+
+
 def plot_uq(
     metric_function,
     combi: list = None,
@@ -91,16 +123,39 @@ if __name__ == "__main__":
         f"{name}_{train_size}_{test_size}_{random_state}",
     )
 
+    train_roots = [t for t in X_train.index]
+
+    with open(
+        jp(
+            Setup.Directories.storage_dir,
+            f"training_roots_{name}_{train_size}_{random_state}.dat",
+        ),
+        "w",
+    ) as doc:
+        for line in train_roots:
+            doc.write(line + "\n")
+    test_roots = [t for t in X_test.index]
+
+    with open(
+        jp(
+            Setup.Directories.storage_dir,
+            f"test_roots_{name}_{test_size}_{random_state}.dat",
+        ),
+        "w",
+    ) as doc:
+        for line in test_roots:
+            doc.write(line + "\n")
+
     args = [
         (bel, X_train, X_test, y_train, y_test, test_directory, c23, tr)
         for tr in test_roots
     ]
 
     n_cpu = 8
-    pool = mp.Pool(n_cpu)
-    pool.map(bel_training_mp, args)
-    pool.close()
-    pool.join()
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_training_mp, args)
+    # pool.close()
+    # pool.join()
 
     # Pick metrics
     metrics = (
@@ -113,20 +168,22 @@ if __name__ == "__main__":
     ]
     # Compute UQ with metrics
     n_cpu = 12
-    pool = mp.Pool(n_cpu)
-    pool.map(bel_uq_mp, argsuq)
-    pool.close()
-    pool.join()
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_uq_mp, argsuq)
+    # pool.close()
+    # pool.join()
 
     names = ["MHD", "SSIM"]
 
-    [
-        plot_uq(
-            m,
-            directory=test_directory,
-            combi=c23,
-            title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
-            an_i=ix,
-        )
-        for ix, m in enumerate(metrics)
-    ]
+    # [
+    #     plot_uq(
+    #         m,
+    #         directory=test_directory,
+    #         combi=c23,
+    #         title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
+    #         an_i=ix,
+    #     )
+    #     for ix, m in enumerate(metrics)
+    # ]
+
+    root, comb, mxr, mxc = find_extreme(index, modified_hausdorff, [(2, 6)], test_directory)
