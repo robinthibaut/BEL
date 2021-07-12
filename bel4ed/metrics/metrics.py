@@ -27,6 +27,7 @@ def modified_hausdorff(a: np.array, b: np.array) -> np.ndarray:
     https://github.com/sapphire008/Python/blob/master/generic/HausdorffDistance.py
 
     """
+    __name__ = "MHD"
 
     a = np.asarray(a, dtype=np.float64, order="c")
     b = np.asarray(b, dtype=np.float64, order="c")
