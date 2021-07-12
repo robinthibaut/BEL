@@ -25,7 +25,6 @@ __all__ = [
 ]
 
 from ..goggles import mode_histo
-from ..scripts.uq_combi23 import bel, index
 
 
 def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids):
@@ -399,6 +398,8 @@ def find_extreme(
 
 
 def plot_uq(
+    bel_model,
+    index,
     metric_function,
     combi: list = None,
     directory: str = None,
@@ -410,7 +411,7 @@ def plot_uq(
 
     # Directories
     wid = list(map(str, [_[0] for _ in combi]))  # Well identifiers (n)
-    theta = np.zeros((len(wid), bel.n_posts))
+    theta = np.zeros((len(wid), bel_model.n_posts))
     for ix, test_root in enumerate(index):  # For each observation root
         # Directory in which to load forecasts
         bel_dir = jp(directory, test_root)

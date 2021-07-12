@@ -4,10 +4,7 @@ from os.path import join as jp
 import multiprocessing as mp
 
 import numpy as np
-import numpy.random
-import pandas as pd
-from loguru import logger
-from skbel.utils import combinator
+
 from sklearn.model_selection import KFold, train_test_split
 
 from bel4ed import kernel_bel, init_bel
@@ -15,7 +12,6 @@ from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq, bel_training_mp
 from bel4ed.design import bel_uq_mp
-from bel4ed.goggles import mode_histo
 from bel4ed.design import find_extreme, plot_uq
 
 from bel4ed.metrics import modified_hausdorff, structural_similarity
@@ -108,24 +104,26 @@ if __name__ == "__main__":
     argsuq = [(bel, y_test, tr, test_directory, wells_uq, metrics) for tr in test_roots]
     # Compute UQ with metrics
     n_cpu = 12
-    # pool = mp.Pool(n_cpu)
-    # pool.map(bel_uq_mp, argsuq)
-    # pool.close()
-    # pool.join()
+    pool = mp.Pool(n_cpu)
+    pool.map(bel_uq_mp, argsuq)
+    pool.close()
+    pool.join()
 
     names = ["MHD", "SSIM"]
 
-    # [
-    #     plot_uq(
-    #         m,
-    #         directory=test_directory,
-    #         combi=c23,
-    #         title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
-    #         an_i=ix,
-    #     )
-    #     for ix, m in enumerate(metrics)
-    # ]
-
-    root, comb, mxr, mxc = find_extreme(
-        index, modified_hausdorff, [(2, 6)], test_directory
-    )
+    [
+        plot_uq(
+            bel,
+            index,
+            m,
+            directory=test_directory,
+            combi=wells_uq,
+            title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
+            an_i=ix,
+        )
+        for ix, m in enumerate(metrics)
+    ]
+    #
+    # root, comb, mxr, mxc = find_extreme(
+    #     index, modified_hausdorff, [(2, 6)], test_directory
+    # )

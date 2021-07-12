@@ -721,20 +721,23 @@ def mode_histo(
     # Plot BOX
     lol = np.array([np.median(w) for w in wm])
     columns = ["".join([str(wi) for wi in w]) for w in wid]
+    well_cols = ["b", "g", "r", "c", "m", "y"]
 
     # Let's sort in increasing order
-    wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
-    wm = wm[wm_idx]
-    columns = [x for _, x in sorted(zip(lol, columns))]
-    well_cols = ["b", "g", "r", "c", "m", "y"]
-    well_cols = [x for _, x in sorted(zip(lol, well_cols))]
-    lol = sorted(lol)
+    # wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
+    # wm = wm[wm_idx]
+    # columns = [x for _, x in sorted(zip(lol, columns))]
+    # well_cols = [x for _, x in sorted(zip(lol, well_cols))]
+    # lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]
     norm = matplotlib.colors.Normalize(vmin=min(lol), vmax=max(lol))
     cmap = matplotlib.cm.get_cmap("coolwarm")
     wmd = pd.DataFrame(columns=columns, data=wm.T)
-    palette = {columns[i]: cmap(norm(lol[i])) for i in range(len(columns))}
+
+    # palette = {columns[i]: cmap(norm(lol[i])) for i in range(len(columns))}
+    palette = {columns[i]: well_cols[i] for i in range(len(columns))}
+
     fig, ax1 = plt.subplots()
     sns.boxplot(data=wmd, palette=palette, order=columns, linewidth=1, ax=ax1)
     [line.set_color("white") for line in ax1.get_lines()[4::6]]
@@ -759,18 +762,19 @@ def mode_histo(
     legend_a = _proxy_annotate(annotation=[alphabet[an_i]], loc=2, fz=14)
     plt.gca().add_artist(legend_a)
 
-    plt.subplots_adjust(right=0.9)
+    # plt.subplots_adjust(right=0.9)
     # Colorbar
     # rect = [left, bottom, width, height
-    axcb = plt.axes([0.912, 0.11, 0.017, 0.771])
-    cb1 = matplotlib.colorbar.ColorbarBase(
-        axcb,
-        cmap=cmap,
-        norm=norm,
-        orientation="vertical",
-    )
-    cb1.ax.set_title("Median", fontsize=8)
-    cb1.ax.tick_params(labelsize=7)
+    # axcb = plt.axes([0.912, 0.11, 0.017, 0.771])
+    # cb1 = matplotlib.colorbar.ColorbarBase(
+    #     axcb,
+    #     cmap=cmap,
+    #     norm=norm,
+    #     orientation="vertical",
+    # )
+    # cb1.ax.set_title("Median", fontsize=8)
+    # cb1.ax.tick_params(labelsize=7)
+
     # for xtick, color in zip(ax1.get_xticklabels(), well_cols):
     #     xtick.set_color(color)
 
