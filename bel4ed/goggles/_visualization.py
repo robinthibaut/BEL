@@ -798,6 +798,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
+        bbox_inches="tight",
         transparent=False,
     )
     plt.close()
@@ -973,7 +974,7 @@ def plot_wells(
                     label,
                     fontsize=8,
                     xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]),
-                    xytext=(5, 5),
+                    xytext=(5, 6),
                     textcoords="offset points",
                     ha="right",
                     va="bottom",
