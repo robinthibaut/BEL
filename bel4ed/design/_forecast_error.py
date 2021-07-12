@@ -114,6 +114,8 @@ def bel_training_mp(args):
     bel_dir = jp(directory, test_root)
 
     for ixw, c in enumerate(combinations):  # For each well combination
+        logger.info(f"{test_root}-{ixw + 1}/{len(combinations)}")
+
         new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
         obj_dir = jp(sub_dir, "obj")
@@ -160,6 +162,8 @@ def bel_training_mp(args):
 
             # Save the fitted BEL model
             joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
+        else:
+            logger.info(f"skipping {test_root}--{new_dir}")
 
 
 def bel_uq(
@@ -249,7 +253,7 @@ def bel_uq(
 
 
 def bel_uq_mp(args):
-    bel, y_obs, test_root, directory, source_ids, metrics, delete = args
+    bel, y_obs, test_root, directory, source_ids, metrics = args
     metrics = list(metrics)
     # Directories
     combinations = source_ids
@@ -257,6 +261,8 @@ def bel_uq_mp(args):
     bel_dir = jp(directory, test_root)
 
     for ixw, c in enumerate(combinations):  # For each well combination
+        logger.info(f"{test_root}-{ixw + 1}/{len(combinations)}")
+
         new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
         sub_dir = jp(bel_dir, new_dir)
 
@@ -269,7 +275,7 @@ def bel_uq_mp(args):
             efile = os.path.join(obj_dir, f"uq_{m.__name__}.npy")
             if isfile(efile):
                 metrics_copy.remove(m)
-                logger.info(f"skipping {m.__name__}")
+                logger.info(f"skipping {test_root}-{ixw + 1}-{m.__name__}")
 
         if len(metrics_copy) > 0:
             # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
@@ -308,9 +314,7 @@ def bel_uq_mp(args):
                         y_pred=Y_posterior,
                         metric=m,
                     )
-                    np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
-            if delete:
-                os.remove(jp(obj_dir, "bel.pkl"))
+                    np.save(os.path.join(obj_dir, f"uq_{m.__name__}.npy"), oe)
 
 
 def _objective_function(

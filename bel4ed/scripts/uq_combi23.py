@@ -95,7 +95,8 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, c23, tr)
         for tr in test_roots
     ]
-    n_cpu = 10
+
+    n_cpu = 8
     pool = mp.Pool(n_cpu)
     pool.map(bel_training_mp, args)
     pool.close()
@@ -108,20 +109,23 @@ if __name__ == "__main__":
     )
     index = X_test.index
     argsuq = [
-        (bel, y_test, tr, test_directory, c23, metrics, False) for tr in test_roots
+        (bel, y_test, tr, test_directory, c23, metrics) for tr in test_roots
     ]
     # Compute UQ with metrics
+    n_cpu = 12
     pool = mp.Pool(n_cpu)
     pool.map(bel_uq_mp, argsuq)
     pool.close()
     pool.join()
+
+    names = ["MHD", "SSIM"]
 
     [
         plot_uq(
             m,
             directory=test_directory,
             combi=c23,
-            title=f"{m.__name__} Training/Test {len(X_train)}/{len(X_test)}",
+            title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
             an_i=ix,
         )
         for ix, m in enumerate(metrics)
