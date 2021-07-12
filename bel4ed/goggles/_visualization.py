@@ -421,8 +421,8 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
         labelsize=11,
         xlabel="X(m)",
         ylabel="Y(m)",
-        x_lim=[650, 1200],
-        y_lim=[300, 700],
+        x_lim=Setup.Focus.x_range,
+        y_lim=Setup.Focus.y_range,
     )
 
     # Add title inside the box
@@ -597,7 +597,7 @@ def plot_results(
             color=colors[2],
             lw=0.8,
             alpha=1,
-            x_lim=[650, 1250],
+            x_lim=Setup.Focus.x_range,
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
@@ -612,6 +612,7 @@ def plot_results(
             legend1=well_legend,
             extra=[legend_an],
             colors=colors,
+            loc=3,
             labels=labels,
             fig_file=ff,
         )
@@ -747,8 +748,9 @@ def mode_histo(
     plt.ylabel("Metric value")
     if title is None:
         title = "Box-plot of the metric values for each data source"
-    # plt.title(title)
+    plt.title(title)
     plt.grid(color="saddlebrown", linestyle="--", linewidth=0.7, axis="y", alpha=0.5)
+    plt.grid(color="gray", linestyle="--", linewidth=0.7, axis="x", alpha=0.2)
 
     try:
         an_i = int(directory.split("split")[-1])

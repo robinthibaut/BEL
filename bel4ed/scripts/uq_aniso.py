@@ -14,30 +14,11 @@ from bel4ed import kernel_bel, init_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq, bel_training_mp
+from bel4ed.design import bel_uq_mp
 from bel4ed.goggles import mode_histo
+from bel4ed.design import find_extreme, plot_uq
+
 from bel4ed.metrics import modified_hausdorff, structural_similarity
-
-
-def plot_uq(
-    metric_function,
-    combi: list = None,
-    directory: str = None,
-    title: str = None,
-    an_i: int = 0,
-):
-    if directory is None:
-        directory = Setup.Directories.forecasts_dir
-    wm = np.load(jp(directory, f"uq_{metric_function.__name__}.npy"))
-    colors = Setup.Wells.colors
-    mode_histo(
-        colors=colors,
-        wm=wm,
-        combi=combi,
-        an_i=an_i,
-        title=title,
-        directory=directory,
-        fig_name=metric_function.__name__,
-    )
 
 
 if __name__ == "__main__":
@@ -73,11 +54,18 @@ if __name__ == "__main__":
         random_state=random_state,
     )
 
+    test_roots = [t for t in X_test.index]
+    test_directory = jp(
+        Setup.Directories.forecasts_dir,
+        f"{name}_{train_size}_{test_size}_{random_state}",
+    )
+
     train_roots = [t for t in X_train.index]
+
     with open(
         jp(
             Setup.Directories.storage_dir,
-            f"training_roots_aniso_{train_size}_{random_state}.dat",
+            f"training_roots_{name}_{train_size}_{random_state}.dat",
         ),
         "w",
     ) as doc:
@@ -88,7 +76,7 @@ if __name__ == "__main__":
     with open(
         jp(
             Setup.Directories.storage_dir,
-            f"test_roots_aniso_{test_size}_{random_state}.dat",
+            f"test_roots_{name}_{test_size}_{random_state}.dat",
         ),
         "w",
     ) as doc:
@@ -104,8 +92,8 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, wells_training, tr)
         for tr in test_roots
     ]
-    #
-    # n_cpu = 8
+
+    n_cpu = 8
     # pool = mp.Pool(n_cpu)
     # pool.map(bel_training_mp, args)
     # pool.close()
@@ -113,28 +101,31 @@ if __name__ == "__main__":
 
     # Pick metrics
     metrics = (
-        # modified_hausdorff,
+        modified_hausdorff,
         structural_similarity,
     )
     index = X_test.index
+    argsuq = [(bel, y_test, tr, test_directory, wells_uq, metrics) for tr in test_roots]
     # Compute UQ with metrics
-    # bel_uq(
-    #     bel=bel,
-    #     y_obs=y_test,
-    #     index=index,
-    #     directory=test_directory,
-    #     source_ids=wells_uq,
-    #     metrics=metrics,
-    #     delete=True,
-    # )
+    n_cpu = 12
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_uq_mp, argsuq)
+    # pool.close()
+    # pool.join()
 
-    [
-        plot_uq(
-            m,
-            directory=test_directory,
-            combi=wells_uq,
-            # title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
-            an_i=ix,
-        )
-        for ix, m in enumerate(metrics)
-    ]
+    names = ["MHD", "SSIM"]
+
+    # [
+    #     plot_uq(
+    #         m,
+    #         directory=test_directory,
+    #         combi=c23,
+    #         title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
+    #         an_i=ix,
+    #     )
+    #     for ix, m in enumerate(metrics)
+    # ]
+
+    root, comb, mxr, mxc = find_extreme(
+        index, modified_hausdorff, [(2, 6)], test_directory
+    )

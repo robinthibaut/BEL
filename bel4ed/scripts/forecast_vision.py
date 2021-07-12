@@ -14,34 +14,24 @@ import bel4ed.goggles as myvis
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 
-# COLOR = 'w'
-# plt.rcParams['text.color'] = COLOR
-# plt.rcParams['axes.labelcolor'] = COLOR
-# plt.rcParams['xtick.color'] = COLOR
-# plt.rcParams['ytick.color'] = COLOR
-training_file = jp(
-    Setup.Directories.storage_dir, "training_roots_aniso_1000_648908.dat"
-)
-test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_250_648908.dat")
+base_dir = jp(Setup.Directories.forecasts_dir, "c23_1000_250_8872963")
+
+training_file = jp(Setup.Directories.storage_dir, "training_roots_c23_1000_8872963.dat")
+test_file = jp(Setup.Directories.storage_dir, "test_roots_c23_250_8872963.dat")
 training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
-X, Y = load_dataset(subdir="data_structural")
+
+root = "42b239a3ad0441e6bafe5f6b61daa84c"
+wells = ["26"]
+
+X, Y = load_dataset()
 X_train = X.loc[training_r]
 X_test = X.loc[test_r]
 y_train = Y.loc[training_r]
 y_test = Y.loc[test_r]
-wells = ["123456"]
 
 
 def plotter(sample):
     logger.info(f"Plotting root {sample}")
-    # roots = test_r
-    #
-    # roots = ["818bf1676c424f76b83bd777ae588a1d",
-    #          "fa4e291de56b4604b8cb53943c18e5e2",
-    #          "d08b2a80c7ef431b92ae3c6fd9cb6482",
-    #          "818dd775ba0c4e8aa567b5d7d153c9db"]
-
-    # roots = ["818bf1676c424f76b83bd777ae588a1d"]
 
     for j, w in enumerate(wells):
 
@@ -49,12 +39,12 @@ def plotter(sample):
 
         if w == "123456":
             annotation = _my_alphabet(j)
-        else:
+        elif j > 0:
             annotation = _my_alphabet(j - 1)
+        else:
+            annotation = _my_alphabet(j)
 
-        # BEL pickle
-        base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_648908")
-
+        annotation = "B"
         md = jp(base_dir, sample, w)
         bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
@@ -108,10 +98,10 @@ def plotter(sample):
 
 
 if __name__ == "__main__":
-    # plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')
+    plotter(root)
     # cProfile.run("plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')")
-    n_cpu = 8
-    pool = mp.Pool(n_cpu)
-    pool.map(plotter, test_r)
-    pool.close()
-    pool.join()
+    # n_cpu = 10
+    # pool = mp.Pool(n_cpu)
+    # pool.map(plotter, test_r)
+    # pool.close()
+    # pool.join()
