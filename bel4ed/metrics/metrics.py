@@ -4,6 +4,8 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from skimage.metrics import structural_similarity
 
+structural_similarity.__name__ = "SSIM"
+
 __all__ = ["modified_hausdorff", "structural_similarity"]
 
 

@@ -14,6 +14,7 @@ from bel4ed import kernel_bel, init_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq, bel_training_mp
+from bel4ed.design._forecast_error import bel_uq_mp
 from bel4ed.goggles import mode_histo
 from bel4ed.metrics import modified_hausdorff, structural_similarity
 
@@ -27,11 +28,26 @@ def plot_uq(
 ):
     if directory is None:
         directory = Setup.Directories.forecasts_dir
-    wm = np.load(jp(directory, f"uq_{metric_function.__name__}.npy"))
+
+    # Directories
+    wid = list(map(str, [_[0] for _ in combi]))  # Well identifiers (n)
+    theta = np.zeros((len(wid), bel.n_posts))
+    for ix, test_root in enumerate(index):  # For each observation root
+        # Directory in which to load forecasts
+        bel_dir = jp(directory, test_root)
+        for ixw, c in enumerate(combi):  # For each wel combination
+            combi_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+            sub_dir = jp(bel_dir, combi_dir)
+            # Folders
+            obj_dir = jp(sub_dir, "obj")
+            efile = jp(obj_dir, f"uq_{metric_function.__name__}.npy")
+            oe = np.load(efile)
+            theta[ixw] += oe
+
     colors = Setup.Wells.colors
     mode_histo(
         colors=colors,
-        wm=wm,
+        wm=theta,
         combi=combi,
         an_i=an_i,
         title=title,
@@ -79,29 +95,38 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, c23, tr)
         for tr in test_roots
     ]
-    n_cpu = 8
+    n_cpu = 10
     pool = mp.Pool(n_cpu)
     pool.map(bel_training_mp, args)
     pool.close()
     pool.join()
 
     # Pick metrics
+
     metrics = (
         modified_hausdorff,
         structural_similarity,
     )
     index = X_test.index
+    argsuq = [
+        (bel, y_test, tr, test_directory, c23, metrics, False)
+        for tr in test_roots
+    ]
     # Compute UQ with metrics
-    bel_uq(
-        bel=bel,
-        y_obs=y_test,
-        index=index,
-        directory=test_directory,
-        source_ids=c23,
-        metrics=metrics,
-        delete=False,
-    )
-    structural_similarity.__name__ = "SSIM"
+    pool = mp.Pool(n_cpu)
+    pool.map(bel_uq_mp, argsuq)
+    pool.close()
+    pool.join()
+
+    # bel_uq(
+    #     bel=bel,
+    #     y_obs=y_test,
+    #     index=index,
+    #     directory=test_directory,
+    #     source_ids=c23,
+    #     metrics=metrics,
+    #     delete=False,
+    # )
     [
         plot_uq(
             m,

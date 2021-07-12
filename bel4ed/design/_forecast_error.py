@@ -59,12 +59,12 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
             [
                 utils.dirmaker(f, erase=True)
                 for f in [
-                    obj_dir,
-                    fig_data_dir,
-                    fig_pca_dir,
-                    fig_cca_dir,
-                    fig_pred_dir,
-                ]
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
             ]
             # Clone BEL for safety
             n_posts = bel.n_posts
@@ -129,12 +129,12 @@ def bel_training_mp(args):
             [
                 utils.dirmaker(f, erase=False)
                 for f in [
-                    obj_dir,
-                    fig_data_dir,
-                    fig_pca_dir,
-                    fig_cca_dir,
-                    fig_pred_dir,
-                ]
+                obj_dir,
+                fig_data_dir,
+                fig_pca_dir,
+                fig_cca_dir,
+                fig_pred_dir,
+            ]
             ]
             bel_clone = bel
             # %% Select wells:
@@ -163,14 +163,14 @@ def bel_training_mp(args):
 
 
 def bel_uq(
-    *,
-    bel,
-    y_obs: np.array = None,
-    index: list,
-    directory: str,
-    source_ids: list or np.array,
-    metrics: list or tuple,
-    delete: bool = False,
+        *,
+        bel,
+        y_obs: np.array = None,
+        index: list,
+        directory: str,
+        source_ids: list or np.array,
+        metrics: list or tuple,
+        delete: bool = False,
 ):
     metrics = list(metrics)
     # Directories
@@ -215,8 +215,8 @@ def bel_uq(
                     (1, y_obs_pc.shape[1])
                 )  # Create a dummy matrix filled with zeros
                 dummy[:, :n_cut] = y_obs_pc[
-                    :, :n_cut
-                ]  # Fill the dummy matrix with the posterior PC
+                                   :, :n_cut
+                                   ]  # Fill the dummy matrix with the posterior PC
                 # Reshape for the objective function
                 Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
                     bel.Y_shape
@@ -248,8 +248,75 @@ def bel_uq(
         np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), theta[k])
 
 
+def bel_uq_mp(
+        args
+):
+    bel, y_obs, test_root, directory, source_ids, metrics, delete = args
+    metrics = list(metrics)
+    # Directories
+    combinations = source_ids
+    # Directory in which to load forecasts
+    bel_dir = jp(directory, test_root)
+
+    for ixw, c in enumerate(combinations):  # For each well combination
+        new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
+        sub_dir = jp(bel_dir, new_dir)
+
+        # Folders
+        obj_dir = jp(sub_dir, "obj")
+        bel = joblib.load(jp(obj_dir, "bel.pkl"))
+
+        metrics_copy = deepcopy(metrics)
+        for k, m in enumerate(metrics):
+            efile = os.path.join(obj_dir, f"uq_{m.__name__}.npy")
+            if isfile(efile):
+                metrics_copy.remove(m)
+                logger.info(f"skipping {m.__name__}")
+
+        if len(metrics_copy) > 0:
+            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+            n_cut = bel.Y_n_pc  # Number of components to keep
+            try:
+                y_obs_pc = bel.Y_pre_processing.transform(y_obs.loc[test_root])
+            except ValueError:
+                y_obs_pc = bel.Y_pre_processing.transform(
+                    y_obs.loc[test_root].to_numpy().reshape(1, -1)
+                )
+            dummy = np.zeros(
+                (1, y_obs_pc.shape[1])
+            )  # Create a dummy matrix filled with zeros
+            dummy[:, :n_cut] = y_obs_pc[
+                               :, :n_cut
+                               ]  # Fill the dummy matrix with the posterior PC
+            # Reshape for the objective function
+            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                bel.Y_shape
+            )  # Inverse transform = "True image"
+
+            # Compute CCA Gaussian scores
+            Y_posts_gaussian = bel.random_sample(n_posts=None)
+            # Get back to original space
+            Y_posterior = bel.inverse_transform(
+                Y_pred=Y_posts_gaussian,
+            )
+            Y_posterior = Y_posterior.reshape(
+                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
+            )
+
+            for j, m in enumerate(metrics):
+                if m in metrics_copy:
+                    oe = _objective_function(
+                        y_true=Y_reconstructed,
+                        y_pred=Y_posterior,
+                        metric=m,
+                    )
+                    np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
+            if delete:
+                os.remove(jp(obj_dir, "bel.pkl"))
+
+
 def _objective_function(
-    y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
+        y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
 ):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
