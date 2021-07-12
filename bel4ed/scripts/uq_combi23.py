@@ -14,7 +14,7 @@ from bel4ed import kernel_bel, init_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq, bel_training_mp
-from bel4ed.design._forecast_error import bel_uq_mp
+from bel4ed.design import bel_uq_mp
 from bel4ed.goggles import mode_histo
 from bel4ed.metrics import modified_hausdorff, structural_similarity
 
@@ -102,15 +102,13 @@ if __name__ == "__main__":
     pool.join()
 
     # Pick metrics
-
     metrics = (
         modified_hausdorff,
         structural_similarity,
     )
     index = X_test.index
     argsuq = [
-        (bel, y_test, tr, test_directory, c23, metrics, False)
-        for tr in test_roots
+        (bel, y_test, tr, test_directory, c23, metrics, False) for tr in test_roots
     ]
     # Compute UQ with metrics
     pool = mp.Pool(n_cpu)
@@ -118,15 +116,6 @@ if __name__ == "__main__":
     pool.close()
     pool.join()
 
-    # bel_uq(
-    #     bel=bel,
-    #     y_obs=y_test,
-    #     index=index,
-    #     directory=test_directory,
-    #     source_ids=c23,
-    #     metrics=metrics,
-    #     delete=False,
-    # )
     [
         plot_uq(
             m,

@@ -11,7 +11,6 @@ from skbel.spatial import contour_extract
 from skbel.spatial import (
     contours_vertices,
 )
-from sklearn.base import clone
 
 from .. import utils, init_bel
 from ..config import Setup
@@ -20,6 +19,7 @@ __all__ = [
     "bel_training",
     "bel_training_mp",
     "bel_uq",
+    "bel_uq_mp",
 ]
 
 
@@ -59,12 +59,12 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
             [
                 utils.dirmaker(f, erase=True)
                 for f in [
-                obj_dir,
-                fig_data_dir,
-                fig_pca_dir,
-                fig_cca_dir,
-                fig_pred_dir,
-            ]
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
+                ]
             ]
             # Clone BEL for safety
             n_posts = bel.n_posts
@@ -129,12 +129,12 @@ def bel_training_mp(args):
             [
                 utils.dirmaker(f, erase=False)
                 for f in [
-                obj_dir,
-                fig_data_dir,
-                fig_pca_dir,
-                fig_cca_dir,
-                fig_pred_dir,
-            ]
+                    obj_dir,
+                    fig_data_dir,
+                    fig_pca_dir,
+                    fig_cca_dir,
+                    fig_pred_dir,
+                ]
             ]
             bel_clone = bel
             # %% Select wells:
@@ -163,14 +163,14 @@ def bel_training_mp(args):
 
 
 def bel_uq(
-        *,
-        bel,
-        y_obs: np.array = None,
-        index: list,
-        directory: str,
-        source_ids: list or np.array,
-        metrics: list or tuple,
-        delete: bool = False,
+    *,
+    bel,
+    y_obs: np.array = None,
+    index: list,
+    directory: str,
+    source_ids: list or np.array,
+    metrics: list or tuple,
+    delete: bool = False,
 ):
     metrics = list(metrics)
     # Directories
@@ -215,8 +215,8 @@ def bel_uq(
                     (1, y_obs_pc.shape[1])
                 )  # Create a dummy matrix filled with zeros
                 dummy[:, :n_cut] = y_obs_pc[
-                                   :, :n_cut
-                                   ]  # Fill the dummy matrix with the posterior PC
+                    :, :n_cut
+                ]  # Fill the dummy matrix with the posterior PC
                 # Reshape for the objective function
                 Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
                     bel.Y_shape
@@ -248,9 +248,7 @@ def bel_uq(
         np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), theta[k])
 
 
-def bel_uq_mp(
-        args
-):
+def bel_uq_mp(args):
     bel, y_obs, test_root, directory, source_ids, metrics, delete = args
     metrics = list(metrics)
     # Directories
@@ -286,8 +284,8 @@ def bel_uq_mp(
                 (1, y_obs_pc.shape[1])
             )  # Create a dummy matrix filled with zeros
             dummy[:, :n_cut] = y_obs_pc[
-                               :, :n_cut
-                               ]  # Fill the dummy matrix with the posterior PC
+                :, :n_cut
+            ]  # Fill the dummy matrix with the posterior PC
             # Reshape for the objective function
             Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
                 bel.Y_shape
@@ -316,7 +314,7 @@ def bel_uq_mp(
 
 
 def _objective_function(
-        y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
+    y_true, y_pred, metric, multioutput="raw_values", sample_weight=None
 ):
     """
     Computes the metric between the true WHPA that has been recovered from its n first PCA
