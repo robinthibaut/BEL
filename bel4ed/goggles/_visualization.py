@@ -785,7 +785,7 @@ def mode_histo(
         ax1,
         width="25%",  # width = 30% of parent_bbox
         height="25%",  # height : 1 inch
-        loc=4,
+        loc=3,
     )
     plot_wells(wells=Setup.Wells, annotate=True)
     plt.xticks([])
@@ -794,7 +794,7 @@ def mode_histo(
     # legend_b = _proxy_annotate(annotation=[f"Fold {an_i + 1}"], loc=1, fz=14)
     # plt.gca().add_artist(legend_b)
 
-    plt.gcf().subplots_adjust(bottom=0.15)
+    # plt.gcf().subplots_adjust(bottom=0.15)
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
@@ -973,7 +973,7 @@ def plot_wells(
                     label,
                     fontsize=8,
                     xy=(wbd[i]["coordinates"][0], wbd[i]["coordinates"][1]),
-                    xytext=(-5, 5),
+                    xytext=(5, 5),
                     textcoords="offset points",
                     ha="right",
                     va="bottom",

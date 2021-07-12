@@ -89,7 +89,7 @@ if __name__ == "__main__":
         for tr in test_roots
     ]
 
-    n_cpu = 8
+    # n_cpu = 8
     # pool = mp.Pool(n_cpu)
     # pool.map(bel_training_mp, args)
     # pool.close()
@@ -103,11 +103,11 @@ if __name__ == "__main__":
     index = X_test.index
     argsuq = [(bel, y_test, tr, test_directory, wells_uq, metrics) for tr in test_roots]
     # Compute UQ with metrics
-    n_cpu = 12
-    pool = mp.Pool(n_cpu)
-    pool.map(bel_uq_mp, argsuq)
-    pool.close()
-    pool.join()
+    # n_cpu = 12
+    # pool = mp.Pool(n_cpu)
+    # pool.map(bel_uq_mp, argsuq)
+    # pool.close()
+    # pool.join()
 
     names = ["MHD", "SSIM"]
 
