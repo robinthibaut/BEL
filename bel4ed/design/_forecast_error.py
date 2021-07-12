@@ -1,6 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import os
+from copy import deepcopy
 from os.path import join as jp, isfile
 
 import joblib
@@ -161,72 +162,6 @@ def bel_training_mp(args):
             joblib.dump(bel_clone, jp(obj_dir, "bel.pkl"))
 
 
-def bel_uq_mp(args):
-    bel, y_obs, test_root, directory, source_ids, metrics, delete, clear = args
-    # Directories
-    combinations = source_ids
-    wid = list(map(str, [_[0] for _ in source_ids]))  # Well identifiers (n)
-
-    # for ix, test_root in enumerate(index):  # For each observation root
-
-    bel_dir = jp(directory, test_root)
-
-    for ixw, c in enumerate(combinations):  # For each wel combination
-        new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
-        sub_dir = jp(bel_dir, new_dir)
-        # %% Folders
-        obj_dir = jp(sub_dir, "obj")
-        bel = joblib.load(jp(obj_dir, "bel.pkl"))
-        try:
-            Y_reconstructed = bel.Y_reconstructed
-        except AttributeError:
-            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-            n_cut = bel.Y_n_pc  # Number of components to keep
-            try:
-                y_obs_pc = bel.Y_pre_processing.transform(y_obs)
-            except ValueError:
-                y_obs_pc = bel.Y_pre_processing.transform(y_obs.reshape(1, -1))
-            dummy = np.zeros(
-                (1, y_obs_pc.shape[1])
-            )  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc[
-                :, :n_cut
-            ]  # Fill the dummy matrix with the posterior PC
-            # Reshape for the objective function
-            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
-                bel.Y_shape
-            )  # Inverse transform = "True image"
-
-        try:
-            Y_posterior = bel.Y_posterior
-        except AttributeError:
-            # Compute CCA Gaussian scores
-            Y_posts_gaussian = bel.random_sample(n_posts=None)
-            # Get back to original space
-            Y_posterior = bel.inverse_transform(
-                Y_pred=Y_posts_gaussian,
-            )
-            Y_posterior = Y_posterior.reshape(
-                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
-            )
-        # Save statistical parameters
-        pmean = bel.posterior_mean
-        pcov = bel.posterior_covariance
-        seed = bel.seed
-
-        for j, m in enumerate(metrics):
-            oe = _objective_function(
-                y_true=Y_reconstructed,
-                y_pred=Y_posterior,
-                metric=m,
-            )
-            np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
-
-        if delete:
-            # For KFold, save a lighter version of the bel model.
-            os.remove(jp(obj_dir, "bel.pkl"))
-
-
 def bel_uq(
     *,
     bel,
@@ -236,8 +171,8 @@ def bel_uq(
     source_ids: list or np.array,
     metrics: list or tuple,
     delete: bool = False,
-    clear: bool = False,
 ):
+    metrics = list(metrics)
     # Directories
     combinations = source_ids
     total = len(index)
@@ -254,52 +189,63 @@ def bel_uq(
             new_dir = "".join(list(map(str, c)))  # sub-directory for forecasts
             sub_dir = jp(bel_dir, new_dir)
 
-            # %% Folders
+            # Folders
             obj_dir = jp(sub_dir, "obj")
             bel = joblib.load(jp(obj_dir, "bel.pkl"))
 
-            # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
-            n_cut = bel.Y_n_pc  # Number of components to keep
-            try:
-                y_obs_pc = bel.Y_pre_processing.transform(y_obs[ix])
-            except ValueError:
-                y_obs_pc = bel.Y_pre_processing.transform(
-                    y_obs.to_numpy()[ix].reshape(1, -1)
+            metrics_copy = deepcopy(metrics)
+            for k, m in enumerate(metrics):
+                efile = os.path.join(obj_dir, f"uq_{m.__name__}.npy")
+                if isfile(efile):
+                    metrics_copy.remove(m)
+                    logger.info(f"skipping {m.__name__}")
+                    oe = np.load(efile)
+                    theta[k, ixw] += oe
+
+            if len(metrics_copy) > 0:
+                # The idea is to compute the metric with the observed WHPA recovered from it's n first PC.
+                n_cut = bel.Y_n_pc  # Number of components to keep
+                try:
+                    y_obs_pc = bel.Y_pre_processing.transform(y_obs[ix])
+                except ValueError:
+                    y_obs_pc = bel.Y_pre_processing.transform(
+                        y_obs.to_numpy()[ix].reshape(1, -1)
+                    )
+                dummy = np.zeros(
+                    (1, y_obs_pc.shape[1])
+                )  # Create a dummy matrix filled with zeros
+                dummy[:, :n_cut] = y_obs_pc[
+                    :, :n_cut
+                ]  # Fill the dummy matrix with the posterior PC
+                # Reshape for the objective function
+                Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
+                    bel.Y_shape
+                )  # Inverse transform = "True image"
+
+                # Compute CCA Gaussian scores
+                Y_posts_gaussian = bel.random_sample(n_posts=None)
+                # Get back to original space
+                Y_posterior = bel.inverse_transform(
+                    Y_pred=Y_posts_gaussian,
                 )
-            dummy = np.zeros(
-                (1, y_obs_pc.shape[1])
-            )  # Create a dummy matrix filled with zeros
-            dummy[:, :n_cut] = y_obs_pc[
-                :, :n_cut
-            ]  # Fill the dummy matrix with the posterior PC
-            # Reshape for the objective function
-            Y_reconstructed = bel.Y_pre_processing.inverse_transform(dummy).reshape(
-                bel.Y_shape
-            )  # Inverse transform = "True image"
-
-            # Compute CCA Gaussian scores
-            Y_posts_gaussian = bel.random_sample(n_posts=None)
-            # Get back to original space
-            Y_posterior = bel.inverse_transform(
-                Y_pred=Y_posts_gaussian,
-            )
-            Y_posterior = Y_posterior.reshape(
-                (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
-            )
-
-            for j, m in enumerate(metrics):
-                oe = _objective_function(
-                    y_true=Y_reconstructed,
-                    y_pred=Y_posterior,
-                    metric=m,
+                Y_posterior = Y_posterior.reshape(
+                    (bel.n_posts,) + (bel.Y_shape[1], bel.Y_shape[2])
                 )
-                theta[j, ixw] += oe
 
-            if delete:
-                os.remove(jp(obj_dir, "bel.pkl"))
+                for j, m in enumerate(metrics):
+                    if m in metrics_copy:
+                        oe = _objective_function(
+                            y_true=Y_reconstructed,
+                            y_pred=Y_posterior,
+                            metric=m,
+                        )
+                        theta[j, ixw] += oe
+                        np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), oe)
+                if delete:
+                    os.remove(jp(obj_dir, "bel.pkl"))
 
-    for k, e in enumerate(metrics):
-        np.save(os.path.join(directory, f"uq_{e.__name__}.npy"), theta[k])
+    for k, m in enumerate(metrics):
+        np.save(os.path.join(directory, f"uq_{m.__name__}.npy"), theta[k])
 
 
 def _objective_function(

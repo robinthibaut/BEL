@@ -55,7 +55,6 @@ if __name__ == "__main__":
     X, Y = load_dataset()
 
     random_state = 8872963
-    # random_state = np.random.randint(0, 1e7)
 
     train_size = 1000
     test_size = 250
@@ -80,35 +79,35 @@ if __name__ == "__main__":
         (bel, X_train, X_test, y_train, y_test, test_directory, c23, tr)
         for tr in test_roots
     ]
-    # n_cpu = 8
-    # pool = mp.Pool(n_cpu)
-    # pool.map(bel_training_mp, args)
-    # pool.close()
-    # pool.join()
+    n_cpu = 8
+    pool = mp.Pool(n_cpu)
+    pool.map(bel_training_mp, args)
+    pool.close()
+    pool.join()
 
     # Pick metrics
     metrics = (
-        # modified_hausdorff,
+        modified_hausdorff,
         structural_similarity,
     )
     index = X_test.index
     # Compute UQ with metrics
-    # bel_uq(
-    #     bel=bel,
-    #     y_obs=y_test,
-    #     index=index,
-    #     directory=test_directory,
-    #     source_ids=c23,
-    #     metrics=metrics,
-    #     delete=True,
-    # )
-
+    bel_uq(
+        bel=bel,
+        y_obs=y_test,
+        index=index,
+        directory=test_directory,
+        source_ids=c23,
+        metrics=metrics,
+        delete=False,
+    )
+    structural_similarity.__name__ = "SSIM"
     [
         plot_uq(
             m,
             directory=test_directory,
             combi=c23,
-            # title=f"{m.__name__.capitalize()} Training/Test {len(X_train)}/{len(X_test)}",
+            title=f"{m.__name__} Training/Test {len(X_train)}/{len(X_test)}",
             an_i=ix,
         )
         for ix, m in enumerate(metrics)

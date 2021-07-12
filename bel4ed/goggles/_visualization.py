@@ -747,7 +747,7 @@ def mode_histo(
     plt.ylabel("Metric value")
     if title is None:
         title = "Box-plot of the metric values for each data source"
-    # plt.title(title)
+    plt.title(title)
     plt.grid(color="saddlebrown", linestyle="--", linewidth=0.7, axis="y", alpha=0.5)
 
     try:
