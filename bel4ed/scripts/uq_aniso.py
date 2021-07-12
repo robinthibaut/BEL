@@ -111,19 +111,19 @@ if __name__ == "__main__":
 
     names = ["MHD", "SSIM"]
 
-    [
-        plot_uq(
-            bel,
-            index,
-            m,
-            directory=test_directory,
-            combi=wells_uq,
-            title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
-            an_i=ix,
-        )
-        for ix, m in enumerate(metrics)
-    ]
+    # [
+    #     plot_uq(
+    #         bel,
+    #         index,
+    #         m,
+    #         directory=test_directory,
+    #         combi=wells_uq,
+    #         title=f"{names[ix]} Training/Test {len(X_train)}/{len(X_test)}",
+    #         an_i=ix,
+    #     )
+    #     for ix, m in enumerate(metrics)
+    # ]
     #
-    # root, comb, mxr, mxc = find_extreme(
-    #     index, modified_hausdorff, [(2, 6)], test_directory
-    # )
+    root, comb, mxr, mxc = find_extreme(
+        index, modified_hausdorff, [(1, 2, 3, 4, 5, 6)], test_directory
+    )

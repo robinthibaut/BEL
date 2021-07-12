@@ -4,7 +4,8 @@ import operator
 import os
 import string
 from functools import reduce
-from os.path import join as jp, dirname
+from os.path import dirname
+from os.path import join as jp
 
 import flopy
 import matplotlib
@@ -17,21 +18,17 @@ from loguru import logger
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import BSpline, make_interp_spline
-from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
-from skbel.spatial import (
-    contours_vertices,
-    grid_parameters,
-    refine_machine,
-    blocks_from_rc_3d,
-)
+from skbel.goggles import (_kde_cca, _proxy_annotate, _proxy_legend,
+                           explained_variance)
+from skbel.spatial import (blocks_from_rc_3d, contours_vertices,
+                           grid_parameters, refine_machine)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
 
 import bel4ed.utils
 from bel4ed.config import Setup
-from bel4ed.datasets import data_loader, load_transport_model
-from bel4ed.datasets import load_flow_model
+from bel4ed.datasets import data_loader, load_flow_model, load_transport_model
 from bel4ed.spatial import binary_stack
 from bel4ed.utils import Root, reload_trained_model
 
@@ -464,6 +461,12 @@ def plot_results(
 ):
     """
     Plots forecasts results in the 'uq' folder
+    :param base_dir:
+    :param Y_obs:
+    :param Y:
+    :param X_obs:
+    :param X:
+    :param bel:
     :param annotation: List of annotations
     :param h: Boolean to plot target or not
     :param d: Boolean to plot predictor or not
@@ -597,7 +600,7 @@ def plot_results(
             color=colors[2],
             lw=0.8,
             alpha=1,
-            x_lim=Setup.Focus.x_range,
+            x_lim=[650, 1250],
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
@@ -623,6 +626,7 @@ def plot_K_field(
     base_dir: str = None,
     k_dir: str = None,
     wells=None,
+    annotation: str = None,
     deprecated: bool = True,
     show: bool = False,
 ):
@@ -646,7 +650,12 @@ def plot_K_field(
         plt.xlabel("X(m)", fontsize=11)
         plt.ylabel("Y(m)", fontsize=11)
         plot_wells(wells, markersize=3.5)
-        well_legend = plt.legend(fontsize=11, loc=2, framealpha=0.6)
+
+        well_legend = plt.legend(fontsize=11, loc=3, framealpha=0.6)
+        legend_a = _proxy_annotate(annotation=[annotation], loc=2, fz=14)
+        plt.gca().add_artist(legend_a)
+        plt.gca().add_artist(well_legend)
+
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
@@ -668,6 +677,9 @@ def mode_histo(
 ):
     """
 
+    :param directory:
+    :param title:
+    :param combi:
     :param colors:
     :param an_i: Figure annotation
     :param wm: Arrays of metric

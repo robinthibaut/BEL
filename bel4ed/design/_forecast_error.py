@@ -2,17 +2,15 @@
 
 import os
 from copy import deepcopy
-from os.path import join as jp, isfile
+from os.path import isfile
+from os.path import join as jp
 
 import joblib
 import numpy as np
 from loguru import logger
-from skbel.spatial import contour_extract
-from skbel.spatial import (
-    contours_vertices,
-)
+from skbel.spatial import contour_extract, contours_vertices
 
-from .. import utils, init_bel, Setup
+from .. import Setup, init_bel, utils
 from ..config import Setup
 
 __all__ = [
