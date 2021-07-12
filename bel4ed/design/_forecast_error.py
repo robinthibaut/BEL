@@ -10,7 +10,7 @@ import numpy as np
 from loguru import logger
 from skbel.spatial import contour_extract, contours_vertices
 
-from .. import Setup, init_bel, utils
+from .. import utils
 from ..config import Setup
 
 __all__ = [
@@ -68,18 +68,7 @@ def bel_training(bel, *, X_train, X_test, y_train, y_test, directory, source_ids
                     fig_pred_dir,
                 ]
             ]
-            # Clone BEL for safety
-            n_posts = bel.n_posts
-            X_n_pc = bel.X_n_pc
-            Y_n_pc = bel.Y_n_pc
-            # Reset params
-            # bel_clone = clone(bel)
             bel_clone = bel
-            # bel_clone.X_n_pc = X_n_pc
-            # bel_clone.Y_n_pc = Y_n_pc
-            # bel_clone.n_posts = n_posts
-            # Setting the seed might cause issues
-            # bel_clone.seed = 123456
             # %% Select wells:
             selection = list(map(str, [wc for wc in c]))
             X_train_select = X_train.copy().loc[:, selection]
