@@ -1,21 +1,16 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+import multiprocessing as mp
 from os.path import join as jp
 
-import multiprocessing as mp
-
 import numpy as np
-
 from sklearn.model_selection import KFold, train_test_split
 
-from bel4ed import kernel_bel, init_bel
+from bel4ed import init_bel, kernel_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.design import bel_training, bel_uq, bel_training_mp
-from bel4ed.design import bel_uq_mp
-from bel4ed.design import find_extreme, plot_uq
-
+from bel4ed.design import (bel_training, bel_training_mp, bel_uq, bel_uq_mp,
+                           find_extreme, plot_uq)
 from bel4ed.metrics import modified_hausdorff, structural_similarity
-
 
 if __name__ == "__main__":
     wells_training = np.array(

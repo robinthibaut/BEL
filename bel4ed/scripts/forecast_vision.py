@@ -1,7 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-from os.path import join as jp
 import multiprocessing as mp
+from os.path import join as jp
 
 import joblib
 import numpy as np
@@ -15,7 +15,9 @@ from bel4ed.datasets import i_am_root, load_dataset
 
 base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_3529748")
 
-training_file = jp(Setup.Directories.storage_dir, "training_roots_aniso_1000_3529748.dat")
+training_file = jp(
+    Setup.Directories.storage_dir, "training_roots_aniso_1000_3529748.dat"
+)
 test_file = jp(Setup.Directories.storage_dir, "test_roots_aniso_250_3529748.dat")
 training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
@@ -100,12 +102,14 @@ def plotter(sample):
 
 if __name__ == "__main__":
 
-    samples = ["d47eafc2601c4b95a2eb06faaa2fb9df",
-               "ce4255c17dcf47cfa6713ad8b0d15cbd",
-               "b8ffc46efedf4b5981d58b59a237e1d8",
-               "57b5cbb8b8014b3fad1b75bcdb8e3601",
-               "3a50d88a4f7c4b7eb69b29682b2ed410",
-               "bc3b2b0b3bc0431da5aac2318756f64e"]
+    samples = [
+        "d47eafc2601c4b95a2eb06faaa2fb9df",
+        "ce4255c17dcf47cfa6713ad8b0d15cbd",
+        "b8ffc46efedf4b5981d58b59a237e1d8",
+        "57b5cbb8b8014b3fad1b75bcdb8e3601",
+        "3a50d88a4f7c4b7eb69b29682b2ed410",
+        "bc3b2b0b3bc0431da5aac2318756f64e",
+    ]
 
     an = np.arange(0, 12, 2)
     ak = np.arange(1, 13, 2)

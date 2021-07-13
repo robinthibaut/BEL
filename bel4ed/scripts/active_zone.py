@@ -1,118 +1,53 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
+import os
 from os.path import join as jp
 
-import flopy
 import matplotlib.pyplot as plt
 import numpy as np
-from diavatly import model_map
 from skbel.algorithms import matrix_paste
-from skbel.spatial import grid_parameters, get_centroids, blocks_from_rc
+from skbel.goggles import _proxy_legend
+from skbel.spatial import blocks_from_rc, get_centroids
 
-import bel4ed.goggles as mplot
 from bel4ed.config import Setup
-from bel4ed.preprocessing import travelling_particles
-from bel4ed.spatial import binary_polygon
+from bel4ed.goggles._visualization import plot_wells
 
+mt_icbund_file = jp(
+    "/Users/robin/PycharmProjects/BEL/bel4ed/spatial/parameters/mt3d_icbund.npy"
+)
+icbund = np.load(mt_icbund_file)
 
-def active_zone(modflowmodel, icbund=None):
-    version = "mt3d-usgs"
-    namefile_ext = "mtnam"
-    ftlfilename = "mt3d_link.ftl"
-    # Extract working directory and name from modflow object
-    model_ws = modflowmodel.model_ws
-    modelname = modflowmodel.name
+delc = np.load("/Users/robin/PycharmProjects/BEL/bel4ed/spatial/parameters/delc.npy")
+delr = np.load("/Users/robin/PycharmProjects/BEL/bel4ed/spatial/parameters/delr.npy")
+hey = blocks_from_rc(delr, delc)
+xy = np.mean(hey, axis=1)
 
-    # Initiate Mt3dms object
-    mt = flopy.mt3d.Mt3dms(
-        modflowmodel=modflowmodel,
-        ftlfilename=ftlfilename,
-        modelname=modelname,
-        model_ws=model_ws,
-        version=version,
-        namefile_ext=namefile_ext,
-    )
+# Check what we've done: plot the active zone.
+val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
+# Define a dummy grid with large cell dimensions to plot on it.
+grf_dummy = 10
+nrow_dummy = int(np.round(np.cumsum(delr)[-1]) / grf_dummy)
+ncol_dummy = int(np.round(np.cumsum(delc)[-1]) / grf_dummy)
+array_dummy = np.zeros((nrow_dummy, ncol_dummy))
+xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
-    # Extract discretization info from modflow object
-    dis = modflowmodel.dis  # DIS package
-    nlay = modflowmodel.nlay
-    nrow = modflowmodel.nrow
-    ncol = modflowmodel.ncol
-    # yxz_grid is an array of the coordinates of each node:
-    # [[coordinates Y], [coordinates X], [coordinates Z]]
-    yxz_grid = dis.get_node_coordinates()
-    xy_true = []  # Convert to 2D array
-    for yc in yxz_grid[0]:
-        for xc in yxz_grid[1]:
-            xy_true.append([xc, yc])
-    # Flattens xy to correspond to node numbering
-    xy_nodes_2d = np.reshape(xy_true, (nlay * nrow * ncol, 2))
+inds = matrix_paste(xy_dummy, xy)
+val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
+# Reshape in n layers x n cells in refined grid.
+val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))
 
-    # Loads well stress period data
-    wells_data = np.load(jp(model_ws, "spd.npy"))
-    pumping_well_data = wells_data[0]  # Pumping well in first
-    pw_lrc = pumping_well_data[0][:3]  # PW layer row column
-    pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
-    # Get PW x, y coordinates (meters) from well node number
-    xy_pumping_well = xy_nodes_2d[pw_node]
-    #
-    injection_well_data = wells_data[1:]
-    iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
-    xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
+grid_dim = Setup.GridDimensions
+extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
+wells = Setup.Wells
 
-    # sdm = grid_parameters([0, 1500], [0, 1000], 10)
-    # sdm.xys = xy_true
-    # sdm.nrow = nrow
-    # sdm.ncol = ncol
-
-    # Given the euclidean distances from each injection well to the pumping well,
-    # arbitrary parameters are chosen to expand the polygon defined by those welles around
-    # the pumping well. This expanded polygon will then act as a mask to define the
-    # transport active zone.
-    diffs = xy_injection_wells - xy_pumping_well
-    dists = np.array(list(map(np.linalg.norm, diffs)))  # Euclidean distances
-    meas = 1 / np.log(dists)
-    meas -= min(meas)
-    meas /= max(meas)
-    meas += 1
-    meas *= 2
-
-    # # Expand the polygon
-    xyw_scaled = diffs * meas.reshape(-1, 1) + xy_pumping_well
-    poly_deli = travelling_particles(xyw_scaled)  # Get polygon delineation
-    poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
-    # Assign 0|1 value
-    icbund = binary_polygon(
-        xy_true, nrow, ncol, poly_xyw, outside=0, inside=1
-    ).reshape(nlay, nrow, ncol)
-
-    if icbund is None:
-        mt_icbund_file = jp(Setup.Directories.grid_dir, "mt3d_icbund.npy")
-        # np.save(mt_icbund_file, icbund)  # Save active zone
-
-    # Check what we've done: plot the active zone.
-    val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
-    # Define a dummy grid with large cell dimensions to plot on it.
-    grf_dummy = 10
-    nrow_dummy = int(np.round(np.cumsum(dis.delc)[-1]) / grf_dummy)
-    ncol_dummy = int(np.round(np.cumsum(dis.delr)[-1]) / grf_dummy)
-    array_dummy = np.zeros((nrow_dummy, ncol_dummy))
-    xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
-
-    inds = matrix_paste(xy_dummy, xy_true)
-    val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
-    # Reshape in n layers x n cells in refined grid.
-    val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))
-
-    # We have to use flipud for the matrix to correspond.
-    mplot.whpa_plot(
-        grf=grf_dummy,
-        bkg_field_array=np.flipud(val_dummy_r),
-        show_wells=False,
-        show=False,
-    )
-
-    # grid1 = blocks_from_rc(
-    #     np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy
-    # )
-    # model_map(grid1, vals=val_dummy, log=0)
+plt.imshow(val_dummy_r, extent=extent, cmap="coolwarm")
+plt.title(
+    f"Total cells: {np.product(icbund.shape)}. Active cells: {np.count_nonzero(icbund)}"
+)
+plt.xlabel("X(m)", fontsize=11)
+plt.ylabel("Y(m)", fontsize=11)
+plot_wells(wells, markersize=3.5)
+labels = ["Inactive", "Active"]
+colors = ["blue", "red"]
+_proxy_legend(colors=colors, marker=["o", "o"], labels=labels, loc=2)
+plt.show()

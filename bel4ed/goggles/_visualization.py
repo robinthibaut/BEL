@@ -18,10 +18,13 @@ from loguru import logger
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import BSpline, make_interp_spline
-from skbel.goggles import (_kde_cca, _proxy_annotate, _proxy_legend,
-                           explained_variance)
-from skbel.spatial import (blocks_from_rc_3d, contours_vertices,
-                           grid_parameters, refine_machine)
+from skbel.goggles import _kde_cca, _proxy_annotate, _proxy_legend, explained_variance
+from skbel.spatial import (
+    blocks_from_rc_3d,
+    contours_vertices,
+    grid_parameters,
+    refine_machine,
+)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
