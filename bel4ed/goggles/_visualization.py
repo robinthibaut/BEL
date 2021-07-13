@@ -237,15 +237,15 @@ def whpa_plot(
             vmax=vmax,
             cmap=cmap,
         )
-        cb = plt.colorbar(fraction=0.046, pad=0.04)
-        cb.ax.set_title(cb_title)
+        # cb = plt.colorbar(fraction=0.046, pad=0.04)
+        # cb.ax.set_title(cb_title)
 
     if halpha is None:
         halpha = alpha
 
     # Plot results
     if whpa is None:
-        whpa = []
+        whpa = np.array([])
 
     if whpa.ndim > 2:  # New approach is to plot filled contours
 
@@ -289,7 +289,7 @@ def whpa_plot(
                     alpha=halpha,
                 )
 
-    else:  # If only one WHPA to display
+    elif whpa.size > 0:  # If only one WHPA to display
         contour = plt.contour(
             whpa,
             [0],
@@ -298,6 +298,8 @@ def whpa_plot(
             linewidths=lw,
             alpha=halpha,
         )
+    else:
+        contour = None
 
     # Grid
     if grid:

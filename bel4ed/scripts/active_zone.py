@@ -6,14 +6,16 @@ import flopy
 import matplotlib.pyplot as plt
 import numpy as np
 from diavatly import model_map
+from skbel.algorithms import matrix_paste
+from skbel.spatial import grid_parameters, get_centroids, blocks_from_rc
 
-import experiment.visualization as mplot
-from experiment.spatial import binary_polygon, get_centroids, grid_parameters
-from experiment.config import Setup
-from experiment.processing.target_handle import travelling_particles
+import bel4ed.goggles as mplot
+from bel4ed.config import Setup
+from bel4ed.preprocessing import travelling_particles
+from bel4ed.spatial import binary_polygon
 
 
-def active_zone(modflowmodel):
+def active_zone(modflowmodel, icbund=None):
     version = "mt3d-usgs"
     namefile_ext = "mtnam"
     ftlfilename = "mt3d_link.ftl"
@@ -53,39 +55,40 @@ def active_zone(modflowmodel):
     pw_node = int(dis.get_node(pw_lrc)[0])  # PW node number
     # Get PW x, y coordinates (meters) from well node number
     xy_pumping_well = xy_nodes_2d[pw_node]
-
+    #
     injection_well_data = wells_data[1:]
     iw_nodes = [int(dis.get_node(w[0][:3])[0]) for w in injection_well_data]
     xy_injection_wells = [xy_nodes_2d[iwn] for iwn in iw_nodes]
 
-    sdm = grid_parameters()
-    sdm.xys = xy_true
-    sdm.nrow = nrow
-    sdm.ncol = ncol
+    # sdm = grid_parameters([0, 1500], [0, 1000], 10)
+    # sdm.xys = xy_true
+    # sdm.nrow = nrow
+    # sdm.ncol = ncol
 
     # Given the euclidean distances from each injection well to the pumping well,
     # arbitrary parameters are chosen to expand the polygon defined by those welles around
     # the pumping well. This expanded polygon will then act as a mask to define the
     # transport active zone.
     diffs = xy_injection_wells - xy_pumping_well
-    dists = np.array(list(map(np.linalg.norm, diffs)))  # Eucliden distances
+    dists = np.array(list(map(np.linalg.norm, diffs)))  # Euclidean distances
     meas = 1 / np.log(dists)
     meas -= min(meas)
     meas /= max(meas)
     meas += 1
     meas *= 2
 
-    # Expand the polygon
+    # # Expand the polygon
     xyw_scaled = diffs * meas.reshape(-1, 1) + xy_pumping_well
     poly_deli = travelling_particles(xyw_scaled)  # Get polygon delineation
     poly_xyw = xyw_scaled[poly_deli]  # Obtain polygon vertices
     # Assign 0|1 value
     icbund = binary_polygon(
-        sdm.xys, sdm.nrow, sdm.ncol, poly_xyw, outside=0, inside=1
+        xy_true, nrow, ncol, poly_xyw, outside=0, inside=1
     ).reshape(nlay, nrow, ncol)
 
-    mt_icbund_file = jp(Setup.Directories.grid_dir, "mt3d_icbund.npy")
-    np.save(mt_icbund_file, icbund)  # Save active zone
+    if icbund is None:
+        mt_icbund_file = jp(Setup.Directories.grid_dir, "mt3d_icbund.npy")
+        # np.save(mt_icbund_file, icbund)  # Save active zone
 
     # Check what we've done: plot the active zone.
     val_icbund = [item for sublist in icbund[0] for item in sublist]  # Flattening
@@ -96,7 +99,7 @@ def active_zone(modflowmodel):
     array_dummy = np.zeros((nrow_dummy, ncol_dummy))
     xy_dummy = get_centroids(array_dummy, grf=grf_dummy)
 
-    inds = experiment.spatial.spatial.matrix_paste(xy_dummy, xy_true)
+    inds = matrix_paste(xy_dummy, xy_true)
     val_dummy = [val_icbund[k] for k in inds]  # Contains k values for refined grid
     # Reshape in n layers x n cells in refined grid.
     val_dummy_r = np.reshape(val_dummy, (nrow_dummy, ncol_dummy))
@@ -105,12 +108,11 @@ def active_zone(modflowmodel):
     mplot.whpa_plot(
         grf=grf_dummy,
         bkg_field_array=np.flipud(val_dummy_r),
-        show_wells=True,
-        show=True,
+        show_wells=False,
+        show=False,
     )
 
-    grid1 = experiment.spatial.spatial.blocks_from_rc(
-        np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy
-    )
-    model_map(grid1, vals=val_dummy, log=0)
-    plt.show()
+    # grid1 = blocks_from_rc(
+    #     np.ones(nrow_dummy) * grf_dummy, np.ones(ncol_dummy) * grf_dummy
+    # )
+    # model_map(grid1, vals=val_dummy, log=0)

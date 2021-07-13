@@ -103,6 +103,6 @@ if __name__ == "__main__":
         "backtrack": False,
         "flush": True,
     }
-    main(**kw_args_pool)
+    # main(**kw_args_pool)
     end = time.time()
     logger.info(f"TET (hours) {(end - start) / 60 / 60}")
