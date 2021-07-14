@@ -32,7 +32,7 @@ class Setup:
         algo_dir: str = join(main_dir, "algorithms")
 
         hydro_res_dir: str = join(data_dir, "forwards")
-        forecasts_dir: str = join(storage_dir, "forecasts_basic")
+        forecasts_dir: str = join(storage_dir, "forecasts")
 
         forecasts_base_dir: str = join(forecasts_dir, "base")
         grid_dir: str = join(main_dir, "spatial", "parameters")

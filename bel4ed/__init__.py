@@ -1,19 +1,17 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import os
-
 from datetime import date
 from os.path import join as jp
 
 from loguru import logger
+from skbel.learning.bel import BEL
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA, KernelPCA
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 
 from bel4ed.config import Setup
 from bel4ed.hydro import forward_modelling
-
-from skbel.learning.bel import BEL
 
 __version__ = "1.0.dev0"
 

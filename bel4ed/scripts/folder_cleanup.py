@@ -1,12 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 from bel4ed import Setup
-from bel4ed.datasets._base import (
-    cleanup,
-    filter_file,
-    remove_file,
-    spare_me,
-    count_file,
-)
+from bel4ed.datasets._base import (cleanup, count_file, filter_file,
+                                   remove_file, spare_me)
 
 if __name__ == "__main__":
     cleanup()
