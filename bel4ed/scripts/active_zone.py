@@ -42,7 +42,7 @@ wells = Setup.Wells
 
 plt.imshow(val_dummy_r, extent=extent, cmap="coolwarm")
 plt.title(
-    f"Total cells: {np.product(icbund.shape)}. Active cells: {np.count_nonzero(icbund)}"
+    f"Transport simulation. Total cells: {np.product(icbund.shape)}. Active cells: {np.count_nonzero(icbund)}"
 )
 plt.xlabel("X(m)", fontsize=11)
 plt.ylabel("Y(m)", fontsize=11)
@@ -50,4 +50,6 @@ plot_wells(wells, markersize=3.5)
 labels = ["Inactive", "Active"]
 colors = ["blue", "red"]
 _proxy_legend(colors=colors, marker=["o", "o"], labels=labels, loc=2)
+plt.savefig("transport_active.png", bbox_inches="tight", dpi=300, transparent=False)
+
 plt.show()
