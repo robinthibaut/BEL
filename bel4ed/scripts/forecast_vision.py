@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from skbel.goggles import _my_alphabet
 
 import bel4ed.goggles as myvis
-from bel4ed.config import Setup
+from bel4ed.config import Setup, TEST_ROOT
 from bel4ed.datasets import i_am_root, load_dataset
 
 base_dir = jp(Setup.Directories.forecasts_dir, "aniso_1000_250_3529748")
@@ -25,7 +25,9 @@ training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 root = "3c6003846f7449cd8715ee7a8363e2aa"
 wells = ["123456"]
 
-X, Y = load_dataset(subdir="data_structural")
+test_r = TEST_ROOT
+
+X, Y = load_dataset()
 X_train = X.loc[training_r]
 X_test = X.loc[test_r]
 y_train = Y.loc[training_r]
@@ -125,9 +127,3 @@ if __name__ == "__main__":
     # pool.close()
     # pool.join()
 
-# d47eafc2601c4b95a2eb06faaa2fb9df
-# ce4255c17dcf47cfa6713ad8b0d15cbd
-# b8ffc46efedf4b5981d58b59a237e1d8
-# 57b5cbb8b8014b3fad1b75bcdb8e3601
-# 3a50d88a4f7c4b7eb69b29682b2ed410
-# bc3b2b0b3bc0431da5aac2318756f64e
