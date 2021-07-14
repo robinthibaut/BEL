@@ -996,7 +996,7 @@ def plot_wells(
         s += 1
 
 
-def plot_head_field(root: str = None, base_dir: str = None):
+def plot_head_field(root: str = None, base_dir: str = None, annotation: str = None):
     matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "whpa_heads.npy"))
     grid_dim = Setup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
@@ -1009,11 +1009,15 @@ def plot_head_field(root: str = None, base_dir: str = None):
     im = ax.imshow(matrix[0], cmap="Blues_r", extent=extent)
     plt.xlabel("X(m)", fontsize=11)
     plt.ylabel("Y(m)", fontsize=11)
+    if annotation:
+        _proxy_annotate(annotation=[annotation], loc=2, fz=14)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     cb = plt.colorbar(im, cax=cax)
     cb.ax.set_title("Head (m)")
+
+
 
     plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=False)
     plt.close()
