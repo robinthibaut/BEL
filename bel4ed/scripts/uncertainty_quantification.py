@@ -143,8 +143,8 @@ def run(
         # Compute UQ with metrics
         if len(test_idx) > 1:
             bel_uq(
-                bel=model,
-                index=test_idx,
+                bel_mod=model,
+                root_index=test_idx,
                 directory=custom_directory,
                 source_ids=source_ids_uq,
                 metrics=metrics,
@@ -197,8 +197,8 @@ def run(
         index = X_test.index
         # Compute UQ with metrics
         bel_uq(
-            bel=model,
-            index=index,
+            bel_mod=model,
+            root_index=index,
             directory=test_directory,
             source_ids=source_ids_uq,
             metrics=metrics,

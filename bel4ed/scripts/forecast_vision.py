@@ -1,29 +1,29 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import string
-import cProfile
-from os.path import join as jp
 import multiprocessing as mp
+from os.path import join as jp
 
 import joblib
+import numpy as np
 from loguru import logger
 from matplotlib import pyplot as plt
-from skbel.goggles import _my_alphabet
+from skbel.goggles import _my_alphabet, _proxy_annotate
 
 import bel4ed.goggles as myvis
-from bel4ed.config import Setup
+from bel4ed.config import Setup, TEST_ROOT
 from bel4ed.datasets import i_am_root, load_dataset
 
-base_dir = jp(Setup.Directories.forecasts_dir, "c23_1000_250_8872963")
+base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
 
 training_file = jp(
-    Setup.Directories.storage_dir, "training_roots_c23_1000_8872963.dat"
+    Setup.Directories.storage_dir, "roots.dat"
 )
-test_file = jp(Setup.Directories.storage_dir, "test_roots_c23_250_8872963.dat")
+test_file = jp(Setup.Directories.storage_dir, "test_root.dat")
 training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
-root = "42b239a3ad0441e6bafe5f6b61daa84c"
-wells = ["26"]
+wells = ["123456"]
+
+test_r = [TEST_ROOT]
 
 X, Y = load_dataset()
 X_train = X.loc[training_r]
@@ -34,6 +34,10 @@ y_test = Y.loc[test_r]
 
 def plotter(sample):
     logger.info(f"Plotting root {sample}")
+
+    logger.info(f"Plotting K")
+    myvis.plot_K_field(base_dir=base_dir, root=sample, annotation="A")
+    plt.close()
 
     for j, w in enumerate(wells):
 
@@ -46,7 +50,8 @@ def plotter(sample):
         else:
             annotation = _my_alphabet(j)
 
-        annotation = "B"
+        annotation = nan
+
         md = jp(base_dir, sample, w)
         bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
@@ -64,7 +69,7 @@ def plotter(sample):
         )
         plt.close()
 
-        logger.info(f"Plotting PCA")
+        # logger.info(f"Plotting PCA")
         # myvis.pca_vision(
         #     bel,
         #     X_obs=X_test.iloc[i],
@@ -81,13 +86,8 @@ def plotter(sample):
         # )
         # plt.close()
 
-    logger.info(f"Plotting K")
-    myvis.plot_K_field(base_dir=base_dir, root=sample)
-    plt.close()
-
-    # logger.info(f"Plotting HEAD")
-    # myvis.plot_head_field(base_dir=base_dir, root=sample)
-    # plt.close()
+    logger.info(f"Plotting HEAD")
+    myvis.plot_head_field(base_dir=base_dir, root=sample, annotation="B")
 
     # logger.info(f"Plotting CCA")
     # myvis.cca_vision(
@@ -100,10 +100,19 @@ def plotter(sample):
 
 
 if __name__ == "__main__":
-    plotter(root)
-    # cProfile.run("plotter('0ab8c0ae73bf481bac8e9310b2a7af6d')")
+
+    samples = [TEST_ROOT]
+    an = np.arange(0, 12, 2)
+    ak = np.arange(1, 13, 2)
+    for i, s in enumerate(samples):
+        kan = _my_alphabet(ak[i])
+        nan = _my_alphabet(an[i])
+        plotter(s)
+
+    # plotter(root)
     # n_cpu = 10
     # pool = mp.Pool(n_cpu)
     # pool.map(plotter, test_r)
     # pool.close()
     # pool.join()
+

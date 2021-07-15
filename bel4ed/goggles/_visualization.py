@@ -4,7 +4,8 @@ import operator
 import os
 import string
 from functools import reduce
-from os.path import join as jp, dirname
+from os.path import dirname
+from os.path import join as jp
 
 import flopy
 import matplotlib
@@ -17,12 +18,12 @@ from loguru import logger
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import BSpline, make_interp_spline
-from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
+from skbel.goggles import _kde_cca, _proxy_annotate, _proxy_legend, explained_variance
 from skbel.spatial import (
+    blocks_from_rc_3d,
     contours_vertices,
     grid_parameters,
     refine_machine,
-    blocks_from_rc_3d,
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -30,8 +31,7 @@ from sklearn.utils import check_array, deprecated
 
 import bel4ed.utils
 from bel4ed.config import Setup
-from bel4ed.datasets import data_loader, load_transport_model
-from bel4ed.datasets import load_flow_model
+from bel4ed.datasets import data_loader, load_flow_model, load_transport_model
 from bel4ed.spatial import binary_stack
 from bel4ed.utils import Root, reload_trained_model
 
@@ -248,7 +248,7 @@ def whpa_plot(
 
     # Plot results
     if whpa is None:
-        whpa = []
+        whpa = np.array([])
 
     if whpa.ndim > 2:  # New approach is to plot filled contours
 
@@ -292,7 +292,7 @@ def whpa_plot(
                     alpha=halpha,
                 )
 
-    else:  # If only one WHPA to display
+    elif whpa.size > 0:  # If only one WHPA to display
         contour = plt.contour(
             whpa,
             [0],
@@ -301,6 +301,8 @@ def whpa_plot(
             linewidths=lw,
             alpha=halpha,
         )
+    else:
+        contour = None
 
     # Grid
     if grid:
@@ -464,6 +466,12 @@ def plot_results(
 ):
     """
     Plots forecasts results in the 'uq' folder
+    :param base_dir:
+    :param Y_obs:
+    :param Y:
+    :param X_obs:
+    :param X:
+    :param bel:
     :param annotation: List of annotations
     :param h: Boolean to plot target or not
     :param d: Boolean to plot predictor or not
@@ -623,6 +631,7 @@ def plot_K_field(
     base_dir: str = None,
     k_dir: str = None,
     wells=None,
+    annotation: str = None,
     deprecated: bool = True,
     show: bool = False,
 ):
@@ -646,7 +655,12 @@ def plot_K_field(
         plt.xlabel("X(m)", fontsize=11)
         plt.ylabel("Y(m)", fontsize=11)
         plot_wells(wells, markersize=3.5)
-        well_legend = plt.legend(fontsize=11, loc=2, framealpha=0.6)
+
+        well_legend = plt.legend(fontsize=11, loc=3, framealpha=0.6)
+        legend_a = _proxy_annotate(annotation=[annotation], loc=2, fz=14)
+        plt.gca().add_artist(legend_a)
+        plt.gca().add_artist(well_legend)
+
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cb = plt.colorbar(im, cax=cax)
@@ -668,6 +682,9 @@ def mode_histo(
 ):
     """
 
+    :param directory:
+    :param title:
+    :param combi:
     :param colors:
     :param an_i: Figure annotation
     :param wm: Arrays of metric
@@ -750,7 +767,6 @@ def mode_histo(
         title = "Box-plot of the metric values for each data source"
     plt.title(title)
     plt.grid(color="saddlebrown", linestyle="--", linewidth=0.7, axis="y", alpha=0.5)
-    plt.grid(color="gray", linestyle="--", linewidth=0.7, axis="x", alpha=0.2)
 
     try:
         an_i = int(directory.split("split")[-1])
@@ -781,7 +797,7 @@ def mode_histo(
         ax1,
         width="25%",  # width = 30% of parent_bbox
         height="25%",  # height : 1 inch
-        loc=4,
+        loc=3,
     )
     plot_wells(wells=Setup.Wells, annotate=True)
     plt.xticks([])
@@ -794,6 +810,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
+        bbox_inches="tight",
         transparent=False,
     )
     plt.close()
@@ -979,7 +996,7 @@ def plot_wells(
         s += 1
 
 
-def plot_head_field(root: str = None, base_dir: str = None):
+def plot_head_field(root: str = None, base_dir: str = None, annotation: str = None):
     matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "whpa_heads.npy"))
     grid_dim = Setup.GridDimensions
     extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
@@ -992,11 +1009,15 @@ def plot_head_field(root: str = None, base_dir: str = None):
     im = ax.imshow(matrix[0], cmap="Blues_r", extent=extent)
     plt.xlabel("X(m)", fontsize=11)
     plt.ylabel("Y(m)", fontsize=11)
+    if annotation:
+        _proxy_annotate(annotation=[annotation], loc=2, fz=14)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     cb = plt.colorbar(im, cax=cax)
     cb.ax.set_title("Head (m)")
+
+
 
     plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=False)
     plt.close()

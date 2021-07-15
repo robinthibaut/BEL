@@ -2,26 +2,23 @@
 from abc import ABC
 
 import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from dcca.linear_cca import linear_cca
+from dcca.models import create_model
 from dcca.objectives import cca_loss
 from inn.flow import MSE, MMD_multiscale, tfk
-import tensorflow as tf
-from inn.utils import UpdateLossFactor, NBatchLogger
-
+from inn.utils import NBatchLogger, UpdateLossFactor
+from keras.callbacks import ModelCheckpoint
 from skbel.learning.bel import BEL
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA, KernelPCA
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 
 from bel4ed import Setup
 from bel4ed.datasets import i_am_root, load_dataset
-
-import numpy as np
-
-from keras.callbacks import ModelCheckpoint
-from dcca.linear_cca import linear_cca
-from dcca.models import create_model
 
 
 def kernel_bel():

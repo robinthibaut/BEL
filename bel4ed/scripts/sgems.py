@@ -1,5 +1,8 @@
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
+
 import numpy as np
 from pysgems.algo.sgalgo import XML
 from pysgems.dis.sgdis import Discretize
