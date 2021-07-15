@@ -29,7 +29,7 @@ from bel4ed.hydro import forward_modelling
 def main(**kwargs):
     """Main function for multiprocessing"""
     # Automatically selects number of worker based on cpu count
-    n_cpu = mp.cpu_count() // 2 + 1
+    n_cpu = mp.cpu_count() // 2 + 2
     logger.info(f"working on {n_cpu} cpu - good luck")
     pool = mp.Pool(n_cpu)
 
@@ -93,14 +93,14 @@ if __name__ == "__main__":
     }
     # forward_modelling(**kw_args_single)
     kw_args_pool = {
-        "n_sim": None,
-        "folder": 0,
+        "n_sim": 10000,
+        "folder": None,
         "pool": True,
         "override": True,
         "flow": True,
         "transport": True,
         "ucn": False,
-        "backtrack": False,
+        "backtrack": True,
         "flush": True,
     }
     main(**kw_args_pool)
