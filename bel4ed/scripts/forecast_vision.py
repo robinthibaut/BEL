@@ -7,17 +7,15 @@ import joblib
 import numpy as np
 from loguru import logger
 from matplotlib import pyplot as plt
-from skbel.goggles import _my_alphabet, _proxy_annotate
+from skbel.goggles import _my_alphabet
 
 import bel4ed.goggles as myvis
-from bel4ed.config import Setup, TEST_ROOT
+from bel4ed.config import TEST_ROOT, Setup
 from bel4ed.datasets import i_am_root, load_dataset
 
 base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
 
-training_file = jp(
-    Setup.Directories.storage_dir, "roots.dat"
-)
+training_file = jp(Setup.Directories.storage_dir, "roots.dat")
 test_file = jp(Setup.Directories.storage_dir, "test_root.dat")
 training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
@@ -36,7 +34,7 @@ def plotter(sample):
     logger.info(f"Plotting root {sample}")
 
     logger.info(f"Plotting K")
-    myvis.plot_K_field(base_dir=base_dir, root=sample, annotation="A")
+    myvis.plot_K_field(base_dir=base_dir, root=sample, annotation=kan)
     plt.close()
 
     for j, w in enumerate(wells):
@@ -86,8 +84,9 @@ def plotter(sample):
         # )
         # plt.close()
 
-    logger.info(f"Plotting HEAD")
-    myvis.plot_head_field(base_dir=base_dir, root=sample, annotation="B")
+    # logger.info(f"Plotting HEAD")
+    # myvis.plot_head_field(base_dir=base_dir, root=sample)
+    # plt.close()
 
     # logger.info(f"Plotting CCA")
     # myvis.cca_vision(
@@ -115,4 +114,3 @@ if __name__ == "__main__":
     # pool.map(plotter, test_r)
     # pool.close()
     # pool.join()
-

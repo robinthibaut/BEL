@@ -31,7 +31,7 @@ class Setup:
         data_dir: str = join(main_dir, "datasets")
         algo_dir: str = join(main_dir, "algorithms")
 
-        hydro_res_dir: str = join(data_dir, "forwards")
+        hydro_res_dir: str = join(data_dir, "fwd_structural")
         forecasts_dir: str = join(storage_dir, "forecasts_c23")
 
         forecasts_base_dir: str = join(forecasts_dir, "base")
@@ -112,10 +112,12 @@ class Setup:
     class Focus:
         """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
 
-        x_range = [800, 1150]
+        # x_range = [800, 1150]
+        x_range = [650, 1200]
         y_range = [300, 700]
         # Defines cell dimensions for the signed distance computation.
-        cell_dim: float = 4
+        # cell_dim: float = 4
+        cell_dim: float = 5
 
     @dataclass
     class Wells:
