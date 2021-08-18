@@ -225,7 +225,6 @@ def plot_uq(metric_function, directory: str = None, title: str = None, an_i: int
     wm = np.load(jp(directory, f"uq_{metric_function.__name__}.npy"))
     colors = Setup.Wells.colors
     mode_histo(
-        colors=colors,
         wm=wm,
         an_i=an_i,
         title=title,

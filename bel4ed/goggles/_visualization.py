@@ -675,7 +675,7 @@ def mode_histo(
     an_i: int,
     wm: np.array,
     combi: list,
-    colors: list = None,
+        colors: list = None,
     title: str = None,
     fig_name: str = "average",
     directory: str = None,
@@ -685,7 +685,6 @@ def mode_histo(
     :param directory:
     :param title:
     :param combi:
-    :param colors:
     :param an_i: Figure annotation
     :param wm: Arrays of metric
     :param fig_name:
@@ -693,6 +692,9 @@ def mode_histo(
     """
     if directory is None:
         directory = Setup.Directories.forecasts_dir
+    if colors is None:
+        colors = ["b", "g", "r", "c", "m", "y"]
+
     alphabet = string.ascii_uppercase
     # wid = list(map(str, Setup.Wells.combination))  # Wel identifiers (n)
     wid = combi
@@ -743,8 +745,7 @@ def mode_histo(
     wm_idx = np.array([x for _, x in sorted(zip(lol, np.arange(len(combi))))])
     wm = wm[wm_idx]
     columns = [x for _, x in sorted(zip(lol, columns))]
-    well_cols = ["b", "g", "r", "c", "m", "y"]
-    well_cols = [x for _, x in sorted(zip(lol, well_cols))]
+    colors = [x for _, x in sorted(zip(lol, colors))]
     lol = sorted(lol)
 
     # columns = ["1", "2", "3", "4", "5", "6"]

@@ -413,7 +413,6 @@ def plot_uq(
 
     colors = Setup.Wells.colors
     mode_histo(
-        colors=colors,
         wm=theta,
         combi=combi,
         an_i=an_i,
