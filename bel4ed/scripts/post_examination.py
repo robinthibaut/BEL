@@ -58,7 +58,8 @@ myvis.whpa_plot(
     xlabel="X(m)",
     ylabel="Y(m)",
     cb_title="SD(m)",
-    annotation=["B"],
+    # annotation=["B"],
+    annotation=None,
     bkg_field_array=np.flipud(nn[0]),
     vmin=-50,
     color="black",
@@ -68,7 +69,7 @@ myvis.whpa_plot(
 # plt.gca().add_artist(legend)
 
 plt.savefig(
-    jp(md.forecasts_dir, sub_folder, root, sources, "data", f"{root}_SD.pdf"),
+    jp(md.forecasts_dir, sub_folder, root, sources, "data", f"{root}_SD.png"),
     bbox_inches="tight",
     dpi=300,
     transparent=True,
