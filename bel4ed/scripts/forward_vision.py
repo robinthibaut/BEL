@@ -9,8 +9,12 @@ from skbel.spatial import grid_parameters
 
 from bel4ed import Setup
 from bel4ed.datasets import data_loader
-from bel4ed.goggles._visualization import (curves_i, plot_head_field,
-                                           plot_K_field, whpa_plot)
+from bel4ed.goggles._visualization import (
+    curves_i,
+    plot_head_field,
+    plot_K_field,
+    whpa_plot,
+)
 from bel4ed.preprocessing import beautiful_curves, signed_distance
 from bel4ed.utils import i_am_framed
 

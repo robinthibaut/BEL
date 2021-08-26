@@ -423,8 +423,8 @@ def h_pca_inverse_plot(bel, Y_obs, fig_dir: str = None, show: bool = False):
         labelsize=11,
         xlabel="X(m)",
         ylabel="Y(m)",
-        x_lim=[650, 1200],
-        y_lim=[300, 700],
+        x_lim=Setup.Focus.x_range,
+        y_lim=Setup.Focus.y_range,
     )
 
     # Add title inside the box
@@ -605,7 +605,7 @@ def plot_results(
             color=colors[2],
             lw=0.8,
             alpha=1,
-            x_lim=[650, 1250],
+            x_lim=Setup.Focus.x_range,
             xlabel="X(m)",
             ylabel="Y(m)",
             labelsize=11,
@@ -1017,8 +1017,6 @@ def plot_head_field(root: str = None, base_dir: str = None, annotation: str = No
     cb = plt.colorbar(im, cax=cax)
     cb.ax.set_title("Head (m)")
 
-
-
     plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=False)
     plt.close()
 
@@ -1231,7 +1229,7 @@ def pca_vision(
         if exvar:
             fig_file = os.path.join(subdir, "d_exvar.png")
             explained_variance(
-                bel,
+                bel.X_pre_processing["pca"],
                 n_comp=Setup.HyperParameters.n_pc_predictor,
                 thr=0.8,
                 annotation=["E"],
@@ -1268,7 +1266,7 @@ def pca_vision(
         if exvar:
             fig_file = os.path.join(subdir, "h_pca_exvar.png")
             explained_variance(
-                bel,
+                bel.Y_pre_processing["pca"],
                 n_comp=Setup.HyperParameters.n_pc_target,
                 thr=0.8,
                 annotation=["F"],

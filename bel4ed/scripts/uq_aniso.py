@@ -8,8 +8,14 @@ from sklearn.model_selection import KFold, train_test_split
 from bel4ed import init_bel, kernel_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
-from bel4ed.design import (bel_training, bel_training_mp, bel_uq, bel_uq_mp,
-                           find_extreme, plot_uq)
+from bel4ed.design import (
+    bel_training,
+    bel_training_mp,
+    bel_uq,
+    bel_uq_mp,
+    find_extreme,
+    plot_uq,
+)
 from bel4ed.metrics import modified_hausdorff, structural_similarity
 
 if __name__ == "__main__":

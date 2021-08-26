@@ -7,7 +7,7 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import KFold, train_test_split
 
-from bel4ed import kernel_bel
+from bel4ed import kernel_bel, init_bel
 from bel4ed.config import Setup
 from bel4ed.datasets import i_am_root, load_dataset
 from bel4ed.design import bel_training, bel_uq
@@ -248,9 +248,9 @@ if __name__ == "__main__":
     wells_training = np.array([[1, 2, 3, 4, 5, 6]], dtype=object)
     # %%
     # Initiate BEL model
-    bel = kernel_bel()
+    bel = init_bel()
     bel.n_posts = Setup.HyperParameters.n_posts
-    bel.mode = "kde"
+    bel.mode = "mvn"
     bel.X_shape = (6, 200)  # Six curves with 200 time steps each
     bel.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
     # Train model
@@ -261,6 +261,7 @@ if __name__ == "__main__":
         training_idx=training_r,
         test_idx=test_r,
         source_ids_training=wells_training,
+        name="IAH",
         # source_ids_uq=wells_uq,
     )
     # %%

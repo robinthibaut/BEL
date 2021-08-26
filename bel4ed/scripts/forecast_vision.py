@@ -13,11 +13,9 @@ import bel4ed.goggles as myvis
 from bel4ed.config import Setup, TEST_ROOT
 from bel4ed.datasets import i_am_root, load_dataset
 
-base_dir = jp(Setup.Directories.forecasts_dir, "test_400_1")
+base_dir = jp(Setup.Directories.forecasts_dir, "IAH_400_1")
 
-training_file = jp(
-    Setup.Directories.storage_dir, "roots.dat"
-)
+training_file = jp(Setup.Directories.storage_dir, "roots.dat")
 test_file = jp(Setup.Directories.storage_dir, "test_root.dat")
 training_r, test_r = i_am_root(training_file=training_file, test_file=test_file)
 
@@ -50,53 +48,53 @@ def plotter(sample):
         else:
             annotation = _my_alphabet(j)
 
-        annotation = nan
+        # annotation = nan
 
         md = jp(base_dir, sample, w)
         bel = joblib.load(jp(md, "obj", "bel.pkl"))
 
         logger.info(f"Plotting results")
-        # myvis.plot_results(
-        #     bel,
-        #     X=X_train,
-        #     X_obs=X_test.loc[sample],
-        #     Y=y_train,
-        #     Y_obs=y_test.loc[sample],
-        #     base_dir=base_dir,
-        #     root=sample,
-        #     folder=w,
-        #     annotation=annotation,
-        # )
-        # plt.close()
+        myvis.plot_results(
+            bel,
+            X=X_train,
+            X_obs=X_test.loc[sample],
+            Y=y_train,
+            Y_obs=y_test.loc[sample],
+            base_dir=base_dir,
+            root=sample,
+            folder=w,
+            annotation=annotation,
+        )
+        plt.close()
 
         # logger.info(f"Plotting PCA")
-        # myvis.pca_vision(
-        #     bel,
-        #     X_obs=X_test.iloc[i],
-        #     Y_obs=y_test.iloc[i],
-        #     base_dir=base_dir,
-        #     w=w,
-        #     root=sample,
-        #     d=True,
-        #     h=True,
-        #     exvar=False,
-        #     before_after=True,
-        #     labels=True,
-        #     scores=True,
-        # )
-        # plt.close()
+        myvis.pca_vision(
+            bel,
+            X_obs=X_test.iloc[i],
+            Y_obs=y_test.iloc[i],
+            base_dir=base_dir,
+            w=w,
+            root=sample,
+            d=True,
+            h=True,
+            exvar=True,
+            before_after=True,
+            labels=True,
+            scores=True,
+        )
+        plt.close()
 
     logger.info(f"Plotting HEAD")
     myvis.plot_head_field(base_dir=base_dir, root=sample, annotation="B")
 
     # logger.info(f"Plotting CCA")
-    # myvis.cca_vision(
-    #     base_dir=base_dir,
-    #     Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
-    #     root=sample,
-    #     folders=wells,
-    # )
-    # plt.close()
+    myvis.cca_vision(
+        base_dir=base_dir,
+        Y_obs=y_test.iloc[i].to_numpy().reshape(1, -1),
+        root=sample,
+        folders=wells,
+    )
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -105,8 +103,8 @@ if __name__ == "__main__":
     an = np.arange(0, 12, 2)
     ak = np.arange(1, 13, 2)
     for i, s in enumerate(samples):
-        kan = _my_alphabet(ak[i])
-        nan = _my_alphabet(an[i])
+        # kan = _my_alphabet(ak[i])
+        # nan = _my_alphabet(an[i])
         plotter(s)
 
     # plotter(root)
@@ -115,4 +113,3 @@ if __name__ == "__main__":
     # pool.map(plotter, test_r)
     # pool.close()
     # pool.join()
-
