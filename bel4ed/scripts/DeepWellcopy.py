@@ -240,12 +240,12 @@ input_shape2 = 200
 # number of layers with nodes in each one
 
 size = 4
-layer_sizes1 = [size * 2, size, size // 2, outdim_size]
-layer_sizes2 = [size * 2, size, size // 2, outdim_size]
+layer_sizes1 = [8, 4, 2, outdim_size]
+layer_sizes2 = [8, 4, 2, outdim_size]
 
 # the parameters for training the network
 learning_rate = 1e-3  # 1e-1
-epoch_num = 100
+epoch_num = 1000
 batch_size = 24
 
 # the regularization parameter of the network
@@ -315,5 +315,5 @@ data1 = [[X_train, y_train], [X_valid, y_valid], [X_test, y_test]]
 new_data = test_model(model, data1, outdim_size, apply_linear_cca)
 
 for i in range(outdim_size):
-    plt.plot(new_data[1][0][:, i], new_data[1][1][:, i], "ro")
+    plt.plot(new_data[0][0][:, i], new_data[0][1][:, i], "ro")
     plt.show()
